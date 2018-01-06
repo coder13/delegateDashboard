@@ -1,6 +1,7 @@
 import qs from 'qs'
 
-export const APP_ID = 'example-application-id'
+console.log(process.env)
+export const APP_ID = process.env.app_id
 export const BASE_URL = `https://${process.env.staging ? 'staging' : 'www'}.worldcubeassociation.org`
 
 const getHashParameter = name => qs.parse(window.location.hash.slice(1))[name]
@@ -29,7 +30,7 @@ export function login () {
     client_id: APP_ID,
     redirect_uri: redirectUri,
     response_type: 'token',
-    scope: 'public dob email manage_competitions'
+    scope: process.env.scopes
   }, {
     format: 'RFC1738'
   })}`)
