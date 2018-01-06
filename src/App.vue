@@ -20,9 +20,6 @@
       </div>
     </header>
     <main class="mdl-layout__content">
-      <ul class="mdl-list">
-        <li v-for="(comp,index) in competitions" :key="index" class="mdl-list__item">{{comp.name}}</li>
-      </ul>
       <router-view/>
     </main>
   </div>
@@ -37,14 +34,8 @@ export default {
     return {
     }
   },
-  created () {
-    if (this.$store.getters.isLoggedIn) {
-      this.fetchData()
-    }
-  },
   computed: {
     ...mapGetters({
-      competitions: 'getCompetitions',
       isLoggedIn: 'isLoggedIn'
     })
   },

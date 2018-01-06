@@ -13,5 +13,11 @@ new Vue({
   router,
   store,
   template: '<App/>',
-  components: { App }
+  components: { App },
+  methods: {
+    fetchData () {
+      console.log('fetching')
+      this.$store.dispatch('fetchCompetitions')
+    }
+  }
 })
