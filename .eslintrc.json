@@ -1,6 +1,7 @@
 {
   "extends": "react-app",
   "rules": {
-    "import/first": 0
+    "import/first": 0,
+    "no-restricted-globals": 0
   }
 }

@@ -1,7 +1,8 @@
 import { WCA_ORIGIN, WCA_OAUTH_CLIENT_ID } from './wca-env';
+import history from './history';
 
 /* Use separate set of keys for each OAuth client (e.g. for WCA production and staging). */
-const localStorageKey = key => `GroupifierNext.${WCA_OAUTH_CLIENT_ID}.${key}`;
+const localStorageKey = key => `groups.${WCA_OAUTH_CLIENT_ID}.${key}`;
 
 /**
  * Checks the URL hash for presence of OAuth access token
@@ -63,7 +64,7 @@ export const signIn = () => {
     client_id: WCA_OAUTH_CLIENT_ID,
     response_type: 'token',
     redirect_uri: oauthRedirectUri(),
-    scope: 'manage_competitions',
+    scope: 'public manage_competitions email',
   });
   window.location = `${WCA_ORIGIN}/oauth/authorize?${params.toString()}`;
 };

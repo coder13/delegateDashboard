@@ -1,63 +1,59 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
-import { OauthSender } from 'react-oauth-flow';
+import history from '../lib/history';
+import Competition from './Competition'
+import CompetitionList from './CompetitionList'
+import { isSignedIn, signIn, signOut } from '../lib/auth';
+import { getMe } from '../lib/wcaAPI.js'
 
-console.log(process.env)
+const App = () => {
+  const [signedIn, setSignedIn] = useState(isSignedIn());
 
-export default class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      token: '',
-    };
+  const handleSignIn = () => {
+    signIn();
+    setSignedIn(true);
   }
-  
-  Login () {
-    let onAuthSuccess = async (accessToken, { response, state }) => {
 
+  const handleSignOut = () => {
+    signOut();
+    setSignedIn(false);
+  };
+
+  useEffect(() => {
+    console.log(isSignedIn());
+    if (isSignedIn()) {
+      getMe().then((me) => {
+        console.log(me);
+      }).catch((err) => {
+        console.error(err);
+      });
     }
+  });
 
-    let handleError = error => {
-      console.error(error);
-    }
+  return (
+    <Router>
+      <div>
+        {isSignedIn() ?
+          <button onClick={() => handleSignOut()}>Sign out</button> :
+          <button onClick={() => handleSignIn()}>Sign in</button>}
+        <ul>
+          <li>
+            <Link to='/'>Home</Link>
+          </li>
+          <li>
+            <Link to='/competitions'>Comps</Link>
+          </li>
+        </ul>
 
-    return (
-      <OauthSender
-         authorizeUrl='https://staging.worldcubeassociation.org/oauth/authorize'
-         clientId={process.env.CLIENT_ID}
-         clientSecret={process.env.CLIENT_SECRET}
-         redirectUri='http://localhost:3000/oauth/callback'
-         args={{scope: 'email public'}}
-         onAuthError={handleError}
-         onAuthSuccess={onAuthSuccess}
-         render={({ url }) => <a href={url}>Login</a>}
-       />
-    );
-  }
-
-  render () {
-    let Login = this.Login;
-
-    return (
-      <Router>
-        <div>
-          <Login/>
-          <ul>
-            <li>
-              <Link to='/'>Home</Link>
-            </li>
-          </ul>
-
-          <hr/>
-          <Switch>
-            <Route exact path='/'>
-              <Home/>
-            </Route>
-          </Switch>
-        </div>
-      </Router>
-    );
-  }
+        <hr/>
+        <Switch>
+          <Route exact path='/' component={Home}/>
+          <Route path="/competitions/:competitionId" component={Competition}/>
+          <Route path='/competitions/' component={CompetitionList}/>
+        </Switch>
+      </div>
+    </Router>
+  );
 }
 
 function Home() {
@@ -67,3 +63,5 @@ function Home() {
     </div>
   );
 }
+
+export default App;

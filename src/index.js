@@ -1,4 +1,4 @@
-//eslint-disable import/first
+//eslint-disable import/firstq
 
 require('dotenv').config();
 import React from 'react';
@@ -6,8 +6,9 @@ import ReactDOM from 'react-dom';
 import './assets/index.css';
 import App from './components/App';
 import * as serviceWorker from './serviceWorker';
+import { initializeAuth } from './lib/auth';
 
-
+initializeAuth();
 ReactDOM.render(<App />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
