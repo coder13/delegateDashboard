@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { getWcif } from '../lib/wcaAPI.js'
-import { updateIn } from '../lib/utils';
-import { sortWcifEvents } from '../lib/events';
-import { validateWcif } from '../lib/wcif-validation';
+import { getWcif } from '../../lib/wcaAPI.js'
+import { updateIn } from '../../lib/utils';
+import { sortWcifEvents } from '../../lib/events';
+import { validateWcif } from '../../lib/wcif-validation';
 
 const Competition = ({ match }) => {
   const [wcif, setWcif] = useState(null);
