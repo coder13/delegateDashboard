@@ -10,7 +10,6 @@ const events = [
   { id: '333bf', name: '3x3x3 Blindfolded', shortName: '3BLD' },
   { id: '333fm', name: '3x3x3 Fewest Moves', shortName: 'FMC' },
   { id: '333oh', name: '3x3x3 One-Handed', shortName: '3OH' },
-  { id: '333ft', name: '3x3x3 With Feet', shortName: '3WF' },
   { id: 'minx', name: 'Megaminx', shortName: 'Minx' },
   { id: 'pyram', name: 'Pyraminx', shortName: 'Pyra' },
   { id: 'clock', name: 'Clock', shortName: 'Clock' },
