@@ -4,11 +4,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Grid from '@material-ui/core/Grid';
 import { createMuiTheme } from '@material-ui/core/styles';
 import { ThemeProvider } from '@material-ui/styles';
-import Button from '@material-ui/core/Button';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
-import history from '../../lib/history';
 import Header from './Header';
 import Footer from './Footer';
 import Competition from '../Competition/'
@@ -32,11 +28,20 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     minHeight: '100vh',
     flexDirection: 'column',
+    flexGrow: 1,
   },
   grow: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
     flexGrow: 1,
   },
   main: {
+    display: 'flex',
+    flexDirection: 'column',
+    flexGrow: 1,
+    alignItems: 'center',
+    width: '100%',
     padding: theme.spacing(2),
   },
 }));
@@ -73,13 +78,13 @@ const App = () => {
           <CssBaseline/>
           <Header isSignedIn={isSignedIn} onSignIn={handleSignIn} onSignOut={handleSignOut}/>
           <Grid className={classes.grow}>
-            <Grid item xs={12} md={8} xl={6} className={classes.main}>
+            <Grid item xs={12} md={12} xl={10} className={classes.main}>
               {isSignedIn() ? (
                 <Switch>
+                  <Route path="/competitions/:competitionId" component={Competition}/>
                   <Route path="/">
                     <CompetitionList/>
                   </Route>
-                  <Route path="/competitions/:competitionId" component={Competition}/>
                   <Redirect to="/"/>
                 </Switch>
               ) : (
