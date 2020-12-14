@@ -1,12 +1,26 @@
 import React from 'react';
-import { useRouteMatch } from 'react-router-dom';
+import { makeStyles } from '@material-ui/core/styles';
+import Grid from '@material-ui/core/Grid';
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    display: 'flex',
+    flexDirection: 'Column',
+    flex: 1,
+    width: '100%',
+  },
+  paper: {
+    width: '100%',
+    padding: theme.spacing(2),
+  },
+}));
 
 const EventPage = () => {
-  const { params } = useRouteMatch();
+  const classes = useStyles();
 
   return (
-    <div>
-    </div>
+    <Grid container direction="column" spacing={2} className={classes.root}>
+    </Grid>
   );
 };
 
