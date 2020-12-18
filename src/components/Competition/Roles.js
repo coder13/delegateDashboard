@@ -101,7 +101,7 @@ const Roles = ({ wcif }) => {
               <TableCell className={classes.bold}>Delegate</TableCell>
               <TableCell className={classes.bold}>Organizer</TableCell>
               { ROLES.map((role) => (
-                <TableCell className={classes.bold} key={role.id}>{role.name}</TableCell>
+                <TableCell key={role.id} className={classes.bold}>{role.name}</TableCell>
               ))}
             </TableRow>
           </TableHead>
@@ -160,7 +160,7 @@ const Roles = ({ wcif }) => {
                 {wcif.persons.reduce((acc, person) => acc + (person.roles.indexOf('organizer') > -1 ? 1 : 0), 0)}
               </TableCell>
               {ROLES.map((role) => (
-                <TableCell className={classes.bold}>
+                <TableCell key={role.id} className={classes.bold}>
                   {wcif.persons.reduce((acc, person) => acc + (person.roles.indexOf(role.id) > -1 ? 1 : 0), 0)}
                 </TableCell>
               ))}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link, useRouteMatch } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -17,14 +18,18 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const CompetitionHome = ({ wcif }) => {
+const CompetitionHome = ({ match, wcif }) => {
   const classes = useStyles();
+
+  const { path } = useRouteMatch();
 
   return (
     <Grid container direction="column" spacing={2} className={classes.root}>
       <Typography variant="h5" paragraph>{wcif.name}</Typography>
       <Typography paragraph>Competitors: {wcif.persons.length} / {wcif.competitorLimit}</Typography>
       <Typography paragraph>Events: {wcif.events.map((event) => event.id).join(', ')}</Typography>
+      <Link to={`${path}/roles`}>Configure Roles</Link>
+      <Link to={`${path}/rooms`}>Configure Rooms</Link>
     </Grid>
   );
 };

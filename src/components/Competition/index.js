@@ -59,17 +59,11 @@ const Competition = ({ fetchingWCIF, wcif, errors }) => {
         <Route exact path={`/competitions/${params.competitionId}`}>
           <CompetitionHome/>
         </Route>
-        <Route path={`${path}/roles`}>
+        <Route exact path={`${path}/roles`}>
           <RolesPage/>
         </Route>
-        <Route path={`${path}/rooms`}>
+        <Route exact path={`${path}/rooms`}>
           <RoomsPage/>
-        </Route>
-        <Route path={`${path}/assignments/:activityId`}>
-          <EventPage/>
-        </Route>
-        <Route path={`${path}/person/:registrantId`}>
-          <PersonPage/>
         </Route>
         <Route path={path}>
           <Redirect to={`/competitions/${params.competitionId}`}/>
