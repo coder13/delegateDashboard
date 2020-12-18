@@ -7,5 +7,5 @@ export const WCA_ORIGIN = PRODUCTION
   : 'https://staging.worldcubeassociation.org';
 
 export const WCA_OAUTH_CLIENT_ID = PRODUCTION
-  ? 'LStW1Fqnq5johRL33_BwUhGZDB2-P43kqoZxt7qKDn4'
+  ? process.env.WCA_OAUTH_CLIENT_ID
   : 'example-application-id';
