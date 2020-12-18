@@ -30,7 +30,7 @@ const Header = ({ isSignedIn, onSignIn, onSignOut }) => {
         <Typography variant="h6" className={classes.title}>
           <Link to='/' className={classes.titleLink}>
             <PeopleIcon className={classes.titleIcon}/>
-            Groups
+            Delegate Dashboard
           </Link>
         </Typography>
         {isSignedIn() ? (

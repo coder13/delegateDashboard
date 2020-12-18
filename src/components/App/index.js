@@ -78,22 +78,13 @@ const App = () => {
             <Header isSignedIn={isSignedIn} onSignIn={handleSignIn} onSignOut={handleSignOut}/>
             <Grid className={classes.grow}>
               <Grid item xs={12} md={12} xl={10} className={classes.main}>
-                {isSignedIn() ? (
-                  <Switch>
-                    <Route path="/competitions/:competitionId" component={Competition}/>
-                    <Route path="/">
-                      <CompetitionList/>
-                    </Route>
-                    <Redirect to="/"/>
-                  </Switch>
-                ) : (
-                  <Switch>
-                    <Route path="/">
-                      <p>Sign in to view comps!</p>
-                    </Route>
-                    <Redirect to="/"/>
-                  </Switch>
-                )}
+                <Switch>
+                  {isSignedIn() && <Route path="/competitions/:competitionId" component={Competition}/>}
+                  <Route exact path="/">
+                  {isSignedIn() ? <CompetitionList/> : <p>Sign in to view comps!</p>}
+                  </Route>
+                  <Redirect to="/"/>
+                </Switch>
               </Grid>
             </Grid>
             <Footer/>
