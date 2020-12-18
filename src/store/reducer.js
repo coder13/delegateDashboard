@@ -13,6 +13,7 @@ const INITIAL_STATE = {
 
   },
   fetchingWCIF: false,
+  uploadingWCIF: false,
   wcif: {
     name: undefined,
     persons: [],

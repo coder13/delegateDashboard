@@ -17,9 +17,13 @@ const ConfigureStagesDialog = ({ open, handleClose, handleSaveStages, roomName, 
     }]);
   }
 
-  const editStage = (stage, index) => {
-    setStages(stages.map((s, i) => i === index ? stage : s));
-    console.log(stages);
+  const editStage = (stage) => {
+    setStages(stages.map(s => s.id === stage.id ? stage : s));
+  }
+
+  const onClose = () => {
+    setStages(currentStages);
+    handleClose();
   }
 
   const handleSave = () => {
@@ -29,7 +33,7 @@ const ConfigureStagesDialog = ({ open, handleClose, handleSaveStages, roomName, 
 
   return (
     <Dialog
-      onClose={handleClose}
+      onClose={onClose}
       aria-labelledby="configure-stages-dial2og"
       open={open}
       maxWidth="md"
@@ -39,7 +43,7 @@ const ConfigureStagesDialog = ({ open, handleClose, handleSaveStages, roomName, 
       <DialogTitle id="configure-stages-dialog">Configuring Stages for <b>{roomName}</b></DialogTitle>
       <DialogContent>
       {stages.map((stage, index) =>
-        <EditableStageInput key={stage.id} stage={stage} onSubmit={(s) => editStage(s, index)}/>
+        <EditableStageInput key={stage.id} stage={stage} onSubmit={(s) => editStage(s)}/>
       )}
       <EditableStageInput key={0} onSubmit={addStage}/>
       </DialogContent>

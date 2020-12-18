@@ -16,8 +16,9 @@ import MenuItem from '@material-ui/core/MenuItem';
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import ConfigureStagesDialog from './ConfigureStagesDialog';
 import { parseActivityCode } from '../../../lib/activities';
+import { getExtensionData } from '../../../lib/wcif-extensions';
 import { advancingCompetitors } from '../../../lib/formulas';
-import { updateStages } from '../../../store/actions';
+import { updateStages, uploadCurrentWCIFChanges } from '../../../store/actions';
 
 const useStyles = makeStyles((theme) => ({
   card: ({ room }) => ({
@@ -52,6 +53,7 @@ const Room = ({ wcif, venue, room }) => {
 
   const handleSaveStages = (stages) => {
     dispatch(updateStages(venue.id, room.id, stages));
+    dispatch(uploadCurrentWCIFChanges(['schedule']));
   }
 
   const eventRegistrationCounts = {};
@@ -69,7 +71,7 @@ const Room = ({ wcif, venue, room }) => {
     })
   });
 
-  console.log(eventRegistrationCounts);
+  const { stages: currentStages } = getExtensionData('stages', room) || [];
 
   return (
     <Card
@@ -89,6 +91,7 @@ const Room = ({ wcif, venue, room }) => {
         handleClose={() => setConfigureStagesDialogOpen(false)}
         handleSaveStages={handleSaveStages}
         roomName={`${venue.name} / ${room.name}`}
+        currentStages={currentStages}
       />
       <CardHeader
         action={

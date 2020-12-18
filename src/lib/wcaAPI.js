@@ -19,7 +19,7 @@ export const getUpcomingManageableCompetitions = () => {
 export const getWcif = competitionId =>
   wcaApiFetch(`/competitions/${competitionId}/wcif`);
 
-const updateWcif = (competitionId, wcif) =>
+export const updateWcif = (competitionId, wcif) =>
   wcaApiFetch(`/competitions/${competitionId}/wcif`, {
     method: 'PATCH',
     body: JSON.stringify(wcif),

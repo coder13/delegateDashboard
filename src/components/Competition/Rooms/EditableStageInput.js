@@ -49,14 +49,13 @@ const EditableStageInput = (({ stage = {}, ...props }) => {
   const [stations, setStations] = React.useState(stage.stations || 1);
 
   const cancel = () => {
-    setEditing(false);
     setName(stage.name || '');
     setStations(stage.stations || 0)
   };
 
   const handleStationsChange = (e) => {
     if (e.target.value > 0) {
-      setStations(e.target.value);
+      setStations(+e.target.value);
     }
   };
 
@@ -78,9 +77,9 @@ const EditableStageInput = (({ stage = {}, ...props }) => {
         id: stage.id,
         name,
         stations,
-      })
+      });
     }
-    cancel();
+    setEditing(false);
   };
 
   return (

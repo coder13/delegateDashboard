@@ -1,5 +1,5 @@
-import { getWcif } from '../lib/wcaAPI'
-import { updateIn } from '../lib/utils';
+import { getWcif, updateWcif } from '../lib/wcaAPI'
+import { updateIn, pick } from '../lib/utils';
 import { sortWcifEvents } from '../lib/events';
 import { validateWcif } from '../lib/wcif-validation';
 
@@ -7,6 +7,7 @@ export const FETCH_MANAGED_COMPS = 'fetch_managed_comps';
 export const FETCHING_WCIF = 'fetching_wcif';
 export const FETCH_WCIF = 'fetch_wcif';
 export const FETCHED_WCIF = 'fetched_wcif';
+export const UPLOADING_WCIF = 'uploading_wcif';
 export const UPDATE_WCIF_ERRORS = 'update_wcif_errors';
 export const TOGGLE_PERSON_ROLE = 'toggle_person_role';
 export const UPDATE_STAGES = 'update_stages';
@@ -32,6 +33,11 @@ const updateWcifErrors = (errors) => ({
   errors,
 });
 
+const updateUploading = (uploading) => ({
+  type: UPLOADING_WCIF,
+  uploading,
+})
+
 export const fetchWCIF = (competitionId) =>
   (dispatch) => {
     dispatch(fetchingWCIF());
@@ -44,6 +50,27 @@ export const fetchWCIF = (competitionId) =>
       })
       .catch((error) => updateWcifErrors([error.message]))
       .finally(() => updateFetching(false));
+  };
+
+export const uploadCurrentWCIFChanges = (keys) =>
+  (dispatch, getState) => {
+    if (keys.length === 0) {
+      return;
+    }
+
+    const { wcif } = getState();
+    const competitionId = wcif.id;
+
+    const changes = pick(wcif, keys);
+
+    dispatch(updateUploading(true));
+    updateWcif(competitionId, changes)
+      .then(() => {
+        updateUploading(false);
+      })
+      .catch((e) => {
+        console.error(e);
+      })
   };
 
 export const togglePersonRole = (registrantId, roleId) => ({

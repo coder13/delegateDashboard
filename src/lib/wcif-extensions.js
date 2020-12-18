@@ -19,7 +19,11 @@ export const setExtensionData = (extensionName, wcifEntity, data) => {
   };
 };
 
-const defaultExtensionData = {};
+const defaultExtensionData = {
+  stages: {
+    stages: [],
+  }
+};
 
 export const getExtensionData = (extensionName, wcifEntity) => {
   const extension = wcifEntity.extensions.find(
