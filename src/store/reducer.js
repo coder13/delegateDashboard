@@ -1,4 +1,3 @@
-import { updateIn, mapIn } from '../lib/utils';
 import {
   TOGGLE_PERSON_ROLE,
   FETCHING_WCIF,
@@ -16,7 +15,9 @@ const INITIAL_STATE = {
     name: undefined,
     persons: [],
     events: [],
-    schedule: [],
+    schedule: {
+      venues: [],
+    },
   },
   errors: [],
 }

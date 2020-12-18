@@ -6,6 +6,7 @@ import CompetitionHome from './Home';
 import RolesPage from './Roles';
 import EventPage from './Event';
 import PersonPage from './Person';
+import RoomsPage from './Rooms';
 import { fetchWCIF } from '../../store/actions';
 
 const useStyles = makeStyles((theme) => ({
@@ -60,6 +61,9 @@ const Competition = ({ fetchingWCIF, wcif, errors }) => {
         </Route>
         <Route path={`${path}/roles`}>
           <RolesPage/>
+        </Route>
+        <Route path={`${path}/rooms`}>
+          <RoomsPage/>
         </Route>
         <Route path={`${path}/assignments/:activityId`}>
           <EventPage/>

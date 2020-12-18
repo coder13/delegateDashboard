@@ -18,3 +18,11 @@ export const suggestedScramblerCount = (groupCompetitors, stations) =>
 /* Take min{groupCompetitors, stations} (i.e. stations in use) and suggest one runner for each 8 of them. */
 export const suggestedRunnerCount = (groupCompetitors, stations) =>
   Math.floor(1 + (Math.min(groupCompetitors, stations) - 1) / 8);
+
+export const advancingCompetitors = (advancementCondition, count) => {
+  if (advancementCondition.type === 'percent') {
+    return Math.round((advancementCondition.level / 100) * count)
+  } else if (advancementCondition.type === 'ranking') {
+    return Math.min(count, advancementCondition.level)
+  }
+}
