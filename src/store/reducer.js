@@ -1,7 +1,9 @@
+import { setExtensionData } from '../lib/wcif-extensions';
 import {
   TOGGLE_PERSON_ROLE,
   FETCHING_WCIF,
   FETCHED_WCIF,
+  UPDATE_STAGES,
 } from './actions';
 
 const INITIAL_STATE = {
@@ -46,10 +48,28 @@ const reducers = {
       ),
     },
   }),
+  [UPDATE_STAGES]: (state, action) => ({
+    ...state,
+    wcif: {
+      ...state.wcif,
+      schedule: {
+        ...state.wcif.schedule,
+        venues: state.wcif.schedule.venues.map((venue) => venue.id === action.venueId ? ({
+          ...venue,
+          rooms: venue.rooms.map((room) => room.id === action.roomId ?
+              setExtensionData('stages', room, {
+                stages: action.stages,
+              }) : room
+            )
+        }) : venue)
+      }
+    }
+  })
 };
 
 function reducer(state = INITIAL_STATE, action) {
   if (reducers[action.type]) {
+    console.log(state);
     return reducers[action.type](state, action);
   }
   return state;

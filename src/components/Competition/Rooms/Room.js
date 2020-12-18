@@ -1,5 +1,5 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { connect, useDispatch } from 'react-redux';
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -17,6 +17,7 @@ import MoreVertIcon from '@material-ui/icons/MoreVert'
 import ConfigureStagesDialog from './ConfigureStagesDialog';
 import { parseActivityCode } from '../../../lib/activities';
 import { advancingCompetitors } from '../../../lib/formulas';
+import { updateStages } from '../../../store/actions';
 
 const useStyles = makeStyles((theme) => ({
   card: ({ room }) => ({
@@ -30,10 +31,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Room = ({ wcif, venueName, room }) => {
+const Room = ({ wcif, venue, room }) => {
+  const dispatch = useDispatch();
   const classes = useStyles({ room });
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [configureStagesDialogOpen, setConfigureStagesDialogOpen] = React.useState(true);
+  const [configureStagesDialogOpen, setConfigureStagesDialogOpen] = React.useState(false);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -47,6 +49,10 @@ const Room = ({ wcif, venueName, room }) => {
     handleMenuClose();
     setConfigureStagesDialogOpen(true);
   };
+
+  const handleSaveStages = (stages) => {
+    dispatch(updateStages(venue.id, room.id, stages));
+  }
 
   const eventRegistrationCounts = {};
   wcif.persons.forEach((person) => {
@@ -81,8 +87,8 @@ const Room = ({ wcif, venueName, room }) => {
       <ConfigureStagesDialog
         open={configureStagesDialogOpen}
         handleClose={() => setConfigureStagesDialogOpen(false)}
-        handleSave={() => {}}
-        roomName={`${venueName} / ${room.name}`}
+        handleSaveStages={handleSaveStages}
+        roomName={`${venue.name} / ${room.name}`}
       />
       <CardHeader
         action={
@@ -114,16 +120,17 @@ const Room = ({ wcif, venueName, room }) => {
                 const round = roundNumber > 1 ? event.rounds[roundNumber - 2] : {};
                 const competitors = roundNumber === 1 ?
                       eventRegistrationCounts[eventId]
-                    : advancingCompetitors(round.advancementCondition, eventRegistrationCounts[eventId])
+                    : advancingCompetitors(round.advancementCondition, eventRegistrationCounts[eventId]);
+                console.log(advancingCompetitors);
 
                 return (
                   <TableRow key={activity.id}>
                   <TableCell>{eventId}</TableCell>
                   <TableCell>{roundNumber}</TableCell>
                   <TableCell>{activity.name}</TableCell>
-                  <TableCell>{competitors}</TableCell>
+                  <TableCell>{competitors || 0}</TableCell>
                   <TableCell>{activity.childActivities.length}</TableCell>
-                  <TableCell>{competitors / activity.childActivities.length}</TableCell>
+                  <TableCell>{activity.childActivities.length && competitors / activity.childActivities.length}</TableCell>
                   </TableRow>
                 );
               })}

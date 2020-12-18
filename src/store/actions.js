@@ -9,9 +9,7 @@ export const FETCH_WCIF = 'fetch_wcif';
 export const FETCHED_WCIF = 'fetched_wcif';
 export const UPDATE_WCIF_ERRORS = 'update_wcif_errors';
 export const TOGGLE_PERSON_ROLE = 'toggle_person_role';
-export const ADD_STAGE = 'add_stage';
-export const REMOVE_STAGE = 'remove_stage';
-export const EDIT_STAGE = 'edit_stage';
+export const UPDATE_STAGES = 'update_stages';
 
 const fetchingWCIF = () => ({
   type: FETCHING_WCIF,
@@ -53,21 +51,9 @@ export const togglePersonRole = (registrantId, roleId) => ({
   registrantId,
   roleId,
 });
-
-export const addStage = (roomId, stage) => ({
-  type: ADD_STAGE,
+export const updateStages = (venueId, roomId, stages) => ({
+  type: UPDATE_STAGES,
+  venueId,
   roomId,
-  stage,
-});
-
-export const removeStage = (roomId, stageId) => ({
-  type: REMOVE_STAGE,
-  roomId,
-  stageId,
-});
-
-export const editStage = (roomId, stageId) => ({
-  type: EDIT_STAGE,
-  roomId,
-  stageId,
+  stages,
 });

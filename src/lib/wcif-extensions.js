@@ -1,8 +1,8 @@
-const extensionId = extensionName => `groups.${extensionName}`;
+const extensionId = extensionName => `delegateDashboard.${extensionName}`;
 
 const buildExtension = (extensionName, data) => ({
   id: extensionId(extensionName),
-  specUrl: `https://groupifier.jonatanklosko.com/wcif-extensions/${extensionName}.json`,
+  specUrl: `https://github.com/coder13/delegateDashboard/blob/master/public/${extensionName}.json`,
   data,
 });
 
@@ -19,19 +19,7 @@ export const setExtensionData = (extensionName, wcifEntity, data) => {
   };
 };
 
-const defaultExtensionData = {
-  ActivityConfig: null /* This always gets generated, so it's fine for it to be null until then. */,
-  RoomConfig: {
-    stations: null,
-  },
-  CompetitionConfig: {
-    localNamesFirst: false,
-    scorecardsBackgroundUrl: '',
-    competitorsSortingRule: 'ranks',
-    noTasksForNewcomers: false,
-    tasksForOwnEventsOnly: false,
-  },
-};
+const defaultExtensionData = {};
 
 export const getExtensionData = (extensionName, wcifEntity) => {
   const extension = wcifEntity.extensions.find(

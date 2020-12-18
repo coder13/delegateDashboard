@@ -31,7 +31,7 @@ const Venue = ({ venue }) => {
       elevation={4}
     >
       <Typography variant="h5" paragraph>{venue.name}</Typography>
-      {venue.rooms.map((room) => <Room key={room.id} venueName={venue.name} room={room}/>)}
+      {venue.rooms.map((room) => <Room key={room.id} venue={venue} room={room}/>)}
     </Grid>
   )
 };

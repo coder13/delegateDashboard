@@ -1,0 +1,31 @@
+{
+  "$id": "https://github.com/coder13/delegateDashboard/blob/master/public/Stages.json",
+  "title": "Stages",
+  "description": "WCIF extension to configure stages for a room.",
+  "type": "object",
+  "properties": {
+    "stages": {
+      "description": "An array of stages for a room",
+      "type": "array",
+      "items": {
+        "tite": "Stage",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string",
+            "description": "Brief name for the stage. Normally a color to refer to the stage. The first character will be selected for scorecard generation."
+          },
+          "stations": {
+            "type": "number",
+            "description": "describes the number of stations in the stage.",
+            "minimum": 1
+          }
+        }
+      }
+    }
+  },
+  "required": ["stages"]
+}
