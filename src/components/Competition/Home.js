@@ -20,13 +20,14 @@ const useStyles = makeStyles((theme) => ({
 
 const CompetitionHome = ({ match, wcif }) => {
   const classes = useStyles();
+  const approvedRegistrations = wcif.persons.filter((person) => person.registration.status === 'accepted');
 
   const { path } = useRouteMatch();
 
   return (
     <Grid container direction="column" spacing={2} className={classes.root}>
       <Typography variant="h5" paragraph>{wcif.name}</Typography>
-      <Typography paragraph>Competitors: {wcif.persons.length} / {wcif.competitorLimit}</Typography>
+      <Typography paragraph>Competitors: {approvedRegistrations.length} / {wcif.competitorLimit}</Typography>
       <Typography paragraph>Events: {wcif.events.map((event) => event.id).join(', ')}</Typography>
       <Link to={`${path}/roles`}>Configure Roles</Link>
       <Link to={`${path}/rooms`}>Configure Rooms</Link>

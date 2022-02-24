@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import clsx from 'clsx';
 import { connect, useDispatch } from 'react-redux';
 import { makeStyles } from '@material-ui/core/styles';
@@ -70,6 +70,19 @@ const isOrganizerOrDelegate = (person) =>
 const Roles = ({ wcif }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const [ filterDeleted ] = useState(true);
+  const [ filterPending ] = useState(true);
+  const filteredPersons = (filterDeleted || filterPending) ? wcif.persons.filter((person) => {
+    if (filterDeleted && person.registration.status === 'deleted') {
+      return false;
+    }
+
+    if (filterDeleted && person.registration.status === 'pending') {
+      return false;
+    }
+
+    return true;
+  }) : wcif.persons;
 
   const handleChange = (e, person, roleId) => {
     if (canStaff(person)) {
@@ -106,7 +119,7 @@ const Roles = ({ wcif }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-          { wcif.persons.map((person) => (
+          { filteredPersons.map((person) => (
             <TableRow
               key={person.registrantId}
               hover
