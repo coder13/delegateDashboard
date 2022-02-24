@@ -12,10 +12,11 @@ import Checkbox from '@material-ui/core/Checkbox';
 import TableHead from '@material-ui/core/TableHead';
 import TableFooter from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import Button from '@material-ui/core/Button';
 import yellow from '@material-ui/core/colors/yellow';
 import grey from '@material-ui/core/colors/grey';
 import red from '@material-ui/core/colors/red';
-import { togglePersonRole } from '../../store/actions';
+import { togglePersonRole, uploadCurrentWCIFChanges } from '../../store/actions';
 import { pluralize } from '../../lib/utils';
 
 const ROLES = [{
@@ -89,6 +90,10 @@ const Roles = ({ wcif }) => {
       dispatch(togglePersonRole(person, roleId));
     }
   };
+
+  const saveChanges = () => {
+    dispatch(uploadCurrentWCIFChanges(['persons']));
+  }
 
   return (
     <Grid container direction="column" spacing={2} className={classes.root}>
@@ -181,6 +186,8 @@ const Roles = ({ wcif }) => {
           </TableFooter>
         </Table>
       </TableContainer>
+
+      <Button onClick={saveChanges}>Save Changes</Button>
     </Grid>
   );
 };
