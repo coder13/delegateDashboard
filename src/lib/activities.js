@@ -3,17 +3,10 @@ import {
   updateIn,
   setIn,
   flatMap,
-  zip,
-  scaleToOne,
   shortTime,
   isPresentDeep,
 } from './utils';
-import { getExtensionData, setExtensionData } from './wcif-extensions';
-import {
-  suggestedGroupCount,
-  suggestedScramblerCount,
-  suggestedRunnerCount,
-} from './formulas';
+import { getExtensionData } from './wcif-extensions';
 import { eventNameById } from './events';
 
 export const parseActivityCode = activityCode => {
@@ -81,7 +74,7 @@ export const roomByActivity = (wcif, activityId) =>
 export const stationsByActivity = (wcif, activityId) =>
   getExtensionData('RoomConfig', roomByActivity(wcif, activityId)).stations;
 
-const allActivities = wcif => {
+export const allActivities = wcif => {
   const allChildActivities = ({ childActivities }) =>
     childActivities.length > 0
       ? [...childActivities, ...flatMap(childActivities, allChildActivities)]
@@ -119,53 +112,6 @@ export const updateActivity = (wcif, updatedActivity) =>
       )
     )
   );
-
-export const populateRoundActivitiesConfig = (
-  wcif,
-  expectedCompetitorsByRound,
-  defaults
-) => {
-  const activitiesWithConfig = flatMap(wcif.events, event => {
-    return flatMap(event.rounds, round => {
-      const { roundNumber } = parseActivityCode(round.id);
-      const expectedRoundCompetitors =
-        expectedCompetitorsByRound[round.id].length;
-      const activities = roundActivities(wcif, round.id).filter(
-        shouldHaveGroups
-      );
-      const alreadyHaveConfig = activities.every(activity =>
-        getExtensionData('ActivityConfig', activity)
-      );
-      if (alreadyHaveConfig) return activities;
-      const capacities = scaleToOne(
-        activities.map(
-          activity =>
-            stationsByActivity(wcif, activity.id) * activityDuration(activity)
-        )
-      );
-      return zip(activities, capacities).map(([activity, capacity]) => {
-        const stations = stationsByActivity(wcif, activity.id);
-        const competitors = Math.round(capacity * expectedRoundCompetitors);
-        const groups = suggestedGroupCount(competitors, stations, roundNumber);
-        const scramblers = defaults.assignScramblers
-          ? suggestedScramblerCount(competitors / groups, stations)
-          : 0;
-        const runners = defaults.assignRunners
-          ? suggestedRunnerCount(competitors / groups, stations)
-          : 0;
-        const assignJudges = stations > 0 && defaults.assignJudges;
-        return setExtensionData('ActivityConfig', activity, {
-          capacity,
-          groups,
-          scramblers,
-          runners,
-          assignJudges,
-        });
-      });
-    });
-  });
-  return activitiesWithConfig.reduce(updateActivity, wcif);
-};
 
 export const shouldHaveGroups = activity => {
   const {

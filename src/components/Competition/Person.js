@@ -1,6 +1,6 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import { Redirect, useRouteMatch } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useRouteMatch } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
@@ -26,13 +26,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const EventPage = ({ wcif }) => {
+const PersonPage = () => {
   const classes = useStyles();
-  const [assignments, setAssignments] = React.useState([]);
   const { params } = useRouteMatch();
-  console.log(params);
 
+  const wcif = useSelector((state) => state.wcif);
   const person = wcif.persons.find(i => i.registrantId.toString() === params.registrantId.toString());
+
+  const [assignments, setAssignments] = useState([]);
 
   React.useEffect(() => {
     if (!person) {
@@ -45,11 +46,7 @@ const EventPage = ({ wcif }) => {
     })).sort((a,b) => 
       new Date(a.activity.startTime).getTime() - new Date(b.activity.startTime).getTime()
     ))
-  }, [wcif, person])
-
-  if (!person) {
-    return (<Redirect to={`/competitions/${params.competitionId}`}/>)
-  }
+  }, [wcif, person]);
 
   console.log(30, person, assignments);
 
@@ -59,7 +56,6 @@ const EventPage = ({ wcif }) => {
         <Typography>Name: {person.name}</Typography>
         <Typography>WCA ID: {person.wcaId}</Typography>
 
-        
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -85,8 +81,4 @@ const EventPage = ({ wcif }) => {
   );
 };
 
-const mapStateToProps = (state) => ({
-  wcif: state.wcif,
-});
-
-export default connect(mapStateToProps)(EventPage);
+export default PersonPage;

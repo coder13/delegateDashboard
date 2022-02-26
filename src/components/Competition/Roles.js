@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import clsx from 'clsx';
-import { connect, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useRouteMatch } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
+import Breadcrumbs from '@material-ui/core/Breadcrumbs';
+import Typography from '@material-ui/core/Typography';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -18,6 +21,7 @@ import grey from '@material-ui/core/colors/grey';
 import red from '@material-ui/core/colors/red';
 import { togglePersonRole, uploadCurrentWCIFChanges } from '../../store/actions';
 import { pluralize } from '../../lib/utils';
+import Link from '../shared/MaterialLink';
 
 const ROLES = [{
   id: 'staff-judge',
@@ -68,9 +72,12 @@ const canStaff = (person) =>
 const isOrganizerOrDelegate = (person) =>
   person.registration && (person.roles.indexOf('delegate') > -1 || person.roles.indexOf('organizer') > -1);
 
-const Roles = ({ wcif }) => {
+const Roles = () => {
+  const wcif = useSelector((state) => state.wcif);
+  const { competitionId } = useRouteMatch();
   const classes = useStyles();
   const dispatch = useDispatch();
+  const match = useRouteMatch();
   const [ filterDeleted ] = useState(true);
   const [ filterPending ] = useState(true);
   const filteredPersons = (filterDeleted || filterPending) ? wcif.persons.filter((person) => {
@@ -95,8 +102,18 @@ const Roles = ({ wcif }) => {
     dispatch(uploadCurrentWCIFChanges(['persons']));
   }
 
+  console.log(100, match);
+
   return (
     <Grid container direction="column" spacing={2} className={classes.root}>
+      <Grid item>
+        <Breadcrumbs aria-label="breadcrumb">
+          <Link to={`/competitions/${competitionId}`}>
+            {wcif.name || competitionId}
+          </Link>
+          <Typography color="textPrimary">Roles</Typography>
+        </Breadcrumbs>
+      </Grid>
       <TableContainer component={Paper}>
         <Table size="small">
           <TableHead>
@@ -137,7 +154,7 @@ const Roles = ({ wcif }) => {
                 hover: classes.hover,
               }}
             >
-              <TableCell>{person.name}</TableCell>
+              <TableCell><Link to={`/competitions/${match.params.competitionId}/persons/${person.registrantId}`}>{person.name}</Link></TableCell>
               <TableCell>{person.wcaId}</TableCell>
               <TableCell>{person.birthdate}</TableCell>
               <TableCell padding="checkbox">
@@ -192,8 +209,4 @@ const Roles = ({ wcif }) => {
   );
 };
 
-const mapStateToProps = (state) => ({
-  wcif: state.wcif,
-});
-
-export default connect(mapStateToProps)(Roles);
+export default Roles;

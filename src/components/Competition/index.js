@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react';
 import { Switch, Route, Redirect, useRouteMatch } from 'react-router-dom';
-import { connect, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { makeStyles } from '@material-ui/core/styles';
+import Alert from '@material-ui/lab/Alert';
 import CompetitionHome from './Home';
 import RolesPage from './Roles';
-import EventPage from './Event';
+import RoundSelectorPage from './RoundSelector';
 import PersonPage from './Person';
 import RoomsPage from './Rooms';
+import RoundPage from './Round';
 import { fetchWCIF } from '../../store/actions';
 
 const useStyles = makeStyles((theme) => ({
@@ -22,7 +24,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Competition = ({ fetchingWCIF, wcif, errors }) => {
+const Competition = () => {
+  const fetchingWCIF = useSelector((state) => state.fetchingWCIF);
+  const needToSave = useSelector((state) => state.needToSave);
+  const errors = useSelector((state) => state.errors);
+  const wcif = useSelector((state) => state.wcif);
   const classes = useStyles();
   const dispatch = useDispatch();
 
@@ -50,11 +56,12 @@ const Competition = ({ fetchingWCIF, wcif, errors }) => {
   }
 
   if (!wcif) {
-    return 'dunno';
+    return 'No WCIF';
   }
 
   return (
     <div className={classes.root}>
+      { needToSave && (<Alert severity="error">This is an error alert — check it out!</Alert>) }
       <Switch>
         <Route exact path={`/competitions/${params.competitionId}`}>
           <CompetitionHome/>
@@ -65,6 +72,15 @@ const Competition = ({ fetchingWCIF, wcif, errors }) => {
         <Route exact path={`${path}/rooms`}>
           <RoomsPage/>
         </Route>
+        <Route exact path={`${path}/events/:eventId-r:roundNumber`}>
+          <RoundPage/>
+        </Route>
+        <Route exact path={`${path}/events`}>
+          <RoundSelectorPage/>
+        </Route>
+        <Route exact path={`${path}/persons/:registrantId`}>
+          <PersonPage/>
+        </Route>
         <Route path={path}>
           <Redirect to={`/competitions/${params.competitionId}`}/>
         </Route>
@@ -73,10 +89,4 @@ const Competition = ({ fetchingWCIF, wcif, errors }) => {
   );
 }
 
-const mapStateToProps = (state) => ({
-  fetchingWCIF: state.fetchingWCIF,
-  wcif: state.wcif,
-  errors: state.errors,
-});
-
-export default connect(mapStateToProps)(Competition);
+export default Competition;

@@ -14,6 +14,7 @@ const INITIAL_STATE = {
   },
   fetchingWCIF: false,
   uploadingWCIF: false,
+  needToSave: false,
   wcif: {
     name: undefined,
     persons: [],
@@ -32,11 +33,13 @@ const reducers = {
   }),
   [FETCHED_WCIF]: (state, action) => ({
     ...state,
+    needToSave: false,
     fetchingWCIF: action.fetching,
     wcif: action.wcif,
   }),
   [TOGGLE_PERSON_ROLE]: (state, action) => ({
     ...state,
+    needToSave: true,
     wcif: {
       ...state.wcif,
       persons: state.wcif.persons.map((person) =>
@@ -51,6 +54,7 @@ const reducers = {
   }),
   [UPDATE_STAGES]: (state, action) => ({
     ...state,
+    needToSave: true,
     wcif: {
       ...state.wcif,
       schedule: {
