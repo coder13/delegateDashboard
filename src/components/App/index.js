@@ -1,98 +1,53 @@
-import React, { useEffect} from 'react';
-import { Provider } from 'react-redux';
-import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import Grid from '@material-ui/core/Grid';
-import { createMuiTheme } from '@material-ui/core/styles';
-import { ThemeProvider } from '@material-ui/styles';
-import { makeStyles } from '@material-ui/core/styles';
-import store from '../../store';
-import Header from './Header';
-import Footer from './Footer';
+import React from 'react';
+import { Routes, Route, Outlet } from 'react-router-dom';
 import Competition from '../Competition/'
+import CompetitionHome from '../Competition/Home'
+import RolesPage from '../Competition/Roles'
+import RoomsPage from '../Competition/Rooms'
+import RoundPage from '../Competition/Round'
+import RoundSelectorPage from '../Competition/RoundSelector'
+import PersonPage from '../Competition/Person'
 import CompetitionList from '../CompetitionList'
-import { isSignedIn, signIn, signOut } from '../../lib/auth';
-import { getMe } from '../../lib/wcaAPI.js'
+import { useAuth } from '../providers/AuthProvider';
+import App from './App';
 
-const theme = createMuiTheme({
-  palette: {
-    primary: {
-      main: '#3997b0'
-    },
-    secondary: {
-      main: '#ffffff'
-    },
-  },
-});
+const AuthenticatedRoute = () => {
+  const { signIn, signedIn } = useAuth();
 
-const useStyles = makeStyles(theme => ({
-  root: {
-    display: 'flex',
-    minHeight: '100vh',
-    flexDirection: 'column',
-    flexGrow: 1,
-  },
-  grow: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    flexGrow: 1,
-  },
-  main: {
-    display: 'flex',
-    flexDirection: 'column',
-    flexGrow: 1,
-    alignItems: 'center',
-    width: '100%',
-    padding: theme.spacing(2),
-  },
-}));
-
-const App = () => {
-  const classes = useStyles();
-
-  const handleSignIn = () => {
+  if (!signedIn()) {
     signIn();
+    return;
   }
 
-  const handleSignOut = () => {
-    signOut();
-  };
+  return <Outlet />;
+}
 
-  useEffect(() => {
-    if (isSignedIn()) {
-      getMe().then((me) => {
-        console.log(me);
-      }).catch((err) => {
-        console.error(err);
-      });
-    }
-  });
+const Navigation = () => {
+  const { signedIn } = useAuth();
 
   return (
-    <Provider store={store}>
-      <Router>
-        <ThemeProvider theme={theme}>
-          <div className={classes.root}>
-            <CssBaseline/>
-            <Header isSignedIn={isSignedIn} onSignIn={handleSignIn} onSignOut={handleSignOut}/>
-            <Grid className={classes.grow}>
-              <Grid item xs={12} md={12} xl={10} className={classes.main}>
-                <Switch>
-                  {isSignedIn() && <Route path="/competitions/:competitionId" component={Competition}/>}
-                  <Route exact path="/">
-                  {isSignedIn() ? <CompetitionList/> : <p>Sign in to view comps!</p>}
-                  </Route>
-                  <Redirect to="/"/>
-                </Switch>
-              </Grid>
-            </Grid>
-            <Footer/>
-          </div>
-        </ThemeProvider>
-      </Router>
-    </Provider>
+    <Routes>
+      <Route path="/" element={<App />}>
+        <Route index
+          element={(
+            signedIn() ? <CompetitionList/> : <p>Sign in to view comps!</p>
+          )}
+        />
+
+        <Route path="/competitions/" element={<AuthenticatedRoute />}>
+          <Route path=":competitionId" element={<Competition />}>
+            <Route index element={<CompetitionHome />} />
+            <Route path="roles" element={<RolesPage />} />
+            <Route path="rooms" element={<RoomsPage />} />
+            <Route path="events/:eventId-r:roundNumber" element={<RoundPage />} />
+            <Route path="events" element={<RoundSelectorPage />} />
+            <Route path="persons/:registrantId" element={<PersonPage />} />
+          </Route>
+        </Route>
+        {/* <Redirect to="/"/> */}
+      </Route>
+    </Routes>
   );
 }
 
-export default App;
+export default Navigation;

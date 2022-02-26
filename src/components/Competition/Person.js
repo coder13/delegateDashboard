@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useRouteMatch } from 'react-router-dom';
-import { makeStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
+import { useParams } from 'react-router-dom';
+import { makeStyles } from '@mui/styles';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
 import { activityById } from '../../lib/activities'
 
 const useStyles = makeStyles((theme) => ({
@@ -28,10 +28,10 @@ const useStyles = makeStyles((theme) => ({
 
 const PersonPage = () => {
   const classes = useStyles();
-  const { params } = useRouteMatch();
+  const { registrantId } = useParams();
 
   const wcif = useSelector((state) => state.wcif);
-  const person = wcif.persons.find(i => i.registrantId.toString() === params.registrantId.toString());
+  const person = wcif.persons.find(i => i.registrantId.toString() === registrantId.toString());
 
   const [assignments, setAssignments] = useState([]);
 

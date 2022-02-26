@@ -1,11 +1,9 @@
 import React from 'react';
-import Grid from '@material-ui/core/Grid';
-import Link from '@material-ui/core/Link';
-import Typography from '@material-ui/core/Typography';
-import grey from '@material-ui/core/colors/grey';
-import { makeStyles } from '@material-ui/core/styles';
-
-import { version } from '../../../package.json';
+import Grid from '@mui/material/Grid';
+import Link from '@mui/material/Link';
+import Typography from '@mui/material/Typography';
+import grey from '@mui/material/colors/grey';
+import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -29,7 +27,7 @@ const links = [
   { text: 'GitHub', url: 'https://github.com/coder13/groups' },
   { text: 'Contact', url: 'mailto:choover11@gmail.com' },
   {
-    text: `v${version}`,
+    text: `v${process.env.REACT_APP_VERSION}`,
     url: 'https://github.com/coder13/groups',
   },
 ];

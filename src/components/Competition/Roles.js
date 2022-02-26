@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
 import clsx from 'clsx';
 import { useDispatch, useSelector } from 'react-redux';
-import { useRouteMatch } from 'react-router-dom';
-import { makeStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Grid from '@material-ui/core/Grid';
-import Breadcrumbs from '@material-ui/core/Breadcrumbs';
-import Typography from '@material-ui/core/Typography';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import Checkbox from '@material-ui/core/Checkbox';
-import TableHead from '@material-ui/core/TableHead';
-import TableFooter from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Button from '@material-ui/core/Button';
-import yellow from '@material-ui/core/colors/yellow';
-import grey from '@material-ui/core/colors/grey';
-import red from '@material-ui/core/colors/red';
+import { useLocation, useParams } from 'react-router-dom';
+import { makeStyles } from '@mui/styles';
+import Paper from '@mui/material/Paper';
+import Grid from '@mui/material/Grid';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Typography from '@mui/material/Typography';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import Checkbox from '@mui/material/Checkbox';
+import TableHead from '@mui/material/TableHead';
+import TableFooter from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Button from '@mui/material/Button';
+import yellow from '@mui/material/colors/yellow';
+import grey from '@mui/material/colors/grey';
+import red from '@mui/material/colors/red';
 import { togglePersonRole, uploadCurrentWCIFChanges } from '../../store/actions';
 import { pluralize } from '../../lib/utils';
 import Link from '../shared/MaterialLink';
@@ -74,10 +74,10 @@ const isOrganizerOrDelegate = (person) =>
 
 const Roles = () => {
   const wcif = useSelector((state) => state.wcif);
-  const { competitionId } = useRouteMatch();
+  const { competitionId } = useParams();
   const classes = useStyles();
   const dispatch = useDispatch();
-  const match = useRouteMatch();
+  const location = useLocation();
   const [ filterDeleted ] = useState(true);
   const [ filterPending ] = useState(true);
   const filteredPersons = (filterDeleted || filterPending) ? wcif.persons.filter((person) => {
@@ -102,7 +102,7 @@ const Roles = () => {
     dispatch(uploadCurrentWCIFChanges(['persons']));
   }
 
-  console.log(100, match);
+  console.log(100, location);
 
   return (
     <Grid container direction="column" spacing={2} className={classes.root}>
@@ -154,7 +154,7 @@ const Roles = () => {
                 hover: classes.hover,
               }}
             >
-              <TableCell><Link to={`/competitions/${match.params.competitionId}/persons/${person.registrantId}`}>{person.name}</Link></TableCell>
+              <TableCell><Link to={`/competitions/${competitionId}/persons/${person.registrantId}`}>{person.name}</Link></TableCell>
               <TableCell>{person.wcaId}</TableCell>
               <TableCell>{person.birthdate}</TableCell>
               <TableCell padding="checkbox">

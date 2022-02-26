@@ -1,14 +1,14 @@
 import React from 'react';
-import { useRouteMatch, Link as RouterLink } from 'react-router-dom';
+import { useLocation, Link as RouterLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@mui/styles';
 import '@cubing/icons';
-import Grid from '@material-ui/core/Grid';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import ListSubheader from '@material-ui/core/ListSubheader';
+import Grid from '@mui/material/Grid';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListSubheader from '@mui/material/ListSubheader';
 import { eventNameById } from '../../lib/events';
 
 const useStyles = makeStyles((theme) => ({
@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const RoundSelectorPage = () => {
-  const match = useRouteMatch();
+  const location = useLocation();
   const wcif = useSelector((state) => state.wcif);
   const classes = useStyles();
 
@@ -47,7 +47,7 @@ const RoundSelectorPage = () => {
             <ul className={classes.ul}>
               <ListSubheader>{eventNameById(event.id)}</ListSubheader>
               {event.rounds.map((round, index) => (
-                <ListItem key={round.id} button component={RouterLink} to={`${match.url}/${round.id}`}>
+                <ListItem key={round.id} button component={RouterLink} to={round.id}>
                   <ListItemAvatar>
                     <span className={`cubing-icon event-${event.id}`} />
                   </ListItemAvatar>

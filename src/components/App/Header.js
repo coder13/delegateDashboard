@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import AppBar from '@material-ui/core/AppBar';
-import Button from '@material-ui/core/Button';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
-import PeopleIcon from '@material-ui/icons/People';
+import { makeStyles } from '@mui/styles';
+import AppBar from '@mui/material/AppBar';
+import Button from '@mui/material/Button';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import PeopleIcon from '@mui/icons-material/People';
+import { getMe } from '../../lib/wcaAPI.js'
+import { useAuth } from '../providers/AuthProvider';
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -22,8 +24,20 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const Header = ({ isSignedIn, onSignIn, onSignOut }) => {
+const Header = () => {
   const classes = useStyles();
+  const { signIn, signOut, signedIn } = useAuth();
+
+  useEffect(() => {
+    if (signedIn()) {
+      getMe().then((me) => {
+        console.log(me);
+      }).catch((err) => {
+        console.error(err);
+      });
+    }
+  });
+
   return (
     <AppBar position="static" color="primary">
       <Toolbar>
@@ -33,12 +47,12 @@ const Header = ({ isSignedIn, onSignIn, onSignOut }) => {
             Delegate Dashboard
           </Link>
         </Typography>
-        {isSignedIn() ? (
-          <Button color="inherit" onClick={onSignOut}>
+        {signedIn() ? (
+          <Button color="inherit" onClick={signOut}>
             Sign out
           </Button>
         ) : (
-          <Button color="inherit" onClick={onSignIn}>
+          <Button color="inherit" onClick={signIn}>
             Sign in
           </Button>
         )}

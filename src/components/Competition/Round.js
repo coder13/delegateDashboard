@@ -1,14 +1,14 @@
 import React from 'react';
-import { useRouteMatch } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { makeStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import Breadcrumbs from '@material-ui/core/Breadcrumbs';
-import Typography from '@material-ui/core/Typography';
+import { makeStyles } from '@mui/styles';
+import Grid from '@mui/material/Grid';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Typography from '@mui/material/Typography';
 import Link from '../shared/MaterialLink';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 import { allActivities, groupActivitiesByRound } from '../../lib/activities';
 
 const byWorldRanking = (eventId) => (a, b) => {
@@ -49,8 +49,7 @@ const useStyles = makeStyles((theme) => ({
 
 const RoundPage = () => {
   const classes = useStyles();
-  const match = useRouteMatch();
-  const { competitionId, eventId, roundNumber } = match.params;
+  const { competitionId, eventId, roundNumber } = useParams();
   const activityId = `${eventId}-r${roundNumber}`;
   const wcif = useSelector((state) => state.wcif);
   const round = wcif.events.find((event) => event.id === eventId)?.rounds[roundNumber];

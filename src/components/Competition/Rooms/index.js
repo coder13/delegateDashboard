@@ -1,9 +1,9 @@
 import React from 'react';
-import { connect } from 'react-redux';
-import { makeStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
+import { useSelector } from 'react-redux';
+import { makeStyles } from '@mui/styles';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import Room from './Room';
 
 const useStyles = makeStyles((theme) => ({
@@ -36,9 +36,9 @@ const Venue = ({ venue }) => {
   )
 };
 
-const Rooms = ({ wcif }) => {
+const Rooms = () => {
   const classes = useStyles();
-  console.log(wcif);
+  const wcif = useSelector((state) => state.wcif);
 
   return (
     <Grid container direction="column" spacing={2} className={classes.root}>
@@ -49,8 +49,4 @@ const Rooms = ({ wcif }) => {
   );
 };
 
-const mapStateToProps = (state) => ({
-  wcif: state.wcif,
-});
-
-export default connect(mapStateToProps)(Rooms);
+export default Rooms;

@@ -1,10 +1,10 @@
 import React from 'react';
-import { useRouteMatch } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { makeStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
-import Box from '@material-ui/core/Box';
+import { makeStyles } from '@mui/styles';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
+import Box from '@mui/material/Box';
 import Link from '../shared/MaterialLink';
 
 const useStyles = makeStyles((theme) => ({
@@ -25,7 +25,7 @@ const CompetitionHome = () => {
   const classes = useStyles();
   const approvedRegistrations = wcif.persons.filter((person) => person.registration.status === 'accepted');
 
-  const { path } = useRouteMatch();
+  const { path } = useLocation();
 
   return (
     <Grid container direction="column" spacing={2} className={classes.root}>
@@ -33,9 +33,9 @@ const CompetitionHome = () => {
       <Typography paragraph>Competitors: {approvedRegistrations.length} / {wcif.competitorLimit}</Typography>
       <Typography paragraph>StartDate: {wcif.schedule.startDate}</Typography>
       <Typography paragraph>Events: {wcif.events.map((event) => event.id).join(', ')}</Typography>
-      <Link to={`${path}/roles`}>Configure Roles</Link>
-      <Link to={`${path}/rooms`}>Configure Rooms</Link>
-      <Link to={`${path}/events`}>Configure Groups</Link>
+      <Link to="roles">Configure Roles</Link>
+      <Link to="rooms">Configure Rooms</Link>
+      <Link to="events">Configure Groups</Link>
       <Typography variant="h3" paragraph>Summary</Typography>
       <Typography variant="h4" paragraph>Venues</Typography>
       {wcif.schedule.venues.map((venue) => (
