@@ -65,7 +65,7 @@ const CompetitionList = () => {
 
   return (
     <Container>
-      <Typography>My Competitions</Typography>
+      <Typography variant="h4">My Competitions</Typography>
 
       <List>
         <ListSubheader inset disableSticky color="primary">Upcoming Competitions</ListSubheader>

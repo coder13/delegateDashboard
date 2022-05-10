@@ -29,6 +29,7 @@ export default function AuthProvider({ children }) {
   useEffect(() => setLocalStorage('accessToken', accessToken), [accessToken]);
 
   useEffect(() => {
+    console.log(27, location);
     const hash = window.location.hash.replace(/^#/, '');
     const hashParams = new URLSearchParams(hash);
 
@@ -63,7 +64,7 @@ export default function AuthProvider({ children }) {
     //   history.replace(redirectPath);
     //   localStorage.removeItem(localStorageKey('redirectPath'));
     // }
-  }, []);
+  }, [location]);
 
   const signIn = (newUser, callback) => {
     const params = new URLSearchParams({

@@ -11,6 +11,7 @@ export const UPLOADING_WCIF = 'uploading_wcif';
 export const UPDATE_WCIF_ERRORS = 'update_wcif_errors';
 export const TOGGLE_PERSON_ROLE = 'toggle_person_role';
 export const UPDATE_STAGES = 'update_stages';
+export const GENERATE_GROUP_ACTIVITIES = 'generate_group_activities';
 
 const fetchingWCIF = () => ({
   type: FETCHING_WCIF,
@@ -83,4 +84,10 @@ export const updateStages = (venueId, roomId, stages) => ({
   venueId,
   roomId,
   stages,
+});
+
+export const generateGroupActitivites = (activityCode, groups) => ({
+  type: GENERATE_GROUP_ACTIVITIES,
+  activityCode,
+  groups,
 });

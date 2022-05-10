@@ -114,6 +114,8 @@ const Roles = () => {
           <Typography color="textPrimary">Roles</Typography>
         </Breadcrumbs>
       </Grid>
+      <br/>
+      <Button variant="contained" onClick={saveChanges}>Save Changes</Button>
       <TableContainer component={Paper}>
         <Table size="small">
           <TableHead>
@@ -204,7 +206,7 @@ const Roles = () => {
         </Table>
       </TableContainer>
 
-      <Button onClick={saveChanges}>Save Changes</Button>
+      <Button variant="contained" onClick={saveChanges}>Save Changes</Button>
     </Grid>
   );
 };

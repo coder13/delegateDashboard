@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, Outlet } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import Container from '@mui/material/Container';
 import Alert from '@mui/material/Alert';
 import { fetchWCIF } from '../../store/actions';
 
@@ -17,23 +18,8 @@ import { fetchWCIF } from '../../store/actions';
 //   },
 // }));
 
-const CompetitionLayout = () => {
-  const dispatch = useDispatch();
-
-  const fetchingWCIF = useSelector((state) => state.fetchingWCIF);
-  const needToSave = useSelector((state) => state.needToSave);
+const Errors = () => {
   const errors = useSelector((state) => state.errors);
-  const wcif = useSelector((state) => state.wcif);
-
-  const { competitionId } = useParams();
-
-  useEffect(() => {
-    dispatch(fetchWCIF(competitionId))
-  }, [dispatch, competitionId]);
-
-  if (fetchingWCIF) {
-    return (<div><p>Loading...</p></div>)
-  }
 
   if (errors.length) {
     return (
@@ -48,16 +34,32 @@ const CompetitionLayout = () => {
     )
   }
 
-  // XXX: this never actually happens
-  if (!wcif) {
-    return 'No WCIF';
-  }
+  return false;
+}
+
+const CompetitionLayout = () => {
+  const dispatch = useDispatch();
+
+  const fetchingWCIF = useSelector((state) => state.fetchingWCIF);
+  const needToSave = useSelector((state) => state.needToSave);
+  const wcif = useSelector((state) => state.wcif);
+
+  const { competitionId } = useParams();
+
+  useEffect(() => {
+    dispatch(fetchWCIF(competitionId))
+  }, [dispatch, competitionId]);
+
+  console.log(34, fetchingWCIF);
 
   return (
-    <>
-      { needToSave && (<Alert severity="error">This is an error alert — check it out!</Alert>) }
-      <Outlet />
-    </>
+    <Container>
+      { needToSave && (<Alert severity="error">Don't Forget to save changes!</Alert>) }
+      <Errors />
+      { !fetchingWCIF && wcif && wcif.id && wcif.name && (
+        <Outlet />
+      )}
+    </Container>
   );
 }
 

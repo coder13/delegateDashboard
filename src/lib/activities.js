@@ -74,6 +74,9 @@ export const roomByActivity = (wcif, activityId) =>
 export const stationsByActivity = (wcif, activityId) =>
   getExtensionData('RoomConfig', roomByActivity(wcif, activityId)).stations;
 
+  /**
+   * Creates a flat array of activities
+   */
 export const allActivities = wcif => {
   const allChildActivities = ({ childActivities }) =>
     childActivities.length > 0
@@ -276,4 +279,23 @@ export const clearGroupsAndAssignments = wcif => {
     )
   );
   return { ...wcif, persons, schedule };
+};
+
+export const acceptedRegistrations = (wcif) => wcif.persons.filter(({ registration }) => registration.status === 'accepted');
+
+export const personsRegistered = (wcif, eventId) => {
+  return acceptedRegistrations(wcif)
+    .filter(({ registration }) => registration.eventIds.indexOf(eventId) > -1).length;
+};
+
+/**
+ * Returns the people that should be in the round
+ */
+export const personsShouldBeInRound = (wcif, activityCode) => {
+  const parsedActivity = parseActivityCode(activityCode);
+  if (parsedActivity.roundNumber === 1) {
+    return personsRegistered(wcif, parsedActivity.eventId);
+  }
+
+  return [];
 };

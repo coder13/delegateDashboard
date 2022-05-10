@@ -2,7 +2,7 @@ const extensionId = extensionName => `delegateDashboard.${extensionName}`;
 
 const buildExtension = (extensionName, data) => ({
   id: extensionId(extensionName),
-  specUrl: `https://github.com/coder13/delegateDashboard/blob/master/public/${extensionName}.json`,
+  specUrl: `https://github.com/coder13/delegateDashboard/blob/master/public/${extensionName}.json`, // TODO: Change to production URL
   data,
 });
 

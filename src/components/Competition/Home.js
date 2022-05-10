@@ -28,7 +28,7 @@ const CompetitionHome = () => {
   const { path } = useLocation();
 
   return (
-    <Grid container direction="column" spacing={2} className={classes.root}>
+    <Box display="flex" flexDirection="column">
       <Typography variant="h3" paragraph>{wcif.name}</Typography>
       <Typography paragraph>Competitors: {approvedRegistrations.length} / {wcif.competitorLimit}</Typography>
       <Typography paragraph>StartDate: {wcif.schedule.startDate}</Typography>
@@ -49,7 +49,7 @@ const CompetitionHome = () => {
           ))}
         </Box>
       ))}
-    </Grid>
+    </Box>
   );
 };
 

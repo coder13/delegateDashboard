@@ -4,6 +4,7 @@ import {
   FETCHING_WCIF,
   FETCHED_WCIF,
   UPDATE_STAGES,
+  GENERATE_GROUP_ACTIVITIES,
 } from './actions';
 
 const INITIAL_STATE = {
@@ -68,6 +69,14 @@ const reducers = {
             )
         }) : venue)
       }
+    }
+  }),
+  [GENERATE_GROUP_ACTIVITIES]: (state, action) => ({
+    ...state,
+    needToSave: true,
+    wcif: {
+      ...state.wcif,
+      
     }
   })
 };

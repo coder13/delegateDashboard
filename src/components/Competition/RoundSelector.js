@@ -10,6 +10,9 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListSubheader from '@mui/material/ListSubheader';
 import { eventNameById } from '../../lib/events';
+import { activityById, allActivities, personsShouldBeInRound } from '../../lib/activities';
+import { useMemo } from 'react';
+import { pluralize } from '../../lib/utils';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -18,6 +21,7 @@ const useStyles = makeStyles((theme) => ({
     flex: 1,
     width: '100%',
     backgroundColor: theme.palette.background.paper,
+    marginTop: '1em',
   },
   paper: {
     width: '100%',
@@ -33,9 +37,11 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const RoundSelectorPage = () => {
-  const location = useLocation();
+  // const location = useLocation();
   const wcif = useSelector((state) => state.wcif);
   const classes = useStyles();
+
+  const _allActivities = useMemo(() => allActivities(wcif), [wcif]);
 
   console.log(29, wcif.events);
 
@@ -46,16 +52,30 @@ const RoundSelectorPage = () => {
           <li key={event.id} className={classes.listSection}>
             <ul className={classes.ul}>
               <ListSubheader>{eventNameById(event.id)}</ListSubheader>
-              {event.rounds.map((round, index) => (
-                <ListItem key={round.id} button component={RouterLink} to={round.id}>
-                  <ListItemAvatar>
-                    <span className={`cubing-icon event-${event.id}`} />
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={`${eventNameById(event.id)} Round ${index + 1}`}
-                  />
-                </ListItem>
-              ))}
+              {event.rounds.map((round, index) => {                
+                const roundActivity = _allActivities.find((activity) => activity.activityCode === round.id);
+
+                const _personsShouldBeInRound = personsShouldBeInRound(wcif, round.id);
+                const personsAssigned = wcif.persons.filter((p) => p.assignments.find((a) => {
+                  const activity = activityById(wcif, a.activityId);
+                  return activity.activityCode.split('-')[0] === round.id.split('-')[0] && activity.activityCode.split('-')[1] === round.id.split('-')[1];
+                })).length;
+
+                return (
+                  <ListItem key={round.id} button component={RouterLink} to={round.id}>
+                    <ListItemAvatar>
+                      <span className={`cubing-icon event-${event.id}`} />
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={`${eventNameById(event.id)} Round ${index + 1}`}
+                      secondary={[
+                        `${pluralize(roundActivity?.childActivities?.length, 'group', 'groups')} generated`,
+                        `${pluralize(personsAssigned, 'person', 'people')} assigned of ${_personsShouldBeInRound}`
+                      ].join(' | ')}
+                    />
+                  </ListItem>
+                )
+              })}
             </ul>
           </li>
         ))}

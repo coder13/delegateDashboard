@@ -1,20 +1,21 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { makeStyles } from '@mui/styles';
 import Grid from '@mui/material/Grid';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Typography from '@mui/material/Typography';
 import Link from '../shared/MaterialLink';
+import Button from '@mui/material/Button';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { allActivities, groupActivitiesByRound } from '../../lib/activities';
+import { generateGroupActitivites } from '../../store/actions';
 
 const byWorldRanking = (eventId) => (a, b) => {
   const aPR = a.personalBests.find((i) => i.eventId.toString() === eventId.toString())?.best
   const bPR =  b.personalBests.find((i) => i.eventId.toString() === eventId.toString())?.best;
-  console.log(aPR || 1, bPR || 1);
   if (aPR && bPR) {
     return aPR - bPR;
   } else {
@@ -41,33 +42,56 @@ const useStyles = makeStyles((theme) => ({
     flex: 1,
     width: '100%',
   },
-  paper: {
-    width: '100%',
-    padding: theme.spacing(2),
-  },
 }));
+
+const getGroupData = (roundActivity) => {
+  // Start off with using groupifier and then build own version. Makes compatible with groupifier.
+  if (roundActivity.extensions.find(({ id }) => id === 'groupifier.ActivityConfig')) {
+    const groupifierData = roundActivity.extensions.find(({ id }) => id === 'groupifier.ActivityConfig').data;
+    return {
+      groups: groupifierData.groups,
+      source: 'groupifier'
+    }
+  } else {
+    // Tells app we need to create a group config
+    return null;
+  }
+}
 
 const RoundPage = () => {
   const classes = useStyles();
+  const dispatch = useDispatch();
   const { competitionId, eventId, roundNumber } = useParams();
   const activityId = `${eventId}-r${roundNumber}`;
   const wcif = useSelector((state) => state.wcif);
-  const round = wcif.events.find((event) => event.id === eventId)?.rounds[roundNumber];
-
+  const round = wcif.events.find((event) => event.id === eventId)?.rounds[roundNumber - 1];
+  
   const _allActivities = allActivities(wcif);
+  
+  const roundActivity = _allActivities.find((activity) => activity.activityCode === activityId);
+  console.log(58, round, roundActivity);
+  const startTime = new Date(roundActivity.startTime);
+  const endTime = new Date(roundActivity.endTime);
 
-  const activities = groupActivitiesByRound(wcif, activityId);
+  const groupData = getGroupData(roundActivity);
+
+  const groups = groupActivitiesByRound(wcif, activityId);
 
   const registeredPersonsForEvent = wcif.persons.filter(({ registration }) =>
     (registration.status === 'accepted' && registration.eventIds.indexOf(eventId) > -1)
   );
 
-  console.log(25, registeredPersonsForEvent);
   const unassignedRegisteredPersons = registeredPersonsForEvent.filter(({ assignments }) =>
     !assignments.some((assignment) => _allActivities.find(({ id }) => id === assignment.activityId))
   );
 
-  console.log(20, unassignedRegisteredPersons)
+  const onGenerateGroupActitivites = () => {
+    dispatch(generateGroupActitivites(roundActivity.activityCode, groupData.groups));
+  };
+
+  const onResetGroupActitivites = () => {
+
+  };
 
   return (
     <Grid container direction="column" spacing={2} className={classes.root}>
@@ -81,9 +105,15 @@ const RoundPage = () => {
           </Link>
           <Typography color="textPrimary">{activityId}</Typography>
         </Breadcrumbs>
-        {unassignedRegisteredPersons.length} Unassigned competitors
+        <Typography>{unassignedRegisteredPersons.length} Unassigned competitors</Typography>
+        <Typography>Time: {startTime.toLocaleDateString()} {startTime.toLocaleTimeString()} - {endTime.toLocaleTimeString()} ({(endTime - startTime) / 1000 / 60} Minutes)</Typography>
+        <Typography>{groupData ? `${groupData.groups} groups (source: ${groupData.source}) ${Math.round(unassignedRegisteredPersons.length / groupData.groups)} competitors per group` : 'Need to configure group config'}</Typography>
+        { groups.length === 0
+          ? <Button onClick={onGenerateGroupActitivites}>Generate Group Activities From Config</Button>
+          : <Button onClick={onResetGroupActitivites}>Reset Group Activities</Button>
+        }
       </Grid>
-      <Grid item container direction="row" className={classes.competitors}>
+      {/* <Grid item container direction="row" className={classes.competitors}>
         <Grid item xs={6}>
           <List>
             {registeredPersonsForEvent.sort(byWorldRanking(eventId)).map((person) => (
@@ -94,7 +124,7 @@ const RoundPage = () => {
           </List>
         </Grid>
         <Grid item xs={6}>Groups</Grid>
-      </Grid>
+      </Grid> */}
     </Grid>
   );
 };
