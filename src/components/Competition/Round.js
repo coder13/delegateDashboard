@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { makeStyles } from '@mui/styles';
@@ -10,12 +10,13 @@ import Button from '@mui/material/Button';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import { allActivities, groupActivitiesByRound } from '../../lib/activities';
+import { activityById, allActivities, groupActivitiesByRound, parseActivityCode, personsShouldBeInRound } from '../../lib/activities';
 import { generateGroupActitivites } from '../../store/actions';
+import { Card, CardHeader, CardContent, CardActions } from '@mui/material';
 
 const byWorldRanking = (eventId) => (a, b) => {
   const aPR = a.personalBests.find((i) => i.eventId.toString() === eventId.toString())?.best
-  const bPR =  b.personalBests.find((i) => i.eventId.toString() === eventId.toString())?.best;
+  const bPR = b.personalBests.find((i) => i.eventId.toString() === eventId.toString())?.best;
   if (aPR && bPR) {
     return aPR - bPR;
   } else {
@@ -56,7 +57,45 @@ const getGroupData = (roundActivity) => {
     // Tells app we need to create a group config
     return null;
   }
-}
+};
+
+const GroupCard = ({ groupData, roundActivity, groupActivity }) => {
+  const wcif = useSelector((state) => state.wcif);
+
+  const personsAssigned = wcif.persons.filter((p) => p.assignments.find((a) => a.activityId === groupActivity.id));
+  const competitors = personsAssigned.filter((p) => p.assignments.find((a) => a.assignmentCode.indexOf('competitor') > -1));
+  const staff = personsAssigned.filter((p) => p.assignments.find((a) => a.assignmentCode.indexOf('staff-') > -1));
+  const judges = staff.filter((p) => p.assignments.find((a) => a.assignmentCode.indexOf('staff-judge') > -1));
+  const scramblers = staff.filter((p) => p.assignments.find((a) => a.assignmentCode.indexOf('staff-scrambler') > -1));
+  const runners = staff.filter((p) => p.assignments.find((a) => a.assignmentCode.indexOf('staff-runner') > -1));
+  const other = staff.filter((p) => p.assignments.find(({ assignmentCode }) => assignmentCode.indexOf('staff-') > -1 && ['judge', 'scrambler', 'runner'].indexOf(assignmentCode.split('-')[1]) > -1));
+  console.log(64, personsAssigned);
+
+
+  return (
+    <Card style={{marginTop: '1em'}}>
+      <CardHeader title={`Group ${parseActivityCode(groupActivity.activityCode).groupNumber}`} />
+      <CardContent>
+        <Grid container>
+          <Grid Item xs={4} style={{ padding: '0.5em' }}>
+            <Typography>Staff</Typography>
+            <Typography>Judges: {judges.length}</Typography>
+            <Typography>Scramblers: {scramblers.length}</Typography>
+            <Typography>Runners: {runners.length}</Typography>
+            <Typography>Other: {staff.length}</Typography>
+          </Grid>
+          <Grid Item xs={8} style={{ padding: '0.5em' }}>
+            <Typography>Competitors: </Typography><Typography>{competitors.length}</Typography>
+
+          </Grid>
+        </Grid>
+      </CardContent>
+      <CardActions>
+
+      </CardActions>
+    </Card>
+  );
+};
 
 const RoundPage = () => {
   const classes = useStyles();
@@ -65,11 +104,11 @@ const RoundPage = () => {
   const activityId = `${eventId}-r${roundNumber}`;
   const wcif = useSelector((state) => state.wcif);
   const round = wcif.events.find((event) => event.id === eventId)?.rounds[roundNumber - 1];
-  
+
   const _allActivities = allActivities(wcif);
-  
+
   const roundActivity = _allActivities.find((activity) => activity.activityCode === activityId);
-  console.log(58, round, roundActivity);
+
   const startTime = new Date(roundActivity.startTime);
   const endTime = new Date(roundActivity.endTime);
 
@@ -84,6 +123,12 @@ const RoundPage = () => {
   const unassignedRegisteredPersons = registeredPersonsForEvent.filter(({ assignments }) =>
     !assignments.some((assignment) => _allActivities.find(({ id }) => id === assignment.activityId))
   );
+
+  const personsAssigned = useMemo(() => wcif.persons.filter((p) => p.assignments.find((a) => {
+    const activity = activityById(wcif, a.activityId);
+    return activity.activityCode.split('-')[0] === roundActivity.activityCode.split('-')[0] && activity.activityCode.split('-')[1] === roundActivity.activityCode.split('-')[1];
+  })).length, [roundActivity.activityCode, wcif]);
+
 
   const onGenerateGroupActitivites = () => {
     dispatch(generateGroupActitivites(roundActivity.activityCode, groupData.groups));
@@ -105,13 +150,32 @@ const RoundPage = () => {
           </Link>
           <Typography color="textPrimary">{activityId}</Typography>
         </Breadcrumbs>
-        <Typography>{unassignedRegisteredPersons.length} Unassigned competitors</Typography>
-        <Typography>Time: {startTime.toLocaleDateString()} {startTime.toLocaleTimeString()} - {endTime.toLocaleTimeString()} ({(endTime - startTime) / 1000 / 60} Minutes)</Typography>
-        <Typography>{groupData ? `${groupData.groups} groups (source: ${groupData.source}) ${Math.round(unassignedRegisteredPersons.length / groupData.groups)} competitors per group` : 'Need to configure group config'}</Typography>
-        { groups.length === 0
-          ? <Button onClick={onGenerateGroupActitivites}>Generate Group Activities From Config</Button>
-          : <Button onClick={onResetGroupActitivites}>Reset Group Activities</Button>
-        }
+      </Grid>
+      <Grid item>
+        <Card>
+          <CardHeader title="Round Information" />
+          <CardContent>
+            <Typography>{unassignedRegisteredPersons.length} Unassigned competitors</Typography>
+            <Typography>Time: {startTime.toLocaleDateString()} {startTime.toLocaleTimeString()} - {endTime.toLocaleTimeString()} ({(endTime - startTime) / 1000 / 60} Minutes)</Typography>
+            {!groupData
+              ? <Link style={{ display: 'block' }} to={`/competitions/${competitionId}/rooms`}>Need to configure group config</Link>
+              : <Typography>{`Groups: ${groupData.groups} (source: ${groupData.source}) | Competitors per group: ${Math.round(unassignedRegisteredPersons.length / groupData.groups)}`}</Typography>
+            }
+            <Typography>{`Round Size: ${personsShouldBeInRound(wcif, activityId)} | Assigned Persons: ${personsAssigned}`}</Typography>
+          </CardContent>
+          <CardActions>
+            {<Button disabled={groupData.groups !== 0} onClick={onGenerateGroupActitivites}>Generate Group Activities From Config</Button>}
+            {personsAssigned === 0
+              ? <Button onClick={onGenerateGroupActitivites}>Assign Group Activites</Button>
+              : <Button onClick={onResetGroupActitivites}>Reset Group Activities</Button>
+            }
+          </CardActions>
+        </Card>
+      </Grid>
+      <Grid item>
+        {groups.map((group) => (
+          <GroupCard groupData={groupData} roundActivity={roundActivity} groupActivity={group} />
+        ))}
       </Grid>
       {/* <Grid item container direction="row" className={classes.competitors}>
         <Grid item xs={6}>
