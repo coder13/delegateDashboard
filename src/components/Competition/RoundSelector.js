@@ -1,8 +1,9 @@
 import React from 'react';
-import { useLocation, Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { makeStyles } from '@mui/styles';
 import '@cubing/icons';
+import { Breadcrumbs, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -13,6 +14,7 @@ import { eventNameById } from '../../lib/events';
 import { activityById, allActivities, personsShouldBeInRound } from '../../lib/activities';
 import { useMemo } from 'react';
 import { pluralize } from '../../lib/utils';
+import Link from '../shared/MaterialLink';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -37,16 +39,23 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const RoundSelectorPage = () => {
-  // const location = useLocation();
+  const { competitionId } = useParams();
   const wcif = useSelector((state) => state.wcif);
   const classes = useStyles();
 
   const _allActivities = useMemo(() => allActivities(wcif), [wcif]);
 
-  console.log(29, wcif.events);
-
   return (
     <Grid container direction="column" spacing={2} className={classes.root}>
+      <Grid item>
+        <Breadcrumbs aria-label="breadcrumb">
+          <Link to={`/competitions/${competitionId}`}>
+            {wcif.name || competitionId}
+          </Link>
+          <Typography color="textPrimary">Events</Typography>
+        </Breadcrumbs>
+      </Grid>
+      <Grid item>
       <List>
         {wcif.events.map((event) => (
           <li key={event.id} className={classes.listSection}>
@@ -80,6 +89,7 @@ const RoundSelectorPage = () => {
           </li>
         ))}
       </List>
+      </Grid>
     </Grid>
   );
 };

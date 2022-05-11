@@ -3,7 +3,8 @@ import { useParams, Outlet } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Container from '@mui/material/Container';
 import Alert from '@mui/material/Alert';
-import { fetchWCIF } from '../../store/actions';
+import { fetchWCIF, uploadCurrentWCIFChanges } from '../../store/actions';
+import { Button } from '@mui/material';
 
 // const useStyles = makeStyles((theme) => ({
 //   root: {
@@ -54,7 +55,18 @@ const CompetitionLayout = () => {
 
   return (
     <Container>
-      { needToSave && (<Alert severity="error">Don't Forget to save changes!</Alert>) }
+      { needToSave && (
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={() => dispatch(uploadCurrentWCIFChanges())}>
+              SAVE
+            </Button>
+          }
+        >
+          Don't Forget to save changes!
+        </Alert>
+      )}
       <Errors />
       { !fetchingWCIF && wcif && wcif.id && wcif.name && (
         <Outlet />

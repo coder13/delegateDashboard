@@ -15,11 +15,10 @@ import Checkbox from '@mui/material/Checkbox';
 import TableHead from '@mui/material/TableHead';
 import TableFooter from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Button from '@mui/material/Button';
 import yellow from '@mui/material/colors/yellow';
 import grey from '@mui/material/colors/grey';
 import red from '@mui/material/colors/red';
-import { togglePersonRole, uploadCurrentWCIFChanges } from '../../store/actions';
+import { togglePersonRole } from '../../store/actions';
 import { pluralize } from '../../lib/utils';
 import Link from '../shared/MaterialLink';
 
@@ -98,10 +97,6 @@ const Roles = () => {
     }
   };
 
-  const saveChanges = () => {
-    dispatch(uploadCurrentWCIFChanges(['persons']));
-  }
-
   console.log(100, location);
 
   return (
@@ -115,7 +110,7 @@ const Roles = () => {
         </Breadcrumbs>
       </Grid>
       <br/>
-      <Button variant="contained" onClick={saveChanges}>Save Changes</Button>
+
       <TableContainer component={Paper}>
         <Table size="small">
           <TableHead>
@@ -205,8 +200,6 @@ const Roles = () => {
           </TableFooter>
         </Table>
       </TableContainer>
-
-      <Button variant="contained" onClick={saveChanges}>Save Changes</Button>
     </Grid>
   );
 };

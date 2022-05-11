@@ -12,6 +12,8 @@ export const UPDATE_WCIF_ERRORS = 'update_wcif_errors';
 export const TOGGLE_PERSON_ROLE = 'toggle_person_role';
 export const UPDATE_STAGES = 'update_stages';
 export const GENERATE_GROUP_ACTIVITIES = 'generate_group_activities';
+export const ADD_PERSON_ASSIGNMENT = 'add_person_assignment';
+export const REMOVE_PERSON_ASSIGNMENT = 'remove_person_assignment';
 
 const fetchingWCIF = () => ({
   type: FETCHING_WCIF,
@@ -53,21 +55,25 @@ export const fetchWCIF = (competitionId) =>
       .finally(() => updateFetching(false));
   };
 
-export const uploadCurrentWCIFChanges = (keys) =>
+export const uploadCurrentWCIFChanges = () =>
   (dispatch, getState) => {
-    if (keys.length === 0) {
+    const { wcif, changedKeys } = getState();
+    const competitionId = wcif.id;
+
+    if (changedKeys.size === 0) {
+      console.error('Not pushing changes because changedKeys is empty');
       return;
     }
 
-    const { wcif } = getState();
-    const competitionId = wcif.id;
+    const changes = pick(wcif, Array.from(changedKeys));
 
-    const changes = pick(wcif, keys);
+    console.log(changes);
 
     dispatch(updateUploading(true));
     updateWcif(competitionId, changes)
       .then(() => {
-        updateUploading(false);
+        console.log('finished');
+        dispatch(updateUploading(false));
       })
       .catch((e) => {
         console.error(e);
@@ -90,4 +96,24 @@ export const generateGroupActitivites = (activityCode, groups) => ({
   type: GENERATE_GROUP_ACTIVITIES,
   activityCode,
   groups,
+});
+
+/** 
+ * @param {number} registrantId
+ * @param {Assignment} assignment
+ */
+export const addPersonAssignment = (registrantId, assignment) => ({
+  type: ADD_PERSON_ASSIGNMENT,
+  registrantId,
+  assignment,
+});
+
+/** 
+ * @param {number} registrantId
+ * @param {number} activityId
+ */
+export const removePersonAssignment = (registrantId, activityId) => ({
+  type: REMOVE_PERSON_ASSIGNMENT,
+  registrantId,
+  activityId,
 });

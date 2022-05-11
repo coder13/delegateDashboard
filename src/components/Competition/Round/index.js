@@ -1,18 +1,17 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { makeStyles } from '@mui/styles';
 import Grid from '@mui/material/Grid';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Typography from '@mui/material/Typography';
-import Link from '../shared/MaterialLink';
+import Link from '../../shared/MaterialLink';
 import Button from '@mui/material/Button';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import { activityById, allActivities, groupActivitiesByRound, parseActivityCode, personsShouldBeInRound } from '../../lib/activities';
-import { generateGroupActitivites } from '../../store/actions';
+import { activityById, allActivities, groupActivitiesByRound, personsShouldBeInRound } from '../../../lib/activities';
+import { generateGroupActitivites } from '../../../store/actions';
 import { Card, CardHeader, CardContent, CardActions } from '@mui/material';
+import GroupCard from './GroupCard';
+import ConfigureScramblersDialog from './ConfigureScramblersDialog';
 
 const byWorldRanking = (eventId) => (a, b) => {
   const aPR = a.personalBests.find((i) => i.eventId.toString() === eventId.toString())?.best
@@ -59,48 +58,12 @@ const getGroupData = (roundActivity) => {
   }
 };
 
-const GroupCard = ({ groupData, roundActivity, groupActivity }) => {
-  const wcif = useSelector((state) => state.wcif);
-
-  const personsAssigned = wcif.persons.filter((p) => p.assignments.find((a) => a.activityId === groupActivity.id));
-  const competitors = personsAssigned.filter((p) => p.assignments.find((a) => a.assignmentCode.indexOf('competitor') > -1));
-  const staff = personsAssigned.filter((p) => p.assignments.find((a) => a.assignmentCode.indexOf('staff-') > -1));
-  const judges = staff.filter((p) => p.assignments.find((a) => a.assignmentCode.indexOf('staff-judge') > -1));
-  const scramblers = staff.filter((p) => p.assignments.find((a) => a.assignmentCode.indexOf('staff-scrambler') > -1));
-  const runners = staff.filter((p) => p.assignments.find((a) => a.assignmentCode.indexOf('staff-runner') > -1));
-  const other = staff.filter((p) => p.assignments.find(({ assignmentCode }) => assignmentCode.indexOf('staff-') > -1 && ['judge', 'scrambler', 'runner'].indexOf(assignmentCode.split('-')[1]) > -1));
-  console.log(64, personsAssigned);
-
-
-  return (
-    <Card style={{marginTop: '1em'}}>
-      <CardHeader title={`Group ${parseActivityCode(groupActivity.activityCode).groupNumber}`} />
-      <CardContent>
-        <Grid container>
-          <Grid Item xs={4} style={{ padding: '0.5em' }}>
-            <Typography>Staff</Typography>
-            <Typography>Judges: {judges.length}</Typography>
-            <Typography>Scramblers: {scramblers.length}</Typography>
-            <Typography>Runners: {runners.length}</Typography>
-            <Typography>Other: {staff.length}</Typography>
-          </Grid>
-          <Grid Item xs={8} style={{ padding: '0.5em' }}>
-            <Typography>Competitors: </Typography><Typography>{competitors.length}</Typography>
-
-          </Grid>
-        </Grid>
-      </CardContent>
-      <CardActions>
-
-      </CardActions>
-    </Card>
-  );
-};
-
 const RoundPage = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const { competitionId, eventId, roundNumber } = useParams();
+  const [ configureScramblersDialog, setConfigureScramblersDialog ] = useState(false);
+
   const activityId = `${eventId}-r${roundNumber}`;
   const wcif = useSelector((state) => state.wcif);
   const round = wcif.events.find((event) => event.id === eventId)?.rounds[roundNumber - 1];
@@ -115,6 +78,7 @@ const RoundPage = () => {
   const groupData = getGroupData(roundActivity);
 
   const groups = groupActivitiesByRound(wcif, activityId);
+  console.log(80, groups);
 
   const registeredPersonsForEvent = wcif.persons.filter(({ registration }) =>
     (registration.status === 'accepted' && registration.eventIds.indexOf(eventId) > -1)
@@ -137,6 +101,12 @@ const RoundPage = () => {
   const onResetGroupActitivites = () => {
 
   };
+
+  const onAssignStaff = () => {
+    // show dialog
+    setConfigureScramblersDialog(true);
+    // Show filtered list of persons where their role is staffing of some kind (their specific kind) and pick them for each group
+  }
 
   return (
     <Grid container direction="column" spacing={2} className={classes.root}>
@@ -164,7 +134,8 @@ const RoundPage = () => {
             <Typography>{`Round Size: ${personsShouldBeInRound(wcif, activityId)} | Assigned Persons: ${personsAssigned}`}</Typography>
           </CardContent>
           <CardActions>
-            {<Button disabled={groupData.groups !== 0} onClick={onGenerateGroupActitivites}>Generate Group Activities From Config</Button>}
+            {<Button disabled={!groupData || groupData.groups !== 0} onClick={onGenerateGroupActitivites}>Generate Group Activities From Config</Button>}
+            <Button onClick={onAssignStaff}>Choose Scramblers</Button>
             {personsAssigned === 0
               ? <Button onClick={onGenerateGroupActitivites}>Assign Group Activites</Button>
               : <Button onClick={onResetGroupActitivites}>Reset Group Activities</Button>
@@ -174,7 +145,7 @@ const RoundPage = () => {
       </Grid>
       <Grid item>
         {groups.map((group) => (
-          <GroupCard groupData={groupData} roundActivity={roundActivity} groupActivity={group} />
+          <GroupCard key={group.id} groupData={groupData} roundActivity={roundActivity} groupActivity={group} />
         ))}
       </Grid>
       {/* <Grid item container direction="row" className={classes.competitors}>
@@ -189,6 +160,7 @@ const RoundPage = () => {
         </Grid>
         <Grid item xs={6}>Groups</Grid>
       </Grid> */}
+      <ConfigureScramblersDialog open={configureScramblersDialog} onClose={() => setConfigureScramblersDialog(false)} round={round} roundActivity={roundActivity} />
     </Grid>
   );
 };
