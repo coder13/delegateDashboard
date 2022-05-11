@@ -1,31 +1,12 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { makeStyles } from '@mui/styles';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Link from '../shared/MaterialLink';
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-    flexDirection: 'Column',
-    flex: 1,
-    width: '100%',
-  },
-  paper: {
-    width: '100%',
-    padding: theme.spacing(2),
-  },
-}));
-
 const CompetitionHome = () => {
   const wcif = useSelector((state) => state.wcif);
-  const classes = useStyles();
   const approvedRegistrations = wcif.persons.filter((person) => person.registration.status === 'accepted');
-
-  const { path } = useLocation();
 
   return (
     <Box display="flex" flexDirection="column">

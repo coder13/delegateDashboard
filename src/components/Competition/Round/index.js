@@ -13,15 +13,15 @@ import { Card, CardHeader, CardContent, CardActions } from '@mui/material';
 import GroupCard from './GroupCard';
 import ConfigureScramblersDialog from './ConfigureScramblersDialog';
 
-const byWorldRanking = (eventId) => (a, b) => {
-  const aPR = a.personalBests.find((i) => i.eventId.toString() === eventId.toString())?.best
-  const bPR = b.personalBests.find((i) => i.eventId.toString() === eventId.toString())?.best;
-  if (aPR && bPR) {
-    return aPR - bPR;
-  } else {
-    return (aPR ? 1 : 0) - (aPR ? 1 : 0)
-  }
-}
+// const byWorldRanking = (eventId) => (a, b) => {
+//   const aPR = a.personalBests.find((i) => i.eventId.toString() === eventId.toString())?.best
+//   const bPR = b.personalBests.find((i) => i.eventId.toString() === eventId.toString())?.best;
+//   if (aPR && bPR) {
+//     return aPR - bPR;
+//   } else {
+//     return (aPR ? 1 : 0) - (aPR ? 1 : 0)
+//   }
+// }
 
 /**
  * I want some visualization of who's competing / staffing what for this particular round

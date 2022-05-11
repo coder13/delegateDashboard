@@ -1,7 +1,8 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { WCA_ORIGIN, WCA_OAUTH_CLIENT_ID } from '../../lib/wca-env';
 import history from '../../lib/history';
+import { getMe } from '../../lib/wcaAPI';
 
 const localStorageKey = key => `groups.${WCA_OAUTH_CLIENT_ID}.${key}`;
 
@@ -66,6 +67,20 @@ export default function AuthProvider({ children }) {
     // }
   }, [location]);
 
+  const signedIn = useCallback(() => !!accessToken, [accessToken]);
+
+  useEffect(() => {
+    if (signedIn()) {
+      getMe()
+        .then(({ me }) => {
+          setUser(me);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+  }, [signedIn])
+
   const signIn = (newUser, callback) => {
     const params = new URLSearchParams({
       client_id: WCA_OAUTH_CLIENT_ID,
@@ -79,9 +94,8 @@ export default function AuthProvider({ children }) {
   const signOut = (callback) => {
     setAccessToken(null);
     localStorage.removeItem(localStorageKey('accessToken'));
+    setUser(null);
   };
-
-  const signedIn = () => !!accessToken;
 
   const value = { user, signIn, signOut, signedIn };
 

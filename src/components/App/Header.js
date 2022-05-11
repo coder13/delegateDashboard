@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import AppBar from '@mui/material/AppBar';
@@ -6,8 +6,8 @@ import Button from '@mui/material/Button';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import PeopleIcon from '@mui/icons-material/People';
-import { getMe } from '../../lib/wcaAPI.js'
 import { useAuth } from '../providers/AuthProvider';
+import { Avatar, Box, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -26,17 +26,18 @@ const useStyles = makeStyles(theme => ({
 
 const Header = () => {
   const classes = useStyles();
-  const { signIn, signOut, signedIn } = useAuth();
+  const { user, signIn, signOut } = useAuth();
+  const [anchorElUser, setAnchorElUser] = useState(null);
 
-  useEffect(() => {
-    if (signedIn()) {
-      getMe().then((me) => {
-        console.log(me);
-      }).catch((err) => {
-        console.error(err);
-      });
-    }
-  });
+  const handleOpenUserMenu = (event) => {
+    setAnchorElUser(event.currentTarget);
+  };
+
+  const handleCloseUserMenu = () => {
+    setAnchorElUser(null);
+  };
+
+  console.log(user);
 
   return (
     <AppBar position="static" color="primary">
@@ -47,10 +48,34 @@ const Header = () => {
             Delegate Dashboard
           </Link>
         </Typography>
-        {signedIn() ? (
-          <Button color="inherit" onClick={signOut}>
-            Sign out
-          </Button>
+        {user ? (
+          <Box sx={{ flexGrow: 0 }}>
+            <Tooltip title="Open settings">
+              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                <Avatar alt={user.name} src={user.avatar.thumb_url} />
+              </IconButton>
+            </Tooltip>
+            <Menu
+              sx={{ mt: '45px' }}
+              id="menu-appbar"
+              anchorEl={anchorElUser}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              open={Boolean(anchorElUser)}
+              onClose={handleCloseUserMenu}
+            >
+              <MenuItem onClick={signOut}>
+                <Typography textAlign="center">Sign Out</Typography>
+              </MenuItem>
+            </Menu>
+          </Box>
         ) : (
           <Button color="inherit" onClick={signIn}>
             Sign in

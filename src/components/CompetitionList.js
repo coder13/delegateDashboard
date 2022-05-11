@@ -15,6 +15,7 @@ import {
   getPastManageableCompetitions,
 } from '../lib/wcaAPI.js'
 import { sortBy } from '../lib/utils';
+import { useAuth } from './providers/AuthProvider.js';
 
 const FlagIcon = FlagIconFactory(React, { useCssModules: false });
 
@@ -42,16 +43,18 @@ const CompetitionList = () => {
   const [pastCompetitions, setPastCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user } = useAuth();
 
   useEffect(() => {
-    getUpcomingManageableCompetitions()
-      .then(competitions => {
-        setUpcomingCompetitions(
-          sortBy(competitions, competition => competition['start_date'])
-        );
-      })
-      .catch(error => setError(error.message))
-      .finally(() => setLoading(false));
+    if (user) {
+      getUpcomingManageableCompetitions()
+        .then(competitions => {
+          setUpcomingCompetitions(
+            sortBy(competitions, competition => competition['start_date'])
+          );
+        })
+        .catch(error => setError(error.message))
+        .finally(() => setLoading(false));
 
       getPastManageableCompetitions()
         .then(competitions => {
@@ -61,7 +64,10 @@ const CompetitionList = () => {
         })
         .catch(error => setError(error.message))
         .finally(() => setLoading(false));
-  }, []);
+    }
+  }, [user]);
+
+  console.log(loading, error);
 
   return (
     <Container>

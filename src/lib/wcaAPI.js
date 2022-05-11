@@ -42,7 +42,7 @@ export const saveWcifChanges = (previousWcif, newWcif) => {
   return updateWcif(newWcif.id, pick(newWcif, keysDiff));
 };
 
-const wcaApiFetch = (path, fetchOptions = {}) => {
+export const wcaApiFetch = (path, fetchOptions = {}) => {
   const baseApiUrl = `${WCA_ORIGIN}/api/v0`;
 
   console.log('fetching', path, wcaAccessToken())
