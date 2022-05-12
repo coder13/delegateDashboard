@@ -65,7 +65,7 @@ const RoundSelectorPage = () => {
               {event.rounds.map((round, index) => {                
                 const roundActivity = _allActivities.find((activity) => activity.activityCode === round.id);
 
-                const _personsShouldBeInRound = personsShouldBeInRound(wcif, round.id);
+                const _personsShouldBeInRound = personsShouldBeInRound(wcif, round.id).length;
                 const personsAssigned = wcif.persons.filter((p) => p.assignments.find((a) => {
                   const activity = activityById(wcif, a.activityId);
                   return activity.activityCode.split('-')[0] === round.id.split('-')[0] && activity.activityCode.split('-')[1] === round.id.split('-')[1];

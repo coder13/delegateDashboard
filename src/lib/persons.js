@@ -32,7 +32,7 @@ export const personsRegistered = (persons, eventId) => {
 export const personsShouldBeInRound = (wcif, activityCode) => {
   const parsedActivity = parseActivityCode(activityCode);
   if (parsedActivity.roundNumber === 1) {
-    return personsRegistered(wcif, parsedActivity.eventId);
+    return personsRegistered(wcif.persons, parsedActivity.eventId);
   }
 
   return [];

@@ -118,7 +118,7 @@ const RoundPage = () => {
               ? <Link style={{ display: 'block' }} to={`/competitions/${competitionId}/rooms`}>Need to configure group config</Link>
               : <Typography>{`Groups: ${groupData.groups} (source: ${groupData.source}) | Competitors per group: ${Math.round(unassignedRegisteredPersons.length / groupData.groups)}`}</Typography>
             }
-            <Typography>{`Round Size: ${personsShouldBeInRound(wcif, activityId)} | Assigned Persons: ${personsAssigned}`}</Typography>
+            <Typography>{`Round Size: ${personsShouldBeInRound(wcif, activityId).length} | Assigned Persons: ${personsAssigned}`}</Typography>
           </CardContent>
           <CardActions>
             {<Button disabled={!groupData || groupData.groups !== 0} onClick={onGenerateGroupActitivites}>Generate Group Activities From Config</Button>}
