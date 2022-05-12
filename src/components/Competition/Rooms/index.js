@@ -5,6 +5,9 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Room from './Room';
+import { useParams } from 'react-router-dom';
+import { Breadcrumbs } from '@mui/material';
+import Link from '../../shared/MaterialLink';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -30,8 +33,10 @@ const Venue = ({ venue }) => {
       className={classes.paper}
       elevation={4}
     >
-      <Typography variant="h5" paragraph>{venue.name}</Typography>
-      {venue.rooms.map((room) => <Room key={room.id} venue={venue} room={room}/>)}
+      <Grid item>
+        <Typography variant="h5" paragraph>{venue.name}</Typography>
+        {venue.rooms.map((room) => <Room key={room.id} venue={venue} room={room}/>)}
+      </Grid>
     </Grid>
   )
 };
@@ -39,12 +44,23 @@ const Venue = ({ venue }) => {
 const Rooms = () => {
   const classes = useStyles();
   const wcif = useSelector((state) => state.wcif);
+  const { competitionId } = useParams();
 
   return (
     <Grid container direction="column" spacing={2} className={classes.root}>
-      <Typography variant="h3">Rooms</Typography>
-      <Typography variant="subtitle1" paragraph>Configure number of judging stations and stages</Typography>
-      {wcif.schedule.venues.map((venue) => <Venue key={venue.id} venue={venue}/>)}
+      <Grid item>
+        <Breadcrumbs aria-label="breadcrumb">
+          <Link to={`/competitions/${competitionId}`}>
+            {wcif.name || competitionId}
+          </Link>
+          <Typography color="textPrimary">Rooms</Typography>
+        </Breadcrumbs>
+      </Grid>
+      <Grid item>
+        <Typography variant="h3">Rooms</Typography>
+        <Typography variant="subtitle1" paragraph>Configure number of judging stations and stages</Typography>
+        {wcif.schedule.venues.map((venue) => <Venue key={venue.id} venue={venue}/>)}
+      </Grid>
     </Grid>
   );
 };
