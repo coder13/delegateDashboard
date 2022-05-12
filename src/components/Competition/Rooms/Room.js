@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { makeStyles } from '@mui/styles';
 import Card from '@mui/material/Card';
@@ -12,13 +12,13 @@ import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton'
 import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import ConfigureStagesDialog from './ConfigureStagesDialog';
 import { parseActivityCode } from '../../../lib/activities';
-import { getExtensionData } from '../../../lib/wcif-extensions';
+import { getGroupData } from '../../../lib/wcif-extensions';
 import { advancingCompetitors } from '../../../lib/formulas';
-import { updateStages, uploadCurrentWCIFChanges } from '../../../store/actions';
+import { Button, TextField } from '@mui/material';
+import { acceptedRegistration, acceptedRegistrations } from '../../../lib/persons';
+import { updateGroupCount } from '../../../store/actions';
 
 const useStyles = makeStyles((theme) => ({
   card: ({ room }) => ({
@@ -38,7 +38,7 @@ const Room = ({ venue, room }) => {
   const dispatch = useDispatch();
   const wcif = useSelector((state) => state.wcif);
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [configureStagesDialogOpen, setConfigureStagesDialogOpen] = React.useState(false);
+  // const [configureStagesDialogOpen, setConfigureStagesDialogOpen] = React.useState(false);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -48,32 +48,30 @@ const Room = ({ venue, room }) => {
     setAnchorEl(null);
   };
 
-  const openConfigureStagesDialog = () => {
-    handleMenuClose();
-    setConfigureStagesDialogOpen(true);
-  };
+  // const openConfigureStagesDialog = () => {
+  //   handleMenuClose();
+  //   setConfigureStagesDialogOpen(true);
+  // };
 
-  const handleSaveStages = (stages) => {
-    dispatch(updateStages(venue.id, room.id, stages));
-    dispatch(uploadCurrentWCIFChanges(['schedule']));
-  }
+  const eventRegistrationCounts = useMemo(() => {
+    const _eventRegistrationCounts = {};
 
-  const eventRegistrationCounts = {};
-  wcif.persons.forEach((person) => {
-    if (!person.registration) {
-      return;
-    }
-
-    person.registration.eventIds.forEach((eventId) => {
-      if (eventRegistrationCounts[eventId]) {
-        eventRegistrationCounts[eventId]++;
-      } else {
-        eventRegistrationCounts[eventId] = 1;
+    acceptedRegistrations(wcif.persons).forEach((person) => {
+      if (!person.registration) {
+        return;
       }
-    })
-  });
+  
+      person.registration.eventIds.forEach((eventId) => {
+        if (_eventRegistrationCounts[eventId]) {
+          _eventRegistrationCounts[eventId]++;
+        } else {
+          _eventRegistrationCounts[eventId] = 1;
+        }
+      })
+    });
 
-  const { stages: currentStages } = getExtensionData('stages', room) || [];
+    return _eventRegistrationCounts;
+  }, [wcif.persons]);
 
   return (
     <Card
@@ -86,15 +84,15 @@ const Room = ({ venue, room }) => {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={openConfigureStagesDialog}>Configure Stages</MenuItem>
+        {/* <MenuItem onClick={openConfigureStagesDialog}>Configure Stages</MenuItem> */}
       </Menu>
-      <ConfigureStagesDialog
+      {/* <ConfigureStagesDialog
         open={configureStagesDialogOpen}
         handleClose={() => setConfigureStagesDialogOpen(false)}
         handleSaveStages={handleSaveStages}
         roomName={`${venue.name} / ${room.name}`}
         currentStages={currentStages}
-      />
+      /> */}
       <CardHeader
         action={
           <IconButton onClick={handleMenuOpen}>
@@ -110,35 +108,77 @@ const Room = ({ venue, room }) => {
               <TableRow>
                 <TableCell className={classes.bold}>Event</TableCell>
                 <TableCell className={classes.bold}>Round</TableCell>
-                <TableCell className={classes.bold}>Name</TableCell>
-                <TableCell className={classes.bold}>Competitors</TableCell>
-                <TableCell className={classes.bold}>Groups</TableCell>
-                <TableCell className={classes.bold}>Competitors per group</TableCell>
+                <TableCell className={classes.bold}>Scramble Set Count</TableCell>
+                <TableCell className={classes.bold}>Estimated Competitors</TableCell>
+                <TableCell className={classes.bold}>Estimated Groups</TableCell>
+                <TableCell className={classes.bold}>Competitors In Round</TableCell>
+                <TableCell className={classes.bold}>Generated Groups</TableCell>
+                <TableCell className={classes.bold}></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {room.activities
                 .filter((activity) => activity.activityCode.split('-')[0] !== 'other')
                 .map((activity) => {
-                const { eventId, roundNumber } = parseActivityCode(activity.activityCode);
-                const event = wcif.events.find(i => i.id === eventId);
-                const round = roundNumber > 1 ? event.rounds[roundNumber - 2] : {};
-                const competitors = roundNumber === 1 ?
-                      eventRegistrationCounts[eventId]
-                    : advancingCompetitors(round.advancementCondition, eventRegistrationCounts[eventId]);
-                console.log(advancingCompetitors);
+                  const { eventId, roundNumber } = parseActivityCode(activity.activityCode);
+                  const event = wcif.events.find(i => i.id === eventId);
+                  const round = event.rounds[roundNumber - 1];
 
-                return (
-                  <TableRow key={activity.id}>
-                  <TableCell>{eventId}</TableCell>
-                  <TableCell>{roundNumber}</TableCell>
-                  <TableCell>{activity.name}</TableCell>
-                  <TableCell>{competitors || 0}</TableCell>
-                  <TableCell>{activity.childActivities.length}</TableCell>
-                  <TableCell>{activity.childActivities.length && competitors / activity.childActivities.length}</TableCell>
-                  </TableRow>
-                );
-              })}
+                  const previousRound = roundNumber > 1 ? event.rounds[roundNumber - 2] : null;
+                  const advancementCondition = previousRound?.advancementCondition;
+
+                  const estimatedCompetitors = roundNumber === 1
+                      ? eventRegistrationCounts[eventId]
+                      : advancingCompetitors(advancementCondition, eventRegistrationCounts[eventId]);
+                  const actualCompetitors = round.results.length;
+
+                  const groupData = getGroupData(activity);
+                  console.log(122, round, groupData);
+
+                  // true if we are looking at a first round or we have results
+                  const canCreateGroups = (roundNumber === 1 && estimatedCompetitors > 0) || (roundNumber > 1 && previousRound.results.length > 0);
+
+                  const handleGroupCountChange = (e) => {
+                    console.log(e.currentTarget.value);
+                    if (e.currentTarget.value > 0 && e.currentTarget.value < estimatedCompetitors) {
+                      dispatch(updateGroupCount(activity.id, parseInt(e.currentTarget.value, 10)));
+                    }
+                  };
+
+                  return (
+                    <TableRow key={activity.id}>
+                    <TableCell>{eventId}</TableCell>
+                    <TableCell>{roundNumber}</TableCell>
+                    <TableCell>{round.scrambleSetCount}</TableCell>
+                    <TableCell>{estimatedCompetitors || '-'}</TableCell>
+                    <TableCell>
+                      <TextField
+                        label="Groups"
+                        type="number"
+                        variant="outlined"
+                        size="small"
+                        value={groupData?.groups || round.scrambleSetCount}
+                        onChange={handleGroupCountChange}
+                        style={{ maxWidth: '5em'}}
+                      />  
+                    </TableCell>
+                    <TableCell>{actualCompetitors || (roundNumber === 1 && estimatedCompetitors) || '-'}</TableCell>
+                    <TableCell>{activity.childActivities.length}</TableCell>
+                    <TableCell>{activity.childActivities.length === 0
+                      ? (
+                        <Button
+                          variant="contained"
+                          disabled={!canCreateGroups}
+                          size="small"
+                        >
+                          Create Groups
+                        </Button>
+                      )
+                      : activity.childActivities.length
+                    }</TableCell>
+                    </TableRow>
+                  );
+                })}
             </TableBody>
           </Table>
         </TableContainer>

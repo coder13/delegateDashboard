@@ -7,11 +7,13 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Typography from '@mui/material/Typography';
 import Link from '../../shared/MaterialLink';
 import Button from '@mui/material/Button';
-import { activityById, allActivities, groupActivitiesByRound, personsShouldBeInRound } from '../../../lib/activities';
+import { activityById, allActivities, groupActivitiesByRound } from '../../../lib/activities';
+import { personsShouldBeInRound } from '../../../lib/persons';
 import { generateGroupActitivites } from '../../../store/actions';
 import { Card, CardHeader, CardContent, CardActions } from '@mui/material';
 import GroupCard from './GroupCard';
 import ConfigureScramblersDialog from './ConfigureScramblersDialog';
+import { getGroupData } from '../../../lib/wcif-extensions';
 
 // const byWorldRanking = (eventId) => (a, b) => {
 //   const aPR = a.personalBests.find((i) => i.eventId.toString() === eventId.toString())?.best
@@ -43,20 +45,6 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
   },
 }));
-
-const getGroupData = (roundActivity) => {
-  // Start off with using groupifier and then build own version. Makes compatible with groupifier.
-  if (roundActivity.extensions.find(({ id }) => id === 'groupifier.ActivityConfig')) {
-    const groupifierData = roundActivity.extensions.find(({ id }) => id === 'groupifier.ActivityConfig').data;
-    return {
-      groups: groupifierData.groups,
-      source: 'groupifier'
-    }
-  } else {
-    // Tells app we need to create a group config
-    return null;
-  }
-};
 
 const RoundPage = () => {
   const classes = useStyles();

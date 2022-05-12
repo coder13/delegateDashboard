@@ -1,13 +1,14 @@
-import { setExtensionData } from '../lib/wcif-extensions';
+import { mapIn, updateIn } from '../lib/utils';
+import { removeExtensionData, setExtensionData } from '../lib/wcif-extensions';
 import {
   TOGGLE_PERSON_ROLE,
   FETCHING_WCIF,
   FETCHED_WCIF,
   UPLOADING_WCIF,
-  UPDATE_STAGES,
   GENERATE_GROUP_ACTIVITIES,
   ADD_PERSON_ASSIGNMENT,
-  REMOVE_PERSON_ASSIGNMENT
+  REMOVE_PERSON_ASSIGNMENT,
+  UPDATE_GROUP_COUNT
 } from './actions';
 
 const INITIAL_STATE = {
@@ -65,25 +66,6 @@ const reducers = {
       ),
     },
   }),
-  [UPDATE_STAGES]: (state, action) => ({
-    ...state,
-    needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'schedule']),
-    wcif: {
-      ...state.wcif,
-      schedule: {
-        ...state.wcif.schedule,
-        venues: state.wcif.schedule.venues.map((venue) => venue.id === action.venueId ? ({
-          ...venue,
-          rooms: venue.rooms.map((room) => room.id === action.roomId ?
-            setExtensionData('stages', room, {
-              stages: action.stages,
-            }) : room
-          )
-        }) : venue)
-      }
-    }
-  }),
   [GENERATE_GROUP_ACTIVITIES]: (state, action) => ({
     ...state,
     needToSave: true,
@@ -124,6 +106,20 @@ const reducers = {
       )),
     },
   }),
+  [UPDATE_GROUP_COUNT]: (state, action) => ({
+    ...state,
+    needToSave: true,
+    changedKeys: new Set([...state.changedKeys, 'schedule']),
+    wcif: mapIn(state.wcif, ['schedule', 'venues'], (venue) => mapIn(venue, ['rooms'], (room) => mapIn(room, ['activities'], (activity) => {
+      if (activity.id === action.activityId) {
+        return setExtensionData('activityConfig', activity, {
+          groupCount: action.groupCount,
+        });
+      }
+
+      return activity;
+    }))),
+  })
 };
 
 function reducer(state = INITIAL_STATE, action) {

@@ -40,3 +40,24 @@ export const removeExtensionData = (extensionName, wcifEntity) => ({
     extension => extension.id !== extensionId(extensionName)
   ),
 });
+
+export const getGroupData = (roundActivity) => {
+  console.log(45, roundActivity);
+  // Start off with using groupifier and then build own version. Makes compatible with groupifier.
+  if (roundActivity.extensions.find(({ id }) => id === 'delegateDashboard.activityConfig')) {
+    const activityConfig = roundActivity.extensions.find(({ id }) => id === 'delegateDashboard.activityConfig').data;
+    return {
+      groups: activityConfig.groupCount,
+      source: 'Delegate Dashboard'
+    }
+  } else if (roundActivity.extensions.find(({ id }) => id === 'groupifier.ActivityConfig')) {
+    const activityConfig = roundActivity.extensions.find(({ id }) => id === 'groupifier.ActivityConfig').data;
+    return {
+      groups: activityConfig.groups,
+      source: 'Groupifier'
+    }
+  } else {
+    // Tells app we need to create a group config
+    return null;
+  }
+};

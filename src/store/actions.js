@@ -10,10 +10,10 @@ export const FETCHED_WCIF = 'fetched_wcif';
 export const UPLOADING_WCIF = 'uploading_wcif';
 export const UPDATE_WCIF_ERRORS = 'update_wcif_errors';
 export const TOGGLE_PERSON_ROLE = 'toggle_person_role';
-export const UPDATE_STAGES = 'update_stages';
 export const GENERATE_GROUP_ACTIVITIES = 'generate_group_activities';
 export const ADD_PERSON_ASSIGNMENT = 'add_person_assignment';
 export const REMOVE_PERSON_ASSIGNMENT = 'remove_person_assignment';
+export const UPDATE_GROUP_COUNT = 'update_group_count';
 
 const fetchingWCIF = () => ({
   type: FETCHING_WCIF,
@@ -85,12 +85,6 @@ export const togglePersonRole = (registrantId, roleId) => ({
   registrantId,
   roleId,
 });
-export const updateStages = (venueId, roomId, stages) => ({
-  type: UPDATE_STAGES,
-  venueId,
-  roomId,
-  stages,
-});
 
 export const generateGroupActitivites = (activityCode, groups) => ({
   type: GENERATE_GROUP_ACTIVITIES,
@@ -116,4 +110,10 @@ export const removePersonAssignment = (registrantId, activityId) => ({
   type: REMOVE_PERSON_ASSIGNMENT,
   registrantId,
   activityId,
+});
+
+export const updateGroupCount = (activityId, groupCount) => ({
+  type: UPDATE_GROUP_COUNT,
+  activityId,
+  groupCount,
 });

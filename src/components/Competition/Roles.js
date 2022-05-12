@@ -21,6 +21,7 @@ import red from '@mui/material/colors/red';
 import { togglePersonRole } from '../../store/actions';
 import { pluralize } from '../../lib/utils';
 import Link from '../shared/MaterialLink';
+import { acceptedRegistration, isOrganizerOrDelegate } from '../../lib/persons';
 
 const ROLES = [{
   id: 'staff-judge',
@@ -65,12 +66,6 @@ const useStyles = makeStyles((theme) => ({
   hover: {},
 }));
 
-const canStaff = (person) =>
-  !person.registration || (person.registration && person.registration.status === 'accepted');
-
-const isOrganizerOrDelegate = (person) =>
-  person.registration && (person.roles.indexOf('delegate') > -1 || person.roles.indexOf('organizer') > -1);
-
 const Roles = () => {
   const wcif = useSelector((state) => state.wcif);
   const { competitionId } = useParams();
@@ -92,7 +87,7 @@ const Roles = () => {
   }) : wcif.persons;
 
   const handleChange = (e, person, roleId) => {
-    if (canStaff(person)) {
+    if (acceptedRegistration(person)) {
       dispatch(togglePersonRole(person, roleId));
     }
   };
@@ -143,9 +138,9 @@ const Roles = () => {
               key={person.registrantId}
               hover
               className={clsx({
-                [classes.firstTimer]: canStaff(person) && !person.wcaId,
-                [classes.delegateOrOrganizer]: canStaff(person) && isOrganizerOrDelegate(person),
-                [classes.disabled]: !canStaff(person),
+                [classes.firstTimer]: acceptedRegistration(person) && !person.wcaId,
+                [classes.delegateOrOrganizer]: acceptedRegistration(person) && isOrganizerOrDelegate(person),
+                [classes.disabled]: !acceptedRegistration(person),
               })}
               classes={{
                 hover: classes.hover,
@@ -163,7 +158,7 @@ const Roles = () => {
               { ROLES.map((role) => (
                 <TableCell key={role.id} padding="checkbox">
                   <Checkbox
-                    disabled={!canStaff(person)}
+                    disabled={!acceptedRegistration(person)}
                     color="primary"
                     checked={person.roles.indexOf(role.id) > -1}
                     onChange={(e) => handleChange(e, person.registrantId, role.id)}
@@ -178,7 +173,7 @@ const Roles = () => {
               <TableCell className={classes.bold}>
                 {wcif.persons.reduce((acc, person) => acc + (person.roles.length > 0 ? 1 : 0), 0)}
                 {' / '}
-                {wcif.persons.reduce((acc, person) => acc + (canStaff(person) ? 1 : 0), 0)}
+                {wcif.persons.reduce((acc, person) => acc + (acceptedRegistration(person) ? 1 : 0), 0)}
                 {' Staff'}
               </TableCell>
               <TableCell className={classes.bold}>
