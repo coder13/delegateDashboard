@@ -280,3 +280,13 @@ export const clearGroupsAndAssignments = wcif => {
   );
   return { ...wcif, persons, schedule };
 };
+
+export const generateNextChildActivityId = (wcif) => {
+  const activities = allActivities(wcif);
+  let max = 0;
+  activities.forEach((activity) => {
+    max = Math.max(activity.id, max);
+  });
+
+  return max + 1;
+}

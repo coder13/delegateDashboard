@@ -13,12 +13,12 @@ import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton'
 import Menu from '@mui/material/Menu';
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import { parseActivityCode } from '../../../lib/activities';
+import { generateNextChildActivityId, parseActivityCode } from '../../../lib/activities';
 import { getGroupData } from '../../../lib/wcif-extensions';
 import { advancingCompetitors } from '../../../lib/formulas';
 import { Button, TextField } from '@mui/material';
-import { acceptedRegistration, acceptedRegistrations } from '../../../lib/persons';
-import { updateGroupCount } from '../../../store/actions';
+import { acceptedRegistrations } from '../../../lib/persons';
+import { updateRoundChildActivities, updateGroupCount } from '../../../store/actions';
 
 const useStyles = makeStyles((theme) => ({
   card: ({ room }) => ({
@@ -108,11 +108,11 @@ const Room = ({ venue, room }) => {
               <TableRow>
                 <TableCell className={classes.bold}>Event</TableCell>
                 <TableCell className={classes.bold}>Round</TableCell>
-                <TableCell className={classes.bold}>Scramble Set Count</TableCell>
                 <TableCell className={classes.bold}>Estimated Competitors</TableCell>
+                <TableCell className={classes.bold}>Scramble Set Count</TableCell>
                 <TableCell className={classes.bold}>Estimated Groups</TableCell>
+                <TableCell className={classes.bold}>Estimated Max Group Size</TableCell>
                 <TableCell className={classes.bold}>Competitors In Round</TableCell>
-                <TableCell className={classes.bold}>Generated Groups</TableCell>
                 <TableCell className={classes.bold}></TableCell>
               </TableRow>
             </TableHead>
@@ -133,24 +133,44 @@ const Room = ({ venue, room }) => {
                   const actualCompetitors = round.results.length;
 
                   const groupData = getGroupData(activity);
-                  console.log(122, round, groupData);
 
                   // true if we are looking at a first round or we have results
                   const canCreateGroups = (roundNumber === 1 && estimatedCompetitors > 0) || (roundNumber > 1 && previousRound.results.length > 0);
 
                   const handleGroupCountChange = (e) => {
-                    console.log(e.currentTarget.value);
                     if (e.currentTarget.value > 0 && e.currentTarget.value < estimatedCompetitors) {
                       dispatch(updateGroupCount(activity.id, parseInt(e.currentTarget.value, 10)));
                     }
+                  };
+
+                  const handleGenerateGroupActitivites = () => {
+                    if (!groupData?.groups) {
+                      return;
+                    }
+                    
+                    const childActivities = [];
+                    const startActivityId = generateNextChildActivityId(wcif);
+
+                    for (let i = 0; i < groupData?.groups; i++) {
+                      childActivities.push({
+                        id: startActivityId + i,
+                        name: `${activity.name}, Group ${i + 1}`,
+                        activityCode: `${activity.activityCode}-g${i+1}`,
+                        startTime: activity.startTime, // spread across groups
+                        endTime: activity.endTime,
+                        childActivities: [],
+                      });
+                    }
+
+                    dispatch(updateRoundChildActivities(activity.id, childActivities))
                   };
 
                   return (
                     <TableRow key={activity.id}>
                     <TableCell>{eventId}</TableCell>
                     <TableCell>{roundNumber}</TableCell>
-                    <TableCell>{round.scrambleSetCount}</TableCell>
                     <TableCell>{estimatedCompetitors || '-'}</TableCell>
+                    <TableCell>{round.scrambleSetCount}</TableCell>
                     <TableCell>
                       <TextField
                         label="Groups"
@@ -162,14 +182,15 @@ const Room = ({ venue, room }) => {
                         style={{ maxWidth: '5em'}}
                       />  
                     </TableCell>
+                    <TableCell>{estimatedCompetitors && groupData?.groups ? Math.ceil(estimatedCompetitors / groupData.groups) : '-'}</TableCell>
                     <TableCell>{actualCompetitors || (roundNumber === 1 && estimatedCompetitors) || '-'}</TableCell>
-                    <TableCell>{activity.childActivities.length}</TableCell>
-                    <TableCell>{activity.childActivities.length === 0
+                    <TableCell>{activity.childActivities.length !== (groupData?.groups || round.scrambleSetCount)
                       ? (
                         <Button
                           variant="contained"
                           disabled={!canCreateGroups}
                           size="small"
+                          onClick={handleGenerateGroupActitivites}
                         >
                           Create Groups
                         </Button>

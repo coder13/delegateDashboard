@@ -14,6 +14,7 @@ export const GENERATE_GROUP_ACTIVITIES = 'generate_group_activities';
 export const ADD_PERSON_ASSIGNMENT = 'add_person_assignment';
 export const REMOVE_PERSON_ASSIGNMENT = 'remove_person_assignment';
 export const UPDATE_GROUP_COUNT = 'update_group_count';
+export const UPDATE_ROUND_CHILD_ACTIVITIES = 'update_round_child_activities';
 
 const fetchingWCIF = () => ({
   type: FETCHING_WCIF,
@@ -67,8 +68,6 @@ export const uploadCurrentWCIFChanges = () =>
 
     const changes = pick(wcif, Array.from(changedKeys));
 
-    console.log(changes);
-
     dispatch(updateUploading(true));
     updateWcif(competitionId, changes)
       .then(() => {
@@ -116,4 +115,10 @@ export const updateGroupCount = (activityId, groupCount) => ({
   type: UPDATE_GROUP_COUNT,
   activityId,
   groupCount,
+});
+
+export const updateRoundChildActivities = (activityId, childActivities) => ({
+  type: UPDATE_ROUND_CHILD_ACTIVITIES,
+  activityId,
+  childActivities,
 });

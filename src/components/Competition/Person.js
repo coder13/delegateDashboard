@@ -48,8 +48,6 @@ const PersonPage = () => {
     ))
   }, [wcif, person]);
 
-  console.log(30, person, assignments);
-
   return (
     <div className={classes.root}>
       <Grid container direction="column" spacing={2}>

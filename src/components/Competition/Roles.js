@@ -92,8 +92,6 @@ const Roles = () => {
     }
   };
 
-  console.log(100, location);
-
   return (
     <Grid container direction="column" spacing={2} className={classes.root}>
       <Grid item>

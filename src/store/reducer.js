@@ -1,5 +1,5 @@
 import { mapIn, updateIn } from '../lib/utils';
-import { removeExtensionData, setExtensionData } from '../lib/wcif-extensions';
+import { setExtensionData } from '../lib/wcif-extensions';
 import {
   TOGGLE_PERSON_ROLE,
   FETCHING_WCIF,
@@ -8,7 +8,8 @@ import {
   GENERATE_GROUP_ACTIVITIES,
   ADD_PERSON_ASSIGNMENT,
   REMOVE_PERSON_ASSIGNMENT,
-  UPDATE_GROUP_COUNT
+  UPDATE_GROUP_COUNT,
+  UPDATE_ROUND_CHILD_ACTIVITIES
 } from './actions';
 
 const INITIAL_STATE = {
@@ -119,7 +120,19 @@ const reducers = {
 
       return activity;
     }))),
-  })
+  }),
+  [UPDATE_ROUND_CHILD_ACTIVITIES]: (state, action) => ({
+    ...state,
+    needToSave: true,
+    changedKeys: new Set([...state.changedKeys, 'schedule']),
+    wcif: mapIn(state.wcif, ['schedule', 'venues'], (venue) => mapIn(venue, ['rooms'], (room) => mapIn(room, ['activities'], (activity) => (
+      activity.id === action.activityId
+      ? {
+        ...activity,
+        childActivities: action.childActivities,
+      } : activity
+    )))),
+  }),
 };
 
 function reducer(state = INITIAL_STATE, action) {

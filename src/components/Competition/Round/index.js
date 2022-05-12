@@ -66,7 +66,6 @@ const RoundPage = () => {
   const groupData = getGroupData(roundActivity);
 
   const groups = groupActivitiesByRound(wcif, activityId);
-  console.log(80, groups);
 
   const registeredPersonsForEvent = wcif.persons.filter(({ registration }) =>
     (registration.status === 'accepted' && registration.eventIds.indexOf(eventId) > -1)
