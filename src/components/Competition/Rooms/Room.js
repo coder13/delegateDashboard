@@ -134,8 +134,8 @@ const Room = ({ venue, room }) => {
 
                   const groupData = getGroupData(activity);
 
-                  // true if we are looking at a first round or we have results
-                  const canCreateGroups = (roundNumber === 1 && estimatedCompetitors > 0) || (roundNumber > 1 && previousRound.results.length > 0);
+                  // true if we are looking at a first round or we have results for that round
+                  const canCreateGroups = (roundNumber === 1 && estimatedCompetitors > 0) || (roundNumber > 1 && round.results.length > 0);
 
                   const handleGroupCountChange = (e) => {
                     if (e.currentTarget.value > 0 && e.currentTarget.value < estimatedCompetitors) {
