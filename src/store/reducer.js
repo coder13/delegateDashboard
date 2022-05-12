@@ -1,4 +1,4 @@
-import { mapIn, updateIn } from '../lib/utils';
+import { mapIn } from '../lib/utils';
 import { setExtensionData } from '../lib/wcif-extensions';
 import {
   TOGGLE_PERSON_ROLE,

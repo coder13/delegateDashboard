@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import clsx from 'clsx';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
@@ -71,7 +71,6 @@ const Roles = () => {
   const { competitionId } = useParams();
   const classes = useStyles();
   const dispatch = useDispatch();
-  const location = useLocation();
   const [ filterDeleted ] = useState(true);
   const [ filterPending ] = useState(true);
   const filteredPersons = (filterDeleted || filterPending) ? wcif.persons.filter((person) => {
