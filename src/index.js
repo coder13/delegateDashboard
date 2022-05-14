@@ -3,7 +3,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { BrowserRouter as Router } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ConfirmProvider } from 'material-ui-confirm';
@@ -12,6 +11,7 @@ import App from './components/App/';
 import * as serviceWorker from './serviceWorker';
 import AuthProvider from './components/providers/AuthProvider';
 import store from './store';
+import QueryParamPreservingRouter from './components/QueryParamPreservingRouter';
 
 const theme = createTheme({
   palette: {
@@ -26,7 +26,7 @@ const theme = createTheme({
 
 ReactDOM.render((
   <Provider store={store}>
-    <Router>
+    <QueryParamPreservingRouter>
       <AuthProvider>
         <ThemeProvider theme={theme}>
           <CssBaseline />
@@ -35,7 +35,7 @@ ReactDOM.render((
           </ConfirmProvider>
         </ThemeProvider>
       </AuthProvider>
-    </Router>
+    </QueryParamPreservingRouter>
   </Provider>
 ), document.getElementById('root'));
 

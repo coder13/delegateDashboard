@@ -1,7 +1,6 @@
 import { useState, useEffect, createContext, useContext, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { WCA_ORIGIN, WCA_OAUTH_CLIENT_ID } from '../../lib/wca-env';
-import history from '../../lib/history';
 import { getMe } from '../../lib/wcaAPI';
 
 const localStorageKey = key => `groups.${WCA_OAUTH_CLIENT_ID}.${key}`;
@@ -26,6 +25,7 @@ export default function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useState(getLocalStorage('accessToken'));
   const [user, setUser] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => setLocalStorage('accessToken', accessToken), [accessToken]);
 
@@ -55,7 +55,14 @@ export default function AuthProvider({ children }) {
 
     /* Clear the hash if there is a token. */
     if (hashParams.has('access_token')) {
-      history.replace({ ...history.location, hash: null });
+      // history.replace({ ...history.location, hash: null });
+      navigate({
+        to: {
+          replace: '/',
+          hash: null,
+          state: history.state,
+        },
+      })
     }
 
     // /* Check if we know what path to redirect to (after OAuth redirect). */

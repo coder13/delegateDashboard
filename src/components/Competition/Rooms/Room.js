@@ -75,6 +75,10 @@ const Room = ({ venue, room }) => {
     return _eventRegistrationCounts;
   }, [wcif.persons]);
 
+  const onCreateAllGroups = () => {
+
+  };
+
   const onResetAllGroups = () => {
     handleMenuClose();
     confirm({
@@ -103,17 +107,18 @@ const Room = ({ venue, room }) => {
         keepMounted
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
       >
-        {/* <MenuItem onClick={openConfigureStagesDialog}>Configure Stages</MenuItem> */}
+        <MenuItem onClick={onCreateAllGroups}>Create All Groups</MenuItem>
         <MenuItem onClick={onResetAllGroups}>Reset All Groups</MenuItem>
       </Menu>
-      {/* <ConfigureStagesDialog
-        open={configureStagesDialogOpen}
-        handleClose={() => setConfigureStagesDialogOpen(false)}
-        handleSaveStages={handleSaveStages}
-        roomName={`${venue.name} / ${room.name}`}
-        currentStages={currentStages}
-      /> */}
       <CardHeader
         action={
           <IconButton onClick={handleMenuOpen}>
