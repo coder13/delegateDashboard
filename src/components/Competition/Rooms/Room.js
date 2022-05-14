@@ -76,7 +76,7 @@ const Room = ({ venue, room }) => {
   }, [wcif.persons]);
 
   const onCreateAllGroups = () => {
-
+    // TODO
   };
 
   const onResetAllGroups = () => {
@@ -116,7 +116,7 @@ const Room = ({ venue, room }) => {
           horizontal: 'left',
         }}
       >
-        <MenuItem onClick={onCreateAllGroups}>Create All Groups</MenuItem>
+        {/* <MenuItem disabled onClick={onCreateAllGroups}>Create All Groups</MenuItem> */}
         <MenuItem onClick={onResetAllGroups}>Reset All Groups</MenuItem>
       </Menu>
       <CardHeader
@@ -139,7 +139,7 @@ const Room = ({ venue, room }) => {
                 <TableCell className={classes.bold}>Estimated Groups</TableCell>
                 <TableCell className={classes.bold}>Estimated Max Group Size</TableCell>
                 <TableCell className={classes.bold}>Competitors In Round</TableCell>
-                <TableCell className={classes.bold}></TableCell>
+                <TableCell className={classes.bold}>Groups</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -161,7 +161,7 @@ const Room = ({ venue, room }) => {
                   const groupData = getGroupData(activity);
 
                   // true if we are looking at a first round or we have results for that round
-                  const canCreateGroups = (roundNumber === 1 && estimatedCompetitors > 0) || (roundNumber > 1 && round.results.length > 0);
+                  const canCreateGroups = ((roundNumber === 1 && estimatedCompetitors > 0) || (roundNumber > 1 && round.results.length > 0)) && groupData?.groups;
 
                   const handleGroupCountChange = (e) => {
                     dispatch(updateGroupCount(activity.id, Math.max(1, parseInt(e.currentTarget.value, 10))));
@@ -217,7 +217,7 @@ const Room = ({ venue, room }) => {
                             size="small"
                             onClick={handleGenerateGroupActitivites}
                           >
-                            Create Groups
+                            Create
                           </Button>
                         )
                         : activity.childActivities.length
