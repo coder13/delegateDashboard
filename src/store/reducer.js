@@ -106,13 +106,15 @@ const reducers = {
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'persons']),
     wcif: mapIn(state.wcif, ['persons'], (person) => {
-      const personAssignments = action.assignments.find((a) => a.registrantId === person.registrantId);
+      const personAssignments = action.assignments.filter((a) => a.registrantId === person.registrantId);
       if (personAssignments.length) {
-        return updateIn(person, ['assignments'], [...person.assignments, ...personAssignments.map((a) => ({
+        return updateIn(person, ['assignments'], (assignments) => [...assignments, ...personAssignments.map((a) => ({
           activityId: a.activityId,
           ...a.assignment,
         }))])
       }
+
+      return person;
     }),
   }),
   /** 

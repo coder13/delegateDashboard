@@ -74,9 +74,9 @@ export const roomByActivity = (wcif, activityId) =>
 export const stationsByActivity = (wcif, activityId) =>
   getExtensionData('RoomConfig', roomByActivity(wcif, activityId)).stations;
 
-  /**
-   * Creates a flat array of activities
-   */
+/**
+ * Creates a flat array of activities
+ */
 export const allActivities = wcif => {
   const allChildActivities = ({ childActivities }) =>
     childActivities.length > 0
@@ -289,4 +289,13 @@ export const generateNextChildActivityId = (wcif) => {
   });
 
   return max + 1;
+}
+
+/**
+ * Comparator for sorting groups by group number
+ */
+export const byGroupNumber = (groupA, groupB) => {
+  const parsedActivityCodeA = parseActivityCode(groupA.activityCode);
+  const parsedActivityCodeB = parseActivityCode(groupB.activityCode);
+  return parsedActivityCodeA.groupNumber - parsedActivityCodeB.groupNumber;
 }

@@ -7,9 +7,9 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Typography from '@mui/material/Typography';
 import Link from '../../shared/MaterialLink';
 import Button from '@mui/material/Button';
-import { activityById, allActivities, groupActivitiesByRound } from '../../../lib/activities';
+import { activityById, allActivities, byGroupNumber, groupActivitiesByRound, parseActivityCode } from '../../../lib/activities';
 import { personsShouldBeInRound } from '../../../lib/persons';
-import { bulkRemovePersonAssignment } from '../../../store/actions';
+import { bulkAddPersonAssignment, bulkRemovePersonAssignment } from '../../../store/actions';
 import { Card, CardHeader, CardContent, CardActions } from '@mui/material';
 import GroupCard from './GroupCard';
 import ConfigureScramblersDialog from './ConfigureScramblersDialog';
@@ -80,7 +80,7 @@ const RoundPage = () => {
   const personsAssigned = useMemo(() => wcif.persons.filter((p) => p.assignments.find((a) => {
     const activity = activityById(wcif, a.activityId);
     return activity.activityCode.split('-')[0] === roundActivity.activityCode.split('-')[0] && activity.activityCode.split('-')[1] === roundActivity.activityCode.split('-')[1];
-  })).length, [roundActivity.activityCode, wcif]);
+  })), [roundActivity.activityCode, wcif]);
 
   const personsAssignedToCompeteOrJudge = useMemo(() => wcif.persons.filter((p) => p.assignments.find((a) => {
     const activity = activityById(wcif, a.activityId);
@@ -90,7 +90,36 @@ const RoundPage = () => {
   })).length, [roundActivity.activityCode, wcif]);
 
   const onGenerateGroupActitivites = () => {
-    // dispatch(generateGroupActitivites(roundActivity.activityCode, groupData.groups));
+    // determine who needs assignments
+    // pick groups for them
+    // assign their judging assignment to be the group after
+    const groupsActivityIds = groups.map((_, index) => groups.find((g) => parseActivityCode(g.activityCode)?.groupNumber === index + 1).id);
+    const assignments = [];
+
+    // start with scramblers
+    const scramblers = personsAssigned
+      .filter((p) => p.assignments.find((a) => groupsActivityIds.indexOf(a.activityId) > -1 && a.assignmentCode === 'staff-scrambler'))
+      .map((p) => {
+        const scramblingAssignments = p.assignments.filter((a) => groupsActivityIds.indexOf(a.activityId) > -1 && a.assignmentCode === 'staff-scrambler').map(({ activityId }) => groupsActivityIds.findIndex((g) => activityId === g));
+
+        return {
+          registrantId: p.registrantId,
+          groupNumber: Math.min(...scramblingAssignments),
+        };
+      });
+
+    debugger;
+
+    assignments.push(...scramblers.map((s) => ({
+      registrantId: s.registrantId,
+      assignment: {
+        assignmentCode: 'competitor',
+        activityId: groupsActivityIds[(s.groupNumber + groupsActivityIds.length - 1) % groupsActivityIds.length],
+        stationNumber: null,
+      },
+    })));
+
+    dispatch(bulkAddPersonAssignment(assignments));
   };
 
   const onResetGroupActitivites = () => {
@@ -144,7 +173,7 @@ const RoundPage = () => {
               ? <Link style={{ display: 'block' }} to={`/competitions/${competitionId}/rooms`}>Need to configure group config</Link>
               : <Typography>{`Groups: ${groupData.groups} (source: ${groupData.source}) | Competitors per group: ${Math.round(unassignedRegisteredPersons.length / groupData.groups)}`}</Typography>
             }
-            <Typography>{`Round Size: ${personsShouldBeInRound(wcif, activityId).length} | Assigned Persons: ${personsAssigned}`}</Typography>
+            <Typography>{`Round Size: ${personsShouldBeInRound(wcif, activityId).length} | Assigned Persons: ${personsAssigned.length}`}</Typography>
           </CardContent>
           <CardActions>
             {<Button disabled={!groupData || groupData.groups !== 0} onClick={onGenerateGroupActitivites}>Generate Group Activities From Config</Button>}
@@ -157,7 +186,7 @@ const RoundPage = () => {
         </Card>
       </Grid>
       <Grid item>
-        {groups.map((group) => (
+        {groups.sort(byGroupNumber).map((group) => (
           <GroupCard key={group.id} groupData={groupData} roundActivity={roundActivity} groupActivity={group} />
         ))}
       </Grid>

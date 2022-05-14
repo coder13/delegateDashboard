@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { parseActivityCode } from "../../../lib/activities";
+import { byGroupNumber, parseActivityCode } from "../../../lib/activities";
 import { addPersonAssignment, removePersonAssignment } from "../../../store/actions";
 
 const ConfigureScramblersDialog = ({ open, onClose, roundActivity }) => {
@@ -59,8 +59,8 @@ const ConfigureScramblersDialog = ({ open, onClose, roundActivity }) => {
             <TableRow>
               <TableCell>Name</TableCell>
               <TableCell>Average</TableCell>
-              {groups.map((group, index) => (
-                <TableCell key={group.id} style={{ textAlign: 'center' }}>Group {index + 1}</TableCell>
+              {groups.sort(byGroupNumber).map((group, index) => (
+                <TableCell key={group.id} style={{ textAlign: 'center' }}>Group {parseActivityCode(group.activityCode).groupNumber}</TableCell>
               ))}
             </TableRow>
           </TableHead>
