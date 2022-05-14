@@ -9,11 +9,12 @@ import Link from '../../shared/MaterialLink';
 import Button from '@mui/material/Button';
 import { activityById, allActivities, groupActivitiesByRound } from '../../../lib/activities';
 import { personsShouldBeInRound } from '../../../lib/persons';
-import { generateGroupActitivites } from '../../../store/actions';
+import { bulkRemovePersonAssignment } from '../../../store/actions';
 import { Card, CardHeader, CardContent, CardActions } from '@mui/material';
 import GroupCard from './GroupCard';
 import ConfigureScramblersDialog from './ConfigureScramblersDialog';
 import { getGroupData } from '../../../lib/wcif-extensions';
+import { useConfirm } from 'material-ui-confirm';
 
 // const byWorldRanking = (eventId) => (a, b) => {
 //   const aPR = a.personalBests.find((i) => i.eventId.toString() === eventId.toString())?.best
@@ -49,8 +50,9 @@ const useStyles = makeStyles((theme) => ({
 const RoundPage = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const confirm = useConfirm();
   const { competitionId, eventId, roundNumber } = useParams();
-  const [ configureScramblersDialog, setConfigureScramblersDialog ] = useState(false);
+  const [configureScramblersDialog, setConfigureScramblersDialog] = useState(false);
 
   const activityId = `${eventId}-r${roundNumber}`;
   const wcif = useSelector((state) => state.wcif);
@@ -80,19 +82,43 @@ const RoundPage = () => {
     return activity.activityCode.split('-')[0] === roundActivity.activityCode.split('-')[0] && activity.activityCode.split('-')[1] === roundActivity.activityCode.split('-')[1];
   })).length, [roundActivity.activityCode, wcif]);
 
+  const personsAssignedToCompeteOrJudge = useMemo(() => wcif.persons.filter((p) => p.assignments.find((a) => {
+    const activity = activityById(wcif, a.activityId);
+    return activity.activityCode.split('-')[0] === roundActivity.activityCode.split('-')[0]
+      && activity.activityCode.split('-')[1] === roundActivity.activityCode.split('-')[1]
+      && ['competitor', 'staff-judge'].indexOf(a.assignmentCode) > -1;
+  })).length, [roundActivity.activityCode, wcif]);
 
   const onGenerateGroupActitivites = () => {
-    dispatch(generateGroupActitivites(roundActivity.activityCode, groupData.groups));
+    // dispatch(generateGroupActitivites(roundActivity.activityCode, groupData.groups));
   };
 
   const onResetGroupActitivites = () => {
-
+    confirm({
+      description: 'Do you really want to reset all group activities in this round?',
+      confirmationText: 'Yes',
+      cancellationText: 'No',
+    })
+      .then(() => {
+        // remove competitor assignments for groups
+        dispatch(bulkRemovePersonAssignment([
+          ...groups.map((group) => ({
+            activityId: group.id,
+            assignmentCode: 'staff-judge',
+          })),
+          ...groups.map((group) => ({
+            activityId: group.id,
+            assignmentCode: 'competitor',
+          })),
+        ]))
+      })
+      .catch((e) => {
+        console.error(e);
+      });
   };
 
   const onAssignStaff = () => {
-    // show dialog
     setConfigureScramblersDialog(true);
-    // Show filtered list of persons where their role is staffing of some kind (their specific kind) and pick them for each group
   }
 
   return (
@@ -123,9 +149,9 @@ const RoundPage = () => {
           <CardActions>
             {<Button disabled={!groupData || groupData.groups !== 0} onClick={onGenerateGroupActitivites}>Generate Group Activities From Config</Button>}
             <Button onClick={onAssignStaff}>Choose Scramblers</Button>
-            {personsAssigned === 0
-              ? <Button onClick={onGenerateGroupActitivites}>Assign Group Activites</Button>
-              : <Button onClick={onResetGroupActitivites}>Reset Group Activities</Button>
+            {personsAssignedToCompeteOrJudge === 0
+              ? <Button onClick={onGenerateGroupActitivites}>Assign Competitor and Judging Assignments</Button>
+              : <Button onClick={onResetGroupActitivites}>Reset Non-scrambling Assignments</Button>
             }
           </CardActions>
         </Card>

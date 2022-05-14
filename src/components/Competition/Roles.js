@@ -71,8 +71,8 @@ const Roles = () => {
   const { competitionId } = useParams();
   const classes = useStyles();
   const dispatch = useDispatch();
-  const [ filterDeleted ] = useState(true);
-  const [ filterPending ] = useState(true);
+  const [filterDeleted] = useState(true);
+  const [filterPending] = useState(true);
   const filteredPersons = (filterDeleted || filterPending) ? wcif.persons.filter((person) => {
     if (filterDeleted && person.registration.status === 'deleted') {
       return false;
@@ -85,9 +85,10 @@ const Roles = () => {
     return true;
   }) : wcif.persons;
 
-  const handleChange = (e, person, roleId) => {
+  const handleChange = (e, registrantId, roleId) => {
+    const person = filteredPersons.find((p) => p.registrantId === registrantId);
     if (acceptedRegistration(person)) {
-      dispatch(togglePersonRole(person, roleId));
+      dispatch(togglePersonRole(registrantId, roleId));
     }
   };
 
@@ -101,7 +102,7 @@ const Roles = () => {
           <Typography color="textPrimary">Roles</Typography>
         </Breadcrumbs>
       </Grid>
-      <br/>
+      <br />
 
       <TableContainer component={Paper}>
         <Table size="small">
@@ -119,51 +120,51 @@ const Roles = () => {
               >Role</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className={classes.bold}/>
-              <TableCell className={classes.bold}/>
-              <TableCell className={classes.bold}/>
+              <TableCell className={classes.bold} />
+              <TableCell className={classes.bold} />
+              <TableCell className={classes.bold} />
               <TableCell className={classes.bold}>Delegate</TableCell>
               <TableCell className={classes.bold}>Organizer</TableCell>
-              { ROLES.map((role) => (
+              {ROLES.map((role) => (
                 <TableCell key={role.id} className={classes.bold}>{role.name}</TableCell>
               ))}
             </TableRow>
           </TableHead>
           <TableBody>
-          { filteredPersons.map((person) => (
-            <TableRow
-              key={person.registrantId}
-              hover
-              className={clsx({
-                [classes.firstTimer]: acceptedRegistration(person) && !person.wcaId,
-                [classes.delegateOrOrganizer]: acceptedRegistration(person) && isOrganizerOrDelegate(person),
-                [classes.disabled]: !acceptedRegistration(person),
-              })}
-              classes={{
-                hover: classes.hover,
-              }}
-            >
-              <TableCell><Link to={`/competitions/${competitionId}/persons/${person.registrantId}`}>{person.name}</Link></TableCell>
-              <TableCell>{person.wcaId}</TableCell>
-              <TableCell>{person.birthdate}</TableCell>
-              <TableCell padding="checkbox">
-                <Checkbox color="primary" disabled checked={person.roles.indexOf('delegate') > -1}/>
-              </TableCell>
-              <TableCell padding="checkbox">
-                <Checkbox color="primary" disabled checked={person.roles.indexOf('organizer') > -1}/>
-              </TableCell>
-              { ROLES.map((role) => (
-                <TableCell key={role.id} padding="checkbox">
-                  <Checkbox
-                    disabled={!acceptedRegistration(person)}
-                    color="primary"
-                    checked={person.roles.indexOf(role.id) > -1}
-                    onChange={(e) => handleChange(e, person.registrantId, role.id)}
-                  />
+            {filteredPersons.map((person) => (
+              <TableRow
+                key={person.registrantId}
+                hover
+                className={clsx({
+                  [classes.firstTimer]: acceptedRegistration(person) && !person.wcaId,
+                  [classes.delegateOrOrganizer]: acceptedRegistration(person) && isOrganizerOrDelegate(person),
+                  [classes.disabled]: !acceptedRegistration(person),
+                })}
+                classes={{
+                  hover: classes.hover,
+                }}
+              >
+                <TableCell><Link to={`/competitions/${competitionId}/persons/${person.registrantId}`}>{person.name}</Link></TableCell>
+                <TableCell>{person.wcaId}</TableCell>
+                <TableCell>{person.birthdate}</TableCell>
+                <TableCell padding="checkbox">
+                  <Checkbox color="primary" disabled checked={person.roles.indexOf('delegate') > -1} />
                 </TableCell>
-              ))}
-            </TableRow>
-          ))}
+                <TableCell padding="checkbox">
+                  <Checkbox color="primary" disabled checked={person.roles.indexOf('organizer') > -1} />
+                </TableCell>
+                {ROLES.map((role) => (
+                  <TableCell key={role.id} padding="checkbox">
+                    <Checkbox
+                      disabled={!acceptedRegistration(person)}
+                      color="primary"
+                      checked={person.roles.indexOf(role.id) > -1}
+                      onChange={(e) => handleChange(e, person.registrantId, role.id)}
+                    />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
           </TableBody>
           <TableFooter>
             <TableRow>
@@ -176,7 +177,7 @@ const Roles = () => {
               <TableCell className={classes.bold}>
                 {pluralize(wcif.persons.reduce((acc, person) => acc + (person.registration && !person.wcaId ? 1 : 0), 0), 'First-Timer')}
               </TableCell>
-              <TableCell/>
+              <TableCell />
               <TableCell className={classes.bold}>
                 {wcif.persons.reduce((acc, person) => acc + (person.roles.indexOf('delegate') > -1 ? 1 : 0), 0)}
               </TableCell>

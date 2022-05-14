@@ -6,6 +6,7 @@ import { Provider } from 'react-redux';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { ConfirmProvider } from 'material-ui-confirm';
 import './assets/index.css';
 import App from './components/App/';
 import * as serviceWorker from './serviceWorker';
@@ -28,8 +29,10 @@ ReactDOM.render((
     <Router>
       <AuthProvider>
         <ThemeProvider theme={theme}>
-          <CssBaseline/>
-          <App />
+          <CssBaseline />
+          <ConfirmProvider>
+            <App />
+          </ConfirmProvider>
         </ThemeProvider>
       </AuthProvider>
     </Router>

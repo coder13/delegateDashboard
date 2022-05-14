@@ -10,9 +10,10 @@ export const FETCHED_WCIF = 'fetched_wcif';
 export const UPLOADING_WCIF = 'uploading_wcif';
 export const UPDATE_WCIF_ERRORS = 'update_wcif_errors';
 export const TOGGLE_PERSON_ROLE = 'toggle_person_role';
-export const GENERATE_GROUP_ACTIVITIES = 'generate_group_activities';
 export const ADD_PERSON_ASSIGNMENT = 'add_person_assignment';
+export const BULK_ADD_PERSON_ASSIGNMENT = 'bulk_add_person_assignment';
 export const REMOVE_PERSON_ASSIGNMENT = 'remove_person_assignment';
+export const BULK_REMOVE_PERSON_ASSIGNMENT = 'bulk_remove_person_assignment';
 export const UPDATE_GROUP_COUNT = 'update_group_count';
 export const UPDATE_ROUND_CHILD_ACTIVITIES = 'update_round_child_activities';
 
@@ -85,12 +86,6 @@ export const togglePersonRole = (registrantId, roleId) => ({
   roleId,
 });
 
-export const generateGroupActitivites = (activityCode, groups) => ({
-  type: GENERATE_GROUP_ACTIVITIES,
-  activityCode,
-  groups,
-});
-
 /** 
  * @param {number} registrantId
  * @param {Assignment} assignment
@@ -101,6 +96,15 @@ export const addPersonAssignment = (registrantId, assignment) => ({
   assignment,
 });
 
+
+/** 
+ * @param {array} assignments - [{activityId, registrantId, assignment: Assignment}]
+ */
+export const bulkAddPersonAssignment = (assignments) => ({
+  type: BULK_ADD_PERSON_ASSIGNMENT,
+  assignments
+});
+
 /** 
  * @param {number} registrantId
  * @param {number} activityId
@@ -109,6 +113,19 @@ export const removePersonAssignment = (registrantId, activityId) => ({
   type: REMOVE_PERSON_ASSIGNMENT,
   registrantId,
   activityId,
+});
+
+/** 
+ * Optionally remove person assignments by either any of activityId, registrantId, and/or assignmentCode
+ * if only activityId is specified, then it removes all group assignments by that activityId.
+ * if only registrantId is specified, then it removes all group assignments for the person.
+ * if only assignmentCode is specified, then it removes all group assignments under that code.
+ * if more than 1 is specified, then it will preform an *and*
+ * @param {array} assignments - [{activityId?, registrantId?, assignmentCode?}]
+ */
+export const bulkRemovePersonAssignment = (assignments) => ({
+  type: BULK_REMOVE_PERSON_ASSIGNMENT,
+  assignments
 });
 
 export const updateGroupCount = (activityId, groupCount) => ({
