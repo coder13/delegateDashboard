@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { byGroupNumber, parseActivityCode } from "../../../lib/activities";
+import { isOrganizerOrDelegate } from "../../../lib/persons";
 import { addPersonAssignment, removePersonAssignment } from "../../../store/actions";
 
 const ConfigureScramblersDialog = ({ open, onClose, roundActivity }) => {
@@ -23,7 +24,10 @@ const ConfigureScramblersDialog = ({ open, onClose, roundActivity }) => {
   const { eventId } = parseActivityCode(activityCode);
 
   const compStaff = wcif.persons
-    .filter((p) => p.roles.some((r) => r.indexOf('staff') > -1))
+    .filter((p) => (
+      isOrganizerOrDelegate(p) ||
+      (p.roles.some((r) => r.indexOf('staff') > -1) && p.registration.eventIds.indexOf(eventId) > -1))
+    )
     .map((person) => ({
       ...person,
       pr: person.personalBests.find(

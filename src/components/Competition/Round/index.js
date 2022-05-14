@@ -88,7 +88,7 @@ const RoundPage = () => {
 
   const personsAssigned = useMemo(() => wcif.persons.filter((p) => p.assignments.find((a) => {
     const activity = activityById(wcif, a.activityId);
-    return activity.activityCode.split('-')[0] === roundActivity.activityCode.split('-')[0] && activity.activityCode.split('-')[1] === roundActivity.activityCode.split('-')[1];
+    return activity.activityCode.split('-')[0] === roundActivity.activityCode.split('-')[0] && activity.activityCode.split('-')[1] === roundActivity.activityCode.split('-')[1]; // TODO IMPROVE
   })), [roundActivity.activityCode, wcif]);
 
   const personsAssignedToCompeteOrJudge = useMemo(() => wcif.persons.filter((p) => p.assignments.find((a) => {
@@ -132,7 +132,7 @@ const RoundPage = () => {
     if (SORT_ORGANIZATION_STAFF_IN_LAST_GROUPS) {
       let currentGroupPointer = groupActivityIds.length - 1; // start with the last group
 
-      const organizationStaff = wcif.persons
+      const organizationStaff = registeredPersonsForEvent
         .filter(isOrganizerOrDelegate)
         .filter(isAlreadyAssigned);
 
