@@ -5,12 +5,12 @@ import {
   FETCHING_WCIF,
   FETCHED_WCIF,
   UPLOADING_WCIF,
-  GENERATE_GROUP_ACTIVITIES,
   ADD_PERSON_ASSIGNMENT,
   BULK_ADD_PERSON_ASSIGNMENT,
   REMOVE_PERSON_ASSIGNMENT,
   BULK_REMOVE_PERSON_ASSIGNMENT,
   UPDATE_GROUP_COUNT,
+  UPDATE_ROUND_ACTIVITIES,
   UPDATE_ROUND_CHILD_ACTIVITIES
 } from './actions';
 
@@ -174,6 +174,14 @@ const reducers = {
         } : activity
     )))),
   }),
+  [UPDATE_ROUND_ACTIVITIES]: (state, action) => ({
+    ...state,
+    needToSave: true,
+    changedKeys: new Set([...state.changedKeys, 'schedule']),
+    wcif: mapIn(state.wcif, ['schedule', 'venues'], (venue) => mapIn(venue, ['rooms'], (room) => mapIn(room, ['activities'], (activity) => (
+      action.activities.find((a) => a.id === activity.id) || activity
+    )))),
+  })
 };
 
 function reducer(state = INITIAL_STATE, action) {

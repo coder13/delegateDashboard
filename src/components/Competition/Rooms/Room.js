@@ -13,12 +13,13 @@ import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton'
 import Menu from '@mui/material/Menu';
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import { useConfirm } from 'material-ui-confirm';
 import { generateNextChildActivityId, parseActivityCode } from '../../../lib/activities';
 import { getGroupData } from '../../../lib/wcif-extensions';
 import { advancingCompetitors } from '../../../lib/formulas';
-import { Button, TextField } from '@mui/material';
+import { Button, MenuItem, TextField } from '@mui/material';
 import { acceptedRegistrations } from '../../../lib/persons';
-import { updateRoundChildActivities, updateGroupCount } from '../../../store/actions';
+import { updateRoundChildActivities, updateGroupCount, updateRoundActivities } from '../../../store/actions';
 
 const useStyles = makeStyles((theme) => ({
   card: ({ room }) => ({
@@ -36,6 +37,7 @@ const useStyles = makeStyles((theme) => ({
 const Room = ({ venue, room }) => {
   const classes = useStyles({ room });
   const dispatch = useDispatch();
+  const confirm = useConfirm();
   const wcif = useSelector((state) => state.wcif);
   const [anchorEl, setAnchorEl] = React.useState(null);
   // const [configureStagesDialogOpen, setConfigureStagesDialogOpen] = React.useState(false);
@@ -60,7 +62,7 @@ const Room = ({ venue, room }) => {
       if (!person.registration) {
         return;
       }
-  
+
       person.registration.eventIds.forEach((eventId) => {
         if (_eventRegistrationCounts[eventId]) {
           _eventRegistrationCounts[eventId]++;
@@ -72,6 +74,24 @@ const Room = ({ venue, room }) => {
 
     return _eventRegistrationCounts;
   }, [wcif.persons]);
+
+  const onResetAllGroups = () => {
+    handleMenuClose();
+    confirm({
+      description: `This button should *only* be used to reset group data if another software messed up or you want to completely start over.\nTechnically speaking: it resets the child activities and extension data.`
+    })
+      .then(() => {
+        dispatch(updateRoundActivities(room.activities.map((activity) => ({
+          ...activity,
+          childActivities: [],
+          extensions: [],
+        }))));
+        // TODO: follow up with prompt to clear competitor assignments (highly recommended)
+      })
+      .catch((e) => {
+        console.error(e);
+      });
+  };
 
   return (
     <Card
@@ -85,6 +105,7 @@ const Room = ({ venue, room }) => {
         onClose={handleMenuClose}
       >
         {/* <MenuItem onClick={openConfigureStagesDialog}>Configure Stages</MenuItem> */}
+        <MenuItem onClick={onResetAllGroups}>Reset All Groups</MenuItem>
       </Menu>
       {/* <ConfigureStagesDialog
         open={configureStagesDialogOpen}
@@ -96,7 +117,7 @@ const Room = ({ venue, room }) => {
       <CardHeader
         action={
           <IconButton onClick={handleMenuOpen}>
-            <MoreVertIcon/>
+            <MoreVertIcon />
           </IconButton>
         }
         title={room.name}
@@ -128,8 +149,8 @@ const Room = ({ venue, room }) => {
                   const advancementCondition = previousRound?.advancementCondition;
 
                   const estimatedCompetitors = roundNumber === 1
-                      ? eventRegistrationCounts[eventId]
-                      : advancingCompetitors(advancementCondition, eventRegistrationCounts[eventId]);
+                    ? eventRegistrationCounts[eventId]
+                    : advancingCompetitors(advancementCondition, eventRegistrationCounts[eventId]);
                   const actualCompetitors = round.results.length;
 
                   const groupData = getGroupData(activity);
@@ -138,16 +159,14 @@ const Room = ({ venue, room }) => {
                   const canCreateGroups = (roundNumber === 1 && estimatedCompetitors > 0) || (roundNumber > 1 && round.results.length > 0);
 
                   const handleGroupCountChange = (e) => {
-                    if (e.currentTarget.value > 0 && e.currentTarget.value < estimatedCompetitors) {
-                      dispatch(updateGroupCount(activity.id, parseInt(e.currentTarget.value, 10)));
-                    }
+                    dispatch(updateGroupCount(activity.id, Math.max(1, parseInt(e.currentTarget.value, 10))));
                   };
 
                   const handleGenerateGroupActitivites = () => {
                     if (!groupData?.groups) {
                       return;
                     }
-                    
+
                     const childActivities = [];
                     const startActivityId = generateNextChildActivityId(wcif);
 
@@ -155,7 +174,7 @@ const Room = ({ venue, room }) => {
                       childActivities.push({
                         id: startActivityId + i,
                         name: `${activity.name}, Group ${i + 1}`,
-                        activityCode: `${activity.activityCode}-g${i+1}`,
+                        activityCode: `${activity.activityCode}-g${i + 1}`,
                         startTime: activity.startTime, // spread across groups
                         endTime: activity.endTime,
                         childActivities: [],
@@ -167,36 +186,37 @@ const Room = ({ venue, room }) => {
 
                   return (
                     <TableRow key={activity.id}>
-                    <TableCell>{eventId}</TableCell>
-                    <TableCell>{roundNumber}</TableCell>
-                    <TableCell>{estimatedCompetitors || '-'}</TableCell>
-                    <TableCell>{round.scrambleSetCount}</TableCell>
-                    <TableCell>
-                      <TextField
-                        label="Groups"
-                        type="number"
-                        variant="outlined"
-                        size="small"
-                        value={groupData?.groups || round.scrambleSetCount}
-                        onChange={handleGroupCountChange}
-                        style={{ maxWidth: '5em'}}
-                      />  
-                    </TableCell>
-                    <TableCell>{estimatedCompetitors && groupData?.groups ? Math.ceil(estimatedCompetitors / groupData.groups) : '-'}</TableCell>
-                    <TableCell>{actualCompetitors || (roundNumber === 1 && estimatedCompetitors) || '-'}</TableCell>
-                    <TableCell>{activity.childActivities.length !== (groupData?.groups || round.scrambleSetCount)
-                      ? (
-                        <Button
-                          variant="contained"
-                          disabled={!canCreateGroups}
+                      <TableCell>{eventId}</TableCell>
+                      <TableCell>{roundNumber}</TableCell>
+                      <TableCell>{estimatedCompetitors || '-'}</TableCell>
+                      <TableCell>{round.scrambleSetCount}</TableCell>
+                      <TableCell>
+                        <TextField
+                          id=""
+                          type="number"
+                          variant="outlined"
                           size="small"
-                          onClick={handleGenerateGroupActitivites}
-                        >
-                          Create Groups
-                        </Button>
-                      )
-                      : activity.childActivities.length
-                    }</TableCell>
+                          defaultValue={1}
+                          value={groupData?.groups}
+                          onChange={handleGroupCountChange}
+                          style={{ maxWidth: '5em' }}
+                        />
+                      </TableCell>
+                      <TableCell>{estimatedCompetitors && groupData?.groups ? Math.ceil(estimatedCompetitors / groupData.groups) : '-'}</TableCell>
+                      <TableCell>{actualCompetitors || (roundNumber === 1 && estimatedCompetitors) || '-'}</TableCell>
+                      <TableCell>{activity.childActivities.length !== (groupData?.groups || round.scrambleSetCount)
+                        ? (
+                          <Button
+                            variant="contained"
+                            disabled={!canCreateGroups}
+                            size="small"
+                            onClick={handleGenerateGroupActitivites}
+                          >
+                            Create Groups
+                          </Button>
+                        )
+                        : activity.childActivities.length
+                      }</TableCell>
                     </TableRow>
                   );
                 })}

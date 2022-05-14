@@ -71,6 +71,9 @@ const RoundPage = () => {
   const startTime = new Date(roundActivity.startTime);
   const endTime = new Date(roundActivity.endTime);
 
+  /**
+   * This determines if the group counts have been determined. This must be done first prior to all assignments
+   */
   const groupData = getGroupData(roundActivity);
 
   const groups = groupActivitiesByRound(wcif, activityId);

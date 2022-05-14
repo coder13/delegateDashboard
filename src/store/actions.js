@@ -15,6 +15,7 @@ export const BULK_ADD_PERSON_ASSIGNMENT = 'bulk_add_person_assignment';
 export const REMOVE_PERSON_ASSIGNMENT = 'remove_person_assignment';
 export const BULK_REMOVE_PERSON_ASSIGNMENT = 'bulk_remove_person_assignment';
 export const UPDATE_GROUP_COUNT = 'update_group_count';
+export const UPDATE_ROUND_ACTIVITIES = 'update_round_activities';
 export const UPDATE_ROUND_CHILD_ACTIVITIES = 'update_round_child_activities';
 
 const fetchingWCIF = () => ({
@@ -132,6 +133,11 @@ export const updateGroupCount = (activityId, groupCount) => ({
   type: UPDATE_GROUP_COUNT,
   activityId,
   groupCount,
+});
+
+export const updateRoundActivities = (activities) => ({
+  type: UPDATE_ROUND_ACTIVITIES,
+  activities,
 });
 
 export const updateRoundChildActivities = (activityId, childActivities) => ({
