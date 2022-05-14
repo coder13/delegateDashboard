@@ -60,7 +60,7 @@ export default function AuthProvider({ children }) {
         to: {
           replace: '/',
           hash: null,
-          state: history.state,
+          state: location.state,
         },
       })
     }
@@ -71,7 +71,7 @@ export default function AuthProvider({ children }) {
     //   history.replace(redirectPath);
     //   localStorage.removeItem(localStorageKey('redirectPath'));
     // }
-  }, [location]);
+  }, [location, navigate]);
 
   const signedIn = useCallback(() => !!accessToken, [accessToken]);
 

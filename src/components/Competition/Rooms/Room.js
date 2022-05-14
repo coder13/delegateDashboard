@@ -75,9 +75,9 @@ const Room = ({ venue, room }) => {
     return _eventRegistrationCounts;
   }, [wcif.persons]);
 
-  const onCreateAllGroups = () => {
-    // TODO
-  };
+  // const onCreateAllGroups = () => {
+  // TODO
+  // };
 
   const onResetAllGroups = () => {
     handleMenuClose();

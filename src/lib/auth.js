@@ -1,4 +1,4 @@
-import { WCA_ORIGIN, WCA_OAUTH_CLIENT_ID } from './wca-env';
+import { WCA_OAUTH_CLIENT_ID } from './wca-env';
 
 // /* Use separate set of keys for each OAuth client (e.g. for WCA production and staging). */
 const localStorageKey = key => `groups.${WCA_OAUTH_CLIENT_ID}.${key}`;
