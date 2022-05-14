@@ -22,11 +22,11 @@ const GroupCard = ({ groupData, roundActivity, groupActivity }) => {
 
   return (
     <Card style={{ marginTop: '1em' }}>
-      <CardHeader title={`Group ${parseActivityCode(groupActivity.activityCode).groupNumber}`} />
+      <CardHeader title={`Group ${parseActivityCode(groupActivity.activityCode).groupNumber}`} subheader={`Group Size: ${personsAssigned.length}`} />
       <CardContent>
         <Grid container>
           <Grid item xs={4} style={{ padding: '0.5em' }}>
-            <Typography variant="h6">Staff</Typography>
+            <Typography variant="h6">Staff ({staff.length})</Typography>
             <Typography><b>Judges: </b>{mapNames(judges)}</Typography>
             <Typography><b>Scramblers: </b>{mapNames(scramblers)}</Typography>
             <Typography><b>Runners: </b>{mapNames(runners)}</Typography>
@@ -35,7 +35,7 @@ const GroupCard = ({ groupData, roundActivity, groupActivity }) => {
             )}
           </Grid>
           <Grid item xs={8} style={{ padding: '0.5em' }}>
-            <Typography variant="h6">Competitors: </Typography>
+            <Typography variant="h6">Competitors: ({competitors.length})</Typography>
             <Typography>{mapNames(competitors)}</Typography>
           </Grid>
         </Grid>

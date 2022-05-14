@@ -11,11 +11,11 @@ export const registeredForEvent = (eventId) => ({ registration }) => registratio
  * Determines if a person is a delegate / trainee-delegate / organizer
  */
 export const isOrganizerOrDelegate = (person) =>
- person.roles.some((role) => ['delegate', 'trainee-delegate', 'organizer'].includes(role));
+  person.roles.some((role) => ['delegate', 'trainee-delegate', 'organizer'].includes(role));
 
- /**
-  * Returns a filtered list of people who's registration has been accepted
-  */
+/**
+ * Returns a filtered list of people who's registration has been accepted
+ */
 export const acceptedRegistrations = (persons) => persons.filter(acceptedRegistration);
 
 /**
@@ -29,10 +29,10 @@ export const personsRegistered = (persons, eventId) => {
 /**
  * Returns the people that should be in the round
  */
-export const personsShouldBeInRound = (wcif, activityCode) => {
+export const personsShouldBeInRound = (persons, activityCode) => {
   const parsedActivity = parseActivityCode(activityCode);
   if (parsedActivity.roundNumber === 1) {
-    return personsRegistered(wcif.persons, parsedActivity.eventId);
+    return personsRegistered(persons, parsedActivity.eventId);
   }
 
   return [];

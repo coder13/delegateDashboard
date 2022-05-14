@@ -8,13 +8,19 @@ import Typography from '@mui/material/Typography';
 import Link from '../../shared/MaterialLink';
 import Button from '@mui/material/Button';
 import { activityById, allActivities, byGroupNumber, groupActivitiesByRound, parseActivityCode } from '../../../lib/activities';
-import { personsShouldBeInRound } from '../../../lib/persons';
+import { isOrganizerOrDelegate, personsShouldBeInRound } from '../../../lib/persons';
 import { bulkAddPersonAssignment, bulkRemovePersonAssignment } from '../../../store/actions';
 import { Card, CardHeader, CardContent, CardActions } from '@mui/material';
 import GroupCard from './GroupCard';
 import ConfigureScramblersDialog from './ConfigureScramblersDialog';
 import { getGroupData } from '../../../lib/wcif-extensions';
 import { useConfirm } from 'material-ui-confirm';
+
+/**
+ * TODO: Create a setting for this
+ * This is an *opinion*
+ */
+const SORT_ORGANIZATION_STAFF_IN_LAST_GROUPS = true;
 
 // const byWorldRanking = (eventId) => (a, b) => {
 //   const aPR = a.personalBests.find((i) => i.eventId.toString() === eventId.toString())?.best
@@ -93,14 +99,14 @@ const RoundPage = () => {
     // determine who needs assignments
     // pick groups for them
     // assign their judging assignment to be the group after
-    const groupsActivityIds = groups.map((_, index) => groups.find((g) => parseActivityCode(g.activityCode)?.groupNumber === index + 1).id);
+    const groupActivityIds = groups.map((_, index) => groups.find((g) => parseActivityCode(g.activityCode)?.groupNumber === index + 1).id);
     const assignments = [];
 
     // start with scramblers
     const scramblers = personsAssigned
-      .filter((p) => p.assignments.find((a) => groupsActivityIds.indexOf(a.activityId) > -1 && a.assignmentCode === 'staff-scrambler'))
+      .filter((p) => p.assignments.find((a) => groupActivityIds.indexOf(a.activityId) > -1 && a.assignmentCode === 'staff-scrambler'))
       .map((p) => {
-        const scramblingAssignments = p.assignments.filter((a) => groupsActivityIds.indexOf(a.activityId) > -1 && a.assignmentCode === 'staff-scrambler').map(({ activityId }) => groupsActivityIds.findIndex((g) => activityId === g));
+        const scramblingAssignments = p.assignments.filter((a) => groupActivityIds.indexOf(a.activityId) > -1 && a.assignmentCode === 'staff-scrambler').map(({ activityId }) => groupActivityIds.findIndex((g) => activityId === g));
 
         return {
           registrantId: p.registrantId,
@@ -108,16 +114,73 @@ const RoundPage = () => {
         };
       });
 
-    debugger;
-
     assignments.push(...scramblers.map((s) => ({
       registrantId: s.registrantId,
       assignment: {
         assignmentCode: 'competitor',
-        activityId: groupsActivityIds[(s.groupNumber + groupsActivityIds.length - 1) % groupsActivityIds.length],
+        activityId: groupActivityIds[(s.groupNumber + groupActivityIds.length - 1) % groupActivityIds.length],
         stationNumber: null,
       },
     })));
+
+    const isAlreadyAssigned = (person) => !assignments.find((a) => a.registrantId === person.registrantId && a.assignment.assignmentCode === 'competitor')
+
+    // Now for other non-scrambler staff
+    if (SORT_ORGANIZATION_STAFF_IN_LAST_GROUPS) {
+      let currentGroupPointer = groupActivityIds.length - 1; // start with the last group
+
+      const organizationStaff = wcif.persons
+        .filter(isOrganizerOrDelegate)
+        .filter(isAlreadyAssigned);
+
+      organizationStaff.forEach((person) => {
+        assignments.push({
+          registrantId: person.registrantId,
+          assignment: {
+            assignmentCode: 'competitor',
+            activityId: groupActivityIds[currentGroupPointer],
+            stationNumber: null,
+          },
+        });
+
+        // decrement and loop
+        currentGroupPointer = (currentGroupPointer + groupActivityIds.length - 1) % groupActivityIds.length;
+      });
+    }
+
+    const everyoneElse = personsShouldBeInRound(wcif.persons, roundActivity.activityCode).filter(isAlreadyAssigned);
+
+    const nextGroupToAssign = () => {
+      // determine smallest group
+      const groupSizes = groupActivityIds.map((activityId) => assignments.filter(({ assignment }) => assignment.activityId === activityId && assignment.assignmentCode === 'competitor').length);
+      const min = Math.min(...groupSizes);
+      const groupSizesIndex = groupSizes.indexOf(min);
+      return {
+        competing: groupActivityIds[groupSizesIndex],
+        judging: groupActivityIds[(groupSizesIndex + groupActivityIds.length + 1) % groupActivityIds.length],
+      };
+    }
+
+    everyoneElse.forEach((person) => {
+      const nextGroupActivityId = nextGroupToAssign();
+      assignments.push({
+        registrantId: person.registrantId,
+        assignment: {
+          assignmentCode: 'competitor',
+          activityId: nextGroupActivityId.competing,
+          stationNumber: null,
+        },
+      });
+
+      assignments.push({
+        registrantId: person.registrantId,
+        assignment: {
+          assignmentCode: 'staff-judge',
+          activityId: nextGroupActivityId.judging,
+          stationNumber: null,
+        },
+      });
+    });
 
     dispatch(bulkAddPersonAssignment(assignments));
   };
@@ -167,13 +230,12 @@ const RoundPage = () => {
         <Card>
           <CardHeader title="Round Information" />
           <CardContent>
-            <Typography>{unassignedRegisteredPersons.length} Unassigned competitors</Typography>
             <Typography>Time: {startTime.toLocaleDateString()} {startTime.toLocaleTimeString()} - {endTime.toLocaleTimeString()} ({(endTime - startTime) / 1000 / 60} Minutes)</Typography>
             {!groupData
               ? <Link style={{ display: 'block' }} to={`/competitions/${competitionId}/rooms`}>Need to configure group config</Link>
               : <Typography>{`Groups: ${groupData.groups} (source: ${groupData.source}) | Competitors per group: ${Math.round(unassignedRegisteredPersons.length / groupData.groups)}`}</Typography>
             }
-            <Typography>{`Round Size: ${personsShouldBeInRound(wcif, activityId).length} | Assigned Persons: ${personsAssigned.length}`}</Typography>
+            <Typography>{`Round Size: ${personsShouldBeInRound(wcif.persons, activityId).length} | Assigned Persons: ${personsAssigned.length}`}</Typography>
           </CardContent>
           <CardActions>
             {<Button disabled={!groupData || groupData.groups !== 0} onClick={onGenerateGroupActitivites}>Generate Group Activities From Config</Button>}

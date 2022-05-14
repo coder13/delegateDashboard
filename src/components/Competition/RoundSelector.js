@@ -57,39 +57,39 @@ const RoundSelectorPage = () => {
         </Breadcrumbs>
       </Grid>
       <Grid item>
-      <List>
-        {wcif.events.map((event) => (
-          <li key={event.id} className={classes.listSection}>
-            <ul className={classes.ul}>
-              <ListSubheader>{eventNameById(event.id)}</ListSubheader>
-              {event.rounds.map((round, index) => {                
-                const roundActivity = _allActivities.find((activity) => activity.activityCode === round.id);
+        <List>
+          {wcif.events.map((event) => (
+            <li key={event.id} className={classes.listSection}>
+              <ul className={classes.ul}>
+                <ListSubheader>{eventNameById(event.id)}</ListSubheader>
+                {event.rounds.map((round, index) => {
+                  const roundActivity = _allActivities.find((activity) => activity.activityCode === round.id);
 
-                const _personsShouldBeInRound = personsShouldBeInRound(wcif, round.id).length;
-                const personsAssigned = wcif.persons.filter((p) => p.assignments.find((a) => {
-                  const activity = activityById(wcif, a.activityId);
-                  return activity.activityCode.split('-')[0] === round.id.split('-')[0] && activity.activityCode.split('-')[1] === round.id.split('-')[1];
-                })).length;
+                  const _personsShouldBeInRound = personsShouldBeInRound(wcif.persons, round.id).length;
+                  const personsAssigned = wcif.persons.filter((p) => p.assignments.find((a) => {
+                    const activity = activityById(wcif, a.activityId);
+                    return activity.activityCode.split('-')[0] === round.id.split('-')[0] && activity.activityCode.split('-')[1] === round.id.split('-')[1];
+                  })).length;
 
-                return (
-                  <ListItem key={round.id} button component={RouterLink} to={round.id}>
-                    <ListItemAvatar>
-                      <span className={`cubing-icon event-${event.id}`} />
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={`${eventNameById(event.id)} Round ${index + 1}`}
-                      secondary={[
-                        `${pluralize(roundActivity?.childActivities?.length, 'group', 'groups')} generated`,
-                        `${pluralize(personsAssigned, 'person', 'people')} assigned of ${_personsShouldBeInRound}`
-                      ].join(' | ')}
-                    />
-                  </ListItem>
-                )
-              })}
-            </ul>
-          </li>
-        ))}
-      </List>
+                  return (
+                    <ListItem key={round.id} button component={RouterLink} to={round.id}>
+                      <ListItemAvatar>
+                        <span className={`cubing-icon event-${event.id}`} />
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={`${eventNameById(event.id)} Round ${index + 1}`}
+                        secondary={[
+                          `${pluralize(roundActivity?.childActivities?.length, 'group', 'groups')} generated`,
+                          `${pluralize(personsAssigned, 'person', 'people')} assigned of ${_personsShouldBeInRound}`
+                        ].join(' | ')}
+                      />
+                    </ListItem>
+                  )
+                })}
+              </ul>
+            </li>
+          ))}
+        </List>
       </Grid>
     </Grid>
   );
