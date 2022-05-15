@@ -1,12 +1,14 @@
 import React from 'react';
 import { Routes, Route, Outlet } from 'react-router-dom';
-import Competition from '../Competition/'
-import CompetitionHome from '../Competition/Home'
-import RolesPage from '../Competition/Roles'
-import RoomsPage from '../Competition/Rooms'
-import RoundPage from '../Competition/Round'
-import RoundSelectorPage from '../Competition/RoundSelector'
-import PersonPage from '../Competition/Person'
+import {
+  Layout as CompetitionLayout,
+  Home as CompetitionHome,
+  Roles as RolesPage,
+  Rooms as RoomsPage,
+  Round as RoundPage,
+  RoundSelector as RoundSelectorPage,
+  Person as PersonPage,
+} from '../Competition';
 import CompetitionList from '../CompetitionList'
 import { useAuth } from '../providers/AuthProvider';
 import App from './App';
@@ -30,12 +32,12 @@ const Navigation = () => {
       <Route path="/" element={<App />}>
         <Route index
           element={(
-            signedIn() ? <CompetitionList/> : <p>Sign in to view comps!</p>
+            signedIn() ? <CompetitionList /> : <p>Sign in to view comps!</p>
           )}
         />
 
         <Route path="/competitions/" element={<AuthenticatedRoute />}>
-          <Route path=":competitionId" element={<Competition />}>
+          <Route path=":competitionId" element={<CompetitionLayout />}>
             <Route index element={<CompetitionHome />} />
             <Route path="roles" element={<RolesPage />} />
             <Route path="rooms" element={<RoomsPage />} />

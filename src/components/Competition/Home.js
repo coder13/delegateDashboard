@@ -1,12 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Link from '../shared/MaterialLink';
+import { useBreadcrumbs } from '../providers/BreadcrumbsProvider';
 
 const CompetitionHome = () => {
   const wcif = useSelector((state) => state.wcif);
+  const { setBreadcrumbs } = useBreadcrumbs();
   const approvedRegistrations = wcif.persons.filter((person) => person.registration.status === 'accepted');
+
+  useEffect(() => {
+    setBreadcrumbs([])
+  }, [setBreadcrumbs]);
+
 
   return (
     <Box display="flex" flexDirection="column">

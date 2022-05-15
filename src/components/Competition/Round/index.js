@@ -1,9 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { makeStyles } from '@mui/styles';
 import Grid from '@mui/material/Grid';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Typography from '@mui/material/Typography';
 import Link from '../../shared/MaterialLink';
 import Button from '@mui/material/Button';
@@ -15,6 +14,7 @@ import GroupCard from './GroupCard';
 import ConfigureScramblersDialog from './ConfigureScramblersDialog';
 import { getGroupData } from '../../../lib/wcif-extensions';
 import { useConfirm } from 'material-ui-confirm';
+import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
 
 /**
  * TODO: Create a setting for this
@@ -41,11 +41,6 @@ const SORT_ORGANIZATION_STAFF_IN_LAST_GROUPS = true;
  */
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-    flex: 1,
-    width: '100%',
-  },
   competitors: {
     display: 'flex',
     flex: 1,
@@ -57,8 +52,18 @@ const RoundPage = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const confirm = useConfirm();
+  const { setBreadcrumbs } = useBreadcrumbs();
   const { competitionId, eventId, roundNumber } = useParams();
   const [configureScramblersDialog, setConfigureScramblersDialog] = useState(false);
+
+  useEffect(() => {
+    setBreadcrumbs([{
+      to: 'events',
+      text: 'Events',
+    }, {
+      text: 'Round',
+    }])
+  }, [setBreadcrumbs]);
 
   const activityId = `${eventId}-r${roundNumber}`;
   const wcif = useSelector((state) => state.wcif);
@@ -217,21 +222,10 @@ const RoundPage = () => {
   }
 
   return (
-    <Grid container direction="column" spacing={2} className={classes.root}>
-      <Grid item>
-        <Breadcrumbs aria-label="breadcrumb">
-          <Link to={`/competitions/${competitionId}`}>
-            {wcif.name || competitionId}
-          </Link>
-          <Link to={`/competitions/${competitionId}/events`}>
-            Events
-          </Link>
-          <Typography color="textPrimary">{activityId}</Typography>
-        </Breadcrumbs>
-      </Grid>
+    <Grid container direction="column" spacing={2}>
       <Grid item>
         <Card>
-          <CardHeader title="Round Information" />
+          <CardHeader title={roundActivity.name} />
           <CardContent>
             <Typography>Time: {startTime.toLocaleDateString()} {startTime.toLocaleTimeString()} - {endTime.toLocaleTimeString()} ({(endTime - startTime) / 1000 / 60} Minutes)</Typography>
             {!groupData
