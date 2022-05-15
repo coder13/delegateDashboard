@@ -1,9 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, Outlet } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import Container from '@mui/material/Container';
-import Alert from '@mui/material/Alert';
-import { Breadcrumbs, Button, Grid, Typography } from '@mui/material';
+import { Alert, Breadcrumbs, Button, Container, Grid, Typography } from '@mui/material';
 import { fetchWCIF, uploadCurrentWCIFChanges } from '../../store/actions';
 import BreadcrumbsProvider, { useBreadcrumbs } from '../providers/BreadcrumbsProvider';
 import MaterialLink from '../shared/MaterialLink';
@@ -84,18 +82,16 @@ const CompetitionLayout = () => {
       <Container>
         <Grid container direction="column" spacing={2}>
           <Grid item>
-            {needToSave && (
-              <Alert
-                severity="error"
-                action={
-                  <Button color="inherit" size="small" onClick={() => dispatch(uploadCurrentWCIFChanges())}>
-                    SAVE
-                  </Button>
-                }
-              >
-                Don't Forget to save changes!
-              </Alert>
-            )}
+            <Alert
+              severity={needToSave ? 'error' : 'warning'}
+              action={
+                <Button color="inherit" size="small" onClick={() => dispatch(uploadCurrentWCIFChanges())}>
+                  SAVE
+                </Button>
+              }
+            >
+              Don't Forget to save changes!
+            </Alert>
           </Grid>
           <BreadCrumbsGridItem />
           {errors.length > 0 && (
