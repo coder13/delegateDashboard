@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { makeStyles } from '@mui/styles';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Link from '../../shared/MaterialLink';
@@ -40,16 +39,7 @@ const SORT_ORGANIZATION_STAFF_IN_LAST_GROUPS = true;
  * 
  */
 
-const useStyles = makeStyles((theme) => ({
-  competitors: {
-    display: 'flex',
-    flex: 1,
-    width: '100%',
-  },
-}));
-
 const RoundPage = () => {
-  const classes = useStyles();
   const dispatch = useDispatch();
   const confirm = useConfirm();
   const { setBreadcrumbs } = useBreadcrumbs();
