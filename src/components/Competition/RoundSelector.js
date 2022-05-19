@@ -66,7 +66,7 @@ const RoundSelectorPage = () => {
               })).length;
 
               return (
-                <ListItem key={round.id} button component={RouterLink} to={round.id}>
+                <ListItem key={round.id} button component={RouterLink} to={`events/${round.id}`}>
                   <ListItemAvatar>
                     <span className={`cubing-icon event-${event.id}`} />
                   </ListItemAvatar>

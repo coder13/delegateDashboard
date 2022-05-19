@@ -86,6 +86,14 @@ export const allActivities = wcif => {
   return [...activities, ...flatMap(activities, allChildActivities)];
 };
 
+/**
+ * Creates a flat array of activities
+ */
+export const allRoundActivities = wcif => {
+  const activities = flatMap(rooms(wcif), room => room.activities);
+  return activities;
+};
+
 export const maxActivityId = wcif =>
   Math.max(...allActivities(wcif).map(activity => activity.id));
 
@@ -155,14 +163,22 @@ export const roomsConfigComplete = wcif =>
 
 export const roundActivities = (wcif, roundId) =>
   flatMap(rooms(wcif), room =>
-    room.activities.filter(({ activityCode }) =>
-      activityCode.startsWith(roundId)
-    )
+    room.activities
+      .filter(({ activityCode }) =>
+        activityCode.startsWith(roundId)
+      )
+      .map((activity) => ({
+        ...activity,
+        room
+      }))
   );
 
 export const groupActivitiesByRound = (wcif, roundId) =>
-  flatMap(roundActivities(wcif, roundId), activity =>
-    hasDistributedAttempts(roundId) ? [activity] : activity.childActivities
+  flatMap(roundActivities(wcif, roundId), roundActivity =>
+    hasDistributedAttempts(roundId) ? [roundActivity] : roundActivity.childActivities.map((activity) => ({
+      ...activity,
+      parent: roundActivity
+    }))
   );
 
 export const roomsWithTimezoneAndGroups = (wcif, roundId) =>
@@ -298,4 +314,10 @@ export const byGroupNumber = (groupA, groupB) => {
   const parsedActivityCodeA = parseActivityCode(groupA.activityCode);
   const parsedActivityCodeB = parseActivityCode(groupB.activityCode);
   return parsedActivityCodeA.groupNumber - parsedActivityCodeB.groupNumber;
+}
+
+export const getResultsForActivityCode = (wcif, activityCode) => {
+  const { eventId } = parseActivityCode(activityCode);
+  const event = wcif.events.find((e) => e.id === eventId);
+  return event?.rounds.find((r) => r.id === activityCode)?.results;
 }

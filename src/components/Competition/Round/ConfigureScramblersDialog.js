@@ -12,15 +12,20 @@ import {
   TableRow,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { byGroupNumber, parseActivityCode } from "../../../lib/activities";
+import { flatten } from "../../../lib/utils";
+import { rooms, byGroupNumber, parseActivityCode, roomByActivity } from "../../../lib/activities";
 import { isOrganizerOrDelegate } from "../../../lib/persons";
 import { addPersonAssignment, removePersonAssignment } from "../../../store/actions";
 
-const ConfigureScramblersDialog = ({ open, onClose, roundActivity }) => {
+const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
   const wcif = useSelector((state) => state.wcif);
+  const groupsRooms = rooms(wcif)
+    .filter((room) => (
+      flatten(room.activities.map((activity) => activity.childActivities))
+        .some((activity) => groups.find((g) => g.id === activity.id))
+    ));
   const dispatch = useDispatch();
 
-  const { activityCode } = roundActivity;
   const { eventId } = parseActivityCode(activityCode);
 
   const compStaff = wcif.persons
@@ -35,7 +40,6 @@ const ConfigureScramblersDialog = ({ open, onClose, roundActivity }) => {
       )?.best,
     }))
     .sort((a, b) => a.pr - b.pr);
-  const groups = roundActivity.childActivities;
 
   const getAssignmentForPersonGroup = (registrantId, activityId) => {
     const assignments = compStaff.find((p) => p.registrantId === registrantId).assignments;
@@ -54,38 +58,52 @@ const ConfigureScramblersDialog = ({ open, onClose, roundActivity }) => {
     }
   };
 
+  const sortedGroups = groups.sort
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xl">
       <DialogTitle>Configuring Staff For {activityCode}</DialogTitle>
-      <DialogContent>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Average</TableCell>
-              {groups.sort(byGroupNumber).map((group, index) => (
+      <Table stickyHeader>
+        <TableHead>
+          <TableRow>
+            <TableCell></TableCell>
+            <TableCell></TableCell>
+            {groupsRooms.map((room, index) => (
+              <TableCell key={room.id} style={{ textAlign: 'center' }} colSpan={6}>{room.name}</TableCell>
+            ))}
+            <TableCell></TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Name</TableCell>
+            <TableCell>Average</TableCell>
+            {groupsRooms.map((room, index) => (
+              groups.filter((group) => group.parent.room.name === room.name).map((group, index) => (
                 <TableCell key={group.id} style={{ textAlign: 'center' }}>Group {parseActivityCode(group.activityCode).groupNumber}</TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {compStaff.map((person) => (
-              <TableRow key={person.registrantId}>
-                <TableCell>{person.name}</TableCell>
-                <TableCell>{person.pr}</TableCell>
-                {groups.map((group) => (
+              ))
+            ))}
+            <TableCell>Total Group Assignments</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {compStaff.map((person) => (
+            <TableRow hover key={person.registrantId}>
+              <TableCell>{person.name}</TableCell>
+              <TableCell>{person.pr}</TableCell>
+              {groupsRooms.map((room, index) => (
+                groups.filter((group) => group.parent.room.name === room.name).map((group, index) => (
                   <TableCell key={group.id}>
                     <Checkbox
                       checked={getAssignmentForPersonGroup(person.registrantId, group.id)}
                       onChange={handleUpdateAssignmentForPerson(person.registrantId, group.id)}
                     />
                   </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </DialogContent>
+                ))
+              ))}
+              <TableCell>{0}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
       <DialogActions>
         <Button onClick={onClose}>Close</Button>
       </DialogActions>

@@ -125,6 +125,8 @@ export const firstResult = (arr, fn) =>
 
 export const flatMap = (arr, fn) => arr.reduce((xs, x) => xs.concat(fn(x)), []);
 
+export const flatten = (arr) => arr.reduce((xs, x) => xs.concat(x), []);
+
 export const groupBy = (arr, fn) =>
   arr.reduce(
     (obj, x) => updateIn(obj, [fn(x)], xs => (xs || []).concat(x)),

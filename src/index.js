@@ -12,6 +12,7 @@ import * as serviceWorker from './serviceWorker';
 import AuthProvider from './components/providers/AuthProvider';
 import store from './store';
 import QueryParamPreservingRouter from './components/QueryParamPreservingRouter';
+import "@cubing/icons";
 
 const theme = createTheme({
   palette: {
