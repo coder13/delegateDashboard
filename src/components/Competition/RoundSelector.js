@@ -39,6 +39,7 @@ const useStyles = makeStyles((theme) => ({
 
 const RoundSelectorPage = () => {
   const { setBreadcrumbs } = useBreadcrumbs();
+  const { competitionId } = useParams();
   const wcif = useSelector((state) => state.wcif);
   const classes = useStyles();
 
@@ -66,7 +67,7 @@ const RoundSelectorPage = () => {
               })).length;
 
               return (
-                <ListItem key={round.id} button component={RouterLink} to={`events/${round.id}`}>
+                <ListItem key={round.id} button component={RouterLink} to={`/competitions/${competitionId}/events/${round.id}`}>
                   <ListItemAvatar>
                     <span className={`cubing-icon event-${event.id}`} />
                   </ListItemAvatar>

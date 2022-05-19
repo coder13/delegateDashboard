@@ -55,7 +55,7 @@ const RoundPage = () => {
   const dispatch = useDispatch();
   const confirm = useConfirm();
   const { setBreadcrumbs } = useBreadcrumbs();
-  const { competitionId, eventId, roundNumber } = useParams();
+  const { eventId, roundNumber } = useParams();
   const [configureScramblersDialog, setConfigureScramblersDialog] = useState(false);
 
   useEffect(() => {
@@ -190,6 +190,7 @@ const RoundPage = () => {
       const organizationStaff = registeredPersonsForEvent
         .filter(isOrganizerOrDelegate)
         .filter(isAlreadyAssigned);
+      debugger;
 
       organizationStaff.forEach((person) => {
         assignments.push({
@@ -304,7 +305,7 @@ const RoundPage = () => {
         </>
       );
     } else if (personsAssignedToCompeteOrJudge > 0) {
-      <Button onClick={onResetGroupActitivites}>Reset Non-scrambling Assignments</Button>
+      return <Button onClick={onResetGroupActitivites}>Reset Non-scrambling Assignments</Button>
     }
   }
 

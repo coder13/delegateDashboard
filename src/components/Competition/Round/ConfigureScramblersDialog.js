@@ -16,6 +16,7 @@ import { flatten } from "../../../lib/utils";
 import { rooms, byGroupNumber, parseActivityCode, roomByActivity } from "../../../lib/activities";
 import { isOrganizerOrDelegate } from "../../../lib/persons";
 import { addPersonAssignment, removePersonAssignment } from "../../../store/actions";
+import CheckIcon from '@mui/icons-material/Check';
 
 const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
   const wcif = useSelector((state) => state.wcif);
@@ -76,6 +77,7 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
           <TableRow>
             <TableCell>Name</TableCell>
             <TableCell>Average</TableCell>
+            <TableCell>Registered</TableCell>
             {groupsRooms.map((room, index) => (
               groups.filter((group) => group.parent.room.name === room.name).map((group, index) => (
                 <TableCell key={group.id} style={{ textAlign: 'center' }}>Group {parseActivityCode(group.activityCode).groupNumber}</TableCell>
@@ -89,6 +91,7 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
             <TableRow hover key={person.registrantId}>
               <TableCell>{person.name}</TableCell>
               <TableCell>{person.pr}</TableCell>
+              <TableCell>{person.registration.eventIds.indexOf(eventId) > -1 ? <CheckIcon /> : ''}</TableCell>
               {groupsRooms.map((room, index) => (
                 groups.filter((group) => group.parent.room.name === room.name).map((group, index) => (
                   <TableCell key={group.id}>
@@ -99,7 +102,7 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
                   </TableCell>
                 ))
               ))}
-              <TableCell>{0}</TableCell>
+              <TableCell>{person.assignments.filter((a) => a.assignmentCode.indexOf('staff-') > -1).length}</TableCell>
             </TableRow>
           ))}
         </TableBody>
