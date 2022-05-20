@@ -15,11 +15,14 @@ import {
   InputLabel,
   Typography,
 } from '@mui/material';
-import { parseActivityCode } from '../../../lib/activities';
+import { createGroups, parseActivityCode } from '../../../lib/activities';
 import { advancingCompetitors } from '../../../lib/formulas';
 import { personsRegistered } from '../../../lib/persons';
 import { buildExtension, getExtensionData } from '../../../lib/wcif-extensions';
-import { updateRoundExtensionData } from '../../../store/actions';
+import {
+  updateRoundChildActivities,
+  updateRoundExtensionData,
+} from '../../../store/actions';
 
 const ConfigureGroupCountsDialog = ({
   open,
@@ -54,6 +57,11 @@ const ConfigureGroupCountsDialog = ({
     if (spreadGroupsAcrossAllStages) {
       dispatch(updateRoundExtensionData(round.id, groupsData));
     }
+
+    roundActivities.forEach((roundActivity) => {
+      const childActivities = createGroups(wcif, roundActivity, groupCount);
+      dispatch(updateRoundChildActivities(roundActivity.id, childActivities));
+    });
 
     reset();
     onClose();

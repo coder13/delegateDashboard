@@ -7,9 +7,15 @@ import {
   CardActions,
   CardContent,
   CardHeader,
+  Divider,
   List,
   ListItemButton,
   ListSubheader,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
 } from '@mui/material';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
@@ -454,14 +460,30 @@ const RoundPage = () => {
               </ListItemButton>
             ))}
           </List>
-          <CardContent>
-            <br />
-            <Typography>{`Round Size: ${
-              personsShouldBeInRound(wcif.persons, activityCode).length
-            } | Assigned Persons: ${personsAssigned.length} | Groups: ${
-              groupsData.groups
-            }`}</Typography>
-          </CardContent>
+          <Divider />
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Round Size</TableCell>
+                <TableCell>Persons In Round</TableCell>
+                <TableCell>Assigned Persons</TableCell>
+                <TableCell>
+                  Groups Configured <br />
+                  (per stage)
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                <TableCell>
+                  {personsShouldBeInRound(wcif.persons, activityCode).length}
+                </TableCell>
+                <TableCell>{round.results.length}</TableCell>
+                <TableCell>{personsAssigned.length}</TableCell>
+                <TableCell>{groupsData.groups}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
           <CardActions>{actionButtons()}</CardActions>
         </Card>
       </Grid>
