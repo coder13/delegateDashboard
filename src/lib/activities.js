@@ -29,6 +29,7 @@ export const activityCodeToName = (activityCode) => {
 
 export const hasDistributedAttempts = (activityCode) =>
   ['333fm', '333mbf'].includes(parseActivityCode(activityCode).eventId);
+z;
 
 export const activityDuration = ({ startTime, endTime }) =>
   new Date(endTime) - new Date(startTime);
