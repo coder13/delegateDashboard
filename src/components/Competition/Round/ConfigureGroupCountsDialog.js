@@ -15,7 +15,12 @@ import {
   InputLabel,
   Typography,
 } from '@mui/material';
-import { createGroups, parseActivityCode } from '../../../lib/activities';
+import {
+  createGroupActivity,
+  createGroups,
+  generateNextChildActivityId,
+  parseActivityCode,
+} from '../../../lib/activities';
 import { advancingCompetitors } from '../../../lib/formulas';
 import { personsRegistered } from '../../../lib/persons';
 import { buildExtension, getExtensionData } from '../../../lib/wcif-extensions';
@@ -42,6 +47,7 @@ const ConfigureGroupCountsDialog = ({
   }
 
   const { spreadGroupsAcrossAllStages, groups: groupCount } = groupsData;
+  const multipleStages = roundActivities.length > 1;
 
   const reset = () => {
     if (round) {
@@ -58,8 +64,23 @@ const ConfigureGroupCountsDialog = ({
       dispatch(updateRoundExtensionData(round.id, groupsData));
     }
 
+    let startActivityId = generateNextChildActivityId(wcif);
     roundActivities.forEach((roundActivity) => {
-      const childActivities = createGroups(wcif, roundActivity, groupCount);
+      const childActivities = [];
+      for (let i = 0; i < groupCount; i++) {
+        childActivities.push(
+          createGroupActivity(
+            startActivityId,
+            roundActivity,
+            i + 1,
+            roundActivity.startTime,
+            roundActivity.endTime
+          )
+        );
+
+        startActivityId++;
+      }
+
       dispatch(updateRoundChildActivities(roundActivity.id, childActivities));
     });
 
@@ -101,10 +122,12 @@ const ConfigureGroupCountsDialog = ({
       <DialogTitle>Configuring Group Counts For {activityCode}</DialogTitle>
       <DialogContent>
         <FormGroup>
-          <FormControlLabel
-            control={<Checkbox checked={spreadGroupsAcrossAllStages} />}
-            label="Spread Groups Across All Stages"
-          />
+          {multipleStages && (
+            <FormControlLabel
+              control={<Checkbox checked={spreadGroupsAcrossAllStages} />}
+              label="Spread Groups Across All Stages"
+            />
+          )}
           <br />
           {spreadGroupsAcrossAllStages && (
             <>
@@ -126,10 +149,12 @@ const ConfigureGroupCountsDialog = ({
                 There will be max group sizes of{' '}
                 {Math.ceil(roundSize / (groupCount || 1))}
               </Typography>
-              <Typography>
-                There will be max group sizes of{' '}
-                {Math.ceil(roundSize / 2 / (groupCount || 1))} per stage
-              </Typography>
+              {multipleStages && (
+                <Typography>
+                  There will be max group sizes of{' '}
+                  {Math.ceil(roundSize / 2 / (groupCount || 1))} per stage
+                </Typography>
+              )}
             </>
           )}
         </FormGroup>

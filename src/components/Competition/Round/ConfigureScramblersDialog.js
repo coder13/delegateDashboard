@@ -1,3 +1,5 @@
+import { useDispatch, useSelector } from 'react-redux';
+import CheckIcon from '@mui/icons-material/Check';
 import {
   Button,
   Checkbox,
@@ -10,29 +12,37 @@ import {
   TableCell,
   TableHead,
   TableRow,
-} from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
-import { flatten } from "../../../lib/utils";
-import { rooms, byGroupNumber, parseActivityCode, roomByActivity } from "../../../lib/activities";
-import { isOrganizerOrDelegate } from "../../../lib/persons";
-import { addPersonAssignment, removePersonAssignment } from "../../../store/actions";
-import CheckIcon from '@mui/icons-material/Check';
+} from '@mui/material';
+import {
+  rooms,
+  byGroupNumber,
+  parseActivityCode,
+  roomByActivity,
+} from '../../../lib/activities';
+import { isOrganizerOrDelegate } from '../../../lib/persons';
+import { flatten } from '../../../lib/utils';
+import {
+  addPersonAssignment,
+  removePersonAssignment,
+} from '../../../store/actions';
 
 const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
   const wcif = useSelector((state) => state.wcif);
-  const groupsRooms = rooms(wcif)
-    .filter((room) => (
-      flatten(room.activities.map((activity) => activity.childActivities))
-        .some((activity) => groups.find((g) => g.id === activity.id))
-    ));
+  const groupsRooms = rooms(wcif).filter((room) =>
+    flatten(room.activities.map((activity) => activity.childActivities)).some(
+      (activity) => groups.find((g) => g.id === activity.id)
+    )
+  );
   const dispatch = useDispatch();
 
   const { eventId } = parseActivityCode(activityCode);
 
   const compStaff = wcif.persons
-    .filter((p) => (
-      isOrganizerOrDelegate(p) ||
-      (p.roles.some((r) => r.indexOf('staff') > -1) && p.registration.eventIds.indexOf(eventId) > -1))
+    .filter(
+      (p) =>
+        isOrganizerOrDelegate(p) ||
+        (p.roles.some((r) => r.indexOf('staff') > -1) &&
+          p.registration.eventIds.indexOf(eventId) > -1)
     )
     .map((person) => ({
       ...person,
@@ -40,26 +50,33 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
         (pb) => pb.eventId === eventId && pb.type === 'average'
       )?.best,
     }))
-    .sort((a, b) => a.pr - b.pr);
+    .sort((a, b) => (a.pr || Number.MAX_VALUE) - (b.pr || Number.MAX_VALUE));
 
   const getAssignmentForPersonGroup = (registrantId, activityId) => {
-    const assignments = compStaff.find((p) => p.registrantId === registrantId).assignments;
-    return assignments.some((a) => a.activityId === activityId && a.assignmentCode === 'staff-scrambler');
-  }
+    const assignments = compStaff.find(
+      (p) => p.registrantId === registrantId
+    ).assignments;
+    return assignments.some(
+      (a) =>
+        a.activityId === activityId && a.assignmentCode === 'staff-scrambler'
+    );
+  };
 
   const handleUpdateAssignmentForPerson = (registrantId, activityId) => (e) => {
     console.log(39, e.target.checked, registrantId, activityId);
     if (e.target.checked) {
-      dispatch(addPersonAssignment(registrantId, {
-        activityId,
-        assignmentCode: 'staff-scrambler',
-      }));
+      dispatch(
+        addPersonAssignment(registrantId, {
+          activityId,
+          assignmentCode: 'staff-scrambler',
+        })
+      );
     } else {
       dispatch(removePersonAssignment(registrantId, activityId));
     }
   };
 
-  const sortedGroups = groups.sort
+  const sortedGroups = groups.sort;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xl">
@@ -70,7 +87,13 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
             <TableCell></TableCell>
             <TableCell></TableCell>
             {groupsRooms.map((room, index) => (
-              <TableCell key={room.id} style={{ textAlign: 'center' }} colSpan={6}>{room.name}</TableCell>
+              <TableCell
+                key={room.id}
+                style={{ textAlign: 'center' }}
+                colSpan={6}
+              >
+                {room.name}
+              </TableCell>
             ))}
             <TableCell></TableCell>
           </TableRow>
@@ -78,11 +101,15 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
             <TableCell>Name</TableCell>
             <TableCell>Average</TableCell>
             <TableCell>Registered</TableCell>
-            {groupsRooms.map((room, index) => (
-              groups.filter((group) => group.parent.room.name === room.name).map((group, index) => (
-                <TableCell key={group.id} style={{ textAlign: 'center' }}>Group {parseActivityCode(group.activityCode).groupNumber}</TableCell>
-              ))
-            ))}
+            {groupsRooms.map((room, index) =>
+              groups
+                .filter((group) => group.parent.room.name === room.name)
+                .map((group, index) => (
+                  <TableCell key={group.id} style={{ textAlign: 'center' }}>
+                    Group {parseActivityCode(group.activityCode).groupNumber}
+                  </TableCell>
+                ))
+            )}
             <TableCell>Total Group Assignments</TableCell>
           </TableRow>
         </TableHead>
@@ -91,18 +118,38 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
             <TableRow hover key={person.registrantId}>
               <TableCell>{person.name}</TableCell>
               <TableCell>{person.pr}</TableCell>
-              <TableCell>{person.registration.eventIds.indexOf(eventId) > -1 ? <CheckIcon /> : ''}</TableCell>
-              {groupsRooms.map((room, index) => (
-                groups.filter((group) => group.parent.room.name === room.name).map((group, index) => (
-                  <TableCell key={group.id}>
-                    <Checkbox
-                      checked={getAssignmentForPersonGroup(person.registrantId, group.id)}
-                      onChange={handleUpdateAssignmentForPerson(person.registrantId, group.id)}
-                    />
-                  </TableCell>
-                ))
-              ))}
-              <TableCell>{person.assignments.filter((a) => a.assignmentCode.indexOf('staff-') > -1).length}</TableCell>
+              <TableCell>
+                {person.registration.eventIds.indexOf(eventId) > -1 ? (
+                  <CheckIcon />
+                ) : (
+                  ''
+                )}
+              </TableCell>
+              {groupsRooms.map((room, index) =>
+                groups
+                  .filter((group) => group.parent.room.name === room.name)
+                  .map((group, index) => (
+                    <TableCell key={group.id}>
+                      <Checkbox
+                        checked={getAssignmentForPersonGroup(
+                          person.registrantId,
+                          group.id
+                        )}
+                        onChange={handleUpdateAssignmentForPerson(
+                          person.registrantId,
+                          group.id
+                        )}
+                      />
+                    </TableCell>
+                  ))
+              )}
+              <TableCell>
+                {
+                  person.assignments.filter(
+                    (a) => a.assignmentCode.indexOf('staff-') > -1
+                  ).length
+                }
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

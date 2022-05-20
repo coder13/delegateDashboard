@@ -70,24 +70,19 @@ const RoundPage = () => {
     useState(false);
   const [configureGroupCountsDialog, setConfigureGroupCountsDialog] =
     useState(false);
-
-  useEffect(() => {
-    setBreadcrumbs([
-      {
-        to: 'events',
-        text: 'Events',
-      },
-      {
-        text: 'Round',
-      },
-    ]);
-  }, [setBreadcrumbs]);
-
   const activityCode = `${eventId}-r${roundNumber}`;
   const wcif = useSelector((state) => state.wcif);
   const round = wcif.events.find((event) => event.id === eventId)?.rounds[
     roundNumber - 1
   ];
+
+  useEffect(() => {
+    setBreadcrumbs([
+      {
+        text: round.id,
+      },
+    ]);
+  }, [setBreadcrumbs, round.id]);
 
   const _allActivities = allActivities(wcif);
 
@@ -183,10 +178,12 @@ const RoundPage = () => {
     // pick groups for them
     // assign their judging assignment to be the group after
 
-    const groupActivityIds = roundActivities.map((round) =>
-      round.childActivities.map((g, index) => {
+    const groupActivityIds = roundActivities.map((roundActivity) =>
+      roundActivity.childActivities.map((g, index) => {
         const group = groups.find(
-          (g) => parseActivityCode(g.activityCode)?.groupNumber === index + 1
+          (g) =>
+            g.parent.room.name === roundActivity.room.name &&
+            parseActivityCode(g.activityCode)?.groupNumber === index + 1
         );
         return group.id;
       })
@@ -265,21 +262,32 @@ const RoundPage = () => {
 
     // Now for other non-scrambler staff
     if (SORT_ORGANIZATION_STAFF_IN_LAST_GROUPS) {
-      let currentGroupPointer = groupsData.group - 1; // start with the last group
+      let currentGroupPointer = groupActivityIds[0].length - 1; // start with the last group
 
-      const organizationStaff = registeredPersonsForEvent
-        .filter(isOrganizerOrDelegate)
-        .filter(isAlreadyAssigned);
+      const assignOrganizersOrStaff = (person) => {
+        const stagesInGroup = groupActivityIds
+          .map((g) => g[currentGroupPointer])
+          .map((activity) => ({
+            activity: activity,
+            size: assignments.filter(
+              ({ assignment }) =>
+                assignment.activityId === activity.id &&
+                assignment.assignmentCode === 'competitor'
+            ).length,
+          }));
 
-      const stagesInGroup = groupActivityIds.map((g) => g[currentGroupPointer]);
-      debugger;
+        const min = Math.min(...stagesInGroup.map((i) => i.size));
+        const smallestGroupActivity = stagesInGroup.find(
+          (g) => g.size === min
+        ).activity;
 
-      organizationStaff.forEach((person) => {
+        debugger;
+
         assignments.push({
           registrantId: person.registrantId,
           assignment: {
             assignmentCode: 'competitor',
-            activityId: groupActivityIds[currentGroupPointer],
+            activityId: smallestGroupActivity,
             stationNumber: null,
           },
         });
@@ -288,7 +296,21 @@ const RoundPage = () => {
         currentGroupPointer =
           (currentGroupPointer + groupActivityIds.length - 1) %
           groupActivityIds.length;
-      });
+      };
+
+      registeredPersonsForEvent
+        .filter((person) =>
+          person.roles.some((role) => role.indexOf('delegate') > -1)
+        )
+        .filter(isAlreadyAssigned)
+        .forEach(assignOrganizersOrStaff);
+
+      registeredPersonsForEvent
+        .filter((person) =>
+          person.roles.some((role) => role.indexOf('organizer') > -1)
+        )
+        .filter(isAlreadyAssigned)
+        .forEach(assignOrganizersOrStaff);
     }
 
     const everyoneElse = personsShouldBeInRound(
