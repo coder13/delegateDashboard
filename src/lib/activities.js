@@ -134,33 +134,6 @@ export const shouldHaveGroups = activity => {
   return !!(eventId && roundNumber && !groupNumber && !attemptNumber);
 };
 
-export const anyActivityConfig = wcif =>
-  rooms(wcif).some(room =>
-    room.activities.some(activity =>
-      getExtensionData('ActivityConfig', activity)
-    )
-  );
-
-export const activitiesWithUnpopulatedConfig = wcif =>
-  flatMap(rooms(wcif), room =>
-    room.activities
-      .filter(shouldHaveGroups)
-      .filter(activity => !getExtensionData('ActivityConfig', activity))
-  );
-
-export const activitiesConfigComplete = wcif =>
-  rooms(wcif).every(room =>
-    room.activities
-      .filter(shouldHaveGroups)
-      .map(activity => getExtensionData('ActivityConfig', activity))
-      .every(isPresentDeep)
-  );
-
-export const roomsConfigComplete = wcif =>
-  rooms(wcif)
-    .map(room => getExtensionData('RoomConfig', room))
-    .every(isPresentDeep);
-
 export const roundActivities = (wcif, roundId) =>
   flatMap(rooms(wcif), room =>
     room.activities
@@ -320,4 +293,34 @@ export const getResultsForActivityCode = (wcif, activityCode) => {
   const { eventId } = parseActivityCode(activityCode);
   const event = wcif.events.find((e) => e.id === eventId);
   return event?.rounds.find((r) => r.id === activityCode)?.results;
-}
+};
+
+export const createGroupActivity = (id, roundActivity, groupNumber, startTime, endTime) => {
+  const newActivityCode = `${roundActivity.activityCode}-g${groupNumber}`;
+
+  return {
+    id: id,
+    name: activityCodeToName(newActivityCode),
+    activityCode: newActivityCode,
+    startTime: startTime, // spread across groups
+    endTime: endTime,
+    childActivities: [],
+  };
+};
+
+export const createGroups = (wcif, roundActivity, groupCount) => {
+  const childActivities = [];
+  const startActivityId = generateNextChildActivityId(wcif);
+
+  for (let i = 0; i < groupCount; i++) {
+    childActivities.push(createGroupActivity(
+      startActivityId + i,
+      roundActivity,
+      i + 1,
+      roundActivity.startTime,
+      roundActivity.endTime
+    ));
+  }
+
+  return childActivities;
+};

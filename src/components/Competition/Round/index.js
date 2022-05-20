@@ -1,20 +1,42 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useConfirm } from 'material-ui-confirm';
+import { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { makeStyles } from '@mui/styles';
+import {
+  Card,
+  CardActions,
+  CardContent,
+  CardHeader,
+  List,
+  ListItemButton,
+  ListSubheader,
+} from '@mui/material';
+import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import Link from '../../shared/MaterialLink';
-import Button from '@mui/material/Button';
-import { activityById, activityCodeToName, activityDurationString, allActivities, byGroupNumber, groupActivitiesByRound, parseActivityCode, roomByActivity } from '../../../lib/activities';
-import { isOrganizerOrDelegate, personsShouldBeInRound } from '../../../lib/persons';
-import { bulkAddPersonAssignment, bulkRemovePersonAssignment } from '../../../store/actions';
-import { Card, CardHeader, CardContent, CardActions, List, ListItem, ListItemButton, ListSubheader } from '@mui/material';
-import GroupCard from './GroupCard';
-import ConfigureScramblersDialog from './ConfigureScramblersDialog';
-import { getGroupData } from '../../../lib/wcif-extensions';
-import { useConfirm } from 'material-ui-confirm';
+import {
+  activityById,
+  activityCodeToName,
+  allActivities,
+  byGroupNumber,
+  groupActivitiesByRound,
+  parseActivityCode,
+  roomByActivity,
+} from '../../../lib/activities';
+import {
+  isOrganizerOrDelegate,
+  personsShouldBeInRound,
+} from '../../../lib/persons';
+import { getExtensionData } from '../../../lib/wcif-extensions';
+import {
+  bulkAddPersonAssignment,
+  bulkRemovePersonAssignment,
+  updateRoundChildActivities,
+} from '../../../store/actions';
 import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
+import ConfigureGroupCountsDialog from './ConfigureGroupCountsDialog';
+import ConfigureScramblersDialog from './ConfigureScramblersDialog';
+import GroupCard from './GroupCard';
 
 /**
  * TODO: Create a setting for this
@@ -22,149 +44,194 @@ import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
  */
 const SORT_ORGANIZATION_STAFF_IN_LAST_GROUPS = true;
 
-// const byWorldRanking = (eventId) => (a, b) => {
-//   const aPR = a.personalBests.find((i) => i.eventId.toString() === eventId.toString())?.best
-//   const bPR = b.personalBests.find((i) => i.eventId.toString() === eventId.toString())?.best;
-//   if (aPR && bPR) {
-//     return aPR - bPR;
-//   } else {
-//     return (aPR ? 1 : 0) - (aPR ? 1 : 0)
-//   }
-// }
-
 /**
  * I want some visualization of who's competing / staffing what for this particular round
  * If no one has been assigned, I want to generate assignments
  * I want to view a mini psych sheet so that I can pick scramblers
  * I want DOB so that I know who really not to bother assigning
- * 
+ *
  */
 
-const useStyles = makeStyles((theme) => ({
-  competitors: {
-    display: 'flex',
-    flex: 1,
-    width: '100%',
-  },
-}));
-
 /**
- * Handles multiple activities under 1 round activity code
+ * Handles multiple activities across multiple rooms under 1 round activity code
  */
 const RoundPage = () => {
   const dispatch = useDispatch();
   const confirm = useConfirm();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { eventId, roundNumber } = useParams();
-  const [configureScramblersDialog, setConfigureScramblersDialog] = useState(false);
+  const [configureScramblersDialog, setConfigureScramblersDialog] =
+    useState(false);
+  const [configureGroupCountsDialog, setConfigureGroupCountsDialog] =
+    useState(false);
 
   useEffect(() => {
-    setBreadcrumbs([{
-      to: 'events',
-      text: 'Events',
-    }, {
-      text: 'Round',
-    }])
+    setBreadcrumbs([
+      {
+        to: 'events',
+        text: 'Events',
+      },
+      {
+        text: 'Round',
+      },
+    ]);
   }, [setBreadcrumbs]);
 
   const activityCode = `${eventId}-r${roundNumber}`;
   const wcif = useSelector((state) => state.wcif);
-  const round = wcif.events.find((event) => event.id === eventId)?.rounds[roundNumber - 1];
+  const round = wcif.events.find((event) => event.id === eventId)?.rounds[
+    roundNumber - 1
+  ];
 
   const _allActivities = allActivities(wcif);
 
-  // Flat list of all groups across all stages
+  // list of each stage's round activity
   const roundActivities = _allActivities
     .filter((activity) => activity.activityCode === activityCode)
     .map((activity) => ({
       ...activity,
-      room: roomByActivity(wcif, activity.id)
+      room: roomByActivity(wcif, activity.id),
     }));
 
   /**
-   * This determines if the group counts have been determined. This must be done first prior to all assignments
+   * This determines if the group counts have been determined.
+   * This must be done first prior to all assignments
    */
 
   // TODO: Switch to storing group data in round extension
   //const groupsData = roundActivities?.map(getGroupData);
-  const groupData = {
-    groupCount: 6,
-  };
+  const groupsData = getExtensionData('groups', round);
 
   const groups = groupActivitiesByRound(wcif, activityCode);
 
-  const sortedGroups = useMemo(() => groups.sort((groupA, groupB) => {
-    const roomDiff = groupA.parent.room.name.localeCompare(groupB.parent.room.name);
-    if (roomDiff === 0) {
-      return byGroupNumber(groupA, groupB);
-    }
-  }), [groups])
-
-  const registeredPersonsForEvent = wcif.persons.filter(({ registration }) =>
-    (registration.status === 'accepted' && registration.eventIds.indexOf(eventId) > -1)
-  );
-
-  const unassignedRegisteredPersons = registeredPersonsForEvent.filter(({ assignments }) =>
-    !assignments.some((assignment) => _allActivities.find(({ id }) => id === assignment.activityId))
-  );
-
-  const personsAssigned = useMemo(() =>
-    wcif.persons.filter((p) =>
-      p.assignments.find((a) => {
-        const activity = activityById(wcif, a.activityId);
-        if (!activity) {
-          console.error('Can\'t find activity for activityId ', a.activityId);
-          return false;
+  const sortedGroups = useMemo(
+    () =>
+      groups.sort((groupA, groupB) => {
+        const roomDiff = groupA.parent.room.name.localeCompare(
+          groupB.parent.room.name
+        );
+        if (roomDiff === 0) {
+          return byGroupNumber(groupA, groupB);
+        } else {
+          return roomDiff;
         }
-        return activity.activityCode.split('-')[0] === activityCode.split('-')[0] && activity.activityCode.split('-')[1] === activityCode.split('-')[1]; // TODO IMPROVE
-      })
-    ), [activityCode, wcif]);
+      }),
+    [groups]
+  );
 
-  const personsAssignedToCompeteOrJudge = useMemo(() => wcif.persons.filter((p) => p.assignments.find((a) => {
-    const activity = activityById(wcif, a.activityId);
-    if (!activity) {
-      console.error('Can\'t find activity for activityId ', a.activityId);
-      return false;
-    }
-    return activity.activityCode.split('-')[0] === activityCode.split('-')[0]
-      && activity.activityCode.split('-')[1] === activityCode.split('-')[1]
-      && ['competitor', 'staff-judge'].indexOf(a.assignmentCode) > -1;
-  })).length, [activityCode, wcif]);
+  const registeredPersonsForEvent = wcif.persons.filter(
+    ({ registration }) =>
+      registration.status === 'accepted' &&
+      registration.eventIds.indexOf(eventId) > -1
+  );
+
+  const unassignedRegisteredPersons = registeredPersonsForEvent.filter(
+    ({ assignments }) =>
+      !assignments.some((assignment) =>
+        _allActivities.find(({ id }) => id === assignment.activityId)
+      )
+  );
+
+  const personsAssigned = useMemo(
+    () =>
+      wcif.persons.filter((p) =>
+        p.assignments.find((a) => {
+          const activity = activityById(wcif, a.activityId);
+          if (!activity) {
+            console.error("Can't find activity for activityId ", a.activityId);
+            return false;
+          }
+          return (
+            activity.activityCode.split('-')[0] ===
+              activityCode.split('-')[0] &&
+            activity.activityCode.split('-')[1] === activityCode.split('-')[1]
+          ); // TODO IMPROVE
+        })
+      ),
+    [activityCode, wcif]
+  );
+
+  const personsAssignedToCompeteOrJudge = useMemo(
+    () =>
+      wcif.persons.filter((p) =>
+        p.assignments.find((a) => {
+          const activity = activityById(wcif, a.activityId);
+          if (!activity) {
+            console.error("Can't find activity for activityId ", a.activityId);
+            return false;
+          }
+          return (
+            activity.activityCode.split('-')[0] ===
+              activityCode.split('-')[0] &&
+            activity.activityCode.split('-')[1] ===
+              activityCode.split('-')[1] &&
+            ['competitor', 'staff-judge'].indexOf(a.assignmentCode) > -1
+          );
+        })
+      ).length,
+    [activityCode, wcif]
+  );
 
   const onGenerateGroupActitivites = () => {
     // determine who needs assignments
     // pick groups for them
     // assign their judging assignment to be the group after
 
-    const groupActivityIds = roundActivities.map((round) => ([
+    const groupActivityIds = roundActivities.map((round) =>
       round.childActivities.map((g, index) => {
-        const group = groups.find((g) => parseActivityCode(g.activityCode)?.groupNumber === index + 1);
+        const group = groups.find(
+          (g) => parseActivityCode(g.activityCode)?.groupNumber === index + 1
+        );
         return group.id;
       })
-    ]));
+    );
 
     const previousGroupForActivity = (activity) => {
       const groupCount = activity.parent.childActivities.length;
-      const previousGroupNumber = ((parseActivityCode(activity.activityCode).groupNumber - 2 + groupCount) % groupCount) + 1;
-      const previousGroup = activity.parent.childActivities.find((g) => parseActivityCode(g.activityCode).groupNumber === previousGroupNumber);
+      const previousGroupNumber =
+        ((parseActivityCode(activity.activityCode).groupNumber -
+          2 +
+          groupCount) %
+          groupCount) +
+        1;
+      const previousGroup = activity.parent.childActivities.find(
+        (g) =>
+          parseActivityCode(g.activityCode).groupNumber === previousGroupNumber
+      );
       return previousGroup;
-    }
+    };
 
     const assignments = [];
 
     // start with scramblers
     const scramblers = personsAssigned
       // Filter to persons with scrambling assignments in this round
-      .filter((p) => p.assignments.some((a) => groups.some((g) => g.id === a.activityId) && a.assignmentCode === 'staff-scrambler'))
+      .filter((p) =>
+        p.assignments.some(
+          (a) =>
+            groups.some((g) => g.id === a.activityId) &&
+            a.assignmentCode === 'staff-scrambler'
+        )
+      )
       .map((p) => {
         // determine scrambling assignment
         const assignedScramblingActivities = p.assignments
-          .filter((a) => groups.some((g) => g.id === a.activityId) && a.assignmentCode === 'staff-scrambler')
+          .filter(
+            (a) =>
+              groups.some((g) => g.id === a.activityId) &&
+              a.assignmentCode === 'staff-scrambler'
+          )
           .map(({ activityId }) => groups.find((g) => activityId === g.id));
-        const assignedScramblingActivityGroupNumbers = assignedScramblingActivities.map(({ activityCode }) => parseActivityCode(activityCode).groupNumber);
+        const assignedScramblingActivityGroupNumbers =
+          assignedScramblingActivities.map(
+            ({ activityCode }) => parseActivityCode(activityCode).groupNumber
+          );
 
-        const minGroupNumber = Math.min(...assignedScramblingActivityGroupNumbers);
-        const minGroupIndex = assignedScramblingActivityGroupNumbers.indexOf(minGroupNumber);
+        const minGroupNumber = Math.min(
+          ...assignedScramblingActivityGroupNumbers
+        );
+        const minGroupIndex =
+          assignedScramblingActivityGroupNumbers.indexOf(minGroupNumber);
 
         return {
           registrantId: p.registrantId,
@@ -172,24 +239,33 @@ const RoundPage = () => {
         };
       });
 
-    assignments.push(...scramblers.map((s) => ({
-      registrantId: s.registrantId,
-      assignment: {
-        assignmentCode: 'competitor',
-        activityId: previousGroupForActivity(s.activity).id,
-        stationNumber: null,
-      },
-    })));
+    assignments.push(
+      ...scramblers.map((s) => ({
+        registrantId: s.registrantId,
+        assignment: {
+          assignmentCode: 'competitor',
+          activityId: previousGroupForActivity(s.activity).id,
+          stationNumber: null,
+        },
+      }))
+    );
 
-    const isAlreadyAssigned = (person) => !assignments.find((a) => a.registrantId === person.registrantId && a.assignment.assignmentCode === 'competitor')
+    const isAlreadyAssigned = (person) =>
+      !assignments.find(
+        (a) =>
+          a.registrantId === person.registrantId &&
+          a.assignment.assignmentCode === 'competitor'
+      );
 
     // Now for other non-scrambler staff
     if (SORT_ORGANIZATION_STAFF_IN_LAST_GROUPS) {
-      let currentGroupPointer = groupActivityIds.length - 1; // start with the last group
+      let currentGroupPointer = groupsData.group - 1; // start with the last group
 
       const organizationStaff = registeredPersonsForEvent
         .filter(isOrganizerOrDelegate)
         .filter(isAlreadyAssigned);
+
+      const stagesInGroup = groupActivityIds.map((g) => g[currentGroupPointer]);
       debugger;
 
       organizationStaff.forEach((person) => {
@@ -203,29 +279,45 @@ const RoundPage = () => {
         });
 
         // decrement and loop
-        currentGroupPointer = (currentGroupPointer + groupActivityIds.length - 1) % groupActivityIds.length;
+        currentGroupPointer =
+          (currentGroupPointer + groupActivityIds.length - 1) %
+          groupActivityIds.length;
       });
     }
 
-    const everyoneElse = personsShouldBeInRound(wcif.persons, activityCode).filter(isAlreadyAssigned);
+    const everyoneElse = personsShouldBeInRound(
+      wcif.persons,
+      activityCode
+    ).filter(isAlreadyAssigned);
 
     const nextGroupToAssign = () => {
       // determine smallest group
       const groupSizes = groups.map((activity) => ({
         activity: activity,
-        size: assignments.filter(({ assignment }) => assignment.activityId === activity.id && assignment.assignmentCode === 'competitor').length
+        size: assignments.filter(
+          ({ assignment }) =>
+            assignment.activityId === activity.id &&
+            assignment.assignmentCode === 'competitor'
+        ).length,
       }));
       const min = Math.min(...groupSizes.map((i) => i.size));
-      const smallestGroupActivity = groupSizes.find((g) => g.size === min).activity;
-      const { groupNumber } = parseActivityCode(smallestGroupActivity.activityCode);
-      const nextGroupNumber = (groupNumber % smallestGroupActivity.parent.childActivities.length) + 1;
-      const nextGroup = smallestGroupActivity.parent.childActivities.find((g) => parseActivityCode(g.activityCode).groupNumber === (nextGroupNumber))
+      const smallestGroupActivity = groupSizes.find(
+        (g) => g.size === min
+      ).activity;
+      const { groupNumber } = parseActivityCode(
+        smallestGroupActivity.activityCode
+      );
+      const nextGroupNumber =
+        (groupNumber % smallestGroupActivity.parent.childActivities.length) + 1;
+      const nextGroup = smallestGroupActivity.parent.childActivities.find(
+        (g) => parseActivityCode(g.activityCode).groupNumber === nextGroupNumber
+      );
 
       return {
         competing: smallestGroupActivity.id,
         judging: nextGroup.id,
       };
-    }
+    };
 
     everyoneElse.forEach((person) => {
       const nextGroupActivity = nextGroupToAssign();
@@ -253,22 +345,51 @@ const RoundPage = () => {
 
   const onResetGroupActitivites = () => {
     confirm({
-      description: 'Do you really want to reset all group activities in this round?',
+      description:
+        'Do you really want to reset all group activities in this round?',
       confirmationText: 'Yes',
       cancellationText: 'No',
     })
       .then(() => {
         // remove competitor assignments for groups
-        dispatch(bulkRemovePersonAssignment([
-          ...groups.map((group) => ({
-            activityId: group.id,
-            assignmentCode: 'staff-judge',
-          })),
-          ...groups.map((group) => ({
-            activityId: group.id,
-            assignmentCode: 'competitor',
-          })),
-        ]))
+        dispatch(
+          bulkRemovePersonAssignment([
+            ...groups.map((group) => ({
+              activityId: group.id,
+            })),
+          ])
+        );
+
+        roundActivities.forEach((roundActivity) => {
+          dispatch(updateRoundChildActivities(roundActivity.id, []));
+        });
+      })
+      .catch((e) => {
+        console.error(e);
+      });
+  };
+
+  const onResetGroupNonScramblingActitivites = () => {
+    confirm({
+      description:
+        'Do you really want to reset all group activities in this round?',
+      confirmationText: 'Yes',
+      cancellationText: 'No',
+    })
+      .then(() => {
+        // remove competitor assignments for groups
+        dispatch(
+          bulkRemovePersonAssignment([
+            ...groups.map((group) => ({
+              activityId: group.id,
+              assignmentCode: 'staff-judge',
+            })),
+            ...groups.map((group) => ({
+              activityId: group.id,
+              assignmentCode: 'competitor',
+            })),
+          ])
+        );
       })
       .catch((e) => {
         console.error(e);
@@ -277,37 +398,43 @@ const RoundPage = () => {
 
   const onAssignStaff = () => {
     setConfigureScramblersDialog(true);
-  }
+  };
 
   if (roundActivities.length === 0) {
-    return (
-      <div>
-        No Activities found
-      </div>
-    );
+    return <div>No Activities found</div>;
   }
 
   const actionButtons = () => {
-    if (!!groupData?.groupCount && groups.length === 0) {
+    if (groups.length === 0) {
       return (
         <>
-          <Button>Configure Group Counts</Button>
-          <Button>Create Group Activities from Config</Button>
+          <Button onClick={() => setConfigureGroupCountsDialog(true)}>
+            Configure Group Counts
+          </Button>
+          {/* <Button onClick={onCreateGroupActivities}>Create Group Activities from Config</Button> */}
         </>
       );
     } else if (groups.length > 0 && personsAssignedToCompeteOrJudge === 0) {
       return (
         <>
           <Button onClick={onAssignStaff}>Pick Scramblers</Button>
-          <Button onClick={onGenerateGroupActitivites}>Assign Competitor and Judging Assignments</Button>
+          <Button onClick={onGenerateGroupActitivites}>
+            Assign Competitor and Judging Assignments
+          </Button>
           <div style={{ display: 'flex', flex: 1 }} />
-          <Button color="error">Reset Group Activities</Button>
+          <Button color="error" onClick={onResetGroupActitivites}>
+            Reset Group Activities
+          </Button>
         </>
       );
     } else if (personsAssignedToCompeteOrJudge > 0) {
-      return <Button onClick={onResetGroupActitivites}>Reset Non-scrambling Assignments</Button>
+      return (
+        <Button onClick={onResetGroupNonScramblingActitivites}>
+          Reset Non-scrambling Assignments
+        </Button>
+      );
     }
-  }
+  };
 
   return (
     <Grid container direction="column" spacing={2}>
@@ -316,56 +443,48 @@ const RoundPage = () => {
           <CardHeader title={activityCodeToName(activityCode)} />
           <List
             dense
-            subheader={(
-              <ListSubheader id="stages">
-                Stages
-              </ListSubheader>
-            )}
+            subheader={<ListSubheader id="stages">Stages</ListSubheader>}
           >
             {roundActivities.map(({ startTime, endTime, room }) => (
-              <ListItemButton>{room.name}: {new Date(startTime).toLocaleDateString()} {new Date(startTime).toLocaleTimeString()} - {new Date(endTime).toLocaleTimeString()} ({(new Date(endTime) - new Date(startTime)) / 1000 / 60} Minutes)</ListItemButton>
+              <ListItemButton>
+                {room.name}: {new Date(startTime).toLocaleDateString()}{' '}
+                {new Date(startTime).toLocaleTimeString()} -{' '}
+                {new Date(endTime).toLocaleTimeString()} (
+                {(new Date(endTime) - new Date(startTime)) / 1000 / 60} Minutes)
+              </ListItemButton>
             ))}
           </List>
           <CardContent>
             <br />
-            {/* {!groupData
-              ? <Link style={{ display: 'block' }} to={`/competitions/${competitionId}/rooms`}>Need to configure group config</Link>
-              : <Typography>{`Groups: ${groupData.groups} (source: ${groupData.source}) | Competitors per group: ${Math.round(unassignedRegisteredPersons.length / groupData.groups)}`}</Typography>
-            } */}
-            <Typography>{`Round Size: ${personsShouldBeInRound(wcif.persons, activityCode).length} | Assigned Persons: ${personsAssigned.length} | Groups: ${groupData.groupCount}`}</Typography>
+            <Typography>{`Round Size: ${
+              personsShouldBeInRound(wcif.persons, activityCode).length
+            } | Assigned Persons: ${personsAssigned.length} | Groups: ${
+              groupsData.groups
+            }`}</Typography>
           </CardContent>
-          <CardActions>
-            {/* <Button onClick={onAssignStaff}>Choose Scramblers</Button> */}
-            {/* {!!groupData?.groupCount && groups.length === 0
-              ? <Button>Create Group Activities from Config</Button>
-              : <Button onClick={() => setConfigureScramblersDialog(true)}>Assign Competitor and Judging Assignments</Button>}
-            {/* {<Button disabled={!groupData || groupData.groups !== 0} onClick={onGenerateGroupActitivites}>Generate Group Activities From Config</Button>} */}
-            {/* {personsAssignedToCompeteOrJudge === 0
-              : <Button onClick={onResetGroupActitivites}>Reset Non-scrambling Assignments</Button>
-            } */}
-            {actionButtons()}
-          </CardActions>
+          <CardActions>{actionButtons()}</CardActions>
         </Card>
       </Grid>
 
       <Grid item>
         {sortedGroups.map((group) => (
-          <GroupCard key={group.id} groupData={groupData} groupActivity={group} />
+          <GroupCard key={group.id} groupActivity={group} />
         ))}
       </Grid>
-      {/* <Grid item container direction="row" className={classes.competitors}>
-        <Grid item xs={6}>
-          <List>
-            {registeredPersonsForEvent.sort(byWorldRanking(eventId)).map((person) => (
-              <ListItem>
-                <ListItemText primary={person.name} secondary={`${person.roles.join(', ')}`}/>
-              </ListItem>
-            ))}
-          </List>
-        </Grid>
-        <Grid item xs={6}>Groups</Grid>
-      </Grid> */}
-      <ConfigureScramblersDialog open={configureScramblersDialog} onClose={() => setConfigureScramblersDialog(false)} round={round} activityCode={activityCode} groups={groups} />
+      <ConfigureScramblersDialog
+        open={configureScramblersDialog}
+        onClose={() => setConfigureScramblersDialog(false)}
+        round={round}
+        activityCode={activityCode}
+        groups={groups}
+      />
+      <ConfigureGroupCountsDialog
+        open={configureGroupCountsDialog}
+        onClose={() => setConfigureGroupCountsDialog(false)}
+        activityCode={activityCode}
+        round={round}
+        roundActivities={roundActivities}
+      />
     </Grid>
   );
 };
