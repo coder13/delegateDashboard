@@ -1,4 +1,5 @@
 import { parseActivityCode } from './activities';
+import { advancingCompetitors } from './formulas';
 
 /**
  * @param {Person} person
@@ -33,13 +34,33 @@ export const personsRegistered = (persons, eventId) => {
 };
 
 /**
- * Returns the people that should be in the round
+ * Returns the people that should be in the round based on either registration counts
+ * or the actual people in the round
  */
-export const personsShouldBeInRound = (persons, activityCode) => {
-  const parsedActivity = parseActivityCode(activityCode);
-  if (parsedActivity.roundNumber === 1) {
-    return personsRegistered(persons, parsedActivity.eventId);
+export const personsShouldBeInRound = (wcif, round) => {
+  // This is the single biggest souce of truth
+  if (round.results.length) {
+    return round.results;
   }
 
-  return [];
+  const { eventId, roundNumber } = parseActivityCode(round.id);
+
+  if (roundNumber === 1) {
+    return personsRegistered(wcif.persons, eventId);
+  } else {
+    // Everything that follows is estimations
+    const event = wcif.events.find((i) => i.id === eventId);
+    const previousRound = event.rounds[roundNumber - 2];
+    const advancementCondition = previousRound?.advancementCondition;
+
+    if (previousRound.results.length === 0) {
+      return null;
+    }
+
+    return advancingCompetitors(
+      advancementCondition,
+      previousRound.results.length ||
+        personsShouldBeInRound(wcif, previousRound).length
+    );
+  }
 };

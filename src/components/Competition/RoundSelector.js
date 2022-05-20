@@ -13,6 +13,7 @@ import { activityById, allActivities } from '../../lib/activities';
 import { eventNameById } from '../../lib/events';
 import { personsShouldBeInRound } from '../../lib/persons';
 import { pluralize } from '../../lib/utils';
+import { getExtensionData } from '../../lib/wcif-extensions';
 import { useBreadcrumbs } from '../providers/BreadcrumbsProvider';
 
 const useStyles = makeStyles((theme) => ({
@@ -51,8 +52,6 @@ const RoundSelectorPage = () => {
     ]);
   }, [setBreadcrumbs]);
 
-  const _allActivities = useMemo(() => allActivities(wcif), [wcif]);
-
   return (
     <List className={classes.root}>
       {wcif.events.map((event) => (
@@ -60,14 +59,13 @@ const RoundSelectorPage = () => {
           <ul className={classes.ul}>
             <ListSubheader>{eventNameById(event.id)}</ListSubheader>
             {event.rounds.map((round, index) => {
-              const roundActivity = _allActivities.find(
-                (activity) => activity.activityCode === round.id
-              );
+              const groupsData = getExtensionData('groups', round);
 
               const _personsShouldBeInRound = personsShouldBeInRound(
-                wcif.persons,
-                round.id
-              ).length;
+                wcif,
+                round
+              )?.length;
+
               const personsAssigned = wcif.persons.filter((p) =>
                 p.assignments.find((a) => {
                   const activity = activityById(wcif, a.activityId);
@@ -93,16 +91,18 @@ const RoundSelectorPage = () => {
                   <ListItemText
                     primary={`${eventNameById(event.id)} Round ${index + 1}`}
                     secondary={[
-                      `${pluralize(
-                        roundActivity?.childActivities?.length,
-                        'group',
-                        'groups'
-                      )} generated`,
+                      groupsData?.groups
+                        ? `${pluralize(
+                            groupsData?.groups,
+                            'group',
+                            'groups'
+                          )} configured`
+                        : 'No Groups Configured',
                       `${pluralize(
                         personsAssigned,
                         'person',
                         'people'
-                      )} assigned of ${_personsShouldBeInRound}`,
+                      )} assigned of ${_personsShouldBeInRound || '???'}`,
                     ].join(' | ')}
                   />
                 </ListItem>

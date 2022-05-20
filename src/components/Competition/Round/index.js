@@ -121,13 +121,6 @@ const RoundPage = () => {
       registration.eventIds.indexOf(eventId) > -1
   );
 
-  // const unassignedRegisteredPersons = registeredPersonsForEvent.filter(
-  //   ({ assignments }) =>
-  //     !assignments.some((assignment) =>
-  //       _allActivities.find(({ id }) => id === assignment.activityId)
-  //     )
-  // );
-
   const personsAssigned = useMemo(
     () =>
       wcif.persons.filter((p) =>
@@ -308,10 +301,9 @@ const RoundPage = () => {
         .forEach(assignOrganizersOrStaff);
     }
 
-    const everyoneElse = personsShouldBeInRound(
-      wcif.persons,
-      activityCode
-    ).filter(isAlreadyAssigned);
+    const everyoneElse = personsShouldBeInRound(wcif, round).filter(
+      isAlreadyAssigned
+    );
 
     const nextGroupToAssign = () => {
       // determine smallest group
@@ -434,7 +426,6 @@ const RoundPage = () => {
           <Button onClick={() => setConfigureGroupCountsDialog(true)}>
             Configure Group Counts
           </Button>
-          {/* <Button onClick={onCreateGroupActivities}>Create Group Activities from Config</Button> */}
         </>
       );
     } else if (groups.length > 0 && personsAssignedToCompeteOrJudge === 0) {
@@ -493,7 +484,7 @@ const RoundPage = () => {
             <TableBody>
               <TableRow>
                 <TableCell>
-                  {personsShouldBeInRound(wcif.persons, activityCode).length}
+                  {personsShouldBeInRound(wcif, round)?.length || '???'}
                 </TableCell>
                 <TableCell>{round.results.length}</TableCell>
                 <TableCell>{personsAssigned.length}</TableCell>
