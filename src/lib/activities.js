@@ -1,15 +1,8 @@
-import {
-  mapIn,
-  updateIn,
-  setIn,
-  flatMap,
-  shortTime,
-  isPresentDeep,
-} from './utils';
-import { getExtensionData } from './wcif-extensions';
 import { eventNameById } from './events';
+import { mapIn, updateIn, setIn, flatMap, shortTime } from './utils';
+import { getExtensionData } from './wcif-extensions';
 
-export const parseActivityCode = activityCode => {
+export const parseActivityCode = (activityCode) => {
   const [, e, r, g, a] = activityCode.match(
     /(\w+)(?:-r(\d+))?(?:-g(\d+))?(?:-a(\d+))?/
   );
@@ -21,24 +14,20 @@ export const parseActivityCode = activityCode => {
   };
 };
 
-export const activityCodeToName = activityCode => {
-  const {
-    eventId,
-    roundNumber,
-    groupNumber,
-    attemptNumber,
-  } = parseActivityCode(activityCode);
+export const activityCodeToName = (activityCode) => {
+  const { eventId, roundNumber, groupNumber, attemptNumber } =
+    parseActivityCode(activityCode);
   return [
     eventId && eventNameById(eventId),
     roundNumber && `Round ${roundNumber}`,
     groupNumber && `Group ${groupNumber}`,
     attemptNumber && `Attempt ${attemptNumber}`,
   ]
-    .filter(x => x)
+    .filter((x) => x)
     .join(', ');
 };
 
-export const hasDistributedAttempts = activityCode =>
+export const hasDistributedAttempts = (activityCode) =>
   ['333fm', '333mbf'].includes(parseActivityCode(activityCode).eventId);
 
 export const activityDuration = ({ startTime, endTime }) =>
@@ -65,11 +54,13 @@ export const activitiesIntersection = (first, second) => {
   return new Date(middleEnd) - new Date(middleStart);
 };
 
-export const rooms = wcif =>
-  flatMap(wcif.schedule.venues, venue => venue.rooms);
+export const rooms = (wcif) =>
+  flatMap(wcif.schedule.venues, (venue) => venue.rooms);
 
 export const roomByActivity = (wcif, activityId) =>
-  rooms(wcif).find(room => room.activities.some(({ id }) => id === activityId));
+  rooms(wcif).find((room) =>
+    room.activities.some(({ id }) => id === activityId)
+  );
 
 export const stationsByActivity = (wcif, activityId) =>
   getExtensionData('RoomConfig', roomByActivity(wcif, activityId)).stations;
@@ -77,25 +68,25 @@ export const stationsByActivity = (wcif, activityId) =>
 /**
  * Creates a flat array of activities
  */
-export const allActivities = wcif => {
+export const allActivities = (wcif) => {
   const allChildActivities = ({ childActivities }) =>
     childActivities.length > 0
       ? [...childActivities, ...flatMap(childActivities, allChildActivities)]
       : childActivities;
-  const activities = flatMap(rooms(wcif), room => room.activities);
+  const activities = flatMap(rooms(wcif), (room) => room.activities);
   return [...activities, ...flatMap(activities, allChildActivities)];
 };
 
 /**
  * Creates a flat array of activities
  */
-export const allRoundActivities = wcif => {
-  const activities = flatMap(rooms(wcif), room => room.activities);
+export const allRoundActivities = (wcif) => {
+  const activities = flatMap(rooms(wcif), (room) => room.activities);
   return activities;
 };
 
-export const maxActivityId = wcif =>
-  Math.max(...allActivities(wcif).map(activity => activity.id));
+export const maxActivityId = (wcif) =>
+  Math.max(...allActivities(wcif).map((activity) => activity.id));
 
 /* Assigning tasks invokes activityById enormous number of times.
    But during that process activities (schedule) don't change.
@@ -108,7 +99,7 @@ export const activityById = (wcif, activityId) => {
   } else {
     const activities = allActivities(wcif);
     const activitiesById = new Map(
-      activities.map(activity => [activity.id, activity])
+      activities.map((activity) => [activity.id, activity])
     );
     activitiesByIdCachedBySchedule.set(wcif.schedule, activitiesById);
     return activitiesById.get(activityId);
@@ -116,139 +107,137 @@ export const activityById = (wcif, activityId) => {
 };
 
 export const updateActivity = (wcif, updatedActivity) =>
-  mapIn(wcif, ['schedule', 'venues'], venue =>
-    mapIn(venue, ['rooms'], room =>
-      mapIn(room, ['activities'], activity =>
+  mapIn(wcif, ['schedule', 'venues'], (venue) =>
+    mapIn(venue, ['rooms'], (room) =>
+      mapIn(room, ['activities'], (activity) =>
         activity.id === updatedActivity.id ? updatedActivity : activity
       )
     )
   );
 
-export const shouldHaveGroups = activity => {
-  const {
-    eventId,
-    roundNumber,
-    groupNumber,
-    attemptNumber,
-  } = parseActivityCode(activity.activityCode);
+export const shouldHaveGroups = (activity) => {
+  const { eventId, roundNumber, groupNumber, attemptNumber } =
+    parseActivityCode(activity.activityCode);
   return !!(eventId && roundNumber && !groupNumber && !attemptNumber);
 };
 
 export const roundActivities = (wcif, roundId) =>
-  flatMap(rooms(wcif), room =>
+  flatMap(rooms(wcif), (room) =>
     room.activities
-      .filter(({ activityCode }) =>
-        activityCode.startsWith(roundId)
-      )
+      .filter(({ activityCode }) => activityCode.startsWith(roundId))
       .map((activity) => ({
         ...activity,
-        room
+        room,
       }))
   );
 
 export const groupActivitiesByRound = (wcif, roundId) =>
-  flatMap(roundActivities(wcif, roundId), roundActivity =>
-    hasDistributedAttempts(roundId) ? [roundActivity] : roundActivity.childActivities.map((activity) => ({
-      ...activity,
-      parent: roundActivity
-    }))
+  flatMap(roundActivities(wcif, roundId), (roundActivity) =>
+    hasDistributedAttempts(roundId)
+      ? [roundActivity]
+      : roundActivity.childActivities.map((activity) => ({
+          ...activity,
+          parent: roundActivity,
+        }))
   );
 
 export const roomsWithTimezoneAndGroups = (wcif, roundId) =>
-  flatMap(wcif.schedule.venues, venue =>
-    venue.rooms.map(room => [
+  flatMap(wcif.schedule.venues, (venue) =>
+    venue.rooms.map((room) => [
       room,
       venue.timezone,
       flatMap(
-        room.activities.filter(activity => activity.activityCode === roundId),
-        activity => activity.childActivities
+        room.activities.filter((activity) => activity.activityCode === roundId),
+        (activity) => activity.childActivities
       ),
     ])
   );
 
 export const activityAssigned = (wcif, activityId) =>
-  wcif.persons.some(person =>
-    person.assignments.some(assignment => assignment.activityId === activityId)
+  wcif.persons.some((person) =>
+    person.assignments.some(
+      (assignment) => assignment.activityId === activityId
+    )
   );
 
 export const groupActivitiesAssigned = (wcif, roundId) =>
-  groupActivitiesByRound(wcif, roundId).some(activity =>
+  groupActivitiesByRound(wcif, roundId).some((activity) =>
     activityAssigned(wcif, activity.id)
   );
 
-export const roundsWithoutResults = wcif =>
-  flatMap(wcif.events, event => event.rounds).filter(
-    round =>
+export const roundsWithoutResults = (wcif) =>
+  flatMap(wcif.events, (event) => event.rounds).filter(
+    (round) =>
       round.results.length === 0 ||
-      round.results.every(result => result.attempts.length === 0)
+      round.results.every((result) => result.attempts.length === 0)
   );
 
 /* Round is missing results if it has all results empty
    or it's the first round and has no results at all.
    In other words no one's competed in such round, but we know who should compete in it. */
-const roundsMissingResults = wcif =>
+const roundsMissingResults = (wcif) =>
   wcif.events
-    .map(event =>
-      event.rounds.find(round => {
+    .map((event) =>
+      event.rounds.find((round) => {
         const { roundNumber } = parseActivityCode(round.id);
         return (
           (round.results.length === 0 && roundNumber === 1) ||
           (round.results.length > 0 &&
-            round.results.every(result => result.attempts.length === 0))
+            round.results.every((result) => result.attempts.length === 0))
         );
       })
     )
-    .filter(round => round);
+    .filter((round) => round);
 
-export const roundsMissingAssignments = wcif =>
+export const roundsMissingAssignments = (wcif) =>
   roundsMissingResults(wcif).filter(
-    round => !groupActivitiesAssigned(wcif, round.id)
+    (round) => !groupActivitiesAssigned(wcif, round.id)
   );
 
-export const roundsMissingScorecards = wcif =>
+export const roundsMissingScorecards = (wcif) =>
   roundsMissingResults(wcif)
-    .filter(round => groupActivitiesAssigned(wcif, round.id))
-    .filter(round => parseActivityCode(round.id).eventId !== '333fm');
+    .filter((round) => groupActivitiesAssigned(wcif, round.id))
+    .filter((round) => parseActivityCode(round.id).eventId !== '333fm');
 
-export const allGroupsCreated = wcif =>
-  wcif.events.every(event =>
+export const allGroupsCreated = (wcif) =>
+  wcif.events.every((event) =>
     event.rounds.every(
-      round => groupActivitiesByRound(wcif, round.id).length > 0
+      (round) => groupActivitiesByRound(wcif, round.id).length > 0
     )
   );
 
-export const anyCompetitorAssignment = wcif =>
-  wcif.persons.some(person =>
+export const anyCompetitorAssignment = (wcif) =>
+  wcif.persons.some((person) =>
     person.assignments.some(
-      assignment => assignment.assignmentCode === 'competitor'
+      (assignment) => assignment.assignmentCode === 'competitor'
     )
   );
 
-export const anyGroupAssignedOrCreated = wcif =>
-  wcif.events.some(event =>
-    event.rounds.some(round =>
+export const anyGroupAssignedOrCreated = (wcif) =>
+  wcif.events.some((event) =>
+    event.rounds.some((round) =>
       hasDistributedAttempts(event.id)
         ? groupActivitiesAssigned(wcif, round.id)
         : groupActivitiesByRound(wcif, round.id).length > 0
     )
   );
 
-export const anyResults = wcif =>
-  wcif.events.some(event =>
-    event.rounds.some(round => round.results.length > 0)
+export const anyResults = (wcif) =>
+  wcif.events.some((event) =>
+    event.rounds.some((round) => round.results.length > 0)
   );
 
 /* Clears groups and assignments only for rounds without results. */
-export const clearGroupsAndAssignments = wcif => {
+export const clearGroupsAndAssignments = (wcif) => {
   const clearableRounds = roundsWithoutResults(wcif);
   const clearableRoundIds = clearableRounds.map(({ id }) => id);
-  const clearableActivities = flatMap(clearableRounds, round =>
+  const clearableActivities = flatMap(clearableRounds, (round) =>
     groupActivitiesByRound(wcif, round.id)
   );
   const clearableActivityIds = clearableActivities.map(({ id }) => id);
 
-  const persons = wcif.persons.map(person =>
-    updateIn(person, ['assignments'], assignments =>
+  const persons = wcif.persons.map((person) =>
+    updateIn(person, ['assignments'], (assignments) =>
       assignments
         .filter(({ activityId }) => !clearableActivityIds.includes(activityId))
         .filter(
@@ -258,9 +247,9 @@ export const clearGroupsAndAssignments = wcif => {
         )
     )
   );
-  const schedule = mapIn(wcif.schedule, ['venues'], venue =>
-    mapIn(venue, ['rooms'], room =>
-      mapIn(room, ['activities'], activity =>
+  const schedule = mapIn(wcif.schedule, ['venues'], (venue) =>
+    mapIn(venue, ['rooms'], (room) =>
+      mapIn(room, ['activities'], (activity) =>
         clearableRoundIds.includes(activity.activityCode)
           ? setIn(activity, ['childActivities'], [])
           : activity
@@ -278,7 +267,7 @@ export const generateNextChildActivityId = (wcif) => {
   });
 
   return max + 1;
-}
+};
 
 /**
  * Comparator for sorting groups by group number
@@ -287,7 +276,7 @@ export const byGroupNumber = (groupA, groupB) => {
   const parsedActivityCodeA = parseActivityCode(groupA.activityCode);
   const parsedActivityCodeB = parseActivityCode(groupB.activityCode);
   return parsedActivityCodeA.groupNumber - parsedActivityCodeB.groupNumber;
-}
+};
 
 export const getResultsForActivityCode = (wcif, activityCode) => {
   const { eventId } = parseActivityCode(activityCode);
@@ -295,7 +284,13 @@ export const getResultsForActivityCode = (wcif, activityCode) => {
   return event?.rounds.find((r) => r.id === activityCode)?.results;
 };
 
-export const createGroupActivity = (id, roundActivity, groupNumber, startTime, endTime) => {
+export const createGroupActivity = (
+  id,
+  roundActivity,
+  groupNumber,
+  startTime,
+  endTime
+) => {
   const newActivityCode = `${roundActivity.activityCode}-g${groupNumber}`;
 
   return {
@@ -313,13 +308,15 @@ export const createGroups = (wcif, roundActivity, groupCount) => {
   const startActivityId = generateNextChildActivityId(wcif);
 
   for (let i = 0; i < groupCount; i++) {
-    childActivities.push(createGroupActivity(
-      startActivityId + i,
-      roundActivity,
-      i + 1,
-      roundActivity.startTime,
-      roundActivity.endTime
-    ));
+    childActivities.push(
+      createGroupActivity(
+        startActivityId + i,
+        roundActivity,
+        i + 1,
+        roundActivity.startTime,
+        roundActivity.endTime
+      )
+    );
   }
 
   return childActivities;

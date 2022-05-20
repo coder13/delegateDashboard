@@ -1,21 +1,7 @@
-import moment from 'moment';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { MoreVert as MoreVertIcon } from '@mui/icons-material';
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardActions,
-  CardHeader,
-  Divider,
-  Grid,
-  IconButton,
-  Typography,
-} from '@mui/material';
+import { Alert, Card, Grid, Typography } from '@mui/material';
 import { CardContent } from '@mui/material';
-import { allRoundActivities, parseActivityCode } from '../../lib/activities';
 import { acceptedRegistrations } from '../../lib/persons';
 import { pluralize } from '../../lib/utils';
 import { useBreadcrumbs } from '../providers/BreadcrumbsProvider';
@@ -48,98 +34,98 @@ const CompetitionSummary = () => {
   );
 };
 
-const Rounds = () => {
-  const wcif = useSelector((state) => state.wcif);
+// const Rounds = () => {
+//   const wcif = useSelector((state) => state.wcif);
 
-  const needToEdit = (activity) => {
-    const { eventId, roundNumber } = parseActivityCode(activity.activityCode);
-    const event = wcif.events.find((e) => e.id === eventId);
-    const round = event.rounds.find((r) => r.id === activity.activityCode);
-    const nextRound = event.rounds.find(
-      (r) => r.id === `${eventId}-r${roundNumber + 1}`
-    );
+//   const needToEdit = (activity) => {
+//     const { eventId, roundNumber } = parseActivityCode(activity.activityCode);
+//     const event = wcif.events.find((e) => e.id === eventId);
+//     const round = event.rounds.find((r) => r.id === activity.activityCode);
+//     const nextRound = event.rounds.find(
+//       (r) => r.id === `${eventId}-r${roundNumber + 1}`
+//     );
 
-    const hasNextRound = !!nextRound;
+//     const hasNextRound = !!nextRound;
 
-    // Only show opened first rounds.
-    if (
-      roundNumber === 1 &&
-      round.results.length > 0 &&
-      (hasNextRound ? nextRound.results.length === 0 : true)
-    ) {
-      return true;
-    }
-    return false;
-  };
+//     // Only show opened first rounds.
+//     if (
+//       roundNumber === 1 &&
+//       round.results.length > 0 &&
+//       (hasNextRound ? nextRound.results.length === 0 : true)
+//     ) {
+//       return true;
+//     }
+//     return false;
+//   };
 
-  const activityCodes = allRoundActivities(wcif)
-    .filter((activity) => activity.activityCode.split('-')[0] !== 'other')
-    .map((activity) => activity.activityCode)
-    .filter(needToEdit);
+//   const activityCodes = allRoundActivities(wcif)
+//     .filter((activity) => activity.activityCode.split('-')[0] !== 'other')
+//     .map((activity) => activity.activityCode)
+//     .filter(needToEdit);
 
-  if (activityCodes.length === 0) {
-    return (
-      <div>
-        <Typography>Open rounds on wca-live first</Typography>
-        <Typography>
-          After you synchronize, the opened rounds should appear here
-        </Typography>
-      </div>
-    );
-  }
+//   if (activityCodes.length === 0) {
+//     return (
+//       <div>
+//         <Typography>Open rounds on wca-live first</Typography>
+//         <Typography>
+//           After you synchronize, the opened rounds should appear here
+//         </Typography>
+//       </div>
+//     );
+//   }
 
-  return (
-    <div>
-      {activityCodes.map((activity) => {
-        const { eventId } = parseActivityCode(activity.activityCode);
+//   return (
+//     <div>
+//       {activityCodes.map((activity) => {
+//         const { eventId } = parseActivityCode(activity.activityCode);
 
-        return (
-          <Card
-            key={activity.id}
-            style={{ marginTop: '1em', marginBottom: '1em' }}
-          >
-            <CardHeader
-              avatar={
-                <Box
-                  component="span"
-                  className={`cubing-icon event-${eventId}`}
-                  sx={{
-                    color: (theme) =>
-                      theme.palette.mode === 'dark'
-                        ? '#fff'
-                        : 'rgba(0, 0, 0, 0.54)',
-                    fontSize: 32,
-                  }}
-                />
-              }
-              title={activity.name}
-              subheader={moment(activity.startTime).format('LTS')}
-              action={
-                <IconButton>
-                  <MoreVertIcon />
-                </IconButton>
-              }
-            />
-            <Divider />
-            <CardContent>
-              <Typography>
-                <b>Groups: </b>
-                <span>{0}</span>
-              </Typography>
-            </CardContent>
-            <Divider />
-            <CardActions>
-              <Button>Pick Scramblers</Button>
-              <Button>Generate Groups</Button>
-              <div style={{ display: 'flex', flex: 1 }} />
-              <Button>View More</Button>
-            </CardActions>
-          </Card>
-        );
-      })}
-    </div>
-  );
-};
+//         return (
+//           <Card
+//             key={activity.id}
+//             style={{ marginTop: '1em', marginBottom: '1em' }}
+//           >
+//             <CardHeader
+//               avatar={
+//                 <Box
+//                   component="span"
+//                   className={`cubing-icon event-${eventId}`}
+//                   sx={{
+//                     color: (theme) =>
+//                       theme.palette.mode === 'dark'
+//                         ? '#fff'
+//                         : 'rgba(0, 0, 0, 0.54)',
+//                     fontSize: 32,
+//                   }}
+//                 />
+//               }
+//               title={activity.name}
+//               subheader={moment(activity.startTime).format('LTS')}
+//               action={
+//                 <IconButton>
+//                   <MoreVertIcon />
+//                 </IconButton>
+//               }
+//             />
+//             <Divider />
+//             <CardContent>
+//               <Typography>
+//                 <b>Groups: </b>
+//                 <span>{0}</span>
+//               </Typography>
+//             </CardContent>
+//             <Divider />
+//             <CardActions>
+//               <Button>Pick Scramblers</Button>
+//               <Button>Generate Groups</Button>
+//               <div style={{ display: 'flex', flex: 1 }} />
+//               <Button>View More</Button>
+//             </CardActions>
+//           </Card>
+//         );
+//       })}
+//     </div>
+//   );
+// };
 
 const CompetitionHome = () => {
   const { setBreadcrumbs } = useBreadcrumbs();

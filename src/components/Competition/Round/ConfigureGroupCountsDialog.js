@@ -17,13 +17,12 @@ import {
 } from '@mui/material';
 import {
   createGroupActivity,
-  createGroups,
   generateNextChildActivityId,
   parseActivityCode,
 } from '../../../lib/activities';
 import { advancingCompetitors } from '../../../lib/formulas';
 import { personsRegistered } from '../../../lib/persons';
-import { buildExtension, getExtensionData } from '../../../lib/wcif-extensions';
+import { getExtensionData } from '../../../lib/wcif-extensions';
 import {
   updateRoundChildActivities,
   updateRoundExtensionData,

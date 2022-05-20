@@ -5,7 +5,6 @@ import { useParams } from 'react-router-dom';
 import {
   Card,
   CardActions,
-  CardContent,
   CardHeader,
   Divider,
   List,
@@ -19,7 +18,6 @@ import {
 } from '@mui/material';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
 import {
   activityById,
   activityCodeToName,
@@ -29,10 +27,7 @@ import {
   parseActivityCode,
   roomByActivity,
 } from '../../../lib/activities';
-import {
-  isOrganizerOrDelegate,
-  personsShouldBeInRound,
-} from '../../../lib/persons';
+import { personsShouldBeInRound } from '../../../lib/persons';
 import { getExtensionData } from '../../../lib/wcif-extensions';
 import {
   bulkAddPersonAssignment,
@@ -126,12 +121,12 @@ const RoundPage = () => {
       registration.eventIds.indexOf(eventId) > -1
   );
 
-  const unassignedRegisteredPersons = registeredPersonsForEvent.filter(
-    ({ assignments }) =>
-      !assignments.some((assignment) =>
-        _allActivities.find(({ id }) => id === assignment.activityId)
-      )
-  );
+  // const unassignedRegisteredPersons = registeredPersonsForEvent.filter(
+  //   ({ assignments }) =>
+  //     !assignments.some((assignment) =>
+  //       _allActivities.find(({ id }) => id === assignment.activityId)
+  //     )
+  // );
 
   const personsAssigned = useMemo(
     () =>

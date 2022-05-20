@@ -5,7 +5,6 @@ import {
   Checkbox,
   Dialog,
   DialogActions,
-  DialogContent,
   DialogTitle,
   Table,
   TableBody,
@@ -13,12 +12,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import {
-  rooms,
-  byGroupNumber,
-  parseActivityCode,
-  roomByActivity,
-} from '../../../lib/activities';
+import { rooms, parseActivityCode } from '../../../lib/activities';
 import { isOrganizerOrDelegate } from '../../../lib/persons';
 import { flatten } from '../../../lib/utils';
 import {
@@ -75,8 +69,6 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
       dispatch(removePersonAssignment(registrantId, activityId));
     }
   };
-
-  const sortedGroups = groups.sort;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xl">
