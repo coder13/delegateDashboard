@@ -50,12 +50,12 @@ const BreadCrumbsGridItem = () => {
         {breadcrumbs.map((breadcrumb) => (
           breadcrumb.to
             ? (
-              <MaterialLink to={breadcrumb.to}>
+              <MaterialLink key={breadcrumb.text} to={breadcrumb.to}>
                 {breadcrumb.text}
               </MaterialLink>
             )
             : (
-              <Typography color="textPrimary">{breadcrumb.text}</Typography>
+              <Typography key={breadcrumb.text} color="textPrimary">{breadcrumb.text}</Typography>
             )
         ))}
       </Breadcrumbs>

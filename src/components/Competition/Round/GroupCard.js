@@ -3,11 +3,12 @@ import { useSelector } from 'react-redux';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { parseActivityCode } from '../../../lib/activities';
-import { Card, CardHeader, CardContent, CardActions } from '@mui/material';
+import { Card, CardHeader, CardContent, CardActions, Alert, IconButton } from '@mui/material';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 const mapNames = (array) => array.map(({ name }) => name).join(', ');
 
-const GroupCard = ({ groupData, roundActivity, groupActivity }) => {
+const GroupCard = ({ groupActivity }) => {
   const wcif = useSelector((state) => state.wcif);
 
   const personsAssigned = wcif.persons.filter((p) => p.assignments.find((a) => a.activityId === groupActivity.id));
@@ -20,9 +21,33 @@ const GroupCard = ({ groupData, roundActivity, groupActivity }) => {
     activityId === groupActivity.id && assignmentCode.indexOf('staff-') > -1 && ['judge', 'scrambler', 'runner'].indexOf(assignmentCode.split('-')[1]) === -1)
   ));
 
+  const errors = competitors
+    .filter((competitor) => {
+      return staff.find((s) => s.registrantId === competitor.registrantId);
+    })
+    .map((competitor) => ({
+      message: `${competitor.name} (${competitor.wcaId}) is both competing and staffing!`
+    }));
+
+
+  const roomName = groupActivity.parent.room.name;
+
   return (
     <Card style={{ marginTop: '1em' }}>
-      <CardHeader title={`Group ${parseActivityCode(groupActivity.activityCode).groupNumber}`} subheader={`Group Size: ${personsAssigned.length}`} />
+      <CardHeader
+        title={`${roomName}: Group ${parseActivityCode(groupActivity.activityCode).groupNumber}`}
+        subheader={`Group Size: ${personsAssigned.length}`}
+        action={
+          <IconButton aria-label="settings">
+            <MoreVertIcon />
+          </IconButton>
+        }
+      />
+      <div>
+        {errors.map((error) => (
+          <Alert severity="error">{error.message}</Alert>
+        ))}
+      </div>
       <CardContent>
         <Grid container>
           <Grid item xs={4} style={{ padding: '0.5em' }}>
@@ -43,7 +68,7 @@ const GroupCard = ({ groupData, roundActivity, groupActivity }) => {
       <CardActions>
 
       </CardActions>
-    </Card>
+    </Card >
   );
 };
 
