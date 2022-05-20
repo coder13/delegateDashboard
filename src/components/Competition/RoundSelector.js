@@ -1,6 +1,5 @@
 import '@cubing/icons';
 import React, { useEffect } from 'react';
-import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import List from '@mui/material/List';
@@ -9,7 +8,7 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import { makeStyles } from '@mui/styles';
-import { activityById, allActivities } from '../../lib/activities';
+import { activityById } from '../../lib/activities';
 import { eventNameById } from '../../lib/events';
 import { personsShouldBeInRound } from '../../lib/persons';
 import { pluralize } from '../../lib/utils';
