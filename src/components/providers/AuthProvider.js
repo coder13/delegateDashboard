@@ -1,12 +1,19 @@
-import { useState, useEffect, createContext, useContext, useCallback } from 'react';
+import {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  useCallback,
+} from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { WCA_ORIGIN, WCA_OAUTH_CLIENT_ID } from '../../lib/wca-env';
 import { getMe } from '../../lib/wcaAPI';
 
-const localStorageKey = key => `groups.${WCA_OAUTH_CLIENT_ID}.${key}`;
+const localStorageKey = (key) => `groups.${WCA_OAUTH_CLIENT_ID}.${key}`;
 
 const getLocalStorage = (key) => localStorage.getItem(localStorageKey(key));
-const setLocalStorage = (key, value) => localStorage.setItem(localStorageKey(key), value);
+const setLocalStorage = (key, value) =>
+  localStorage.setItem(localStorageKey(key), value);
 
 /**
  * Allows for use of staging api in production
@@ -20,9 +27,10 @@ const oauthRedirectUri = () => {
 
 const AuthContext = createContext(null);
 
-
 export default function AuthProvider({ children }) {
-  const [accessToken, setAccessToken] = useState(getLocalStorage('accessToken'));
+  const [accessToken, setAccessToken] = useState(
+    getLocalStorage('accessToken')
+  );
   const [user, setUser] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -62,7 +70,7 @@ export default function AuthProvider({ children }) {
           hash: null,
           state: location.state,
         },
-      })
+      });
     }
 
     // /* Check if we know what path to redirect to (after OAuth redirect). */
@@ -85,7 +93,7 @@ export default function AuthProvider({ children }) {
           console.error(err);
         });
     }
-  }, [signedIn])
+  }, [signedIn]);
 
   const signIn = (newUser, callback) => {
     const params = new URLSearchParams({

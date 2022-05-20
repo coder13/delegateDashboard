@@ -27,7 +27,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "lint": "eslint ./",
-    "test": "react-scripts test",
+    "test": "react-scripts test --passWithNoTests",
     "prepare": "husky install"
   },
   "eslintConfig": {
