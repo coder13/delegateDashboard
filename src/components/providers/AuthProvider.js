@@ -26,6 +26,8 @@ export default function AuthProvider({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
 
+  console.log(process.env);
+
   useEffect(() => setLocalStorage('accessToken', accessToken), [accessToken]);
 
   useEffect(() => {

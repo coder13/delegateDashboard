@@ -32,11 +32,14 @@ export const personsRegistered = (persons, eventId) => {
 /**
  * Returns the people that should be in the round based on either registration counts
  * or the actual people in the round
+ * @returns {[Person]} - List of persons that should be in the round
  */
 export const personsShouldBeInRound = (wcif, round) => {
   // This is the single biggest souce of truth
   if (round.results.length) {
-    return round.results;
+    return wcif.persons.filter((person) =>
+      round.results.some((result) => person.registrantId === result.personId)
+    );
   }
 
   const { eventId, roundNumber } = parseActivityCode(round.id);
@@ -45,17 +48,35 @@ export const personsShouldBeInRound = (wcif, round) => {
     return personsRegistered(wcif.persons, eventId);
   } else {
     // Everything that follows is estimations
-    const event = wcif.events.find((i) => i.id === eventId);
-    const previousRound = event.rounds[roundNumber - 2];
-    const advancementCondition = previousRound?.advancementCondition;
+    // const event = wcif.events.find((i) => i.id === eventId);
+    // const previousRound = event.rounds[roundNumber - 2];
+    // const advancementCondition = previousRound?.advancementCondition;
+    // if (previousRound.results.length === 0) {
+    //   return null;
+    // }
+    // return advancingCompetitors(
+    //   advancementCondition,
+    //   previousRound.results.length || personsShouldBeInRound(wcif, previousRound).length
+    // );
 
-    if (previousRound.results.length === 0) {
-      return null;
-    }
-
-    return advancingCompetitors(
-      advancementCondition,
-      previousRound.results.length || personsShouldBeInRound(wcif, previousRound).length
-    );
+    // WCA Live will be the single source of truth for who's in the next round
+    // until I care enough to compute the actual list of people who might make it
+    return null;
   }
 };
+
+/**
+ * @param {[Activity]} groups - list of groups to filter person assignments to
+ */
+export const assignedToScrambleInGroups = (groups) => (person) =>
+  person.assignments.some(
+    (a) => groups.some((g) => g.id === a.activityId) && a.assignmentCode === 'staff-scrambler'
+  );
+
+/**
+ * @param {[Assignment]} assignments - List of assignments to check if a person is already assigned
+ */
+export const alreadyAssigned = (assignments) => (person) =>
+  !assignments.find(
+    (a) => a.registrantId === person.registrantId && a.assignment.assignmentCode === 'competitor'
+  );

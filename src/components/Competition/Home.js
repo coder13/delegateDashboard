@@ -140,8 +140,9 @@ const CompetitionHome = () => {
       </Grid>
       <Grid item>
         <Alert severity="error">
-          <Link to={'roles'}>Pick Staff!</Link>
+          <Link to="roles">Pick Staff!</Link>
         </Alert>
+        <Link to="assignments">View All Assignments</Link>
       </Grid>
       <Grid item>
         <RoundSelectorPage />

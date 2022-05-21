@@ -27,7 +27,17 @@ import {
   parseActivityCode,
   roomByActivity,
 } from '../../../lib/activities';
-import { personsShouldBeInRound } from '../../../lib/persons';
+import {
+  computeGroupSizes,
+  createGroupAssignment,
+  nextGroupForActivity,
+  previousGroupForActivity,
+} from '../../../lib/groups';
+import {
+  alreadyAssigned,
+  assignedToScrambleInGroups,
+  personsShouldBeInRound,
+} from '../../../lib/persons';
 import { getExtensionData } from '../../../lib/wcif-extensions';
 import {
   bulkAddPersonAssignment,
@@ -99,12 +109,10 @@ const RoundPage = () => {
   const sortedGroups = useMemo(
     () =>
       groups.sort((groupA, groupB) => {
-        const roomDiff = groupA.parent.room.name.localeCompare(groupB.parent.room.name);
-        if (roomDiff === 0) {
-          return byGroupNumber(groupA, groupB);
-        } else {
-          return roomDiff;
-        }
+        return (
+          byGroupNumber(groupA, groupB) ||
+          groupA.parent.room.name.localeCompare(groupB.parent.room.name)
+        );
       }),
     [groups]
   );
@@ -121,7 +129,6 @@ const RoundPage = () => {
           const activity = activityById(wcif, a.activityId);
           if (!activity) {
             console.error("Can't find activity for activityId ", a.activityId);
-            return false;
           }
           return (
             activity.activityCode.split('-')[0] === activityCode.split('-')[0] &&
@@ -156,6 +163,7 @@ const RoundPage = () => {
     // pick groups for them
     // assign their judging assignment to be the group after
 
+    // This creates a *sorted* list of groupActivityIds by stage
     const groupActivityIds = roundActivities.map((roundActivity) =>
       roundActivity.childActivities.map((g, index) => {
         const group = groups.find(
@@ -167,26 +175,12 @@ const RoundPage = () => {
       })
     );
 
-    const previousGroupForActivity = (activity) => {
-      const groupCount = activity.parent.childActivities.length;
-      const previousGroupNumber =
-        ((parseActivityCode(activity.activityCode).groupNumber - 2 + groupCount) % groupCount) + 1;
-      const previousGroup = activity.parent.childActivities.find(
-        (g) => parseActivityCode(g.activityCode).groupNumber === previousGroupNumber
-      );
-      return previousGroup;
-    };
-
     const assignments = [];
 
     // start with scramblers
     const scramblers = personsAssigned
       // Filter to persons with scrambling assignments in this round
-      .filter((p) =>
-        p.assignments.some(
-          (a) => groups.some((g) => g.id === a.activityId) && a.assignmentCode === 'staff-scrambler'
-        )
-      )
+      .filter(assignedToScrambleInGroups(groups))
       .map((p) => {
         // determine scrambling assignment
         const assignedScramblingActivities = p.assignments
@@ -209,21 +203,10 @@ const RoundPage = () => {
       });
 
     assignments.push(
-      ...scramblers.map((s) => ({
-        registrantId: s.registrantId,
-        assignment: {
-          assignmentCode: 'competitor',
-          activityId: previousGroupForActivity(s.activity).id,
-          stationNumber: null,
-        },
-      }))
+      ...scramblers.map((s) =>
+        createGroupAssignment(s.registrantId, previousGroupForActivity(s.activity).id, 'competitor')
+      )
     );
-
-    const isAlreadyAssigned = (person) =>
-      !assignments.find(
-        (a) =>
-          a.registrantId === person.registrantId && a.assignment.assignmentCode === 'competitor'
-      );
 
     // Now for other non-scrambler staff
     if (SORT_ORGANIZATION_STAFF_IN_LAST_GROUPS) {
@@ -232,63 +215,45 @@ const RoundPage = () => {
       const assignOrganizersOrStaff = (person) => {
         const stagesInGroup = groupActivityIds
           .map((g) => g[currentGroupPointer])
-          .map((activity) => ({
-            activity: activity,
+          .map((activityId) => ({
+            activityId: activityId,
             size: assignments.filter(
               ({ assignment }) =>
-                assignment.activityId === activity.id && assignment.assignmentCode === 'competitor'
+                assignment.activityId === activityId && assignment.assignmentCode === 'competitor'
             ).length,
           }));
 
         const min = Math.min(...stagesInGroup.map((i) => i.size));
-        const smallestGroupActivity = stagesInGroup.find((g) => g.size === min).activity;
+        const smallestGroupActivityId = stagesInGroup.find((g) => g.size === min).activityId;
 
-        debugger;
-
-        assignments.push({
-          registrantId: person.registrantId,
-          assignment: {
-            assignmentCode: 'competitor',
-            activityId: smallestGroupActivity,
-            stationNumber: null,
-          },
-        });
+        assignments.push(
+          createGroupAssignment(person.registrantId, smallestGroupActivityId, 'competitor')
+        );
 
         // decrement and loop
-        currentGroupPointer =
-          (currentGroupPointer + groupActivityIds.length - 1) % groupActivityIds.length;
+        currentGroupPointer = (currentGroupPointer + groupsData.groups - 1) % groupsData.groups;
       };
 
       registeredPersonsForEvent
         .filter((person) => person.roles.some((role) => role.indexOf('delegate') > -1))
-        .filter(isAlreadyAssigned)
+        .filter(alreadyAssigned(assignments))
         .forEach(assignOrganizersOrStaff);
 
       registeredPersonsForEvent
         .filter((person) => person.roles.some((role) => role.indexOf('organizer') > -1))
-        .filter(isAlreadyAssigned)
+        .filter(alreadyAssigned(assignments))
         .forEach(assignOrganizersOrStaff);
     }
 
-    const everyoneElse = personsShouldBeInRound(wcif, round).filter(isAlreadyAssigned);
+    const everyoneElse = personsShouldBeInRound(wcif, round).filter(alreadyAssigned(assignments));
+    debugger;
 
     const nextGroupToAssign = () => {
       // determine smallest group
-      const groupSizes = groups.map((activity) => ({
-        activity: activity,
-        size: assignments.filter(
-          ({ assignment }) =>
-            assignment.activityId === activity.id && assignment.assignmentCode === 'competitor'
-        ).length,
-      }));
+      const groupSizes = groups.map(computeGroupSizes(assignments));
       const min = Math.min(...groupSizes.map((i) => i.size));
       const smallestGroupActivity = groupSizes.find((g) => g.size === min).activity;
-      const { groupNumber } = parseActivityCode(smallestGroupActivity.activityCode);
-      const nextGroupNumber =
-        (groupNumber % smallestGroupActivity.parent.childActivities.length) + 1;
-      const nextGroup = smallestGroupActivity.parent.childActivities.find(
-        (g) => parseActivityCode(g.activityCode).groupNumber === nextGroupNumber
-      );
+      const nextGroup = nextGroupForActivity(smallestGroupActivity);
 
       return {
         competing: smallestGroupActivity.id,
@@ -298,6 +263,7 @@ const RoundPage = () => {
 
     everyoneElse.forEach((person) => {
       const nextGroupActivity = nextGroupToAssign();
+
       assignments.push({
         registrantId: person.registrantId,
         assignment: {

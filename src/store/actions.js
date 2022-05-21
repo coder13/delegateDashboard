@@ -133,6 +133,9 @@ export const updateGroupCount = (activityId, groupCount) => ({
   groupCount,
 });
 
+/**
+ * Replaces the round activities specified in the wcif
+ */
 export const updateRoundActivities = (activities) => ({
   type: UPDATE_ROUND_ACTIVITIES,
   activities,

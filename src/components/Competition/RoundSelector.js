@@ -72,6 +72,15 @@ const RoundSelectorPage = () => {
                 })
               ).length;
 
+              const textToShow = [
+                groupsData?.groups
+                  ? `${pluralize(groupsData?.groups, 'group', 'groups')} configured`
+                  : 'No Groups Configured',
+                `${pluralize(personsAssigned, 'person', 'people')} assigned of ${
+                  _personsShouldBeInRound || '???'
+                }`,
+              ];
+
               return (
                 <ListItem
                   key={round.id}
@@ -83,14 +92,7 @@ const RoundSelectorPage = () => {
                   </ListItemAvatar>
                   <ListItemText
                     primary={`${eventNameById(event.id)} Round ${index + 1}`}
-                    secondary={[
-                      groupsData?.groups
-                        ? `${pluralize(groupsData?.groups, 'group', 'groups')} configured`
-                        : 'No Groups Configured',
-                      `${pluralize(personsAssigned, 'person', 'people')} assigned of ${
-                        _personsShouldBeInRound || '???'
-                      }`,
-                    ].join(' | ')}
+                    secondary={textToShow.join(' | ')}
                   />
                 </ListItem>
               );

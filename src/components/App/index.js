@@ -9,6 +9,7 @@ import {
   RoundSelector as RoundSelectorPage,
   Person as PersonPage,
 } from '../Competition';
+import AssignmentsPage from '../Competition/Assignments';
 import CompetitionList from '../CompetitionList';
 import { useAuth } from '../providers/AuthProvider';
 import App from './App';
@@ -40,6 +41,7 @@ const Navigation = () => {
             <Route path="events/:eventId-r:roundNumber" element={<RoundPage />} />
             <Route path="events" element={<RoundSelectorPage />} />
             <Route path="persons/:registrantId" element={<PersonPage />} />
+            <Route path="assignments" element={<AssignmentsPage />} />
           </Route>
         </Route>
         {/* <Redirect to="/"/> */}

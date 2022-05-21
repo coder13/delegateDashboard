@@ -15,15 +15,12 @@ import {
   InputLabel,
   Typography,
 } from '@mui/material';
-import {
-  createGroupActivity,
-  generateNextChildActivityId,
-  parseActivityCode,
-} from '../../../lib/activities';
+import { parseActivityCode } from '../../../lib/activities';
 import { advancingCompetitors } from '../../../lib/formulas';
+import { createGroupsAcrossStages } from '../../../lib/groups';
 import { personsRegistered } from '../../../lib/persons';
 import { getExtensionData } from '../../../lib/wcif-extensions';
-import { updateRoundChildActivities, updateRoundExtensionData } from '../../../store/actions';
+import { updateRoundActivities, updateRoundExtensionData } from '../../../store/actions';
 
 const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundActivities }) => {
   const wcif = useSelector((state) => state.wcif);
@@ -52,25 +49,7 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
       dispatch(updateRoundExtensionData(round.id, groupsData));
     }
 
-    let startActivityId = generateNextChildActivityId(wcif);
-    roundActivities.forEach((roundActivity) => {
-      const childActivities = [];
-      for (let i = 0; i < groupCount; i++) {
-        childActivities.push(
-          createGroupActivity(
-            startActivityId,
-            roundActivity,
-            i + 1,
-            roundActivity.startTime,
-            roundActivity.endTime
-          )
-        );
-
-        startActivityId++;
-      }
-
-      dispatch(updateRoundChildActivities(roundActivity.id, childActivities));
-    });
+    dispatch(updateRoundActivities(createGroupsAcrossStages(wcif, roundActivities, groupCount)));
 
     reset();
     onClose();
