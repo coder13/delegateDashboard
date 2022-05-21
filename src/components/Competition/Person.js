@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
+import { Card, CardContent, CardHeader } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
@@ -12,6 +13,7 @@ import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import { activityById } from '../../lib/activities';
+import { useBreadcrumbs } from '../providers/BreadcrumbsProvider';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -29,13 +31,14 @@ const useStyles = makeStyles((theme) => ({
 const PersonPage = () => {
   const classes = useStyles();
   const { registrantId } = useParams();
+  const { setBreadcrumbs } = useBreadcrumbs();
 
   const wcif = useSelector((state) => state.wcif);
   const person = wcif.persons.find((i) => i.registrantId.toString() === registrantId.toString());
 
   const [assignments, setAssignments] = useState([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!person) {
       return;
     }
@@ -51,13 +54,24 @@ const PersonPage = () => {
             new Date(a.activity.startTime).getTime() - new Date(b.activity.startTime).getTime()
         )
     );
-  }, [wcif, person]);
+
+    setBreadcrumbs([
+      {
+        text: person.name,
+      },
+    ]);
+  }, [wcif, person, setBreadcrumbs]);
 
   return (
     <div className={classes.root}>
       <Grid container direction="column" spacing={2}>
-        <Typography>Name: {person.name}</Typography>
-        <Typography>WCA ID: {person.wcaId}</Typography>
+        <Card>
+          <CardHeader title={person.name} />
+          <CardContent>
+            <Typography>{person.wcaId ? `WCA ID: ${person.wcaId}` : 'First-Timer'}</Typography>
+          </CardContent>
+        </Card>
+        <br />
 
         <TableContainer component={Paper}>
           <Table>

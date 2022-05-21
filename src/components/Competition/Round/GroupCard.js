@@ -5,11 +5,28 @@ import { Card, CardHeader, CardContent, CardActions, Alert, IconButton } from '@
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { parseActivityCode } from '../../../lib/activities';
-
-const mapNames = (array) => array.map(({ name }) => name).join(', ');
+import { formatCentiseconds } from '../../../lib/result';
+import MaterialLink from '../../shared/MaterialLink';
 
 const GroupCard = ({ groupActivity }) => {
   const wcif = useSelector((state) => state.wcif);
+
+  const mapNames = (array) =>
+    array.length
+      ? array
+          .map(({ registrantId, name }) => (
+            <MaterialLink to={`/competitions/${wcif.id}/persons/${registrantId}`}>
+              {name}
+            </MaterialLink>
+          ))
+          .reduce((a, b) => (
+            <>
+              {a}, {b}
+            </>
+          ))
+      : null;
+
+  const { eventId } = parseActivityCode(groupActivity.activityCode);
 
   const personsAssigned = wcif.persons.filter((p) =>
     p.assignments.find((a) => a.activityId === groupActivity.id)
@@ -58,11 +75,27 @@ const GroupCard = ({ groupActivity }) => {
 
   const roomName = groupActivity.parent.room.name;
 
+  const personalRecords = competitors
+    .map((person) => {
+      const pr = person.personalBests.find((pb) => pb.eventId === eventId && pb.type === 'average');
+      return pr?.best;
+    })
+    .filter((pr) => !!pr);
+  const averageSpeed = Math.round(personalRecords.reduce((a, b) => a + b) / personalRecords.length);
+
+  const firstTimers = competitors.filter((person) => !person.wcaId);
+
+  const subheader = [
+    `Group Size: ${personsAssigned.length}`,
+    `Average PR: ${formatCentiseconds(averageSpeed)}`,
+    `First Timers: ${firstTimers.length}`,
+  ].join(' | ');
+
   return (
     <Card style={{ marginTop: '1em' }}>
       <CardHeader
         title={`${roomName}: Group ${parseActivityCode(groupActivity.activityCode).groupNumber}`}
-        subheader={`Group Size: ${personsAssigned.length}`}
+        subheader={subheader}
         action={
           <IconButton aria-label="settings">
             <MoreVertIcon />

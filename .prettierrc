@@ -5,6 +5,6 @@
   "trailingComma": "es5",
   "singleQuote": true,
   "bracketSpacing": true,
-  "bracketLine": true,
+  "bracketSameLine": true,
   "importOrder": ["^react/(.*)$", "^@mui/(.*)$", "^[./]"]
 }
