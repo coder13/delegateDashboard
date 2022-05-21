@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { useParams, Outlet } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { useParams, Outlet } from 'react-router-dom';
 import { Alert, Breadcrumbs, Button, Container, Grid, Typography } from '@mui/material';
 import { fetchWCIF, uploadCurrentWCIFChanges } from '../../store/actions';
 import BreadcrumbsProvider, { useBreadcrumbs } from '../providers/BreadcrumbsProvider';
@@ -24,7 +24,7 @@ const Errors = ({ errors }) => {
     <div>
       Errors!
       <ul>
-        {errors.map(err => (
+        {errors.map((err) => (
           <li key={err}>{err}</li>
         ))}
       </ul>
@@ -47,17 +47,17 @@ const BreadCrumbsGridItem = () => {
         <MaterialLink to={`/competitions/${competitionId}`}>
           {wcif.name || competitionId}
         </MaterialLink>
-        {breadcrumbs.map((breadcrumb) => (
-          breadcrumb.to
-            ? (
-              <MaterialLink key={breadcrumb.text} to={breadcrumb.to}>
-                {breadcrumb.text}
-              </MaterialLink>
-            )
-            : (
-              <Typography key={breadcrumb.text} color="textPrimary">{breadcrumb.text}</Typography>
-            )
-        ))}
+        {breadcrumbs.map((breadcrumb) =>
+          breadcrumb.to ? (
+            <MaterialLink key={breadcrumb.text} to={breadcrumb.to}>
+              {breadcrumb.text}
+            </MaterialLink>
+          ) : (
+            <Typography key={breadcrumb.text} color="textPrimary">
+              {breadcrumb.text}
+            </Typography>
+          )
+        )}
       </Breadcrumbs>
     </Grid>
   );
@@ -74,7 +74,7 @@ const CompetitionLayout = () => {
   const { competitionId } = useParams();
 
   useEffect(() => {
-    dispatch(fetchWCIF(competitionId))
+    dispatch(fetchWCIF(competitionId));
   }, [dispatch, competitionId]);
 
   return (
@@ -85,11 +85,13 @@ const CompetitionLayout = () => {
             <Alert
               severity={needToSave ? 'error' : 'warning'}
               action={
-                <Button color="inherit" size="small" onClick={() => dispatch(uploadCurrentWCIFChanges())}>
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={() => dispatch(uploadCurrentWCIFChanges())}>
                   SAVE
                 </Button>
-              }
-            >
+              }>
               Don't Forget to save changes!
             </Alert>
           </Grid>
@@ -99,15 +101,11 @@ const CompetitionLayout = () => {
               <Errors />
             </Grid>
           )}
-          <Grid item>
-            {!fetchingWCIF && wcif && wcif.id && wcif.name && (
-              <Outlet />
-            )}
-          </Grid>
+          <Grid item>{!fetchingWCIF && wcif && wcif.id && wcif.name && <Outlet />}</Grid>
         </Grid>
       </Container>
     </BreadcrumbsProvider>
   );
-}
+};
 
 export default CompetitionLayout;

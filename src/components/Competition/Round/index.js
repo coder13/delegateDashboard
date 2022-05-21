@@ -61,15 +61,11 @@ const RoundPage = () => {
   const confirm = useConfirm();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { eventId, roundNumber } = useParams();
-  const [configureScramblersDialog, setConfigureScramblersDialog] =
-    useState(false);
-  const [configureGroupCountsDialog, setConfigureGroupCountsDialog] =
-    useState(false);
+  const [configureScramblersDialog, setConfigureScramblersDialog] = useState(false);
+  const [configureGroupCountsDialog, setConfigureGroupCountsDialog] = useState(false);
   const activityCode = `${eventId}-r${roundNumber}`;
   const wcif = useSelector((state) => state.wcif);
-  const round = wcif.events.find((event) => event.id === eventId)?.rounds[
-    roundNumber - 1
-  ];
+  const round = wcif.events.find((event) => event.id === eventId)?.rounds[roundNumber - 1];
 
   useEffect(() => {
     setBreadcrumbs([
@@ -103,9 +99,7 @@ const RoundPage = () => {
   const sortedGroups = useMemo(
     () =>
       groups.sort((groupA, groupB) => {
-        const roomDiff = groupA.parent.room.name.localeCompare(
-          groupB.parent.room.name
-        );
+        const roomDiff = groupA.parent.room.name.localeCompare(groupB.parent.room.name);
         if (roomDiff === 0) {
           return byGroupNumber(groupA, groupB);
         } else {
@@ -117,8 +111,7 @@ const RoundPage = () => {
 
   const registeredPersonsForEvent = wcif.persons.filter(
     ({ registration }) =>
-      registration.status === 'accepted' &&
-      registration.eventIds.indexOf(eventId) > -1
+      registration.status === 'accepted' && registration.eventIds.indexOf(eventId) > -1
   );
 
   const personsAssigned = useMemo(
@@ -131,8 +124,7 @@ const RoundPage = () => {
             return false;
           }
           return (
-            activity.activityCode.split('-')[0] ===
-              activityCode.split('-')[0] &&
+            activity.activityCode.split('-')[0] === activityCode.split('-')[0] &&
             activity.activityCode.split('-')[1] === activityCode.split('-')[1]
           ); // TODO IMPROVE
         })
@@ -150,10 +142,8 @@ const RoundPage = () => {
             return false;
           }
           return (
-            activity.activityCode.split('-')[0] ===
-              activityCode.split('-')[0] &&
-            activity.activityCode.split('-')[1] ===
-              activityCode.split('-')[1] &&
+            activity.activityCode.split('-')[0] === activityCode.split('-')[0] &&
+            activity.activityCode.split('-')[1] === activityCode.split('-')[1] &&
             ['competitor', 'staff-judge'].indexOf(a.assignmentCode) > -1
           );
         })
@@ -180,14 +170,9 @@ const RoundPage = () => {
     const previousGroupForActivity = (activity) => {
       const groupCount = activity.parent.childActivities.length;
       const previousGroupNumber =
-        ((parseActivityCode(activity.activityCode).groupNumber -
-          2 +
-          groupCount) %
-          groupCount) +
-        1;
+        ((parseActivityCode(activity.activityCode).groupNumber - 2 + groupCount) % groupCount) + 1;
       const previousGroup = activity.parent.childActivities.find(
-        (g) =>
-          parseActivityCode(g.activityCode).groupNumber === previousGroupNumber
+        (g) => parseActivityCode(g.activityCode).groupNumber === previousGroupNumber
       );
       return previousGroup;
     };
@@ -199,9 +184,7 @@ const RoundPage = () => {
       // Filter to persons with scrambling assignments in this round
       .filter((p) =>
         p.assignments.some(
-          (a) =>
-            groups.some((g) => g.id === a.activityId) &&
-            a.assignmentCode === 'staff-scrambler'
+          (a) => groups.some((g) => g.id === a.activityId) && a.assignmentCode === 'staff-scrambler'
         )
       )
       .map((p) => {
@@ -209,20 +192,15 @@ const RoundPage = () => {
         const assignedScramblingActivities = p.assignments
           .filter(
             (a) =>
-              groups.some((g) => g.id === a.activityId) &&
-              a.assignmentCode === 'staff-scrambler'
+              groups.some((g) => g.id === a.activityId) && a.assignmentCode === 'staff-scrambler'
           )
           .map(({ activityId }) => groups.find((g) => activityId === g.id));
-        const assignedScramblingActivityGroupNumbers =
-          assignedScramblingActivities.map(
-            ({ activityCode }) => parseActivityCode(activityCode).groupNumber
-          );
-
-        const minGroupNumber = Math.min(
-          ...assignedScramblingActivityGroupNumbers
+        const assignedScramblingActivityGroupNumbers = assignedScramblingActivities.map(
+          ({ activityCode }) => parseActivityCode(activityCode).groupNumber
         );
-        const minGroupIndex =
-          assignedScramblingActivityGroupNumbers.indexOf(minGroupNumber);
+
+        const minGroupNumber = Math.min(...assignedScramblingActivityGroupNumbers);
+        const minGroupIndex = assignedScramblingActivityGroupNumbers.indexOf(minGroupNumber);
 
         return {
           registrantId: p.registrantId,
@@ -244,8 +222,7 @@ const RoundPage = () => {
     const isAlreadyAssigned = (person) =>
       !assignments.find(
         (a) =>
-          a.registrantId === person.registrantId &&
-          a.assignment.assignmentCode === 'competitor'
+          a.registrantId === person.registrantId && a.assignment.assignmentCode === 'competitor'
       );
 
     // Now for other non-scrambler staff
@@ -259,15 +236,12 @@ const RoundPage = () => {
             activity: activity,
             size: assignments.filter(
               ({ assignment }) =>
-                assignment.activityId === activity.id &&
-                assignment.assignmentCode === 'competitor'
+                assignment.activityId === activity.id && assignment.assignmentCode === 'competitor'
             ).length,
           }));
 
         const min = Math.min(...stagesInGroup.map((i) => i.size));
-        const smallestGroupActivity = stagesInGroup.find(
-          (g) => g.size === min
-        ).activity;
+        const smallestGroupActivity = stagesInGroup.find((g) => g.size === min).activity;
 
         debugger;
 
@@ -282,28 +256,21 @@ const RoundPage = () => {
 
         // decrement and loop
         currentGroupPointer =
-          (currentGroupPointer + groupActivityIds.length - 1) %
-          groupActivityIds.length;
+          (currentGroupPointer + groupActivityIds.length - 1) % groupActivityIds.length;
       };
 
       registeredPersonsForEvent
-        .filter((person) =>
-          person.roles.some((role) => role.indexOf('delegate') > -1)
-        )
+        .filter((person) => person.roles.some((role) => role.indexOf('delegate') > -1))
         .filter(isAlreadyAssigned)
         .forEach(assignOrganizersOrStaff);
 
       registeredPersonsForEvent
-        .filter((person) =>
-          person.roles.some((role) => role.indexOf('organizer') > -1)
-        )
+        .filter((person) => person.roles.some((role) => role.indexOf('organizer') > -1))
         .filter(isAlreadyAssigned)
         .forEach(assignOrganizersOrStaff);
     }
 
-    const everyoneElse = personsShouldBeInRound(wcif, round).filter(
-      isAlreadyAssigned
-    );
+    const everyoneElse = personsShouldBeInRound(wcif, round).filter(isAlreadyAssigned);
 
     const nextGroupToAssign = () => {
       // determine smallest group
@@ -311,17 +278,12 @@ const RoundPage = () => {
         activity: activity,
         size: assignments.filter(
           ({ assignment }) =>
-            assignment.activityId === activity.id &&
-            assignment.assignmentCode === 'competitor'
+            assignment.activityId === activity.id && assignment.assignmentCode === 'competitor'
         ).length,
       }));
       const min = Math.min(...groupSizes.map((i) => i.size));
-      const smallestGroupActivity = groupSizes.find(
-        (g) => g.size === min
-      ).activity;
-      const { groupNumber } = parseActivityCode(
-        smallestGroupActivity.activityCode
-      );
+      const smallestGroupActivity = groupSizes.find((g) => g.size === min).activity;
+      const { groupNumber } = parseActivityCode(smallestGroupActivity.activityCode);
       const nextGroupNumber =
         (groupNumber % smallestGroupActivity.parent.childActivities.length) + 1;
       const nextGroup = smallestGroupActivity.parent.childActivities.find(
@@ -360,8 +322,7 @@ const RoundPage = () => {
 
   const onResetGroupActitivites = () => {
     confirm({
-      description:
-        'Do you really want to reset all group activities in this round?',
+      description: 'Do you really want to reset all group activities in this round?',
       confirmationText: 'Yes',
       cancellationText: 'No',
     })
@@ -386,8 +347,7 @@ const RoundPage = () => {
 
   const onResetGroupNonScramblingActitivites = () => {
     confirm({
-      description:
-        'Do you really want to reset all group activities in this round?',
+      description: 'Do you really want to reset all group activities in this round?',
       confirmationText: 'Yes',
       cancellationText: 'No',
     })
@@ -455,10 +415,7 @@ const RoundPage = () => {
       <Grid item>
         <Card>
           <CardHeader title={activityCodeToName(activityCode)} />
-          <List
-            dense
-            subheader={<ListSubheader id="stages">Stages</ListSubheader>}
-          >
+          <List dense subheader={<ListSubheader id="stages">Stages</ListSubheader>}>
             {roundActivities.map(({ startTime, endTime, room }) => (
               <ListItemButton>
                 {room.name}: {new Date(startTime).toLocaleDateString()}{' '}
@@ -483,9 +440,7 @@ const RoundPage = () => {
             </TableHead>
             <TableBody>
               <TableRow>
-                <TableCell>
-                  {personsShouldBeInRound(wcif, round)?.length || '???'}
-                </TableCell>
+                <TableCell>{personsShouldBeInRound(wcif, round)?.length || '???'}</TableCell>
                 <TableCell>{round.results.length}</TableCell>
                 <TableCell>{personsAssigned.length}</TableCell>
                 <TableCell>{groupsData.groups}</TableCell>

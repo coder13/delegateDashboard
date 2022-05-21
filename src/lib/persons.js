@@ -4,8 +4,7 @@ import { advancingCompetitors } from './formulas';
 /**
  * @param {Person} person
  */
-export const acceptedRegistration = (person) =>
-  person.registration.status === 'accepted';
+export const acceptedRegistration = (person) => person.registration.status === 'accepted';
 
 export const registeredForEvent =
   (eventId) =>
@@ -16,15 +15,12 @@ export const registeredForEvent =
  * Determines if a person is a delegate / trainee-delegate / organizer
  */
 export const isOrganizerOrDelegate = (person) =>
-  person.roles.some((role) =>
-    ['delegate', 'trainee-delegate', 'organizer'].includes(role)
-  );
+  person.roles.some((role) => ['delegate', 'trainee-delegate', 'organizer'].includes(role));
 
 /**
  * Returns a filtered list of people who's registration has been accepted
  */
-export const acceptedRegistrations = (persons) =>
-  persons.filter(acceptedRegistration);
+export const acceptedRegistrations = (persons) => persons.filter(acceptedRegistration);
 
 /**
  * Returns a list of people who's registration has been accepted and they registered for the specified event
@@ -59,8 +55,7 @@ export const personsShouldBeInRound = (wcif, round) => {
 
     return advancingCompetitors(
       advancementCondition,
-      previousRound.results.length ||
-        personsShouldBeInRound(wcif, previousRound).length
+      previousRound.results.length || personsShouldBeInRound(wcif, previousRound).length
     );
   }
 };

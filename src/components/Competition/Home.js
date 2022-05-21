@@ -26,8 +26,7 @@ const CompetitionSummary = () => {
         </Typography>
         <Typography>
           <b>Date: </b>
-          {wcif.schedule.startDate} (
-          {pluralize(wcif.schedule.numberOfDays, 'day', 'days')})
+          {wcif.schedule.startDate} ({pluralize(wcif.schedule.numberOfDays, 'day', 'days')})
         </Typography>
       </CardContent>
     </Card>

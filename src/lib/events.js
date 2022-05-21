@@ -20,14 +20,11 @@ const events = [
   { id: '333mbf', name: '3x3x3 Multi-Blind', shortName: 'MBLD' },
 ];
 
-export const eventNameById = eventId => propertyById('name', eventId);
+export const eventNameById = (eventId) => propertyById('name', eventId);
 
-export const shortEventNameById = eventId => propertyById('shortName', eventId);
+export const shortEventNameById = (eventId) => propertyById('shortName', eventId);
 
-const propertyById = (property, eventId) =>
-  events.find(event => event.id === eventId)[property];
+const propertyById = (property, eventId) => events.find((event) => event.id === eventId)[property];
 
-export const sortWcifEvents = wcifEvents =>
-  sortBy(wcifEvents, wcifEvent =>
-    events.findIndex(event => event.id === wcifEvent.id)
-  );
+export const sortWcifEvents = (wcifEvents) =>
+  sortBy(wcifEvents, (wcifEvent) => events.findIndex((event) => event.id === wcifEvent.id));

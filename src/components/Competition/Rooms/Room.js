@@ -1,25 +1,29 @@
+import { useConfirm } from 'material-ui-confirm';
 import React, { useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { makeStyles } from '@mui/styles';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { Button, MenuItem, TextField } from '@mui/material';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import CardHeader from '@mui/material/CardHeader'
+import CardHeader from '@mui/material/CardHeader';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
 import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
-import TableBody from '@mui/material/TableBody';
 import TableRow from '@mui/material/TableRow';
-import TableCell from '@mui/material/TableCell';
-import IconButton from '@mui/material/IconButton'
-import Menu from '@mui/material/Menu';
-import MoreVertIcon from '@mui/icons-material/MoreVert'
-import { useConfirm } from 'material-ui-confirm';
+import { makeStyles } from '@mui/styles';
 import { generateNextChildActivityId, parseActivityCode } from '../../../lib/activities';
-import { getGroupData } from '../../../lib/wcif-extensions';
 import { advancingCompetitors } from '../../../lib/formulas';
-import { Button, MenuItem, TextField } from '@mui/material';
 import { acceptedRegistrations } from '../../../lib/persons';
-import { updateRoundChildActivities, updateGroupCount, updateRoundActivities } from '../../../store/actions';
+import { getGroupData } from '../../../lib/wcif-extensions';
+import {
+  updateRoundChildActivities,
+  updateGroupCount,
+  updateRoundActivities,
+} from '../../../store/actions';
 
 const useStyles = makeStyles((theme) => ({
   card: ({ room }) => ({
@@ -69,7 +73,7 @@ const Room = ({ venue, room }) => {
         } else {
           _eventRegistrationCounts[eventId] = 1;
         }
-      })
+      });
     });
 
     return _eventRegistrationCounts;
@@ -82,14 +86,18 @@ const Room = ({ venue, room }) => {
   const onResetAllGroups = () => {
     handleMenuClose();
     confirm({
-      description: `This button should *only* be used to reset group data if another software messed up or you want to completely start over.\nTechnically speaking: it resets the child activities and extension data.`
+      description: `This button should *only* be used to reset group data if another software messed up or you want to completely start over.\nTechnically speaking: it resets the child activities and extension data.`,
     })
       .then(() => {
-        dispatch(updateRoundActivities(room.activities.map((activity) => ({
-          ...activity,
-          childActivities: [],
-          extensions: [],
-        }))));
+        dispatch(
+          updateRoundActivities(
+            room.activities.map((activity) => ({
+              ...activity,
+              childActivities: [],
+              extensions: [],
+            }))
+          )
+        );
         // TODO: follow up with prompt to clear competitor assignments (highly recommended)
       })
       .catch((e) => {
@@ -98,9 +106,7 @@ const Room = ({ venue, room }) => {
   };
 
   return (
-    <Card
-      className={classes.card}
-    >
+    <Card className={classes.card}>
       <Menu
         id="room-menu"
         anchorEl={anchorEl}
@@ -114,8 +120,7 @@ const Room = ({ venue, room }) => {
         transformOrigin={{
           vertical: 'top',
           horizontal: 'left',
-        }}
-      >
+        }}>
         {/* <MenuItem disabled onClick={onCreateAllGroups}>Create All Groups</MenuItem> */}
         <MenuItem onClick={onResetAllGroups}>Reset All Groups</MenuItem>
       </Menu>
@@ -147,24 +152,36 @@ const Room = ({ venue, room }) => {
                 .filter((activity) => activity.activityCode.split('-')[0] !== 'other')
                 .map((activity) => {
                   const { eventId, roundNumber } = parseActivityCode(activity.activityCode);
-                  const event = wcif.events.find(i => i.id === eventId);
+                  const event = wcif.events.find((i) => i.id === eventId);
                   const round = event.rounds[roundNumber - 1];
 
                   const previousRound = roundNumber > 1 ? event.rounds[roundNumber - 2] : null;
                   const advancementCondition = previousRound?.advancementCondition;
 
-                  const estimatedCompetitors = roundNumber === 1
-                    ? eventRegistrationCounts[eventId]
-                    : advancingCompetitors(advancementCondition, eventRegistrationCounts[eventId]);
+                  const estimatedCompetitors =
+                    roundNumber === 1
+                      ? eventRegistrationCounts[eventId]
+                      : advancingCompetitors(
+                          advancementCondition,
+                          eventRegistrationCounts[eventId]
+                        );
                   const actualCompetitors = round.results.length;
 
                   const groupData = getGroupData(activity);
 
                   // true if we are looking at a first round or we have results for that round
-                  const canCreateGroups = ((roundNumber === 1 && estimatedCompetitors > 0) || (roundNumber > 1 && round.results.length > 0)) && groupData?.groups;
+                  const canCreateGroups =
+                    ((roundNumber === 1 && estimatedCompetitors > 0) ||
+                      (roundNumber > 1 && round.results.length > 0)) &&
+                    groupData?.groups;
 
                   const handleGroupCountChange = (e) => {
-                    dispatch(updateGroupCount(activity.id, Math.max(1, parseInt(e.currentTarget.value, 10))));
+                    dispatch(
+                      updateGroupCount(
+                        activity.id,
+                        Math.max(1, parseInt(e.currentTarget.value, 10))
+                      )
+                    );
                   };
 
                   const handleGenerateGroupActitivites = () => {
@@ -186,7 +203,7 @@ const Room = ({ venue, room }) => {
                       });
                     }
 
-                    dispatch(updateRoundChildActivities(activity.id, childActivities))
+                    dispatch(updateRoundChildActivities(activity.id, childActivities));
                   };
 
                   return (
@@ -207,21 +224,28 @@ const Room = ({ venue, room }) => {
                           style={{ maxWidth: '5em' }}
                         />
                       </TableCell>
-                      <TableCell>{estimatedCompetitors && groupData?.groups ? Math.ceil(estimatedCompetitors / groupData.groups) : '-'}</TableCell>
-                      <TableCell>{actualCompetitors || (roundNumber === 1 && estimatedCompetitors) || '-'}</TableCell>
-                      <TableCell>{activity.childActivities.length !== (groupData?.groups || round.scrambleSetCount)
-                        ? (
+                      <TableCell>
+                        {estimatedCompetitors && groupData?.groups
+                          ? Math.ceil(estimatedCompetitors / groupData.groups)
+                          : '-'}
+                      </TableCell>
+                      <TableCell>
+                        {actualCompetitors || (roundNumber === 1 && estimatedCompetitors) || '-'}
+                      </TableCell>
+                      <TableCell>
+                        {activity.childActivities.length !==
+                        (groupData?.groups || round.scrambleSetCount) ? (
                           <Button
                             variant="contained"
                             disabled={!canCreateGroups}
                             size="small"
-                            onClick={handleGenerateGroupActitivites}
-                          >
+                            onClick={handleGenerateGroupActitivites}>
                             Create
                           </Button>
-                        )
-                        : activity.childActivities.length
-                      }</TableCell>
+                        ) : (
+                          activity.childActivities.length
+                        )}
+                      </TableCell>
                     </TableRow>
                   );
                 })}

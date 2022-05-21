@@ -23,23 +23,12 @@ import {
 import { advancingCompetitors } from '../../../lib/formulas';
 import { personsRegistered } from '../../../lib/persons';
 import { getExtensionData } from '../../../lib/wcif-extensions';
-import {
-  updateRoundChildActivities,
-  updateRoundExtensionData,
-} from '../../../store/actions';
+import { updateRoundChildActivities, updateRoundExtensionData } from '../../../store/actions';
 
-const ConfigureGroupCountsDialog = ({
-  open,
-  onClose,
-  activityCode,
-  round,
-  roundActivities,
-}) => {
+const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundActivities }) => {
   const wcif = useSelector((state) => state.wcif);
   const dispatch = useDispatch();
-  const [groupsData, setGroupsData] = useState(
-    getExtensionData('groups', round)
-  );
+  const [groupsData, setGroupsData] = useState(getExtensionData('groups', round));
 
   if (!open) {
     return '';
@@ -145,13 +134,12 @@ const ConfigureGroupCountsDialog = ({
                 </FormHelperText>
               </FormControl>
               <Typography>
-                There will be max group sizes of{' '}
-                {Math.ceil(roundSize / (groupCount || 1))}
+                There will be max group sizes of {Math.ceil(roundSize / (groupCount || 1))}
               </Typography>
               {multipleStages && (
                 <Typography>
-                  There will be max group sizes of{' '}
-                  {Math.ceil(roundSize / 2 / (groupCount || 1))} per stage
+                  There will be max group sizes of {Math.ceil(roundSize / 2 / (groupCount || 1))}{' '}
+                  per stage
                 </Typography>
               )}
             </>
@@ -168,8 +156,7 @@ const ConfigureGroupCountsDialog = ({
           onClick={() => {
             reset();
             onClose();
-          }}
-        >
+          }}>
           Close
         </Button>
       </DialogActions>

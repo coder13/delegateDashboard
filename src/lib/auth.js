@@ -1,7 +1,7 @@
 import { WCA_OAUTH_CLIENT_ID } from './wca-env';
 
 // /* Use separate set of keys for each OAuth client (e.g. for WCA production and staging). */
-const localStorageKey = key => `groups.${WCA_OAUTH_CLIENT_ID}.${key}`;
+const localStorageKey = (key) => `groups.${WCA_OAUTH_CLIENT_ID}.${key}`;
 
 // /**
 //  * Checks the URL hash for presence of OAuth access token
@@ -55,8 +55,7 @@ const localStorageKey = key => `groups.${WCA_OAUTH_CLIENT_ID}.${key}`;
 //   }
 // };
 
-export const wcaAccessToken = () =>
-  localStorage.getItem(localStorageKey('accessToken'));
+export const wcaAccessToken = () => localStorage.getItem(localStorageKey('accessToken'));
 
 // export const signIn = () => {
 //   const params = new URLSearchParams({

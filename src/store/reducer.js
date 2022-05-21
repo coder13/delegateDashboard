@@ -97,9 +97,7 @@ const reducers = {
         person.registrantId === action.registrantId
           ? {
               ...person,
-              assignments: person.assignments.filter(
-                (a) => a.activityId !== action.activityId
-              ),
+              assignments: person.assignments.filter((a) => a.activityId !== action.activityId),
             }
           : person
       ),
@@ -212,8 +210,7 @@ const reducers = {
         mapIn(
           room,
           ['activities'],
-          (activity) =>
-            action.activities.find((a) => a.id === activity.id) || activity
+          (activity) => action.activities.find((a) => a.id === activity.id) || activity
         )
       )
     ),

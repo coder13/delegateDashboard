@@ -1,6 +1,6 @@
-import { getWcif, updateWcif } from '../lib/wcaAPI'
-import { updateIn, pick } from '../lib/utils';
 import { sortWcifEvents } from '../lib/events';
+import { updateIn, pick } from '../lib/utils';
+import { getWcif, updateWcif } from '../lib/wcaAPI';
 import { validateWcif } from '../lib/wcif-validation';
 
 export const FETCH_MANAGED_COMPS = 'fetch_managed_comps';
@@ -43,44 +43,42 @@ const updateWcifErrors = (errors) => ({
 const updateUploading = (uploading) => ({
   type: UPLOADING_WCIF,
   uploading,
-})
+});
 
-export const fetchWCIF = (competitionId) =>
-  (dispatch) => {
-    dispatch(fetchingWCIF());
-    getWcif(competitionId)
-      /* Sort events, so that we don't need to remember about this everywhere. */
-      .then((wcif) => updateIn(wcif, ['events'], sortWcifEvents))
-      .then((wcif) => {
-        dispatch(updateWCIF(wcif));
-        updateWcifErrors(validateWcif(wcif));
-      })
-      .catch((error) => updateWcifErrors([error.message]))
-      .finally(() => updateFetching(false));
-  };
+export const fetchWCIF = (competitionId) => (dispatch) => {
+  dispatch(fetchingWCIF());
+  getWcif(competitionId)
+    /* Sort events, so that we don't need to remember about this everywhere. */
+    .then((wcif) => updateIn(wcif, ['events'], sortWcifEvents))
+    .then((wcif) => {
+      dispatch(updateWCIF(wcif));
+      updateWcifErrors(validateWcif(wcif));
+    })
+    .catch((error) => updateWcifErrors([error.message]))
+    .finally(() => updateFetching(false));
+};
 
-export const uploadCurrentWCIFChanges = () =>
-  (dispatch, getState) => {
-    const { wcif, changedKeys } = getState();
-    const competitionId = wcif.id;
+export const uploadCurrentWCIFChanges = () => (dispatch, getState) => {
+  const { wcif, changedKeys } = getState();
+  const competitionId = wcif.id;
 
-    if (changedKeys.size === 0) {
-      console.error('Not pushing changes because changedKeys is empty');
-      return;
-    }
+  if (changedKeys.size === 0) {
+    console.error('Not pushing changes because changedKeys is empty');
+    return;
+  }
 
-    const changes = pick(wcif, Array.from(changedKeys));
+  const changes = pick(wcif, Array.from(changedKeys));
 
-    dispatch(updateUploading(true));
-    updateWcif(competitionId, changes)
-      .then(() => {
-        console.log('finished');
-        dispatch(updateUploading(false));
-      })
-      .catch((e) => {
-        console.error(e);
-      })
-  };
+  dispatch(updateUploading(true));
+  updateWcif(competitionId, changes)
+    .then(() => {
+      console.log('finished');
+      dispatch(updateUploading(false));
+    })
+    .catch((e) => {
+      console.error(e);
+    });
+};
 
 export const togglePersonRole = (registrantId, roleId) => ({
   type: TOGGLE_PERSON_ROLE,
@@ -88,7 +86,7 @@ export const togglePersonRole = (registrantId, roleId) => ({
   roleId,
 });
 
-/** 
+/**
  * @param {number} registrantId
  * @param {Assignment} assignment
  */
@@ -98,16 +96,15 @@ export const addPersonAssignment = (registrantId, assignment) => ({
   assignment,
 });
 
-
-/** 
+/**
  * @param {array} assignments - [{activityId, registrantId, assignment: Assignment}]
  */
 export const bulkAddPersonAssignment = (assignments) => ({
   type: BULK_ADD_PERSON_ASSIGNMENT,
-  assignments
+  assignments,
 });
 
-/** 
+/**
  * @param {number} registrantId
  * @param {number} activityId
  */
@@ -117,7 +114,7 @@ export const removePersonAssignment = (registrantId, activityId) => ({
   activityId,
 });
 
-/** 
+/**
  * Optionally remove person assignments by either any of activityId, registrantId, and/or assignmentCode
  * if only activityId is specified, then it removes all group assignments by that activityId.
  * if only registrantId is specified, then it removes all group assignments for the person.
@@ -127,7 +124,7 @@ export const removePersonAssignment = (registrantId, activityId) => ({
  */
 export const bulkRemovePersonAssignment = (assignments) => ({
   type: BULK_REMOVE_PERSON_ASSIGNMENT,
-  assignments
+  assignments,
 });
 
 export const updateGroupCount = (activityId, groupCount) => ({

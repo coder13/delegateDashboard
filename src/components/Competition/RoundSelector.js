@@ -60,19 +60,14 @@ const RoundSelectorPage = () => {
             {event.rounds.map((round, index) => {
               const groupsData = getExtensionData('groups', round);
 
-              const _personsShouldBeInRound = personsShouldBeInRound(
-                wcif,
-                round
-              )?.length;
+              const _personsShouldBeInRound = personsShouldBeInRound(wcif, round)?.length;
 
               const personsAssigned = wcif.persons.filter((p) =>
                 p.assignments.find((a) => {
                   const activity = activityById(wcif, a.activityId);
                   return (
-                    activity.activityCode.split('-')[0] ===
-                      round.id.split('-')[0] &&
-                    activity.activityCode.split('-')[1] ===
-                      round.id.split('-')[1]
+                    activity.activityCode.split('-')[0] === round.id.split('-')[0] &&
+                    activity.activityCode.split('-')[1] === round.id.split('-')[1]
                   );
                 })
               ).length;
@@ -82,8 +77,7 @@ const RoundSelectorPage = () => {
                   key={round.id}
                   button
                   component={RouterLink}
-                  to={`/competitions/${competitionId}/events/${round.id}`}
-                >
+                  to={`/competitions/${competitionId}/events/${round.id}`}>
                   <ListItemAvatar>
                     <span className={`cubing-icon event-${event.id}`} />
                   </ListItemAvatar>
@@ -91,17 +85,11 @@ const RoundSelectorPage = () => {
                     primary={`${eventNameById(event.id)} Round ${index + 1}`}
                     secondary={[
                       groupsData?.groups
-                        ? `${pluralize(
-                            groupsData?.groups,
-                            'group',
-                            'groups'
-                          )} configured`
+                        ? `${pluralize(groupsData?.groups, 'group', 'groups')} configured`
                         : 'No Groups Configured',
-                      `${pluralize(
-                        personsAssigned,
-                        'person',
-                        'people'
-                      )} assigned of ${_personsShouldBeInRound || '???'}`,
+                      `${pluralize(personsAssigned, 'person', 'people')} assigned of ${
+                        _personsShouldBeInRound || '???'
+                      }`,
                     ].join(' | ')}
                   />
                 </ListItem>

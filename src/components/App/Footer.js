@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import grey from '@mui/material/colors/grey';
 import { makeStyles } from '@mui/styles';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     padding: theme.spacing(2),
   },
@@ -43,8 +43,7 @@ const Footer = () => {
             className={classes.link}
             href="https://github.com/coder13"
             target="_blank"
-            rel="noopener noreferrer"
-          >
+            rel="noopener noreferrer">
             Caleb Hoover
           </Link>
         </Typography>
@@ -59,8 +58,7 @@ const Footer = () => {
                 variant="body2"
                 href={url}
                 target="_blank"
-                rel="noopener noreferrer"
-              >
+                rel="noopener noreferrer">
                 {text}
               </Link>
             </Grid>

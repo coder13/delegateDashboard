@@ -9,7 +9,7 @@ import {
   RoundSelector as RoundSelectorPage,
   Person as PersonPage,
 } from '../Competition';
-import CompetitionList from '../CompetitionList'
+import CompetitionList from '../CompetitionList';
 import { useAuth } from '../providers/AuthProvider';
 import App from './App';
 
@@ -22,7 +22,7 @@ const AuthenticatedRoute = () => {
   }
 
   return <Outlet />;
-}
+};
 
 const Navigation = () => {
   const { signedIn } = useAuth();
@@ -30,11 +30,7 @@ const Navigation = () => {
   return (
     <Routes>
       <Route path="/" element={<App />}>
-        <Route index
-          element={(
-            signedIn() ? <CompetitionList /> : <p>Sign in to view comps!</p>
-          )}
-        />
+        <Route index element={signedIn() ? <CompetitionList /> : <p>Sign in to view comps!</p>} />
 
         <Route path="/competitions/" element={<AuthenticatedRoute />}>
           <Route path=":competitionId" element={<CompetitionLayout />}>
@@ -50,6 +46,6 @@ const Navigation = () => {
       </Route>
     </Routes>
   );
-}
+};
 
 export default Navigation;

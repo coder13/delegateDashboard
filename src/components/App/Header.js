@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { makeStyles } from '@mui/styles';
+import PeopleIcon from '@mui/icons-material/People';
+import { Avatar, Box, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import PeopleIcon from '@mui/icons-material/People';
+import { makeStyles } from '@mui/styles';
 import { useAuth } from '../providers/AuthProvider';
-import { Avatar, Box, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   title: {
     flexGrow: 1,
   },
@@ -43,8 +43,8 @@ const Header = () => {
     <AppBar position="static" color="primary">
       <Toolbar>
         <Typography variant="h6" className={classes.title}>
-          <Link to='/' className={classes.titleLink}>
-            <PeopleIcon className={classes.titleIcon}/>
+          <Link to="/" className={classes.titleLink}>
+            <PeopleIcon className={classes.titleIcon} />
             Delegate Dashboard
           </Link>
         </Typography>
@@ -69,8 +69,7 @@ const Header = () => {
                 horizontal: 'right',
               }}
               open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}
-            >
+              onClose={handleCloseUserMenu}>
               <MenuItem onClick={signOut}>
                 <Typography textAlign="center">Sign Out</Typography>
               </MenuItem>

@@ -15,16 +15,13 @@ import {
 import { rooms, parseActivityCode } from '../../../lib/activities';
 import { isOrganizerOrDelegate } from '../../../lib/persons';
 import { flatten } from '../../../lib/utils';
-import {
-  addPersonAssignment,
-  removePersonAssignment,
-} from '../../../store/actions';
+import { addPersonAssignment, removePersonAssignment } from '../../../store/actions';
 
 const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
   const wcif = useSelector((state) => state.wcif);
   const groupsRooms = rooms(wcif).filter((room) =>
-    flatten(room.activities.map((activity) => activity.childActivities)).some(
-      (activity) => groups.find((g) => g.id === activity.id)
+    flatten(room.activities.map((activity) => activity.childActivities)).some((activity) =>
+      groups.find((g) => g.id === activity.id)
     )
   );
   const dispatch = useDispatch();
@@ -40,19 +37,14 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
     )
     .map((person) => ({
       ...person,
-      pr: person.personalBests.find(
-        (pb) => pb.eventId === eventId && pb.type === 'average'
-      )?.best,
+      pr: person.personalBests.find((pb) => pb.eventId === eventId && pb.type === 'average')?.best,
     }))
     .sort((a, b) => (a.pr || Number.MAX_VALUE) - (b.pr || Number.MAX_VALUE));
 
   const getAssignmentForPersonGroup = (registrantId, activityId) => {
-    const assignments = compStaff.find(
-      (p) => p.registrantId === registrantId
-    ).assignments;
+    const assignments = compStaff.find((p) => p.registrantId === registrantId).assignments;
     return assignments.some(
-      (a) =>
-        a.activityId === activityId && a.assignmentCode === 'staff-scrambler'
+      (a) => a.activityId === activityId && a.assignmentCode === 'staff-scrambler'
     );
   };
 
@@ -79,11 +71,7 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
             <TableCell></TableCell>
             <TableCell></TableCell>
             {groupsRooms.map((room, index) => (
-              <TableCell
-                key={room.id}
-                style={{ textAlign: 'center' }}
-                colSpan={6}
-              >
+              <TableCell key={room.id} style={{ textAlign: 'center' }} colSpan={6}>
                 {room.name}
               </TableCell>
             ))}
@@ -111,11 +99,7 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
               <TableCell>{person.name}</TableCell>
               <TableCell>{person.pr}</TableCell>
               <TableCell>
-                {person.registration.eventIds.indexOf(eventId) > -1 ? (
-                  <CheckIcon />
-                ) : (
-                  ''
-                )}
+                {person.registration.eventIds.indexOf(eventId) > -1 ? <CheckIcon /> : ''}
               </TableCell>
               {groupsRooms.map((room, index) =>
                 groups
@@ -123,24 +107,14 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
                   .map((group, index) => (
                     <TableCell key={group.id}>
                       <Checkbox
-                        checked={getAssignmentForPersonGroup(
-                          person.registrantId,
-                          group.id
-                        )}
-                        onChange={handleUpdateAssignmentForPerson(
-                          person.registrantId,
-                          group.id
-                        )}
+                        checked={getAssignmentForPersonGroup(person.registrantId, group.id)}
+                        onChange={handleUpdateAssignmentForPerson(person.registrantId, group.id)}
                       />
                     </TableCell>
                   ))
               )}
               <TableCell>
-                {
-                  person.assignments.filter(
-                    (a) => a.assignmentCode.indexOf('staff-') > -1
-                  ).length
-                }
+                {person.assignments.filter((a) => a.assignmentCode.indexOf('staff-') > -1).length}
               </TableCell>
             </TableRow>
           ))}

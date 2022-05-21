@@ -1,8 +1,8 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { styled } from '@mui/system';
-import Header from './Header';
 import Footer from './Footer';
+import Header from './Header';
 
 const RootDiv = styled('div')({
   display: 'flex',
@@ -15,12 +15,19 @@ const App = () => {
   return (
     <RootDiv>
       <Header />
-      <div style={{ display: 'flex', flex: 1, overflow: 'auto', marginTop: '0.5em', marginBottom: '1em' }}>
+      <div
+        style={{
+          display: 'flex',
+          flex: 1,
+          overflow: 'auto',
+          marginTop: '0.5em',
+          marginBottom: '1em',
+        }}>
         <Outlet />
       </div>
       <Footer />
     </RootDiv>
   );
-}
+};
 
 export default App;

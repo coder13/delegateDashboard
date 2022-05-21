@@ -119,8 +119,7 @@ const Roles = () => {
               colSpan={ROLES.length + 2}
               style={{
                 textAlign: 'center',
-              }}
-            >
+              }}>
               Role
             </TableCell>
           </TableRow>
@@ -145,21 +144,16 @@ const Roles = () => {
                 key={person.registrantId}
                 hover
                 className={clsx({
-                  [classes.firstTimer]:
-                    acceptedRegistration(person) && !person.wcaId,
+                  [classes.firstTimer]: acceptedRegistration(person) && !person.wcaId,
                   [classes.delegateOrOrganizer]:
-                    acceptedRegistration(person) &&
-                    isOrganizerOrDelegate(person),
+                    acceptedRegistration(person) && isOrganizerOrDelegate(person),
                   [classes.disabled]: !acceptedRegistration(person),
                 })}
                 classes={{
                   hover: classes.hover,
-                }}
-              >
+                }}>
                 <TableCell>
-                  <Link
-                    to={`/competitions/${competitionId}/persons/${person.registrantId}`}
-                  >
+                  <Link to={`/competitions/${competitionId}/persons/${person.registrantId}`}>
                     {person.name}
                   </Link>
                 </TableCell>
@@ -185,9 +179,7 @@ const Roles = () => {
                       disabled={!acceptedRegistration(person)}
                       color="primary"
                       checked={person.roles.indexOf(role.id) > -1}
-                      onChange={(e) =>
-                        handleChange(e, person.registrantId, role.id)
-                      }
+                      onChange={(e) => handleChange(e, person.registrantId, role.id)}
                     />
                   </TableCell>
                 ))}
@@ -197,10 +189,7 @@ const Roles = () => {
         <TableFooter>
           <TableRow>
             <TableCell className={classes.bold}>
-              {wcif.persons.reduce(
-                (acc, person) => acc + (person.roles.length > 0 ? 1 : 0),
-                0
-              )}
+              {wcif.persons.reduce((acc, person) => acc + (person.roles.length > 0 ? 1 : 0), 0)}
               {' / '}
               {wcif.persons.reduce(
                 (acc, person) => acc + (acceptedRegistration(person) ? 1 : 0),
@@ -211,8 +200,7 @@ const Roles = () => {
             <TableCell className={classes.bold}>
               {pluralize(
                 wcif.persons.reduce(
-                  (acc, person) =>
-                    acc + (person.registration && !person.wcaId ? 1 : 0),
+                  (acc, person) => acc + (person.registration && !person.wcaId ? 1 : 0),
                   0
                 ),
                 'First-Timer'
@@ -221,23 +209,20 @@ const Roles = () => {
             <TableCell />
             <TableCell className={classes.bold}>
               {wcif.persons.reduce(
-                (acc, person) =>
-                  acc + (person.roles.indexOf('delegate') > -1 ? 1 : 0),
+                (acc, person) => acc + (person.roles.indexOf('delegate') > -1 ? 1 : 0),
                 0
               )}
             </TableCell>
             <TableCell className={classes.bold}>
               {wcif.persons.reduce(
-                (acc, person) =>
-                  acc + (person.roles.indexOf('organizer') > -1 ? 1 : 0),
+                (acc, person) => acc + (person.roles.indexOf('organizer') > -1 ? 1 : 0),
                 0
               )}
             </TableCell>
             {ROLES.map((role) => (
               <TableCell key={role.id} className={classes.bold}>
                 {wcif.persons.reduce(
-                  (acc, person) =>
-                    acc + (person.roles.indexOf(role.id) > -1 ? 1 : 0),
+                  (acc, person) => acc + (person.roles.indexOf(role.id) > -1 ? 1 : 0),
                   0
                 )}
               </TableCell>
