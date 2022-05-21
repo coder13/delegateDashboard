@@ -1,5 +1,4 @@
 import { parseActivityCode } from './activities';
-import { advancingCompetitors } from './formulas';
 
 /**
  * @param {Person} person

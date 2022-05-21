@@ -10,5 +10,3 @@ export const WCA_ORIGIN = 'https://www.worldcubeassociation.org';
 //   ? process.env.REACT_APP_WCA_OAUTH_CLIENT_ID
 //   : 'example-application-id';
 export const WCA_OAUTH_CLIENT_ID = process.env.REACT_APP_WCA_OAUTH_CLIENT_ID;
-
-const foo = 2;
