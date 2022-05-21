@@ -81,13 +81,15 @@ const GroupCard = ({ groupActivity }) => {
       return pr?.best;
     })
     .filter((pr) => !!pr);
-  const averageSpeed = Math.round(personalRecords.reduce((a, b) => a + b) / personalRecords.length);
+  const averageSpeed = Math.round(
+    personalRecords.reduce((a, b) => a + b, 0) / personalRecords.length
+  );
 
   const firstTimers = competitors.filter((person) => !person.wcaId);
 
   const subheader = [
     `Group Size: ${personsAssigned.length}`,
-    `Average PR: ${formatCentiseconds(averageSpeed)}`,
+    `Average PR: ${averageSpeed ? formatCentiseconds(averageSpeed) : '???'}`,
     `First Timers: ${firstTimers.length}`,
   ].join(' | ');
 

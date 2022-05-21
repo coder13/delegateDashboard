@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { rooms, parseActivityCode } from '../../../lib/activities';
 import { isOrganizerOrDelegate } from '../../../lib/persons';
+import { formatCentiseconds } from '../../../lib/result';
 import { flatten } from '../../../lib/utils';
 import { addPersonAssignment, removePersonAssignment } from '../../../store/actions';
 
@@ -49,7 +50,6 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
   };
 
   const handleUpdateAssignmentForPerson = (registrantId, activityId) => (e) => {
-    console.log(39, e.target.checked, registrantId, activityId);
     if (e.target.checked) {
       dispatch(
         addPersonAssignment(registrantId, {
@@ -70,8 +70,12 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
           <TableRow>
             <TableCell></TableCell>
             <TableCell></TableCell>
+            <TableCell></TableCell>
             {groupsRooms.map((room, index) => (
-              <TableCell key={room.id} style={{ textAlign: 'center' }} colSpan={6}>
+              <TableCell
+                key={room.id}
+                style={{ textAlign: 'center' }}
+                colSpan={groups.length / groupsRooms.length}>
                 {room.name}
               </TableCell>
             ))}
@@ -97,7 +101,7 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
           {compStaff.map((person) => (
             <TableRow hover key={person.registrantId}>
               <TableCell>{person.name}</TableCell>
-              <TableCell>{person.pr}</TableCell>
+              <TableCell>{formatCentiseconds(person.pr)}</TableCell>
               <TableCell>
                 {person.registration.eventIds.indexOf(eventId) > -1 ? <CheckIcon /> : ''}
               </TableCell>
