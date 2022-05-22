@@ -245,9 +245,6 @@ const RoundPage = () => {
         .forEach(assignOrganizersOrStaff);
     }
 
-    const everyoneElse = personsShouldBeInRound(wcif, round).filter(alreadyAssigned(assignments));
-    debugger;
-
     const nextGroupToAssign = () => {
       // determine smallest group
       const groupSizes = groups.map(computeGroupSizes(assignments));
@@ -261,7 +258,7 @@ const RoundPage = () => {
       };
     };
 
-    everyoneElse.forEach((person) => {
+    const assignPerson = (person) => {
       const nextGroupActivity = nextGroupToAssign();
 
       assignments.push({
@@ -281,7 +278,37 @@ const RoundPage = () => {
           stationNumber: null,
         },
       });
-    });
+    };
+
+    const findPR = (personalBests, type) =>
+      personalBests.find((pr) => pr.eventId === eventId && pr.type === type);
+
+    const byName = (a, b) => a.name.localeCompare(b.name);
+
+    const byResult = (result) => (a, b) =>
+      findPR(b.personalBests, result).best - findPR(a.personalBests, result).best;
+
+    const everyoneElse = personsShouldBeInRound(wcif, round).filter(alreadyAssigned(assignments));
+
+    const firstTimers = everyoneElse.filter((p) => !p.wcaId).sort(byName); // Everyone without a wca id
+    const noSingleInEvent = everyoneElse
+      .filter((p) => p.wcaId && !p.personalBests.find((pr) => pr.eventId === eventId))
+      .sort(byName); // everyone with no single
+    const noAverageInEvent = everyoneElse
+      .filter(
+        (p) => p.wcaId && !findPR(p.personalBests, 'average') && findPR(p.personalBests, 'single')
+      )
+      .sort(byName)
+      .sort(byResult('single')); // everyone with no average
+    const hasResults = everyoneElse
+      .filter((p) => p.wcaId && findPR(p.personalBests, 'average'))
+      .sort(byName)
+      .sort(byResult('average'));
+
+    firstTimers.forEach(assignPerson);
+    noSingleInEvent.forEach(assignPerson);
+    noAverageInEvent.forEach(assignPerson);
+    hasResults.forEach(assignPerson);
 
     dispatch(bulkAddPersonAssignment(assignments));
   };
