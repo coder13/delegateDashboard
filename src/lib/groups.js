@@ -9,6 +9,11 @@ export const createGroupsAcrossStages = (wcif, roundActivities, groupCount) => {
   let startActivityId = generateNextChildActivityId(wcif);
 
   return roundActivities.map((roundActivity) => {
+    const startDate = new Date(roundActivity.startTime);
+    const endDate = new Date(roundActivity.endTime);
+    const dateDiff = endDate - startDate;
+    const timePerGroup = dateDiff / groupCount;
+
     const childActivities = [];
     for (let i = 0; i < groupCount; i++) {
       childActivities.push(
@@ -16,8 +21,8 @@ export const createGroupsAcrossStages = (wcif, roundActivities, groupCount) => {
           startActivityId,
           roundActivity,
           i + 1,
-          roundActivity.startTime,
-          roundActivity.endTime
+          new Date(startDate.getTime() + timePerGroup * i).toISOString(),
+          new Date(startDate.getTime() + timePerGroup * (i + 1)).toISOString()
         )
       );
 

@@ -1,3 +1,4 @@
+import { formatCentiseconds } from '@wca/helpers';
 import { useDispatch, useSelector } from 'react-redux';
 import CheckIcon from '@mui/icons-material/Check';
 import {
@@ -14,7 +15,6 @@ import {
 } from '@mui/material';
 import { rooms, parseActivityCode } from '../../../lib/activities';
 import { isOrganizerOrDelegate } from '../../../lib/persons';
-import { formatCentiseconds } from '../../../lib/result';
 import { flatten } from '../../../lib/utils';
 import { addPersonAssignment, removePersonAssignment } from '../../../store/actions';
 

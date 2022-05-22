@@ -15,7 +15,7 @@ import {
   InputLabel,
   Typography,
 } from '@mui/material';
-import { parseActivityCode } from '../../../lib/activities';
+import { activityDuration, parseActivityCode } from '../../../lib/activities';
 import { advancingCompetitors } from '../../../lib/formulas';
 import { createGroupsAcrossStages } from '../../../lib/groups';
 import { personsRegistered } from '../../../lib/persons';
@@ -83,6 +83,7 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
   const actualCompetitors = round.results.length;
 
   const roundSize = actualCompetitors || estimatedCompetitors;
+  const activityMinutes = activityDuration(roundActivities[0]) / 60000;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xl">
@@ -121,6 +122,10 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
                   per stage
                 </Typography>
               )}
+              <Typography>
+                There will be an average group duration of{' '}
+                {Math.round(activityMinutes / (groupCount || 1))} Minutes
+              </Typography>
             </>
           )}
         </FormGroup>

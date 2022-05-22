@@ -1,11 +1,15 @@
+import { formatCentiseconds } from '@wca/helpers';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Card, CardHeader, CardContent, CardActions, Alert, IconButton } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import { parseActivityCode } from '../../../lib/activities';
-import { formatCentiseconds } from '../../../lib/result';
+import {
+  activityDuration,
+  activityDurationString,
+  parseActivityCode,
+} from '../../../lib/activities';
 import MaterialLink from '../../shared/MaterialLink';
 
 const GroupCard = ({ groupActivity }) => {
@@ -87,7 +91,9 @@ const GroupCard = ({ groupActivity }) => {
 
   const firstTimers = competitors.filter((person) => !person.wcaId);
 
+  const minutes = activityDuration(groupActivity) / 60000;
   const subheader = [
+    `Time: ${activityDurationString(groupActivity)} (${minutes} Minutes)`,
     `Group Size: ${personsAssigned.length}`,
     `Average PR: ${averageSpeed ? formatCentiseconds(averageSpeed) : '???'}`,
     `First Timers: ${firstTimers.length}`,

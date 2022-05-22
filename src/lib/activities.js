@@ -272,22 +272,3 @@ export const createGroupActivity = (id, roundActivity, groupNumber, startTime, e
     childActivities: [],
   };
 };
-
-export const createGroups = (wcif, roundActivity, groupCount) => {
-  const childActivities = [];
-  const startActivityId = generateNextChildActivityId(wcif);
-
-  for (let i = 0; i < groupCount; i++) {
-    childActivities.push(
-      createGroupActivity(
-        startActivityId + i,
-        roundActivity,
-        i + 1,
-        roundActivity.startTime,
-        roundActivity.endTime
-      )
-    );
-  }
-
-  return childActivities;
-};
