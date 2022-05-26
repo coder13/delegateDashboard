@@ -78,35 +78,37 @@ const ExportPage = () => {
   };
 
   const onExportNametagsData = () => {
-    const data = acceptedRegistrations(wcif.persons)
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map((person) => ({
-        name: person.name,
-        wcaId: person.wcaId,
-        role: person.roles.filter((role) => role.indexOf('staff') === -1),
-        country_iso: person.countryIso2,
-        ...assignmentsToObj(person),
-      }));
-
-    console.log([
+    const assignmentHeaders = flatten(wcif.events.map((e) => [e.id, e.id + '_staff']));
+    const headers = [
       'name',
       'wcaId',
       'role',
       'country_iso',
       ...flatten(wcif.events.map((e) => [e.id, e.id + '_staff'])),
-    ]);
+    ];
+
+    const data = [];
+    acceptedRegistrations(wcif.persons)
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .forEach((person) => {
+        const assignmentData = [
+          person.name,
+          person.wcaId,
+          person.roles.filter((role) => role.indexOf('staff') === -1).join(','),
+          person.countryIso2,
+        ];
+        const assignments = assignmentsToObj(person);
+        assignmentHeaders.forEach((assignmentKey) => {
+          assignmentData.push(assignments[assignmentKey]);
+        });
+
+        data.push(assignmentData);
+      });
 
     const csvExporter = new ExportToCsv({
       ...csvOptions,
       filename: `${wcif.id}_nametags`,
-      useKeysAsHeaders: true,
-      // headers: [
-      //   'name',
-      //   'wcaId',
-      //   'role',
-      //   'country_iso',
-      //   ...flatten(wcif.events.map((e) => [e.id, e.id + '_staff'])),
-      // ],
+      headers: headers,
     });
 
     csvExporter.generateCsv(data);
@@ -183,12 +185,27 @@ const ExportPage = () => {
 
   return (
     <Grid container direction="column">
-      <Grid item>
+      <Grid item sx={{ padding: '1em' }}>
         <Typography>Export data for scorecards and nametags</Typography>
       </Grid>
-      <Grid item>
-        <Button onClick={onExportNametagsData}>Export nametags data</Button>
-        <Button onClick={onExportScorecardData}>Export scorecard data</Button>
+      <Grid item sx={{ padding: '0 0.5em' }}>
+        <Button sx={{ margin: '0 0.25em' }} onClick={onExportNametagsData} variant="outlined">
+          Generate nametags csv
+        </Button>
+        <Button sx={{ margin: '0 0.25em' }} onClick={onExportScorecardData} variant="outlined">
+          Generate scorecard csv
+        </Button>
+      </Grid>
+      <Grid>
+        {/* <List>
+          <ListSubheader>Downloads</ListSubheader>
+          <ListItemButton
+            style={{ width: '100%' }}
+            component={CsvDownload}
+            data={[{ data: 'foo' }]}>
+            <ListItemText primary={`${wcif.id}_nametags.csv`} secondary="secondary" />
+          </ListItemButton>
+        </List> */}
       </Grid>
     </Grid>
   );
