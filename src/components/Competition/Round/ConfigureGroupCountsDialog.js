@@ -18,7 +18,7 @@ import {
 import { activityDuration, parseActivityCode } from '../../../lib/activities';
 import { advancingCompetitors } from '../../../lib/formulas';
 import { createGroupsAcrossStages } from '../../../lib/groups';
-import { personsRegistered } from '../../../lib/persons';
+import { personsRegistered, personsShouldBeInRound } from '../../../lib/persons';
 import { getExtensionData } from '../../../lib/wcif-extensions';
 import { updateRoundActivities, updateRoundExtensionData } from '../../../store/actions';
 
@@ -66,23 +66,9 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
     }
   };
 
-  const { eventId, roundNumber } = parseActivityCode(round.id);
-  const registeredPersonsForEvent = personsRegistered(wcif.persons, eventId);
+  const actualCompetitors = personsShouldBeInRound(wcif, round);
 
-  const event = wcif.events.find((i) => i.id === eventId);
-  const previousRound = roundNumber > 1 ? event.rounds[roundNumber - 2] : null;
-  const advancementCondition = previousRound?.advancementCondition;
-
-  const estimatedCompetitors =
-    roundNumber === 1
-      ? registeredPersonsForEvent
-      : advancingCompetitors(
-          advancementCondition,
-          previousRound.results.length || registeredPersonsForEvent
-        );
-  const actualCompetitors = round.results.length;
-
-  const roundSize = actualCompetitors || estimatedCompetitors;
+  const roundSize = actualCompetitors.length;
   const activityMinutes = activityDuration(roundActivities[0]) / 60000;
 
   return (
