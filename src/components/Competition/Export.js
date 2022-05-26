@@ -68,10 +68,11 @@ const ExportPage = () => {
         ({ assignmentCode }) => assignmentCode.indexOf('staff') > -1
       );
 
-      obj[event.id] = competingAssignment
+      obj[event.id.toString()] = competingAssignment
         ? competingAssignmentToText(competingAssignment.activity)
         : '-';
-      obj[event.id + '_staff'] = staffingAssignments.map(staffingAssignmentToText).join(',') || '-';
+      obj[event.id.toString() + '_staff'] =
+        staffingAssignments.map(staffingAssignmentToText).join(',') || '-';
     });
     return obj;
   };
@@ -83,13 +84,29 @@ const ExportPage = () => {
         name: person.name,
         wcaId: person.wcaId,
         role: person.roles.filter((role) => role.indexOf('staff') === -1),
+        country_iso: person.countryIso2,
         ...assignmentsToObj(person),
       }));
+
+    console.log([
+      'name',
+      'wcaId',
+      'role',
+      'country_iso',
+      ...flatten(wcif.events.map((e) => [e.id, e.id + '_staff'])),
+    ]);
 
     const csvExporter = new ExportToCsv({
       ...csvOptions,
       filename: `${wcif.id}_nametags`,
-      headers: ['name', 'wcaId', 'role', flatten(wcif.events.map((e) => [e.id, e.id + '_staff']))],
+      useKeysAsHeaders: true,
+      // headers: [
+      //   'name',
+      //   'wcaId',
+      //   'role',
+      //   'country_iso',
+      //   ...flatten(wcif.events.map((e) => [e.id, e.id + '_staff'])),
+      // ],
     });
 
     csvExporter.generateCsv(data);
@@ -157,6 +174,7 @@ const ExportPage = () => {
         'round_format',
         'advancement_condition',
         'today_date',
+        'time',
       ],
     });
 
