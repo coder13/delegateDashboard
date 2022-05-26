@@ -15,10 +15,9 @@ import {
   InputLabel,
   Typography,
 } from '@mui/material';
-import { activityDuration, parseActivityCode } from '../../../lib/activities';
-import { advancingCompetitors } from '../../../lib/formulas';
+import { activityDuration } from '../../../lib/activities';
 import { createGroupsAcrossStages } from '../../../lib/groups';
-import { personsRegistered, personsShouldBeInRound } from '../../../lib/persons';
+import { personsShouldBeInRound } from '../../../lib/persons';
 import { getExtensionData } from '../../../lib/wcif-extensions';
 import { updateRoundActivities, updateRoundExtensionData } from '../../../store/actions';
 
