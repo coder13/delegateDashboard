@@ -120,7 +120,9 @@ const ExportPage = () => {
     wcif.events.forEach((event) => {
       event.rounds.forEach((round) => {
         const roundData = {
-          dnf_time: round.timeLimit ? formatCentiseconds(round.timeLimit.centiseconds) : '',
+          dnf_time: round.timeLimit
+            ? `DNF if > ${formatCentiseconds(round.timeLimit.centiseconds)}`
+            : '',
           cutoff_time: round.cutoff
             ? `1 or 2 < ${formatCentiseconds(round.cutoff.attemptResult)}`
             : '',
