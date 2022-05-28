@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route, Outlet } from 'react-router-dom';
+import { Button } from '@mui/material';
 import {
   Layout as CompetitionLayout,
   Home as CompetitionHome,
@@ -15,6 +16,15 @@ import CompetitionList from '../CompetitionList';
 import { useAuth } from '../providers/AuthProvider';
 import App from './App';
 
+const Home = ({ signIn }) => (
+  <div style={{ padding: '1em' }}>
+    <p>Sign in to view comps!</p>
+    <Button onClick={() => signIn()} variant="outlined">
+      Sign In
+    </Button>
+  </div>
+);
+
 const AuthenticatedRoute = () => {
   const { signIn, signedIn } = useAuth();
 
@@ -27,12 +37,15 @@ const AuthenticatedRoute = () => {
 };
 
 const Navigation = () => {
-  const { signedIn } = useAuth();
+  const { signedIn, signIn } = useAuth();
 
   return (
     <Routes>
       <Route path="/" element={<App />}>
-        <Route index element={signedIn() ? <CompetitionList /> : <p>Sign in to view comps!</p>} />
+        <Route
+          index
+          element={signedIn() ? <CompetitionList /> : <Home signIn={() => signIn()} />}
+        />
 
         <Route path="/competitions/" element={<AuthenticatedRoute />}>
           <Route path=":competitionId" element={<CompetitionLayout />}>

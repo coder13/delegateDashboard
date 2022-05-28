@@ -86,7 +86,7 @@ export default function AuthProvider({ children }) {
     }
   }, [signedIn]);
 
-  const signIn = (newUser, callback) => {
+  const signIn = () => {
     const params = new URLSearchParams({
       client_id: WCA_OAUTH_CLIENT_ID,
       response_type: 'token',
@@ -96,7 +96,7 @@ export default function AuthProvider({ children }) {
     window.location = `${WCA_ORIGIN}/oauth/authorize?${params.toString()}`;
   };
 
-  const signOut = (callback) => {
+  const signOut = () => {
     setAccessToken(null);
     localStorage.removeItem(localStorageKey('accessToken'));
     setUser(null);

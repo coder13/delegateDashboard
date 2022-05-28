@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import FlagIconFactory from 'react-flag-icon-css';
+import ReactLoading from 'react-loading';
 import { Link } from 'react-router-dom';
 import PublicIcon from '@mui/icons-material/Public';
 import Container from '@mui/material/Container';
@@ -61,7 +62,21 @@ const CompetitionList = () => {
     }
   }, [user]);
 
-  console.log(loading, error);
+  if (loading) {
+    return (
+      <Container
+        fluid
+        maxWidth="sm"
+        style={{
+          display: 'flex',
+          flexDirection: 'col',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+        <ReactLoading type="cubes" color="#000000" />
+      </Container>
+    );
+  }
 
   return (
     <Container>
