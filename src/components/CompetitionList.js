@@ -57,10 +57,26 @@ const CompetitionList = () => {
         .then((competitions) => {
           setPastCompetitions(sortBy(competitions, (competition) => -competition['start_date']));
         })
-        .catch((error) => setError(error.message))
+        .catch((error) => setError(error))
         .finally(() => setLoading(false));
     }
   }, [user]);
+
+  if (error) {
+    return (
+      <Container
+        fluid
+        maxWidth="sm"
+        style={{
+          display: 'flex',
+          flexDirection: 'col',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+        {error.message}
+      </Container>
+    );
+  }
 
   if (loading) {
     return (

@@ -35,9 +35,10 @@ const updateWCIF = (wcif) => ({
   wcif,
 });
 
-const updateWcifErrors = (errors) => ({
+const updateWcifErrors = (errors, replace = false) => ({
   type: UPDATE_WCIF_ERRORS,
   errors,
+  replace,
 });
 
 const updateUploading = (uploading) => ({
@@ -51,8 +52,9 @@ export const fetchWCIF = (competitionId) => (dispatch) => {
     /* Sort events, so that we don't need to remember about this everywhere. */
     .then((wcif) => updateIn(wcif, ['events'], sortWcifEvents))
     .then((wcif) => {
+      console.log(54);
       dispatch(updateWCIF(wcif));
-      updateWcifErrors(validateWcif(wcif));
+      dispatch(updateWcifErrors(validateWcif(wcif)));
     })
     .catch((error) => updateWcifErrors([error.message]))
     .finally(() => updateFetching(false));

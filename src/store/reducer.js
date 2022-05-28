@@ -9,6 +9,7 @@ import {
   BULK_ADD_PERSON_ASSIGNMENT,
   REMOVE_PERSON_ASSIGNMENT,
   BULK_REMOVE_PERSON_ASSIGNMENT,
+  UPDATE_WCIF_ERRORS,
   UPDATE_GROUP_COUNT,
   UPDATE_ROUND_ACTIVITIES,
   UPDATE_ROUND_CHILD_ACTIVITIES,
@@ -45,6 +46,10 @@ const reducers = {
     changedKeys: new Set(),
     fetchingWCIF: action.fetching,
     wcif: action.wcif,
+  }),
+  [UPDATE_WCIF_ERRORS]: (state, action) => ({
+    ...state,
+    errors: action.replace ? action.errors : [...state.errors, ...action.errors],
   }),
   [UPLOADING_WCIF]: (state, action) => ({
     ...state,

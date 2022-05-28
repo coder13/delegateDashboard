@@ -1,7 +1,16 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, Outlet } from 'react-router-dom';
-import { Alert, Breadcrumbs, Button, Container, Grid, Typography } from '@mui/material';
+import {
+  Alert,
+  Breadcrumbs,
+  Button,
+  Container,
+  Grid,
+  List,
+  ListItem,
+  Typography,
+} from '@mui/material';
 import { fetchWCIF, uploadCurrentWCIFChanges } from '../../store/actions';
 import BreadcrumbsProvider, { useBreadcrumbs } from '../providers/BreadcrumbsProvider';
 import MaterialLink from '../shared/MaterialLink';
@@ -22,12 +31,12 @@ import MaterialLink from '../shared/MaterialLink';
 const Errors = ({ errors }) => {
   return (
     <div>
-      Errors!
-      <ul>
+      <Typography>Errors!</Typography>
+      <List>
         {errors.map((err) => (
-          <li key={err}>{err}</li>
+          <ListItem key={err}>{err}</ListItem>
         ))}
-      </ul>
+      </List>
     </div>
   );
 };
@@ -98,7 +107,7 @@ const CompetitionLayout = () => {
           <BreadCrumbsGridItem />
           {errors.length > 0 && (
             <Grid item>
-              <Errors />
+              <Errors errors={errors} />
             </Grid>
           )}
           <Grid item>{!fetchingWCIF && wcif && wcif.id && wcif.name && <Outlet />}</Grid>
