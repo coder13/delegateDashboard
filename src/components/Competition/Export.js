@@ -11,9 +11,9 @@ import { flatten } from '../../lib/utils';
 const advancementConditionToText = ({ type, level }) => {
   switch (type) {
     case 'ranking':
-      return `top ${level}`;
+      return `Top ${level}`;
     case 'percent':
-      return `top ${level}%`;
+      return `Top ${level}%`;
     case 'attemptResult':
       if (level === -2) {
         return '> DNS';
