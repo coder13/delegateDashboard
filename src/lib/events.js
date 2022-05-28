@@ -1,6 +1,6 @@
 import { sortBy } from './utils';
 
-const events = [
+export const events = [
   { id: '333', name: '3x3x3 Cube', shortName: '3x3' },
   { id: '222', name: '2x2x2 Cube', shortName: '2x2' },
   { id: '444', name: '4x4x4 Cube', shortName: '4x4' },
