@@ -15,6 +15,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  Typography,
 } from '@mui/material';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
@@ -45,9 +46,12 @@ import {
   updateRoundChildActivities,
 } from '../../../store/actions';
 import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
+import PersonsDialog from '../../shared/PersonsDialog';
 import ConfigureGroupCountsDialog from './ConfigureGroupCountsDialog';
 import ConfigureScramblersDialog from './ConfigureScramblersDialog';
 import GroupCard from './GroupCard';
+
+const byName = (a, b) => a.name.localeCompare(b.name);
 
 /**
  * TODO: Create a setting for this
@@ -73,6 +77,11 @@ const RoundPage = () => {
   const { eventId, roundNumber } = useParams();
   const [configureScramblersDialog, setConfigureScramblersDialog] = useState(false);
   const [configureGroupCountsDialog, setConfigureGroupCountsDialog] = useState(false);
+  const [showPersonsDialog, setShowPersonsDialog] = useState({
+    open: false,
+    title: undefined,
+    persons: [],
+  });
   const activityCode = `${eventId}-r${roundNumber}`;
   const wcif = useSelector((state) => state.wcif);
   const round = wcif.events.find((event) => event.id === eventId)?.rounds[roundNumber - 1];
@@ -283,8 +292,6 @@ const RoundPage = () => {
     const findPR = (personalBests, type) =>
       personalBests.find((pr) => pr.eventId === eventId && pr.type === type);
 
-    const byName = (a, b) => a.name.localeCompare(b.name);
-
     const byResult = (result) => (a, b) =>
       findPR(b.personalBests, result).best - findPR(a.personalBests, result).best;
 
@@ -409,8 +416,8 @@ const RoundPage = () => {
         <Card>
           <CardHeader title={activityCodeToName(activityCode)} />
           <List dense subheader={<ListSubheader id="stages">Stages</ListSubheader>}>
-            {roundActivities.map(({ startTime, endTime, room }) => (
-              <ListItemButton>
+            {roundActivities.map(({ id, startTime, endTime, room }) => (
+              <ListItemButton key={id}>
                 {room.name}: {new Date(startTime).toLocaleDateString()}{' '}
                 {new Date(startTime).toLocaleTimeString()} -{' '}
                 {new Date(endTime).toLocaleTimeString()} (
@@ -422,10 +429,14 @@ const RoundPage = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Round Size</TableCell>
-                <TableCell>Persons In Round</TableCell>
-                <TableCell>Assigned Persons</TableCell>
-                <TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>Round Size</TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>
+                  Persons In Round
+                  <br />
+                  <Typography variant="caption">Based on WCA-Live data</Typography>
+                </TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>Assigned Persons</TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>
                   Groups Configured <br />
                   (per stage)
                 </TableCell>
@@ -433,10 +444,48 @@ const RoundPage = () => {
             </TableHead>
             <TableBody>
               <TableRow>
-                <TableCell>{personsShouldBeInRound(wcif, round)?.length || '???'}</TableCell>
-                <TableCell>{round.results.length}</TableCell>
-                <TableCell>{personsAssigned.length}</TableCell>
-                <TableCell>{groupsData.groups}</TableCell>
+                <TableCell
+                  className="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1rmkli1-MuiButtonBase-root-MuiButton-root-MuiTableCell-root"
+                  sx={{ textAlign: 'center' }}
+                  onClick={() =>
+                    setShowPersonsDialog({
+                      open: true,
+                      persons: personsShouldBeInRound(wcif, round).sort(byName) || [],
+                      title: 'People who should be in the round',
+                    })
+                  }>
+                  {personsShouldBeInRound(wcif, round)?.length || '???'}
+                </TableCell>
+                <TableCell
+                  className="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1rmkli1-MuiButtonBase-root-MuiButton-root-MuiTableCell-root"
+                  sx={{ textAlign: 'center' }}
+                  onClick={() =>
+                    setShowPersonsDialog({
+                      open: true,
+                      persons:
+                        round.results
+                          .map(({ personId }) =>
+                            wcif.persons.find(({ registrantId }) => registrantId === personId)
+                          )
+                          .sort(byName) || [],
+                      title: 'People in the round according to wca-live',
+                    })
+                  }>
+                  {round.results.length}
+                </TableCell>
+                <TableCell
+                  className="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1rmkli1-MuiButtonBase-root-MuiButton-root-MuiTableCell-root"
+                  sx={{ textAlign: 'center' }}
+                  onClick={() =>
+                    setShowPersonsDialog({
+                      open: true,
+                      persons: personsAssigned,
+                      title: 'People assigned',
+                    })
+                  }>
+                  {personsAssigned.length}
+                </TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>{groupsData.groups}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -462,6 +511,18 @@ const RoundPage = () => {
         activityCode={activityCode}
         round={round}
         roundActivities={roundActivities}
+      />
+      <PersonsDialog
+        open={showPersonsDialog?.open}
+        persons={showPersonsDialog?.persons}
+        title={showPersonsDialog?.title}
+        onClose={() =>
+          setShowPersonsDialog({
+            open: false,
+            title: undefined,
+            persons: [],
+          })
+        }
       />
     </Grid>
   );
