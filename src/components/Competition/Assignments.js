@@ -109,6 +109,15 @@ const AssignmentsPage = () => {
             <div key={stage.name}>
               {groups.map((groupActivity) => (
                 <div key={groupActivity.id}>
+                  <ListSubheader>Unknown Group</ListSubheader>
+                  {allPersonsAssignments
+                    .filter((person) => !person.activity)
+                    .map(({ person, assignment }) => (
+                      <ListItem key={`${person.registrantId}unknown`} button>
+                        <ListItemText primary={person.name} secondary={assignment.assignmentCode} />
+                      </ListItem>
+                    ))}
+
                   <ListSubheader>
                     {groupActivity.name} ({stage.name})
                   </ListSubheader>
