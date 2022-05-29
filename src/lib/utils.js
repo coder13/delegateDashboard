@@ -175,3 +175,5 @@ export const shortTime = (isoString, timeZone = 'UTC') =>
     hour: 'numeric',
     minute: 'numeric',
   });
+
+export const byName = (a, b) => a.name.localeCompare(b.name);

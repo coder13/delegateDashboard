@@ -60,7 +60,7 @@ export const personsShouldBeInRound = (wcif, round) => {
 
     // WCA Live will be the single source of truth for who's in the next round
     // until I care enough to compute the actual list of people who might make it
-    return null;
+    return [];
   }
 };
 

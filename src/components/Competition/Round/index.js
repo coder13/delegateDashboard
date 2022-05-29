@@ -39,6 +39,7 @@ import {
   assignedToScrambleInGroups,
   personsShouldBeInRound,
 } from '../../../lib/persons';
+import { byName } from '../../../lib/utils';
 import { getExtensionData } from '../../../lib/wcif-extensions';
 import {
   bulkAddPersonAssignment,
@@ -46,12 +47,11 @@ import {
   updateRoundChildActivities,
 } from '../../../store/actions';
 import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
+import PersonsAssignmentsDialog from '../../shared/PersonsAssignmentsDialog';
 import PersonsDialog from '../../shared/PersonsDialog';
 import ConfigureGroupCountsDialog from './ConfigureGroupCountsDialog';
 import ConfigureScramblersDialog from './ConfigureScramblersDialog';
 import GroupCard from './GroupCard';
-
-const byName = (a, b) => a.name.localeCompare(b.name);
 
 /**
  * TODO: Create a setting for this
@@ -82,6 +82,7 @@ const RoundPage = () => {
     title: undefined,
     persons: [],
   });
+  const [showPersonsAssignmentsDialog, setShowPersonsAssignmentsDialog] = useState(false);
   const activityCode = `${eventId}-r${roundNumber}`;
   const wcif = useSelector((state) => state.wcif);
   const round = wcif.events.find((event) => event.id === eventId)?.rounds[roundNumber - 1];
@@ -450,7 +451,7 @@ const RoundPage = () => {
                   onClick={() =>
                     setShowPersonsDialog({
                       open: true,
-                      persons: personsShouldBeInRound(wcif, round).sort(byName) || [],
+                      persons: personsShouldBeInRound(wcif, round)?.sort(byName) || [],
                       title: 'People who should be in the round',
                     })
                   }>
@@ -461,7 +462,7 @@ const RoundPage = () => {
                   sx={{ textAlign: 'center' }}
                   onClick={() =>
                     setShowPersonsDialog({
-                      open: true,
+                      open: round.results.length > 0,
                       persons:
                         round.results
                           .map(({ personId }) =>
@@ -476,13 +477,7 @@ const RoundPage = () => {
                 <TableCell
                   className="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1rmkli1-MuiButtonBase-root-MuiButton-root-MuiTableCell-root"
                   sx={{ textAlign: 'center' }}
-                  onClick={() =>
-                    setShowPersonsDialog({
-                      open: true,
-                      persons: personsAssigned,
-                      title: 'People assigned',
-                    })
-                  }>
+                  onClick={() => setShowPersonsAssignmentsDialog(true)}>
                   {personsAssigned.length}
                 </TableCell>
                 <TableCell sx={{ textAlign: 'center' }}>{groupsData.groups}</TableCell>
@@ -523,6 +518,12 @@ const RoundPage = () => {
             persons: [],
           })
         }
+      />
+      <PersonsAssignmentsDialog
+        open={showPersonsAssignmentsDialog}
+        persons={personsShouldBeInRound(wcif, round)}
+        roundId={round.id}
+        onClose={() => setShowPersonsAssignmentsDialog(false)}
       />
     </Grid>
   );
