@@ -36,7 +36,7 @@ const csvOptions = {
 const groupNumber = ({ activityCode }) => parseActivityCode(activityCode)?.groupNumber;
 
 const staffingAssignmentToText = ({ assignmentCode, activity }) =>
-  `${assignmentCode.split('-')[1][0]}${groupNumber(activity)}`;
+  `${assignmentCode.split('-')[1][0].toUpperCase()}${groupNumber(activity)}`;
 
 const competingAssignmentToText = (activity) =>
   `${activity.parent.room.name[0]}${groupNumber(activity)}`;
