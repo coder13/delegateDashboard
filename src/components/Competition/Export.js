@@ -117,8 +117,11 @@ const ExportPage = () => {
   const onExportScorecardData = () => {
     const scorecards = [];
 
+    // For each event
     wcif.events.forEach((event) => {
+      // for each round
       event.rounds.forEach((round) => {
+        // get round information
         const roundData = {
           dnf_time: round.timeLimit
             ? `DNF if > ${formatCentiseconds(round.timeLimit.centiseconds)}`
@@ -136,9 +139,12 @@ const ExportPage = () => {
           (a, b) => groupNumber(a) - groupNumber(b)
         );
 
+        // Add scorecards group by group
         groupAssignmentsByEventAndRound.forEach((groupActivity) => {
           const people = acceptedRegistrations(wcif.persons).filter((person) =>
-            person.assignments.some((a) => a.activityId === groupActivity.id)
+            person.assignments.some(
+              (a) => a.activityId === groupActivity.id && a.assignmentCode === 'competitor'
+            )
           );
 
           people.forEach((person) => {
