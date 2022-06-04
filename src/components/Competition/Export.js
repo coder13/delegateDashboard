@@ -191,6 +191,22 @@ const ExportPage = () => {
     csvExporter.generateCsv(scorecards);
   };
 
+  const onExportRegistrations = () => {
+    const csvExporter = new ExportToCsv({
+      ...csvOptions,
+      filename: `${wcif.id}_registrations`,
+      headers: ['id', 'name', 'email'],
+    });
+
+    const registrations = acceptedRegistrations(wcif.persons).map((person) => ({
+      id: person.registrantId,
+      name: person.name,
+      email: person.email,
+    }));
+
+    csvExporter.generateCsv(registrations);
+  };
+
   return (
     <Grid container direction="column">
       <Grid item sx={{ padding: '1em' }}>
@@ -198,22 +214,14 @@ const ExportPage = () => {
       </Grid>
       <Grid item sx={{ padding: '0 0.5em' }}>
         <Button sx={{ margin: '0 0.25em' }} onClick={onExportNametagsData} variant="outlined">
-          Generate nametags csv
+          Generate Nametags CSV
         </Button>
         <Button sx={{ margin: '0 0.25em' }} onClick={onExportScorecardData} variant="outlined">
-          Generate scorecard csv
+          Generate Scorecard CSV
         </Button>
-      </Grid>
-      <Grid>
-        {/* <List>
-          <ListSubheader>Downloads</ListSubheader>
-          <ListItemButton
-            style={{ width: '100%' }}
-            component={CsvDownload}
-            data={[{ data: 'foo' }]}>
-            <ListItemText primary={`${wcif.id}_nametags.csv`} secondary="secondary" />
-          </ListItemButton>
-        </List> */}
+        <Button sx={{ margin: '0 0.25em' }} onClick={onExportRegistrations} variant="outlined">
+          Generate Registration CSV
+        </Button>
       </Grid>
     </Grid>
   );

@@ -7,4 +7,4 @@ export const WCA_ORIGIN = PRODUCTION
 
 export const WCA_OAUTH_CLIENT_ID = PRODUCTION
   ? process.env.REACT_APP_WCA_OAUTH_CLIENT_ID
-  : 'example-application-id';
+  : process.env.REACT_APP_DEV_WCA_OAUTH_CLIENT_ID || 'example-application-id';

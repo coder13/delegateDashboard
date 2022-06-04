@@ -3,7 +3,7 @@ import { pick } from './utils';
 import { WCA_ORIGIN } from './wca-env';
 
 export const getMe = () => {
-  console.log(wcaAccessToken());
+  console.log('Access Token:', wcaAccessToken());
   return wcaApiFetch(`/me`);
 };
 

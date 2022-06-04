@@ -48,16 +48,22 @@ const CompetitionList = () => {
     if (user) {
       getUpcomingManageableCompetitions()
         .then((competitions) => {
-          setUpcomingCompetitions(sortBy(competitions, (competition) => competition['start_date']));
+          setUpcomingCompetitions(sortBy(competitions, (competition) => competition.start_date));
         })
-        .catch((error) => setError(error.message))
+        .catch((error) => {
+          setError(error.message);
+          setLoading(false);
+        })
         .finally(() => setLoading(false));
 
       getPastManageableCompetitions()
         .then((competitions) => {
-          setPastCompetitions(sortBy(competitions, (competition) => -competition['start_date']));
+          setPastCompetitions(sortBy(competitions, (competition) => -competition.start_date));
         })
-        .catch((error) => setError(error))
+        .catch((error) => {
+          setError(error);
+          setLoading(false);
+        })
         .finally(() => setLoading(false));
     }
   }, [user]);
@@ -65,7 +71,6 @@ const CompetitionList = () => {
   if (error) {
     return (
       <Container
-        fluid
         maxWidth="sm"
         style={{
           display: 'flex',
@@ -81,7 +86,6 @@ const CompetitionList = () => {
   if (loading) {
     return (
       <Container
-        fluid
         maxWidth="sm"
         style={{
           display: 'flex',
