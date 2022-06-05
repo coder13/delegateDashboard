@@ -18,6 +18,7 @@ const GroupCard = ({ groupActivity }) => {
   const mapNames = (array) =>
     array.length
       ? array
+          .sort((a,b) => a.name.localeCompare(b.name))
           .map(({ registrantId, name }) => (
             <MaterialLink to={`/competitions/${wcif.id}/persons/${registrantId}`}>
               {name}
