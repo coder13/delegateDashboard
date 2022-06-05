@@ -176,6 +176,7 @@ const ExportPage = () => {
         'id',
         'competition_name',
         'event_name',
+        'round_number',
         'group',
         'stage',
         'group_number',
