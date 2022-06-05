@@ -133,7 +133,7 @@ const ExportPage = () => {
           advancement_condition: round.advancementCondition
             ? advancementConditionToText(round.advancementCondition)
             : '',
-          roundNumber: parseActivityCode(round.id)?.roundNumber,
+            round_number: parseActivityCode(round.id)?.roundNumber,
         };
 
         const groupAssignmentsByEventAndRound = memodGroupActivitiesForRound(round.id).sort(
