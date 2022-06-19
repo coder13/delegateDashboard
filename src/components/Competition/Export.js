@@ -126,7 +126,7 @@ const ExportPage = () => {
 
     const headers = [];
     for (let i = 0; i < 6; i++) {
-      headers.push(...headers_template.map((col) => `${col}-{i}`))
+      headers.push(...headers_template.map((col) => `${col}-${i}`));
     }
 
     const data = [];
@@ -147,20 +147,24 @@ const ExportPage = () => {
           assignmentData.push(assignments[assignmentKey]);
         });
 
-        buffer.push(assignmentData);
+        buffer.push(...assignmentData);
+        debugger;
 
         i++;
 
         if (i === 6) {
-          data.push(...buffer);
+          data.push(buffer);
           buffer = [];
           i = 0;
         }
       });
 
-    if (i > 0) {
-      data.push(...buffer);
-      buffer = [];
+    if (buffer.length > 0) {
+      while (buffer.length < 6 * headers_template.length) {
+        buffer.push('');
+      }
+
+      data.push(buffer);
     }
 
     const csvExporter = new ExportToCsv({
@@ -282,7 +286,10 @@ const ExportPage = () => {
         <Button sx={{ margin: '0 0.25em' }} onClick={onExportRegistrations} variant="outlined">
           Generate Registration CSV
         </Button>
-        <Button sx={{ margin: '0 0.25em' }} onClick={onExportNametagsForPublisherData} variant="outlined">
+        <Button
+          sx={{ margin: '0 0.25em' }}
+          onClick={onExportNametagsForPublisherData}
+          variant="outlined">
           Generate Nametags for publisher CSV
         </Button>
       </Grid>
