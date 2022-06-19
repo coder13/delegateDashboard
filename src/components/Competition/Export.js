@@ -151,7 +151,7 @@ const ExportPage = () => {
 
         i++;
 
-        if (i == 6) {
+        if (i === 6) {
           data.push(...buffer);
           buffer = [];
           i = 0;
