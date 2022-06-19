@@ -114,6 +114,64 @@ const ExportPage = () => {
     csvExporter.generateCsv(data);
   };
 
+  const onExportNametagsForPublisherData = () => {
+    const assignmentHeaders = flatten(wcif.events.map((e) => [e.id, e.id + '_staff']));
+    const headers_template = [
+      'name',
+      'wcaId',
+      'role',
+      'country_iso',
+      ...flatten(wcif.events.map((e) => [e.id, e.id + '_staff'])),
+    ];
+
+    const headers = [];
+    for (let i = 0; i < 6; i++) {
+      headers.push(...headers_template.map((col) => `${col}-{i}`))
+    }
+
+    const data = [];
+    let buffer = [];
+    let i = 0;
+
+    acceptedRegistrations(wcif.persons)
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .forEach((person) => {
+        const assignmentData = [
+          person.name,
+          person.wcaId,
+          person.roles.filter((role) => role.indexOf('staff') === -1).join(','),
+          person.countryIso2,
+        ];
+        const assignments = assignmentsToObj(person);
+        assignmentHeaders.forEach((assignmentKey) => {
+          assignmentData.push(assignments[assignmentKey]);
+        });
+
+        buffer.push(assignmentData);
+
+        i++;
+
+        if (i == 6) {
+          data.push(...buffer);
+          buffer = [];
+          i = 0;
+        }
+      });
+
+    if (i > 0) {
+      data.push(...buffer);
+      buffer = [];
+    }
+
+    const csvExporter = new ExportToCsv({
+      ...csvOptions,
+      filename: `${wcif.id}_nametags`,
+      headers: headers,
+    });
+
+    csvExporter.generateCsv(data);
+  };
+
   const onExportScorecardData = () => {
     const scorecards = [];
 
@@ -133,7 +191,7 @@ const ExportPage = () => {
           advancement_condition: round.advancementCondition
             ? advancementConditionToText(round.advancementCondition)
             : '',
-            round_number: parseActivityCode(round.id)?.roundNumber,
+          round_number: parseActivityCode(round.id)?.roundNumber,
         };
 
         const groupAssignmentsByEventAndRound = memodGroupActivitiesForRound(round.id).sort(
@@ -223,6 +281,9 @@ const ExportPage = () => {
         </Button>
         <Button sx={{ margin: '0 0.25em' }} onClick={onExportRegistrations} variant="outlined">
           Generate Registration CSV
+        </Button>
+        <Button sx={{ margin: '0 0.25em' }} onClick={onExportNametagsForPublisherData} variant="outlined">
+          Generate Nametags for publisher CSV
         </Button>
       </Grid>
     </Grid>
