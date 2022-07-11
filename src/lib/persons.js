@@ -3,7 +3,7 @@ import { parseActivityCode } from './activities';
 /**
  * @param {Person} person
  */
-export const acceptedRegistration = (person) => person.registration.status === 'accepted';
+export const acceptedRegistration = (person) => person.registration?.status === 'accepted';
 
 export const registeredForEvent =
   (eventId) =>

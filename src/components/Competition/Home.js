@@ -10,9 +10,7 @@ import RoundSelectorPage from './RoundSelector';
 
 const CompetitionSummary = () => {
   const wcif = useSelector((state) => state.wcif);
-  const approvedRegistrations = acceptedRegistrations(wcif.persons).filter(
-    (person) => person.registration.status === 'accepted'
-  );
+  const approvedRegistrations = acceptedRegistrations(wcif.persons);
 
   return (
     <Card>

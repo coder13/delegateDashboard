@@ -87,11 +87,11 @@ const Roles = () => {
   const filteredPersons =
     filterDeleted || filterPending
       ? wcif.persons.filter((person) => {
-          if (filterDeleted && person.registration.status === 'deleted') {
+          if (filterDeleted && person.registration?.status === 'deleted') {
             return false;
           }
 
-          if (filterDeleted && person.registration.status === 'pending') {
+          if (filterDeleted && person.registration?.status === 'pending') {
             return false;
           }
 

@@ -129,7 +129,7 @@ const RoundPage = () => {
 
   const registeredPersonsForEvent = wcif.persons.filter(
     ({ registration }) =>
-      registration.status === 'accepted' && registration.eventIds.indexOf(eventId) > -1
+      registration?.status === 'accepted' && registration.eventIds.indexOf(eventId) > -1
   );
 
   const personsAssigned = useMemo(

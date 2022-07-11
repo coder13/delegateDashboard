@@ -9,6 +9,7 @@ import {
   Grid,
   List,
   ListItem,
+  ListItemText,
   Typography,
 } from '@mui/material';
 import { fetchWCIF, uploadCurrentWCIFChanges } from '../../store/actions';
@@ -29,12 +30,15 @@ import MaterialLink from '../shared/MaterialLink';
 // }));
 
 const Errors = ({ errors }) => {
+  console.log(errors);
   return (
     <div>
       <Typography>Errors!</Typography>
       <List>
         {errors.map((err) => (
-          <ListItem key={err}>{err}</ListItem>
+          <ListItem key={err}>
+            <ListItemText primary={err.message} secondary={JSON.stringify(err.data)}/>
+          </ListItem>
         ))}
       </List>
     </div>
