@@ -280,14 +280,16 @@ const RoundPage = () => {
         },
       });
 
-      assignments.push({
-        registrantId: person.registrantId,
-        assignment: {
-          assignmentCode: 'staff-judge',
-          activityId: nextGroupActivity.judging,
-          stationNumber: null,
-        },
-      });
+      if (nextGroupActivity.competing !== nextGroupActivity.judging) {
+        assignments.push({
+          registrantId: person.registrantId,
+          assignment: {
+            assignmentCode: 'staff-judge',
+            activityId: nextGroupActivity.judging,
+            stationNumber: null,
+          },
+        });
+      }
     };
 
     const findPR = (personalBests, type) =>

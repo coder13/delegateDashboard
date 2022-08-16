@@ -22,7 +22,7 @@ export const setExtensionData = (extensionName, wcifEntity, data) => {
 const defaultExtensionData = {
   groups: {
     spreadGroupsAcrossAllStages: true,
-    groups: undefined,
+    groups: 1,
   },
 };
 
