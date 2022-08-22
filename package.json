@@ -21,6 +21,7 @@
     "react-dom": "^17.0.2",
     "react-flag-icon-css": "^1.0.25",
     "react-loading": "^2.0.3",
+    "react-papaparse": "^4.1.0",
     "react-redux": "^7.2.6",
     "react-router-dom": "^6.2.1",
     "react-scripts": "5.0.0",

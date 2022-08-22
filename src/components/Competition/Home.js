@@ -28,6 +28,7 @@ const CompetitionSummary = () => {
         </Typography>
       </CardContent>
       <CardActions>
+        <Link to="import">Import Data</Link>
         <Link to="export">Export Data</Link>
         <Link to="assignments">View All Assignments</Link>
       </CardActions>

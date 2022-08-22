@@ -20,7 +20,7 @@ const FlagIcon = FlagIconFactory(React, { useCssModules: false });
 const CompetitionLink = ({ comp, ...props }) => (
   <ListItem button component={Link} to={`/competitions/${comp.id}`}>
     <ListItemIcon>
-      {RegExp('(x|X)', 'g').test(comp.country_iso2.toLowerCase()) ? (
+      {!comp.country_iso2 || RegExp('(x|X)', 'g').test(comp.country_iso2.toLowerCase()) ? (
         <PublicIcon />
       ) : (
         <FlagIcon code={comp.country_iso2.toLowerCase()} size="lg" />
