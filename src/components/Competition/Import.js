@@ -65,6 +65,7 @@ const validate = (wcif) => (data) => {
     }
 
     if (person.registration.eventIds.some((eventId) => !assignments.some((assignment) => assignment.eventId === eventId))) {
+      debugger;
       return true;
     }
 
@@ -130,7 +131,6 @@ const ImportPage = () => {
     }
   };
 
-
   return (
     <Grid container direction="column">
       <Grid item sx={{ padding: '1em' }}>
@@ -185,6 +185,9 @@ const ImportPage = () => {
             {validation.map((check) => (
               <Alert key={check.key} severity={check.passed ? 'success' : 'error'}>
                 {check.message}
+                {check.data && check.key === "has-all-competing-event-column" && (
+                  check.data.map((i) => i.email).join(', ')
+                )}
               </Alert>
             ))}
           </Grid>
