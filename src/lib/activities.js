@@ -56,16 +56,17 @@ export const roomByActivity = (wcif, activityId) =>
 export const stationsByActivity = (wcif, activityId) =>
   getExtensionData('RoomConfig', roomByActivity(wcif, activityId)).stations;
 
+export const flatChildActivities = ({ activities, childActivities }) => {
+  const a = activities || childActivities;
+  return a.length > 0 ? [...a, ...flatMap(a, flatChildActivities)] : a;
+}
+
 /**
  * Creates a flat array of activities
  */
 export const allActivities = (wcif) => {
-  const allChildActivities = ({ childActivities }) =>
-    childActivities.length > 0
-      ? [...childActivities, ...flatMap(childActivities, allChildActivities)]
-      : childActivities;
   const activities = flatMap(rooms(wcif), (room) => room.activities);
-  return [...activities, ...flatMap(activities, allChildActivities)];
+  return [...activities, ...flatMap(activities, flatChildActivities)];
 };
 
 /**
@@ -126,9 +127,9 @@ export const groupActivitiesByRound = (wcif, roundId) =>
     hasDistributedAttempts(roundId)
       ? [roundActivity]
       : roundActivity.childActivities.map((activity) => ({
-          ...activity,
-          parent: roundActivity,
-        }))
+        ...activity,
+        parent: roundActivity,
+      }))
   );
 
 export const roomsWithTimezoneAndGroups = (wcif, roundId) =>

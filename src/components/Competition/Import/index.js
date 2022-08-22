@@ -1,7 +1,10 @@
 import { useSelector } from 'react-redux';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Button, Divider, Grid, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Button, Divider, Grid, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { usePapaParse } from 'react-papaparse';
+import CSVPreview from './CSVPreview';
+import { rooms, flatChildActivities, parseActivityCode } from '../../../lib/activities'
+import { events } from '../../../lib/events';
 
 const validate = (wcif) => (data) => {
   const checks = [];
@@ -60,12 +63,10 @@ const validate = (wcif) => (data) => {
         passed: false,
         message: `Person with email ${email} is missing from the WCIF`,
       });
-      debugger;
       return true;
     }
 
     if (person.registration.eventIds.some((eventId) => !assignments.some((assignment) => assignment.eventId === eventId))) {
-      debugger;
       return true;
     }
 
@@ -92,16 +93,111 @@ const validate = (wcif) => (data) => {
   return checks;
 }
 
+const competitorAssignmentRegexWithoutStage = /^(?<groupNumber>:0|[1-9]\d*)$/i;
+const competitorAssignmentRegexWithStage = /^(?<stage>:[A-Z])(?:\s*)(?<groupNumber>:0|[1-9]\d*)$/i;
+
+/**
+ * Translates CSV contents to competitor assignments and also lists missing group activities
+ * @param {*} wcif 
+ * @param {*} data 
+ * @param {*} cb 
+ * @returns 
+ */
+const generateAssignments = (wcif, data) => {
+  const assignments = [];
+  const stages = rooms(wcif);
+
+  data.data.forEach((row) => {
+    const person = wcif.persons.find((person) => (person.email === row.email));
+
+    person.registration.eventIds.forEach((eventId) => {
+      const data = row[eventId].trim();
+
+      if (!data || data === '-') {
+        throw new Error('Competitor is given no assignment for event they are registered for')
+      }
+
+      const matchWithStage = data.match(competitorAssignmentRegexWithStage);
+      if (matchWithStage) {
+        return;
+      }
+
+      const matchWithoutStage = data.match(competitorAssignmentRegexWithoutStage);
+
+      if (matchWithoutStage && stages.length > 2) {
+        throw new Error('Stage data for competitor assignment is ambiguous');
+      }
+
+      if (matchWithoutStage && stages.length === 1) {
+        const groupNumber = parseInt(matchWithoutStage.groups.groupNumber, 10);
+        assignments.push({
+          person,
+          eventId: eventId,
+          groupNumber,
+          activityCode: `${eventId}-r1-g${groupNumber}`,
+          assignmentCode: 'competitor',
+        });
+        return;
+      }
+
+      throw new Error(`Invalid competitor assignment data`, {
+        data, person, eventId
+      });
+    })
+  });
+
+  return assignments;
+}
+
+const determineMissingGroupActivities = (wcif, assignments) => {
+  const missingActivities = [];
+  const stages = rooms(wcif).map((room) => ({
+    room,
+    childActivities: flatChildActivities(room),
+  }));
+
+  assignments.forEach((assignment) => {
+    if (missingActivities.find((activity) => activity.activityCode === assignment.activityCode)) {
+      return;
+    }
+
+    // Both the WCIF and assignment data are in sync on how many stages there are
+    if (stages.length === 1 && !assignment.stage) {
+      const activity = stages[0].childActivities.find((activity) => activity.activityCode === assignment.activityCode);
+      if (!activity) {
+        missingActivities.push({
+          activityCode: assignment.activityCode
+        });
+      }
+    } else if (stages.length > 1 && assignment.stage) {
+
+    } else {
+      throw new Error('Mismatch between number of stages in WCIF and assignment data');
+    }
+  });
+
+  return missingActivities.sort((a, b) => {
+    const aParsedActivityCode = parseActivityCode(a.activityCode);
+    const bParsedActivityCode = parseActivityCode(b.activityCode);
+
+    if (aParsedActivityCode.eventId === bParsedActivityCode.eventId) {
+      return aParsedActivityCode.groupNumber - bParsedActivityCode.groupNumber;
+    } else {
+      return events.findIndex((e) => e.id === aParsedActivityCode.eventId) - events.findIndex((e) => e.id === bParsedActivityCode.eventId);
+    }
+  });
+}
 
 const ImportPage = () => {
   const wcif = useSelector((state) => state.wcif);
   const { readString } = usePapaParse();
   const [file, setFile] = useState();
   const [CSVContents, setCSVContents] = useState();
+  const [competitorAssignments, setCompetitorAssignments] = useState();
+  const [missingGroupActivities, setMissingGroupActivities] = useState();
+  const [assignmentGenerationError, setAssignmentGenerationError] = useState();
   const validateContents = useMemo(() => wcif && validate(wcif), [wcif]);
   const validation = useMemo(() => validateContents && CSVContents && validateContents(CSVContents), [validateContents, CSVContents]);
-
-  console.log(validation);
 
   const fileReader = new FileReader();
 
@@ -121,7 +217,6 @@ const ImportPage = () => {
           skipEmptyLines: true,
           transformHeader: (header) => header.trim().toLowerCase(),
           complete: (results) => {
-            console.log(results);
             setCSVContents(results);
           },
         });
@@ -131,10 +226,29 @@ const ImportPage = () => {
     }
   };
 
+  const onGenerateCompetitorAssignments = () => {
+    try {
+      const assignments = generateAssignments(wcif, CSVContents);
+      setCompetitorAssignments(assignments);
+
+      const missingGroupActivities = determineMissingGroupActivities(wcif, assignments);
+      setMissingGroupActivities(missingGroupActivities);
+
+      setAssignmentGenerationError(null);
+    } catch (e) {
+      console.error(e);
+      setAssignmentGenerationError(e);
+    }
+  };
+
+  const onImportCompetitorAssignments = () => {
+    // TODO: dispatch import assignments
+  }
+
   return (
     <Grid container direction="column">
       <Grid item sx={{ padding: '1em' }}>
-        <Typography variant="h3">Instructions</Typography>
+        <Typography variant="h5">Instructions</Typography>
         <Typography variant="body1">
           The following are instructions on how to properly format data to import it into delegate dashboard and thus, the WCA website.
           <br />
@@ -160,7 +274,7 @@ const ImportPage = () => {
 
       <Divider />
       <Grid item sx={{ padding: '1em' }}>
-        <Typography>Import data from CSV</Typography>
+        <Typography variant="h5">Import data from CSV</Typography>
         <form>
           <input
             type="file"
@@ -185,7 +299,7 @@ const ImportPage = () => {
             {validation.map((check) => (
               <Alert key={check.key} severity={check.passed ? 'success' : 'error'}>
                 {check.message}
-                {check.data && check.key === "has-all-competing-event-column" && (
+                {check.data && check.key === 'has-all-competing-event-column' && (
                   check.data.map((i) => i.email).join(', ')
                 )}
               </Alert>
@@ -195,38 +309,11 @@ const ImportPage = () => {
           <Divider />
           <br />
           <Grid>
-            <Accordion>
-              <AccordionSummary>Preview</AccordionSummary>
-              <AccordionDetails style={{
-                display: 'flex',
-                flexDirection: 'row',
-                overflowX: 'auto',
-                width: '80vw'
-              }}>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      {CSVContents.meta.fields.map((field) => (
-                        <TableCell key={field}>{field}</TableCell>
-                      ))}
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {CSVContents.data.slice(0, 5).map((row) => (
-                      <TableRow key={row.email}>
-                        {CSVContents.meta.fields.map((field) => (
-                          <TableCell key={field}>{row[field]}</TableCell>
-                        ))}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </AccordionDetails>
-            </Accordion>
+            <CSVPreview CSVContents={CSVContents} />
           </Grid>
           <Divider />
           <Grid item sx={{ padding: '1em' }}>
-            <Typography>Confirm data</Typography>
+            <Typography variant="h5">Confirm data</Typography>
             <Typography>
               Please confirm that the data you have uploaded is correct.
               <br />
@@ -235,7 +322,15 @@ const ImportPage = () => {
             <Typography>
               {CSVContents.data.length} people found
             </Typography>
-            <Button variant="contained" disabled={validation.some((check) => !check.passed)}>IMPORT DATA</Button>
+            <Button variant="contained" disabled={validation.some((check) => !check.passed)} onClick={onGenerateCompetitorAssignments}>GENERATE COMPETITOR ASSIGNMENTS</Button>
+            <Typography>{competitorAssignments?.length || 0} generated assignments</Typography>
+            <Typography>{missingGroupActivities ? missingGroupActivities.length : '???'} missing group activities{missingGroupActivities ? `: (${missingGroupActivities.map((a) => a.activityCode).join(', ')})` : ''}</Typography>
+            {assignmentGenerationError && (
+              <Alert severity="error">
+                {assignmentGenerationError.message}
+              </Alert>
+            )}
+            <Button variant="contained" disabled={!competitorAssignments?.length} onClick={onImportCompetitorAssignments}>GENERATE MISSING GROUP ACTIVITIES AND IMPORT COMPETITOR ASSIGNMENTS</Button>
           </Grid>
         </>
       )}
