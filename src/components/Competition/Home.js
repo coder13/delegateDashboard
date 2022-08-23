@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Alert, Card, CardActions, Grid, Typography } from '@mui/material';
+import { Alert, Button, Card, CardActions, Grid, Typography } from '@mui/material';
 import { CardContent } from '@mui/material';
 import { acceptedRegistrations } from '../../lib/persons';
 import { pluralize } from '../../lib/utils';
@@ -28,9 +28,9 @@ const CompetitionSummary = () => {
         </Typography>
       </CardContent>
       <CardActions>
-        <Link to="import">Import Data</Link>
-        <Link to="export">Export Data</Link>
-        <Link to="assignments">View All Assignments</Link>
+        <Link as={Button} variant="contained" to="import">Import Data</Link>
+        <Link as={Button} variant="contained" to="export">Export Data</Link>
+        <Link as={Button} variant="contained" to="assignments">View All Assignments</Link>
       </CardActions>
     </Card>
   );
