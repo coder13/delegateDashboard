@@ -1,10 +1,14 @@
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Button, Divider, Grid, Typography } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { usePapaParse } from 'react-papaparse';
 import CSVPreview from './CSVPreview';
-import { rooms, flatChildActivities, parseActivityCode } from '../../../lib/activities'
+import { rooms, flatActivities, parseActivityCode, generateNextChildActivityId, createGroupActivity, activityByActivityCode } from '../../../lib/activities'
 import { events } from '../../../lib/events';
+import { partialUpdateWCIF } from '../../../store/actions';
+import { groupBy } from '../../../lib/utils';
+import { createGroupAssignment } from '../../../lib/groups';
+import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
 
 const validate = (wcif) => (data) => {
   const checks = [];
@@ -93,8 +97,109 @@ const validate = (wcif) => (data) => {
   return checks;
 }
 
-const competitorAssignmentRegexWithoutStage = /^(?<groupNumber>:0|[1-9]\d*)$/i;
-const competitorAssignmentRegexWithStage = /^(?<stage>:[A-Z])(?:\s*)(?<groupNumber>:0|[1-9]\d*)$/i;
+const numberRegex = /^([1-9]\d*)$/i;
+const staffAssignmentRegex = /^(?<assignment>[RSJ])(?<groupNumber>[1-9]\d*)$/i
+
+const competitorAssignmentRegexWithoutStage = /^(?<groupNumber>[1-9]\d*)$/i;
+const competitorAssignmentRegexWithStage = /^(?<stage>[A-Z])(?:\s*)(?<groupNumber>[1-9]\d*)$/i;
+
+/**
+ * Requires that the CSV row has a field that is exactly the eventId
+ * @param {*} stages 
+ * @param {*} row 
+ * @param {*} person 
+ * @param {*} eventId 
+ * @returns 
+ */
+const findCompetingAssignment = (stages, row, person, eventId) => {
+  const data = row[eventId].trim();
+
+  if (!data || data === '-') {
+    throw new Error('Competitor is given no assignment for event they are registered for')
+  }
+
+  const matchWithStage = data.match(competitorAssignmentRegexWithStage);
+  if (matchWithStage) {
+    return;
+  }
+
+  const matchWithoutStage = data.match(competitorAssignmentRegexWithoutStage);
+
+  if (matchWithoutStage && stages.length > 2) {
+    throw new Error('Stage data for competitor assignment is ambiguous');
+  }
+
+  if (matchWithoutStage && stages.length === 1) {
+    const groupNumber = parseInt(matchWithoutStage.groups.groupNumber, 10);
+    return {
+      registrantId: person.registrantId,
+      eventId: eventId,
+      groupNumber,
+      activityCode: `${eventId}-r1-g${groupNumber}`,
+      assignmentCode: 'competitor',
+      roomId: stages[0].id
+    };
+  }
+
+  throw new Error(`Invalid competitor assignment data`, {
+    data, person, eventId
+  });
+};
+
+const StaffAssignmentMap = {
+  R: 'staff-runner',
+  S: 'staff-scrambler',
+  J: 'staff-judge',
+};
+
+const findStaffingAssignments = (stages, row, person, eventId) => {
+  const data = row[eventId + 'j'].trim();
+
+  // No staff assignment
+  if (!data || data === '-') {
+    return [];
+  }
+
+  const baseAssignmentData = {
+    registrantId: person.registrantId,
+    eventId: eventId,
+
+  }
+
+  const assignments = data.trim().split(/[,;]/).map((assignment) => {
+    // If there is only 1 stage, then we can infer stage data.
+    if (stages.length === 1) {
+      const plainNumberMatch = assignment.match(numberRegex);
+      const staffAssignmentMatch = assignment.match(staffAssignmentRegex);
+
+      if (plainNumberMatch) {
+        const groupNumber = parseInt(assignment, 10);
+
+        return {
+          ...baseAssignmentData,
+          activityCode: `${eventId}-r1-g${groupNumber}`,
+          assignmentCode: 'staff-judge', // default staffing assignment
+          roomId: stages[0].id
+        };
+      }
+
+      if (staffAssignmentMatch) {
+        const { assignment, groupNumber } = staffAssignmentMatch.groups;
+
+        return {
+          ...baseAssignmentData,
+          activityCode: `${eventId}-r1-g${groupNumber}`,
+          assignmentCode: StaffAssignmentMap[assignment],
+          roomId: stages[0].id,
+        };
+      }
+    }
+
+    return null;
+  });
+
+  return assignments.filter(Boolean);
+}
 
 /**
  * Translates CSV contents to competitor assignments and also lists missing group activities
@@ -111,39 +216,24 @@ const generateAssignments = (wcif, data) => {
     const person = wcif.persons.find((person) => (person.email === row.email));
 
     person.registration.eventIds.forEach((eventId) => {
-      const data = row[eventId].trim();
-
-      if (!data || data === '-') {
-        throw new Error('Competitor is given no assignment for event they are registered for')
+      try {
+        const competingAssignment = findCompetingAssignment(stages, row, person, eventId);
+        if (competingAssignment) {
+          assignments.push(competingAssignment);
+        }
+      } catch (e) {
+        console.error(e);
       }
 
-      const matchWithStage = data.match(competitorAssignmentRegexWithStage);
-      if (matchWithStage) {
-        return;
+      try {
+        const staffingAssignments = findStaffingAssignments(stages, row, person, eventId);
+        if (staffingAssignments && staffingAssignments.length) {
+          assignments.push(...staffingAssignments);
+        }
+      } catch (e) {
+        console.error(e);
       }
-
-      const matchWithoutStage = data.match(competitorAssignmentRegexWithoutStage);
-
-      if (matchWithoutStage && stages.length > 2) {
-        throw new Error('Stage data for competitor assignment is ambiguous');
-      }
-
-      if (matchWithoutStage && stages.length === 1) {
-        const groupNumber = parseInt(matchWithoutStage.groups.groupNumber, 10);
-        assignments.push({
-          person,
-          eventId: eventId,
-          groupNumber,
-          activityCode: `${eventId}-r1-g${groupNumber}`,
-          assignmentCode: 'competitor',
-        });
-        return;
-      }
-
-      throw new Error(`Invalid competitor assignment data`, {
-        data, person, eventId
-      });
-    })
+    });
   });
 
   return assignments;
@@ -153,7 +243,7 @@ const determineMissingGroupActivities = (wcif, assignments) => {
   const missingActivities = [];
   const stages = rooms(wcif).map((room) => ({
     room,
-    childActivities: flatChildActivities(room),
+    activities: flatActivities(room),
   }));
 
   assignments.forEach((assignment) => {
@@ -162,11 +252,12 @@ const determineMissingGroupActivities = (wcif, assignments) => {
     }
 
     // Both the WCIF and assignment data are in sync on how many stages there are
-    if (stages.length === 1 && !assignment.stage) {
-      const activity = stages[0].childActivities.find((activity) => activity.activityCode === assignment.activityCode);
+    if (stages.length === 1) {
+      const activity = stages[0].activities.find((activity) => activity.activityCode === assignment.activityCode);
       if (!activity) {
         missingActivities.push({
-          activityCode: assignment.activityCode
+          activityCode: assignment.activityCode,
+          roomId: assignment.roomId,
         });
       }
     } else if (stages.length > 1 && assignment.stage) {
@@ -188,8 +279,62 @@ const determineMissingGroupActivities = (wcif, assignments) => {
   });
 }
 
+const generateMissingGroupActivities = (wcif, missingActivities) => {
+  const schedule = wcif.schedule;
+  const missingActivitiesByRoundId = groupBy(missingActivities, (activity) => {
+    const eventRound = activity.activityCode.split('-').slice(0, 2).join('-');
+    return eventRound;
+  });
+
+  let startingActivityId = generateNextChildActivityId(wcif);
+
+  Object.keys(missingActivitiesByRoundId).forEach((eventRound) => {
+    const groups = missingActivitiesByRoundId[eventRound];
+    groups.forEach((group) => {
+      const { activityCode, roomId } = group;
+      const { groupNumber } = parseActivityCode(activityCode);
+
+      const venue = schedule.venues.find((venue) => venue.rooms.some((room) => room.id === roomId))
+      const room = venue.rooms.find((room) => room.id === roomId);
+      const roundActivity = room.activities.find((activity) => activity.activityCode === eventRound);
+      roundActivity.childActivities.push(createGroupActivity(startingActivityId, roundActivity, groupNumber));
+
+      startingActivityId += 1;
+    });
+  });
+
+  return {
+    ...wcif,
+    schedule,
+  };
+}
+
+const upsertCompetitorAssignments = (wcif, assignments) => {
+  const persons = wcif.persons;
+
+  assignments.forEach((assignment) => {
+    const person = persons.find((person) => person.registrantId === assignment.registrantId);
+    const activity = activityByActivityCode(wcif, assignment.roomId, assignment.activityCode);
+
+    const newAssignment = createGroupAssignment(person.registrantId, activity.id, assignment.assignmentCode).assignment;
+
+    if (person.assignments.find((assignment) => assignment.activityId === activity.id)) {
+      person.assignments = person.assignments.map((assignment) => assignment.activityId === activity.id ? newAssignment : assignment);
+    } else {
+      person.assignments.push(newAssignment);
+    }
+  });
+
+  return {
+    ...wcif,
+    persons,
+  }
+}
+
 const ImportPage = () => {
   const wcif = useSelector((state) => state.wcif);
+  const dispatch = useDispatch();
+  const { setBreadcrumbs } = useBreadcrumbs();
   const { readString } = usePapaParse();
   const [file, setFile] = useState();
   const [CSVContents, setCSVContents] = useState();
@@ -198,6 +343,14 @@ const ImportPage = () => {
   const [assignmentGenerationError, setAssignmentGenerationError] = useState();
   const validateContents = useMemo(() => wcif && validate(wcif), [wcif]);
   const validation = useMemo(() => validateContents && CSVContents && validateContents(CSVContents), [validateContents, CSVContents]);
+
+  useEffect(() => {
+    setBreadcrumbs([
+      {
+        text: 'Import',
+      },
+    ]);
+  }, [setBreadcrumbs]);
 
   const fileReader = new FileReader();
 
@@ -243,6 +396,18 @@ const ImportPage = () => {
 
   const onImportCompetitorAssignments = () => {
     // TODO: dispatch import assignments
+    const newWcif = upsertCompetitorAssignments(
+      generateMissingGroupActivities(
+        wcif,
+        missingGroupActivities
+      ),
+      competitorAssignments
+    );
+
+    dispatch(partialUpdateWCIF({
+      persons: newWcif.persons,
+      schedule: newWcif.schedule,
+    }));
   }
 
   return (

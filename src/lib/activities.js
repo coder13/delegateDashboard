@@ -2,6 +2,11 @@ import { eventNameById } from './events';
 import { mapIn, updateIn, setIn, flatMap, shortTime } from './utils';
 import { getExtensionData } from './wcif-extensions';
 
+/**
+ * 
+ * @param {*} activityCode 
+ * @returns
+ */
 export const parseActivityCode = (activityCode) => {
   const [, e, r, g, a] = activityCode.match(/(\w+)(?:-r(\d+))?(?:-g(\d+))?(?:-a(\d+))?/);
   return {
@@ -56,9 +61,9 @@ export const roomByActivity = (wcif, activityId) =>
 export const stationsByActivity = (wcif, activityId) =>
   getExtensionData('RoomConfig', roomByActivity(wcif, activityId)).stations;
 
-export const flatChildActivities = ({ activities, childActivities }) => {
+export const flatActivities = ({ activities, childActivities }) => {
   const a = activities || childActivities;
-  return a.length > 0 ? [...a, ...flatMap(a, flatChildActivities)] : a;
+  return a.length > 0 ? [...a, ...flatMap(a, flatActivities)] : a;
 }
 
 /**
@@ -66,7 +71,7 @@ export const flatChildActivities = ({ activities, childActivities }) => {
  */
 export const allActivities = (wcif) => {
   const activities = flatMap(rooms(wcif), (room) => room.activities);
-  return [...activities, ...flatMap(activities, flatChildActivities)];
+  return [...activities, ...flatMap(activities, flatActivities)];
 };
 
 /**
@@ -76,6 +81,8 @@ export const allRoundActivities = (wcif) => {
   const activities = flatMap(rooms(wcif), (room) => room.activities);
   return activities;
 };
+
+export const allActivitiesByRoom = (wcif, roomId) => flatActivities(rooms(wcif).find((room) => room.id === roomId))
 
 export const maxActivityId = (wcif) =>
   Math.max(...allActivities(wcif).map((activity) => activity.id));
@@ -88,13 +95,34 @@ const activitiesByIdCachedBySchedule = new Map();
 export const activityById = (wcif, activityId) => {
   if (activitiesByIdCachedBySchedule.has(wcif.schedule)) {
     return activitiesByIdCachedBySchedule.get(wcif.schedule).get(activityId);
-  } else {
-    const activities = allActivities(wcif);
-    const activitiesById = new Map(activities.map((activity) => [activity.id, activity]));
-    activitiesByIdCachedBySchedule.set(wcif.schedule, activitiesById);
-    return activitiesById.get(activityId);
   }
+
+  const activities = allActivities(wcif);
+  const activitiesById = new Map(activities.map((activity) => [activity.id, activity]));
+  activitiesByIdCachedBySchedule.set(wcif.schedule, activitiesById);
+  return activitiesById.get(activityId);
 };
+
+
+const activitiesByCodeAndRoomCache = new Map();
+export const activityByActivityCode = (wcif, roomId, activityCode) => {
+  const id = `${roomId}-${activityCode}`;
+
+  if (activitiesByCodeAndRoomCache.has(id)) {
+    return activitiesByCodeAndRoomCache.get(id);
+  }
+
+  const activities = allActivitiesByRoom(wcif, roomId);
+  const activity = activities.find((activity) => activity.activityCode === activityCode);
+
+  if (activity) {
+    activitiesByCodeAndRoomCache.set(id, activity);
+    return activity;
+  }
+
+  throw new Error(`Activity not found: ${activityCode} in room: ${roomId}`);
+}
+
 
 export const updateActivity = (wcif, updatedActivity) =>
   mapIn(wcif, ['schedule', 'venues'], (venue) =>
@@ -268,8 +296,8 @@ export const createGroupActivity = (id, roundActivity, groupNumber, startTime, e
     id: id,
     name: activityCodeToName(newActivityCode),
     activityCode: newActivityCode,
-    startTime: startTime, // spread across groups
-    endTime: endTime,
+    startTime: startTime || roundActivity.startTime, // spread across groups
+    endTime: endTime || roundActivity.endTime,
     childActivities: [],
   };
 };

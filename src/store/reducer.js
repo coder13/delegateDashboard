@@ -14,6 +14,7 @@ import {
   UPDATE_ROUND_ACTIVITIES,
   UPDATE_ROUND_CHILD_ACTIVITIES,
   UPDATE_ROUND_EXTENSION_DATA,
+  PARTIAL_UPDATE_WCIF,
 } from './actions';
 
 const INITIAL_STATE = {
@@ -66,12 +67,12 @@ const reducers = {
       persons: state.wcif.persons.map((person) =>
         person.registrantId === action.registrantId
           ? {
-              ...person,
-              roles:
-                person.roles.indexOf(action.roleId) > -1
-                  ? person.roles.filter((role) => role !== action.roleId)
-                  : person.roles.concat(action.roleId),
-            }
+            ...person,
+            roles:
+              person.roles.indexOf(action.roleId) > -1
+                ? person.roles.filter((role) => role !== action.roleId)
+                : person.roles.concat(action.roleId),
+          }
           : person
       ),
     },
@@ -85,9 +86,9 @@ const reducers = {
       persons: state.wcif.persons.map((person) =>
         person.registrantId === action.registrantId
           ? {
-              ...person,
-              assignments: [...person.assignments, action.assignment],
-            }
+            ...person,
+            assignments: [...person.assignments, action.assignment],
+          }
           : person
       ),
     },
@@ -101,9 +102,9 @@ const reducers = {
       persons: state.wcif.persons.map((person) =>
         person.registrantId === action.registrantId
           ? {
-              ...person,
-              assignments: person.assignments.filter((a) => a.activityId !== action.activityId),
-            }
+            ...person,
+            assignments: person.assignments.filter((a) => a.activityId !== action.activityId),
+          }
           : person
       ),
     },
@@ -198,9 +199,9 @@ const reducers = {
         mapIn(room, ['activities'], (activity) =>
           activity.id === action.activityId
             ? {
-                ...activity,
-                childActivities: action.childActivities,
-              }
+              ...activity,
+              childActivities: action.childActivities,
+            }
             : activity
         )
       )
@@ -219,6 +220,15 @@ const reducers = {
         )
       )
     ),
+  }),
+  [PARTIAL_UPDATE_WCIF]: (state, action) => ({
+    ...state,
+    needToSave: true,
+    changedKeys: new Set([...state.changedKeys, ...Object.keys(action.wcif)]),
+    wcif: {
+      ...state.wcif,
+      ...action.wcif
+    }
   }),
   [UPDATE_ROUND_EXTENSION_DATA]: (state, action) => ({
     ...state,
