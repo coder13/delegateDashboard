@@ -61,16 +61,46 @@ export const roomByActivity = (wcif, activityId) =>
 export const stationsByActivity = (wcif, activityId) =>
   getExtensionData('RoomConfig', roomByActivity(wcif, activityId)).stations;
 
-export const flatActivities = ({ activities, childActivities }) => {
-  const a = activities || childActivities;
-  return a.length > 0 ? [...a, ...flatMap(a, flatActivities)] : a;
-}
+// export const flatActivities = ({ activities, childActivities }) => {
+//   const a = activities || childActivities;
+//   return a.length > 0 ? [...a, ...flatMap(a, flatActivities)] : a;
+// }
+
+const getActivities = (activity) => activity.childActivities || activity.activities;
+
+// get all child activities by activity
+export const flatActivities = (activity) =>
+  getActivities(activity).length > 0
+    ? [
+      ...getActivities(activity).map((a) => ({
+        ...a,
+        parent: activity,
+      })),
+      ...flatMap(
+        getActivities(activity).map((a) => ({
+          ...a,
+          parent: activity,
+        })),
+        flatActivities
+      ),
+    ]
+    : getActivities(activity).map((a) => ({
+      ...a,
+      parent: activity,
+    }));
+
 
 /**
  * Creates a flat array of activities
  */
 export const allActivities = (wcif) => {
-  const activities = flatMap(rooms(wcif), (room) => room.activities);
+  // Rounds
+  const activities = flatMap(rooms(wcif), (room) =>
+    room.activities.map((a) => ({
+      ...a,
+      room,
+    }))
+  );
   return [...activities, ...flatMap(activities, flatActivities)];
 };
 
