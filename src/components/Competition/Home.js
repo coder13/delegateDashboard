@@ -27,11 +27,6 @@ const CompetitionSummary = () => {
           {wcif.schedule.startDate} ({pluralize(wcif.schedule.numberOfDays, 'day', 'days')})
         </Typography>
       </CardContent>
-      <CardActions>
-        <Link as={Button} variant="contained" to="import">Import Data</Link>
-        <Link as={Button} variant="contained" to="export">Export Data</Link>
-        <Link as={Button} variant="contained" to="assignments">View All Assignments</Link>
-      </CardActions>
     </Card>
   );
 };
@@ -47,11 +42,6 @@ const CompetitionHome = () => {
     <Grid container direction="column" spacing={1}>
       <Grid item>
         <CompetitionSummary />
-      </Grid>
-      <Grid item>
-        <Alert severity="error">
-          <Link to="roles">Pick Staff!</Link>
-        </Alert>
       </Grid>
       <Grid item>
         <RoundSelectorPage />

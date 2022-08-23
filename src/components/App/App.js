@@ -22,7 +22,8 @@ const App = () => {
           overflow: 'auto',
           marginTop: '0.5em',
           marginBottom: '1em',
-          overflowX: 'hidden'
+          overflowX: 'hidden',
+          overflowY: 'hidden',
         }}>
         <Outlet />
       </div>
