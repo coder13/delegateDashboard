@@ -406,9 +406,12 @@ const RoundPage = () => {
       );
     } else if (personsAssignedToCompeteOrJudge > 0) {
       return (
-        <Button onClick={onResetGroupNonScramblingActitivites}>
-          Reset Non-scrambling Assignments
-        </Button>
+        <>
+          <Button onClick={onAssignStaff}>Pick Scramblers</Button>
+          <Button onClick={onResetGroupNonScramblingActitivites}>
+            Reset Non-scrambling Assignments
+          </Button>
+        </>
       );
     }
   };
