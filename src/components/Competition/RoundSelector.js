@@ -8,7 +8,7 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import { makeStyles } from '@mui/styles';
-import { activityById, allActivities, roundActivities } from '../../lib/activities';
+import { activityById, groupActivitiesByRound } from '../../lib/activities';
 import { eventNameById } from '../../lib/events';
 import { personsShouldBeInRound } from '../../lib/persons';
 import { pluralize } from '../../lib/utils';
@@ -58,7 +58,7 @@ const RoundSelectorPage = () => {
           <ul className={classes.ul}>
             <ListSubheader>{eventNameById(event.id)}</ListSubheader>
             {event.rounds.map((round, index) => {
-              const realGroups = roundActivities(wcif, round.id);
+              const realGroups = groupActivitiesByRound(wcif, round.id);
               const groupsData = getExtensionData('groups', round);
 
               const _personsShouldBeInRound = personsShouldBeInRound(wcif, round)?.length;
@@ -73,6 +73,7 @@ const RoundSelectorPage = () => {
                 })
               ).length;
 
+              console.log(realGroups);
               const realGroupsGeneratedText = realGroups?.length && `${pluralize(realGroups.length, 'group', 'groups')} generated`;
               const configuredGroupsText = groupsData?.groups
                 ? `${pluralize(groupsData?.groups, 'group', 'groups')} configured`

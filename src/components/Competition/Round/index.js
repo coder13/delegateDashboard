@@ -408,7 +408,8 @@ const RoundPage = () => {
       return (
         <>
           <Button onClick={onAssignStaff}>Pick Scramblers</Button>
-          <Button onClick={onResetGroupNonScramblingActitivites}>
+          <div style={{ display: 'flex', flex: 1 }} />
+          <Button color="error" onClick={onResetGroupNonScramblingActitivites}>
             Reset Non-scrambling Assignments
           </Button>
         </>

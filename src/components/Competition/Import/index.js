@@ -1,19 +1,30 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Button, Divider, Grid, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Button, Divider, Grid, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { usePapaParse } from 'react-papaparse';
 import CSVPreview from './CSVPreview';
 import { partialUpdateWCIF } from '../../../store/actions';
 import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
-import { validate, generateAssignments, determineMissingGroupActivities, upsertCompetitorAssignments, generateMissingGroupActivities, determineStageForAssignments } from '../../../lib/import';
+import { validate, generateAssignments, determineMissingGroupActivities, upsertCompetitorAssignments, generateMissingGroupActivities, determineStageForAssignments, balanceStartAndEndTimes } from '../../../lib/import';
+
+const mapCSVFieldToData = (necessaryFields) => (field) => {
+  if (necessaryFields.indexOf(field) > -1) {
+    return field;
+  }
+
+  return null;
+}
 
 const ImportPage = () => {
   const wcif = useSelector((state) => state.wcif);
+  const eventIds = wcif.events.map((e) => e.id);
+  const necessaryFields = ['email', ...eventIds, ...eventIds.map((e) => `${e}-staff`)];
   const dispatch = useDispatch();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { readString } = usePapaParse();
   const [file, setFile] = useState();
   const [CSVContents, setCSVContents] = useState();
+  const [CSVColumnMap, setCSVColumnMap] = useState();
   const [competitorAssignments, setCompetitorAssignments] = useState();
   const [missingGroupActivities, setMissingGroupActivities] = useState();
   const [assignmentGenerationError, setAssignmentGenerationError] = useState();
@@ -46,7 +57,23 @@ const ImportPage = () => {
           skipEmptyLines: true,
           transformHeader: (header) => header.trim().toLowerCase(),
           complete: (results) => {
-            setCSVContents(results);
+            const columnMap = {};
+            results.meta.fields.forEach((field) => {
+              const mappedField = mapCSVFieldToData(necessaryFields)(field);
+              if (mappedField) {
+                columnMap[field] = mappedField;
+              }
+            });
+
+            setCSVColumnMap(columnMap);
+
+            setCSVContents({
+              ...results,
+              meta: {
+                ...results.meta,
+                fields: [...new Set(results.meta.fields)],
+              }
+            });
           },
         });
       };
@@ -74,8 +101,11 @@ const ImportPage = () => {
     try {
 
       dispatch(partialUpdateWCIF({
-        schedule: generateMissingGroupActivities(
-          wcif,
+        schedule: balanceStartAndEndTimes(
+          generateMissingGroupActivities(
+            wcif,
+            missingGroupActivities
+          ),
           missingGroupActivities
         ).schedule,
       }));
@@ -98,6 +128,8 @@ const ImportPage = () => {
       schedule: newWcif.schedule,
     }));
   }
+
+  console.log(CSVColumnMap);
 
   return (
     <Grid container direction="column">
@@ -166,7 +198,29 @@ const ImportPage = () => {
           <Grid>
             <CSVPreview CSVContents={CSVContents} />
           </Grid>
+          <br />
           <Divider />
+          <Accordion>
+            <AccordionSummary>Column Map</AccordionSummary>
+            <AccordionDetails>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>CSV</TableCell>
+                    <TableCell>Data</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {CSVContents.meta.fields.map((field) => (
+                    <TableRow key={field}>
+                      <TableCell>{field}</TableCell>
+                      <TableCell>{CSVColumnMap && CSVColumnMap[field]}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </AccordionDetails>
+          </Accordion>
           <Grid item sx={{ padding: '1em' }}>
             <Typography variant="h5">Confirm data</Typography>
             <Typography>

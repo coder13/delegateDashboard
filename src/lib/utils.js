@@ -42,7 +42,7 @@ export const mergeIn = (object, properyChain, newValue) =>
  * Returns a copy of the object with the array at the specified path mapped with the given function.
  *
  * @param {Object} object
- * @param {Array} propertyChain
+ * @param {Array<string>} propertyChain
  * @param {Object} mapper
  * @returns {Object}
  */

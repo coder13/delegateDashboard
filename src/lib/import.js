@@ -1,6 +1,6 @@
 import { rooms, flatActivities, parseActivityCode, generateNextChildActivityId, createGroupActivity, activityByActivityCode, allActivities } from './activities'
 import { events } from './events';
-import { groupBy } from './utils';
+import { groupBy, mapIn } from './utils';
 import { createGroupAssignment } from './groups';
 
 export const validate = (wcif) => (data) => {
@@ -390,6 +390,39 @@ export const generateMissingGroupActivities = (wcif, missingActivities) => {
     ...wcif,
     schedule,
   };
+};
+
+export const balanceStartAndEndTimes = (wcif, missingActivities) => {
+  return mapIn(wcif, ['schedule', 'venues'], (venue) => mapIn(venue, ['rooms'], (room) => {
+    return mapIn(room, ['activities'], (activity) => {
+      const groupCount = activity.childActivities.length;
+      if (!groupCount) {
+        return activity;
+      }
+
+      const roundStartDate = new Date(activity.startTime);
+      const roundEndDate = new Date(activity.endTime);
+      const dateDiff = roundEndDate - roundStartDate;
+      const timePerGroup = dateDiff / groupCount;
+
+
+      return mapIn(activity, ['childActivities'], (childActivity) => {
+        const missingActivity = missingActivities.find((missing) => missing.activityCode === childActivity.activityCode && missing.roomId === room.id);
+
+        if (!missingActivity) {
+          return childActivity;
+        }
+
+        const groupNumber = parseActivityCode(childActivity.activityCode).groupNumber;
+
+        return {
+          ...childActivity,
+          startTime: new Date(roundStartDate.getTime() + timePerGroup * (groupNumber - 1)).toISOString(),
+          endTime: new Date(roundStartDate.getTime() + timePerGroup * (groupNumber)).toISOString(),
+        };
+      })
+    });
+  }));
 }
 
 /**
