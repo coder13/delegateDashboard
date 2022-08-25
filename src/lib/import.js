@@ -117,7 +117,7 @@ export const findCompetingAssignment = (stages, row, person, eventId) => {
     const room = stages.find((s) => s.name.startsWith(stage));
 
     if (!room) {
-      throw new Error(`Can't determine stage for competitor ${stage}`, data);
+      throw new Error(`Can't determine stage ${stage} for competitor ${person.name}. Raw Data: ${data}`);
     }
 
     return {
@@ -228,7 +228,7 @@ export const generateAssignments = (wcif, data) => {
           assignments.push(competingAssignment);
         }
       } catch (e) {
-        console.error(e);
+        throw e;
       }
     });
 
