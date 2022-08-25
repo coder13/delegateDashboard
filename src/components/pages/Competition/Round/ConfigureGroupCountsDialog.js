@@ -15,11 +15,11 @@ import {
   InputLabel,
   Typography,
 } from '@mui/material';
-import { activityDuration } from '../../../lib/activities';
-import { createGroupsAcrossStages } from '../../../lib/groups';
-import { personsShouldBeInRound } from '../../../lib/persons';
-import { getExtensionData } from '../../../lib/wcif-extensions';
-import { updateRoundActivities, updateRoundExtensionData } from '../../../store/actions';
+import { activityDuration } from '../../../../lib/activities';
+import { createGroupsAcrossStages } from '../../../../lib/groups';
+import { personsShouldBeInRound } from '../../../../lib/persons';
+import { getExtensionData } from '../../../../lib/wcif-extensions';
+import { updateRoundActivities, updateRoundExtensionData } from '../../../../store/actions';
 
 const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundActivities }) => {
   const wcif = useSelector((state) => state.wcif);

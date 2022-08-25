@@ -3,9 +3,9 @@ import { Accordion, AccordionDetails, AccordionSummary, Alert, Button, Divider, 
 import { useEffect, useMemo, useState } from 'react';
 import { usePapaParse } from 'react-papaparse';
 import CSVPreview from './CSVPreview';
-import { partialUpdateWCIF } from '../../../store/actions';
-import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
-import { validate, generateAssignments, determineMissingGroupActivities, upsertCompetitorAssignments, generateMissingGroupActivities, determineStageForAssignments } from '../../../lib/import';
+import { partialUpdateWCIF } from '../../../../store/actions';
+import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import { validate, generateAssignments, determineMissingGroupActivities, upsertCompetitorAssignments, generateMissingGroupActivities, determineStageForAssignments } from '../../../../lib/import';
 
 const ImportPage = () => {
   const wcif = useSelector((state) => state.wcif);

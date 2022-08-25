@@ -11,11 +11,11 @@ import {
   ListSubheader,
   Typography,
 } from '@mui/material';
-import { allActivities, rooms } from '../../lib/activities';
-import { acceptedRegistrations } from '../../lib/persons';
-import { flatten } from '../../lib/utils';
-import { useBreadcrumbs } from '../providers/BreadcrumbsProvider';
-import EventSelector from '../shared/EventSelector';
+import { allActivities, rooms } from '../../../lib/activities';
+import { acceptedRegistrations } from '../../../lib/persons';
+import { flatten } from '../../../lib/utils';
+import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
+import EventSelector from '../../shared/EventSelector';
 
 const AssignmentsPage = () => {
   const wcif = useSelector((state) => state.wcif);

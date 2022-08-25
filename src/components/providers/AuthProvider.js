@@ -23,12 +23,16 @@ const AuthContext = createContext(null);
 export default function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useState(getLocalStorage('accessToken'));
   const [user, setUser] = useState(null);
+  const [userFetchError, setUserFetchError] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
-  console.log(process.env);
-
-  useEffect(() => setLocalStorage('accessToken', accessToken), [accessToken]);
+  useEffect(() => {
+    const token = getLocalStorage('accessToken');
+    if (token) {
+      setAccessToken(token);
+    }
+  }, [])
 
   useEffect(() => {
     const hash = window.location.hash.replace(/^#/, '');
@@ -36,6 +40,7 @@ export default function AuthProvider({ children }) {
 
     if (hashParams.has('access_token')) {
       setAccessToken(hashParams.get('access_token'));
+      setLocalStorage('accessToken', hashParams.get('access_token'))
     }
 
     if (hashParams.has('expires_in')) {
@@ -75,16 +80,17 @@ export default function AuthProvider({ children }) {
   const signedIn = useCallback(() => !!accessToken, [accessToken]);
 
   useEffect(() => {
-    if (signedIn()) {
+    if (accessToken) {
       getMe()
         .then(({ me }) => {
           setUser(me);
         })
         .catch((err) => {
           console.error(err);
+          setUserFetchError(err);
         });
     }
-  }, [signedIn]);
+  }, [accessToken]);
 
   const signIn = () => {
     const params = new URLSearchParams({
@@ -102,7 +108,7 @@ export default function AuthProvider({ children }) {
     setUser(null);
   };
 
-  const value = { user, signIn, signOut, signedIn };
+  const value = { user, signIn, signOut, signedIn, userFetchError };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -15,15 +15,15 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { makeStyles } from '@mui/styles';
-import { generateNextChildActivityId, parseActivityCode } from '../../../lib/activities';
-import { advancingCompetitors } from '../../../lib/formulas';
-import { acceptedRegistrations } from '../../../lib/persons';
-import { getGroupData } from '../../../lib/wcif-extensions';
+import { generateNextChildActivityId, parseActivityCode } from '../../../../lib/activities';
+import { advancingCompetitors } from '../../../../lib/formulas';
+import { acceptedRegistrations } from '../../../../lib/persons';
+import { getGroupData } from '../../../../lib/wcif-extensions';
 import {
   updateRoundChildActivities,
   updateGroupCount,
   updateRoundActivities,
-} from '../../../store/actions';
+} from '../../../../store/actions';
 
 const useStyles = makeStyles((theme) => ({
   card: ({ room }) => ({
@@ -162,9 +162,9 @@ const Room = ({ venue, room }) => {
                     roundNumber === 1
                       ? eventRegistrationCounts[eventId]
                       : advancingCompetitors(
-                          advancementCondition,
-                          eventRegistrationCounts[eventId]
-                        );
+                        advancementCondition,
+                        eventRegistrationCounts[eventId]
+                      );
                   const actualCompetitors = round.results.length;
 
                   const groupData = getGroupData(activity);
@@ -234,7 +234,7 @@ const Room = ({ venue, room }) => {
                       </TableCell>
                       <TableCell>
                         {activity.childActivities.length !==
-                        (groupData?.groups || round.scrambleSetCount) ? (
+                          (groupData?.groups || round.scrambleSetCount) ? (
                           <Button
                             variant="contained"
                             disabled={!canCreateGroups}

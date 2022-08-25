@@ -1,11 +1,10 @@
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Alert, Button, Card, CardActions, Grid, Typography } from '@mui/material';
+import { Card, Grid, Typography } from '@mui/material';
 import { CardContent } from '@mui/material';
-import { acceptedRegistrations } from '../../lib/persons';
-import { pluralize } from '../../lib/utils';
-import { useBreadcrumbs } from '../providers/BreadcrumbsProvider';
-import Link from '../shared/MaterialLink';
+import { acceptedRegistrations } from '../../../lib/persons';
+import { pluralize } from '../../../lib/utils';
+import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
 import RoundSelectorPage from './RoundSelector';
 
 const CompetitionSummary = () => {

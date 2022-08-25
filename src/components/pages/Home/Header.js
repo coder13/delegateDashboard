@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
-import { useAuth } from '../providers/AuthProvider';
+import { useAuth } from '../../providers/AuthProvider';
 
 const useStyles = makeStyles((theme) => ({
   title: {
@@ -36,8 +36,6 @@ const Header = () => {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
-
-  console.log(user);
 
   return (
     <AppBar position="static" color="primary">

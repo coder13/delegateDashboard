@@ -2,7 +2,8 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { styled } from '@mui/system';
 import Footer from './Footer';
-import Header from './Header';
+import { useAuth } from '../providers/AuthProvider';
+import { Alert, AlertTitle } from '@mui/material';
 
 const RootDiv = styled('div')({
   display: 'flex',
@@ -12,19 +13,25 @@ const RootDiv = styled('div')({
 });
 
 const App = () => {
+  const { userFetchError } = useAuth();
+
   return (
     <RootDiv>
-      <Header />
       <div
         style={{
           display: 'flex',
-          flex: 1,
-          overflow: 'auto',
-          marginTop: '0.5em',
-          marginBottom: '1em',
+          flexGrow: 1,
+          flexDirection: 'column',
+          marginBottom: '0.5em',
           overflowX: 'hidden',
           overflowY: 'hidden',
         }}>
+        {userFetchError && (
+          <Alert severity="error">
+            <AlertTitle>Error when fetching user</AlertTitle>
+            <p>{userFetchError.message}</p>
+          </Alert>
+        )}
         <Outlet />
       </div>
       <Footer />
