@@ -1,7 +1,13 @@
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { AppBar as MuiAppBar, Divider, IconButton, List, ListItem, ListItemText, styled, Toolbar, Typography } from "@mui/material"
+import { AppBar as MuiAppBar, Button, Divider, IconButton, List, ListItem, ListItemIcon, ListItemText, ListSubheader, styled, Toolbar, Typography } from "@mui/material"
 import MenuIcon from "@mui/icons-material/Menu";
+import HomeIcon from '@mui/icons-material/Home';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
+import PeopleIcon from '@mui/icons-material/People';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import { uploadCurrentWCIFChanges } from "../../../store/actions";
 
 export const drawerWidth = 240;
 
@@ -38,22 +44,39 @@ export const DrawerLinks = () => {
   return (
     <List style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <ListItem button component={Link} to={`/competitions/${competitionId}`}>
+        <ListItemIcon>
+          <HomeIcon />
+        </ListItemIcon>
         <ListItemText primary={'Competition Home'} />
       </ListItem>
       <ListItem button component={Link} to={`/competitions/${competitionId}/roles`}>
+        <ListItemIcon>
+          <PeopleIcon />
+        </ListItemIcon>
         <ListItemText primary={'Configure Staff'} />
       </ListItem>
-      <ListItem button component={Link} to={`/competitions/${competitionId}/assignments`}>
-        <ListItemText primary={'View All Assignments Data'} />
+      <Divider />
+      <ListItem button component={Link} to={`/competitions/${competitionId}/import`}>
+        <ListItemIcon>
+          <FileUploadIcon />
+        </ListItemIcon>
+        <ListItemText primary={'Import Data'} />
+      </ListItem>
+      <ListItem button component={Link} to={`/competitions/${competitionId}/export`}>
+        <ListItemIcon>
+          <FileDownloadIcon />
+        </ListItemIcon>
+        <ListItemText primary={'Export Data'} />
       </ListItem>
       <Divider />
       <div style={{ display: 'flex', flex: 1 }} />
       <Divider />
-      <ListItem button component={Link} to={`/competitions/${competitionId}/export`}>
-        <ListItemText primary={'Export Data'} />
-      </ListItem>
-      <ListItem button component={Link} to={`/competitions/${competitionId}/import`}>
-        <ListItemText primary={'Import Data'} />
+      <ListSubheader>Debug</ListSubheader>
+      <ListItem button component={Link} to={`/competitions/${competitionId}/assignments`}>
+        <ListItemIcon>
+          <ViewListIcon />
+        </ListItemIcon>
+        <ListItemText primary={'View All Assignments'} />
       </ListItem>
     </List>
   );
@@ -61,6 +84,7 @@ export const DrawerLinks = () => {
 
 export const Header = ({ open, onMenuOpen }) => {
   const { name } = useSelector((state) => state.wcif);
+  const dispatch = useDispatch();
 
   return (
     <AppBar position="static" open={open}>
@@ -78,6 +102,10 @@ export const Header = ({ open, onMenuOpen }) => {
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           {name}
         </Typography>
+        <div style={{ display: 'flex', flexGrow: 1 }} />
+        <Button color="inherit" onClick={() => dispatch(uploadCurrentWCIFChanges())}>
+          Save Changes
+        </Button>
       </Toolbar>
     </AppBar>
   )

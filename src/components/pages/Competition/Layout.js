@@ -6,6 +6,7 @@ import {
   Breadcrumbs,
   Button,
   Container,
+  Divider,
   Drawer,
   Grid,
   IconButton,
@@ -20,6 +21,7 @@ import BreadcrumbsProvider, { useBreadcrumbs } from '../../providers/Breadcrumbs
 import MaterialLink from '../../shared/MaterialLink';
 import { DrawerHeader, DrawerLinks, drawerWidth, Header } from './Header';
 import { styled } from '@mui/system';
+import { getLocalStorage, setLocalStorage } from '../../../lib/localStorage';
 
 const Errors = ({ errors }) => {
   console.log(errors);
@@ -42,13 +44,12 @@ const BreadCrumbsGridItem = () => {
   const wcif = useSelector((state) => state.wcif);
   const { competitionId } = useParams();
 
-  if (breadcrumbs.length === 0) {
-    return false;
-  }
-
   return (
     <Grid item>
       <Breadcrumbs aria-label="breadcrumbs">
+        <MaterialLink to={`/`}>
+          Competitions
+        </MaterialLink>
         <MaterialLink to={`/competitions/${competitionId}`}>
           {wcif.name || competitionId}
         </MaterialLink>
@@ -89,25 +90,25 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(
 
 const CompetitionLayout = () => {
   const dispatch = useDispatch();
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const { competitionId } = useParams();
+  const [drawerOpen, setDrawerOpen] = useState(getLocalStorage('drawer-open') === 'true');
 
   const fetchingWCIF = useSelector((state) => state.fetchingWCIF);
   const needToSave = useSelector((state) => state.needToSave);
   const wcif = useSelector((state) => state.wcif);
   const errors = useSelector((state) => state.errors);
 
-  const { competitionId } = useParams();
-
   useEffect(() => {
     dispatch(fetchWCIF(competitionId));
   }, [dispatch, competitionId]);
 
-  console.log(106, drawerOpen);
+  useEffect(() => {
+    setLocalStorage('drawer-open', drawerOpen);
+  }, [drawerOpen])
 
   return (
     <>
       <Header open={drawerOpen} onMenuOpen={() => setDrawerOpen(!drawerOpen)} />
-      {/* <Drawer open={drawerOpen} /> */}
       <Drawer
         variant="persistent"
         anchor="left"
@@ -126,6 +127,7 @@ const CompetitionLayout = () => {
             <ChevronLeftIcon />
           </IconButton>
         </DrawerHeader>
+        <Divider />
         <DrawerLinks />
       </Drawer>
       <Main open={drawerOpen}>
@@ -139,10 +141,12 @@ const CompetitionLayout = () => {
                     <Button
                       color="inherit"
                       size="small"
-                      onClick={() => dispatch(uploadCurrentWCIFChanges())}>
+                      onClick={() => dispatch(uploadCurrentWCIFChanges())}
+                    >
                       SAVE
                     </Button>
-                  }>
+                  }
+                >
                   Don't Forget to save changes!
                 </Alert>
               </Grid>

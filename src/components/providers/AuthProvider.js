@@ -1,12 +1,8 @@
 import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { getLocalStorage, localStorageKey, setLocalStorage } from '../../lib/localStorage';
 import { WCA_ORIGIN, WCA_OAUTH_CLIENT_ID } from '../../lib/wca-env';
 import { getMe } from '../../lib/wcaAPI';
-
-const localStorageKey = (key) => `groups.${WCA_OAUTH_CLIENT_ID}.${key}`;
-
-const getLocalStorage = (key) => localStorage.getItem(localStorageKey(key));
-const setLocalStorage = (key, value) => localStorage.setItem(localStorageKey(key), value);
 
 /**
  * Allows for use of staging api in production
