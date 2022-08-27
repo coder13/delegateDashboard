@@ -11,6 +11,7 @@ import {
   Assignments as AssignmentsPage,
   Export as ExportPage,
   Import as ImportPage,
+  ScramblerSchedule as ScramblerSchedulePage,
 } from '../pages/Competition';
 import HomePage from '../pages/Home';
 import { useAuth } from '../providers/AuthProvider';
@@ -44,6 +45,7 @@ const Navigation = () => {
             <Route path="assignments" element={<AssignmentsPage />} />
             <Route path="export" element={<ExportPage />} />
             <Route path="import" element={<ImportPage />} />
+            <Route path="scrambler-schedule" element={<ScramblerSchedulePage />} />
           </Route>
         </Route>
       </Route>

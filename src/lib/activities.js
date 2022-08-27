@@ -108,7 +108,7 @@ export const allActivities = (wcif) => {
  * Creates a flat array of activities
  */
 export const allRoundActivities = (wcif) => {
-  const activities = flatMap(rooms(wcif), (room) => room.activities);
+  const activities = flatMap(rooms(wcif), (room) => room.activities.map((a) => ({ ...a, room })));
   return activities;
 };
 

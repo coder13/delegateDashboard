@@ -7,6 +7,7 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import PeopleIcon from '@mui/icons-material/People';
 import ViewListIcon from '@mui/icons-material/ViewList';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 import { uploadCurrentWCIFChanges } from "../../../store/actions";
 import { useSnackbar } from "notistack";
 
@@ -55,6 +56,12 @@ export const DrawerLinks = () => {
           <PeopleIcon />
         </ListItemIcon>
         <ListItemText primary={'Configure Staff'} />
+      </ListItem>
+      <ListItem button component={Link} to={`/competitions/${competitionId}/scrambler-schedule`}>
+        <ListItemIcon>
+          <ScheduleIcon />
+        </ListItemIcon>
+        <ListItemText primary={'Scrambler Schedule'} />
       </ListItem>
       <Divider />
       <ListItem button component={Link} to={`/competitions/${competitionId}/import`}>

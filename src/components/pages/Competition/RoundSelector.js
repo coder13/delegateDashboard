@@ -61,7 +61,6 @@ const RoundSelectorPage = () => {
         label={'Show All Rounds'}
         checked={showAllRounds}
         onChange={(event) => setShowAllRounds(event.target.checked)}
-        inputProps={{ 'aria-label': 'controlled' }}
       />
       <Divider />
       <List className={classes.root}>
