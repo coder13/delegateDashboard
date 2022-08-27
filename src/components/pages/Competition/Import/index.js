@@ -3,9 +3,9 @@ import { Accordion, AccordionDetails, AccordionSummary, Alert, Button, Divider, 
 import { useEffect, useMemo, useState } from 'react';
 import { usePapaParse } from 'react-papaparse';
 import CSVPreview from './CSVPreview';
-import { partialUpdateWCIF } from '../../../store/actions';
-import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
-import { validate, generateAssignments, determineMissingGroupActivities, upsertCompetitorAssignments, generateMissingGroupActivities, determineStageForAssignments, balanceStartAndEndTimes } from '../../../lib/import';
+import { partialUpdateWCIF } from '../../../../store/actions';
+import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import { validate, generateAssignments, determineMissingGroupActivities, upsertCompetitorAssignments, generateMissingGroupActivities, determineStageForAssignments, balanceStartAndEndTimes } from '../../../../lib/import';
 
 const mapCSVFieldToData = (necessaryFields) => (field) => {
   if (necessaryFields.indexOf(field) > -1) {

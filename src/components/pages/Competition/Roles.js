@@ -15,11 +15,11 @@ import grey from '@mui/material/colors/grey';
 import red from '@mui/material/colors/red';
 import yellow from '@mui/material/colors/yellow';
 import { makeStyles } from '@mui/styles';
-import { acceptedRegistration, isOrganizerOrDelegate } from '../../lib/persons';
-import { pluralize } from '../../lib/utils';
-import { togglePersonRole } from '../../store/actions';
-import { useBreadcrumbs } from '../providers/BreadcrumbsProvider';
-import Link from '../shared/MaterialLink';
+import { acceptedRegistration, isOrganizerOrDelegate } from '../../../lib/persons';
+import { pluralize } from '../../../lib/utils';
+import { togglePersonRole } from '../../../store/actions';
+import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
+import Link from '../../shared/MaterialLink';
 
 const ROLES = [
   // {
@@ -87,16 +87,16 @@ const Roles = () => {
   const filteredPersons =
     filterDeleted || filterPending
       ? wcif.persons.filter((person) => {
-          if (filterDeleted && person.registration?.status === 'deleted') {
-            return false;
-          }
+        if (filterDeleted && person.registration?.status === 'deleted') {
+          return false;
+        }
 
-          if (filterDeleted && person.registration?.status === 'pending') {
-            return false;
-          }
+        if (filterDeleted && person.registration?.status === 'pending') {
+          return false;
+        }
 
-          return true;
-        })
+        return true;
+      })
       : wcif.persons;
 
   const handleChange = (e, registrantId, roleId) => {

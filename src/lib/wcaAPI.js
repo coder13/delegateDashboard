@@ -42,8 +42,6 @@ export const saveWcifChanges = (previousWcif, newWcif) => {
 export const wcaApiFetch = (path, fetchOptions = {}) => {
   const baseApiUrl = `${WCA_ORIGIN}/api/v0`;
 
-  console.log('fetching', path, wcaAccessToken());
-
   return fetch(
     `${baseApiUrl}${path}`,
     Object.assign({}, fetchOptions, {

@@ -12,8 +12,8 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
-import { activityById } from '../../lib/activities';
-import { useBreadcrumbs } from '../providers/BreadcrumbsProvider';
+import { activityById } from '../../../lib/activities';
+import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
 
 const useStyles = makeStyles((theme) => ({
   root: {

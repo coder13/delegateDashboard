@@ -1,28 +1,17 @@
-//eslint-disable import/firstq
 import '@cubing/icons';
 import { ConfirmProvider } from 'material-ui-confirm';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import CssBaseline from '@mui/material/CssBaseline';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import './assets/index.css';
 import App from './components/App/';
 import QueryParamPreservingRouter from './components/QueryParamPreservingRouter';
 import AuthProvider from './components/providers/AuthProvider';
 import * as serviceWorker from './serviceWorker';
 import store from './store';
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#3997b0',
-    },
-    secondary: {
-      main: '#ffffff',
-    },
-  },
-});
+import theme from './theme';
 
 ReactDOM.render(
   <Provider store={store}>

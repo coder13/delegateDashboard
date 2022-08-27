@@ -8,12 +8,12 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import { makeStyles } from '@mui/styles';
-import { activityById, groupActivitiesByRound } from '../../lib/activities';
-import { eventNameById } from '../../lib/events';
-import { personsShouldBeInRound } from '../../lib/persons';
-import { pluralize } from '../../lib/utils';
-import { getExtensionData } from '../../lib/wcif-extensions';
-import { useBreadcrumbs } from '../providers/BreadcrumbsProvider';
+import { activityById, groupActivitiesByRound } from '../../../lib/activities';
+import { eventNameById } from '../../../lib/events';
+import { personsShouldBeInRound } from '../../../lib/persons';
+import { pluralize } from '../../../lib/utils';
+import { getExtensionData } from '../../../lib/wcif-extensions';
+import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
 
 const useStyles = makeStyles((theme) => ({
   root: {

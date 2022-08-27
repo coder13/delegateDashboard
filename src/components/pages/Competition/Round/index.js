@@ -27,28 +27,28 @@ import {
   groupActivitiesByRound,
   parseActivityCode,
   roomByActivity,
-} from '../../../lib/activities';
+} from '../../../../lib/activities';
 import {
   computeGroupSizes,
   createGroupAssignment,
   nextGroupForActivity,
   previousGroupForActivity,
-} from '../../../lib/groups';
+} from '../../../../lib/groups';
 import {
   alreadyAssigned,
   assignedToScrambleInGroups,
   personsShouldBeInRound,
-} from '../../../lib/persons';
-import { byName } from '../../../lib/utils';
-import { getExtensionData } from '../../../lib/wcif-extensions';
+} from '../../../../lib/persons';
+import { byName } from '../../../../lib/utils';
+import { getExtensionData } from '../../../../lib/wcif-extensions';
 import {
   bulkAddPersonAssignment,
   bulkRemovePersonAssignment,
   updateRoundChildActivities,
-} from '../../../store/actions';
-import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
-import PersonsAssignmentsDialog from '../../shared/PersonsAssignmentsDialog';
-import PersonsDialog from '../../shared/PersonsDialog';
+} from '../../../../store/actions';
+import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import PersonsAssignmentsDialog from '../../../shared/PersonsAssignmentsDialog';
+import PersonsDialog from '../../../shared/PersonsDialog';
 import ConfigureGroupCountsDialog from './ConfigureGroupCountsDialog';
 import ConfigureScramblersDialog from './ConfigureScramblersDialog';
 import GroupCard from './GroupCard';

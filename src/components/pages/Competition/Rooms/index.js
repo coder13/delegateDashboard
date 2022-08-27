@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
-import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
+import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import Room from './Room';
 
 const useStyles = makeStyles((theme) => ({

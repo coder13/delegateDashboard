@@ -13,10 +13,10 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { rooms, parseActivityCode } from '../../../lib/activities';
-import { isOrganizerOrDelegate } from '../../../lib/persons';
-import { flatten } from '../../../lib/utils';
-import { addPersonAssignment, removePersonAssignment } from '../../../store/actions';
+import { rooms, parseActivityCode } from '../../../../lib/activities';
+import { isOrganizerOrDelegate } from '../../../../lib/persons';
+import { flatten } from '../../../../lib/utils';
+import { addPersonAssignment, removePersonAssignment } from '../../../../store/actions';
 
 const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
   const wcif = useSelector((state) => state.wcif);
