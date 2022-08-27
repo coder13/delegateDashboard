@@ -15,11 +15,11 @@ import grey from '@mui/material/colors/grey';
 import red from '@mui/material/colors/red';
 import yellow from '@mui/material/colors/yellow';
 import { makeStyles } from '@mui/styles';
-import { acceptedRegistration, isOrganizerOrDelegate } from '../../../lib/persons';
-import { pluralize } from '../../../lib/utils';
-import { togglePersonRole } from '../../../store/actions';
-import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
-import Link from '../../shared/MaterialLink';
+import { acceptedRegistration, isOrganizerOrDelegate } from '../../../../lib/persons';
+import { pluralize } from '../../../../lib/utils';
+import { togglePersonRole } from '../../../../store/actions';
+import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import Link from '../../../shared/MaterialLink';
 
 const ROLES = [
   // {

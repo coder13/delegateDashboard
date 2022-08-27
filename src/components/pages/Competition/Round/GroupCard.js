@@ -113,7 +113,7 @@ const GroupCard = ({ groupActivity }) => {
       />
       <div>
         {errors.map((error) => (
-          <Alert severity="error">{error.message}</Alert>
+          <Alert key={error.message} severity="error">{error.message}</Alert>
         ))}
       </div>
       <CardContent>
