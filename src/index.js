@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
+import { SnackbarProvider } from 'notistack';
 import './assets/index.css';
 import App from './components/App/';
 import QueryParamPreservingRouter from './components/QueryParamPreservingRouter';
@@ -20,7 +21,9 @@ ReactDOM.render(
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <ConfirmProvider>
-            <App />
+            <SnackbarProvider maxSnack={3} autoHideDuration={1000}>
+              <App />
+            </SnackbarProvider>
           </ConfirmProvider>
         </ThemeProvider>
       </AuthProvider>

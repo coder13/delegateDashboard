@@ -62,7 +62,7 @@ export const fetchWCIF = (competitionId) => (dispatch) => {
     .finally(() => updateFetching(false));
 };
 
-export const uploadCurrentWCIFChanges = () => (dispatch, getState) => {
+export const uploadCurrentWCIFChanges = (cb) => (dispatch, getState) => {
   const { wcif, changedKeys } = getState();
   const competitionId = wcif.id;
 
@@ -78,9 +78,11 @@ export const uploadCurrentWCIFChanges = () => (dispatch, getState) => {
     .then(() => {
       console.log('finished');
       dispatch(updateUploading(false));
+      cb();
     })
     .catch((e) => {
       console.error(e);
+      cb(e);
     });
 };
 

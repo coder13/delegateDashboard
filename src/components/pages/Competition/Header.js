@@ -8,6 +8,7 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
 import PeopleIcon from '@mui/icons-material/People';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import { uploadCurrentWCIFChanges } from "../../../store/actions";
+import { useSnackbar } from "notistack";
 
 export const drawerWidth = 240;
 
@@ -85,6 +86,17 @@ export const DrawerLinks = () => {
 export const Header = ({ open, onMenuOpen }) => {
   const { name } = useSelector((state) => state.wcif);
   const dispatch = useDispatch();
+  const { enqueueSnackbar } = useSnackbar();
+
+  const handleSaveChanges = () => {
+    dispatch(uploadCurrentWCIFChanges((e) => {
+      if (e) {
+        enqueueSnackbar('Error saving changes', { variant: 'error' });
+      } else {
+        enqueueSnackbar('Saved!', { variant: 'success' });
+      }
+    }))
+  }
 
   return (
     <AppBar position="static" open={open}>
@@ -103,7 +115,7 @@ export const Header = ({ open, onMenuOpen }) => {
           {name}
         </Typography>
         <div style={{ display: 'flex', flexGrow: 1 }} />
-        <Button color="inherit" onClick={() => dispatch(uploadCurrentWCIFChanges())}>
+        <Button color="inherit" onClick={handleSaveChanges}>
           Save Changes
         </Button>
       </Toolbar>

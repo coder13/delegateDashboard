@@ -73,7 +73,6 @@ const RoundSelectorPage = () => {
                 })
               ).length;
 
-              console.log(realGroups);
               const realGroupsGeneratedText = realGroups?.length && `${pluralize(realGroups.length, 'group', 'groups')} generated`;
               const configuredGroupsText = groupsData?.groups
                 ? `${pluralize(groupsData?.groups, 'group', 'groups')} configured`
