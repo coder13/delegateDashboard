@@ -1,5 +1,5 @@
 import { formatCentiseconds } from '@wca/helpers';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import CheckIcon from '@mui/icons-material/Check';
 import {
@@ -28,7 +28,7 @@ import {
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { styled, useTheme } from '@mui/system';
-import { rooms, parseActivityCode } from '../../../../lib/activities';
+import { rooms, parseActivityCode, activityCodeToName } from '../../../../lib/activities';
 import { isOrganizerOrDelegate } from '../../../../lib/persons';
 import { flatten } from '../../../../lib/utils';
 import { upsertPersonAssignment, removePersonAssignment, bulkRemovePersonAssignment } from '../../../../store/actions';
@@ -60,9 +60,11 @@ const Assignments = [{
 
 const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
   const wcif = useSelector((state) => state.wcif);
+  const dispatch = useDispatch();
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const confirm = useConfirm();
+  const { eventId } = parseActivityCode(activityCode);
 
   const [showAllCompetitors, setShowAllCompetitors] = useState(false);
   const [paintingAssignmentCode, setPaintingAssignmentCode] = useState('staff-scrambler');
@@ -78,43 +80,44 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
     setAnchorEl(null);
   };
 
-  const groupsRooms = rooms(wcif).filter((room) =>
+  const groupsRooms = useMemo(() => rooms(wcif).filter((room) =>
     flatten(room.activities.map((activity) => activity.childActivities)).some((activity) =>
       groups.find((g) => g.id === activity.id)
     )
-  );
-  const dispatch = useDispatch();
+  ), [groups, wcif]);
 
-  const { eventId } = parseActivityCode(activityCode);
+  const persons = useMemo(() =>
+    wcif.persons
+      .filter(
+        (p) =>
+          isOrganizerOrDelegate(p) ||
+          (
+            p?.registration?.status === 'accepted' &&
+            (p.roles.some((r) => r.indexOf('staff') > -1) || showAllCompetitors) &&
+            p.registration.eventIds.indexOf(eventId) > -1
+          )
+      )
+      .map((person) => ({
+        ...person,
+        pr: person.personalBests.find((pb) => pb.eventId === eventId && pb.type === 'average')?.best,
+      }))
+      .sort((a, b) => {
+        if (competitorSort === 'speed') {
+          return (a.pr || Number.MAX_VALUE) - (b.pr || Number.MAX_VALUE)
+        }
 
-  const persons = wcif.persons
-    .filter(
-      (p) =>
-        isOrganizerOrDelegate(p) ||
-        ((p.roles.some((r) => r.indexOf('staff') > -1) || showAllCompetitors) &&
-          p.registration.eventIds.indexOf(eventId) > -1)
-    )
-    .map((person) => ({
-      ...person,
-      pr: person.personalBests.find((pb) => pb.eventId === eventId && pb.type === 'average')?.best,
-    }))
-    .sort((a, b) => {
-      if (competitorSort === 'speed') {
-        return (a.pr || Number.MAX_VALUE) - (b.pr || Number.MAX_VALUE)
-      }
+        return a.name.localeCompare(b.name);
+      })
+    , [competitorSort, eventId, showAllCompetitors, wcif.persons]);
 
-      return a.name.localeCompare(b.name);
-    });
-
-  const getAssignmentCodeForPersonGroup = (registrantId, activityId) => {
+  const getAssignmentCodeForPersonGroup = useCallback((registrantId, activityId) => {
     const assignments = persons.find((p) => p.registrantId === registrantId).assignments;
     return assignments.find(
       (a) => a.activityId === activityId
     )?.assignmentCode;
-  };
+  }, [persons]);
 
   const handleUpdateAssignmentForPerson = (registrantId, activityId) => () => {
-    console.log(54, registrantId, activityId, getAssignmentCodeForPersonGroup(registrantId, activityId));
     if (getAssignmentCodeForPersonGroup(registrantId, activityId) === paintingAssignmentCode) {
       dispatch(removePersonAssignment(registrantId, activityId));
     } else {
@@ -164,14 +167,17 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
     };
   });
 
+  if (!open) {
+    return null;
+  }
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth fullScreen={fullScreen}>
-
-      <DialogTitle sx={{ paddingTop: '0.25em', paddingBottom: '0.25em' }}>Configuring Staff For {activityCode}</DialogTitle>
+      <DialogTitle sx={{ paddingTop: '0.25em', paddingBottom: '0.25em' }}>Configuring Assignments For {activityCodeToName(activityCode)}</DialogTitle>
       <DialogContent style={{ padding: 0 }}>
         <Toolbar className="flex-row">
           <div>
-            <FormControl margin="none" variant="contained">
+            <FormControl margin="none">
               <FormLabel>Assignment</FormLabel>
               <RadioGroup
                 row
@@ -186,7 +192,7 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
           </div>
           <div style={{ display: 'flex', flexGrow: 1 }} />
           <div>
-            <FormControl margin="none" variant="contained">
+            <FormControl margin="none">
               <FormLabel>Sort</FormLabel>
               <RadioGroup
                 row
@@ -197,7 +203,7 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
                 <FormControlLabel value="name" control={<Radio />} label="Name" />
               </RadioGroup>
             </FormControl>
-            <FormControl margin="none" variant="contained">
+            <FormControl margin="none">
               <FormLabel>Show All Competitors</FormLabel>
               <Switch
                 checked={showAllCompetitors}
@@ -294,9 +300,9 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
       <DialogActions>
         <div style={{ display: 'flex', flexDirction: 'row' }}>
           <Typography>
-            <span>Selected AssignmentCode: </span>
+            <span>Assigning: </span>
             <b>
-              {paintingAssignmentCode}
+              {Assignments.find((a) => a.id === paintingAssignmentCode)?.name}
             </b>
             {' | '}
             <span>Showing: </span>
@@ -304,12 +310,12 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
               {showAllCompetitors ? 'All Competitors' : 'staff'}
             </b>
             {' | '}
-            Sorting By
+            <span>Sorting By: </span>
             <b>
               {competitorSort}
             </b>
             {' | '}
-            Total Persons Shown:
+            <span>Total Persons Shown: </span>
             <b>
               {persons.length}
             </b>

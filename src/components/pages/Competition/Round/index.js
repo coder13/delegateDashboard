@@ -105,13 +105,6 @@ const RoundPage = () => {
       room: roomByActivity(wcif, activity.id),
     }));
 
-  /**
-   * This determines if the group counts have been determined.
-   * This must be done first prior to all assignments
-   */
-
-  // TODO: Switch to storing group data in round extension
-  //const groupsData = roundActivities?.map(getGroupData);
   const groupsData = getExtensionData('groups', round);
 
   const groups = groupActivitiesByRound(wcif, activityCode);
@@ -121,7 +114,7 @@ const RoundPage = () => {
       groups.sort((groupA, groupB) => {
         return (
           byGroupNumber(groupA, groupB) ||
-          groupA.parent.room.name.localeCompare(groupB.parent.room.name)
+          groupA?.parent?.room?.name?.localeCompare(groupB?.parent?.room?.name)
         );
       }),
     [groups]
@@ -374,12 +367,12 @@ const RoundPage = () => {
       });
   };
 
-  const onAssignStaff = () => {
+  const onConfigureAssignments = () => {
     setConfigureAssignmentsDialog(true);
   };
 
   if (roundActivities.length === 0) {
-    return <div>No Activities found</div>;
+    return <div>No Group Activities found. <br />If you're viewing 3x3 fewest moves, there's likely not much to do here yet.</div>;
   }
 
   const actionButtons = () => {
@@ -394,7 +387,7 @@ const RoundPage = () => {
     } else if (groups.length > 0 && personsAssignedToCompeteOrJudge === 0) {
       return (
         <>
-          <Button onClick={onAssignStaff}>Configure Staff Assignments</Button>
+          <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
           <Button onClick={onGenerateGroupActitivites}>
             Assign Competitor and Judging Assignments
           </Button>
@@ -407,7 +400,7 @@ const RoundPage = () => {
     } else if (personsAssignedToCompeteOrJudge > 0) {
       return (
         <>
-          <Button onClick={onAssignStaff}>Configure Staff Assignments</Button>
+          <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
           <div style={{ display: 'flex', flex: 1 }} />
           <Button color="error" onClick={onResetGroupNonScramblingActitivites}>
             Reset Assignments
