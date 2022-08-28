@@ -3,7 +3,7 @@
   to = "/index.html"
   status = 200
   
-[context.dev.environment]
+[context.deploy-preview.environment]
   NODE_ENV = "development"
   REACT_APP_DEV_WCA_OAUTH_WCA_ORIGIN = "https://staging.worldcubeassociation.org"
   REACT_APP_DEV_WCA_OAUTH_CLIENT_ID = "example-application-id"
