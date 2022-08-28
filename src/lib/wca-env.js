@@ -1,3 +1,4 @@
+console.log(process.env)
 const searchParams = new URLSearchParams(window.location.search);
 export const PRODUCTION = process.env.NODE_ENV === 'production' && !searchParams.has('staging');
 
