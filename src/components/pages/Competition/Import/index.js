@@ -135,13 +135,22 @@ const ImportPage = () => {
     <Grid container direction="column">
       <Grid item sx={{ padding: '1em' }}>
         <Typography variant="h5">Instructions</Typography>
-        <Typography variant="body1">
-          The following are instructions on how to properly format data to import it into delegate dashboard and thus, the WCA website.
-          <br />
-          The first item to note is that whatever CSV you upload must have 1 row per person, mainly identified by their email.
-          <br />
-          You must also have a column for each event containing a competitor's competing group.
-        </Typography>
+        <Accordion>
+          <AccordionSummary>
+            <Typography>Preliminary Information</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="body1">
+              The following are instructions on how to properly format data to import it into delegate dashboard and thus, the WCA website.
+              <br />
+              The first item to note is that whatever CSV you upload must have 1 row per person, identified by their email.
+              <br />
+              You must also have a column for each event containing a competitor's competing group.
+              <br />
+              If you wish to specify staffing assignments, you will also include those. This column name can have any format so long as it includes the event Id but is not only the eventId. A perfectly fine format would be '{'{'}eventId{'}'}-staff'
+            </Typography>
+          </AccordionDetails>
+        </Accordion>
         <Accordion>
           <AccordionSummary>
             <Typography>Competing group format</Typography>
@@ -151,8 +160,24 @@ const ImportPage = () => {
               The competing group format is as follows:
               <br />
               {"<First letter of the stage><Number of the group>"}
+            </Typography>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion>
+          <AccordionSummary>
+            <Typography>Staffing group format</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography>
+              The Staffing group format column should contain values separated by a commad `,` or a semicolon `;` where each value specifies an assignment between running, scrambling, or judging.
               <br />
-              You will have a chance to confirm that the stages match up correctly with the prefix you have used.
+              Each staff group assignment format is as follows:
+              <br />
+              {"<R | J | S><Number of the group>"}
+              <br />
+              There is no way to pick which state a group assignment is on. They will be randomly distributed between the stages.
+              <br />
+              You have the ability to visit the page for a round and configure which stage a group assignment is on.
             </Typography>
           </AccordionDetails>
         </Accordion>
@@ -200,7 +225,7 @@ const ImportPage = () => {
           </Grid>
           <br />
           <Divider />
-          <Accordion>
+          {/* <Accordion>
             <AccordionSummary>Column Map</AccordionSummary>
             <AccordionDetails>
               <Table size="small">
@@ -220,7 +245,7 @@ const ImportPage = () => {
                 </TableBody>
               </Table>
             </AccordionDetails>
-          </Accordion>
+          </Accordion> */}
           <Grid item sx={{ padding: '1em' }}>
             <Typography variant="h5">Confirm data</Typography>
             <Typography>
