@@ -30,6 +30,10 @@ const ROLES = [
     id: 'staff-scrambler',
     name: 'Scrambler',
   },
+  {
+    id: 'staff-runner',
+    name: 'Runner',
+  },
 ];
 
 const useStyles = makeStyles((theme) => ({
