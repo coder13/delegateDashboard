@@ -3,8 +3,8 @@ import { mapIn, updateIn, setIn, flatMap, shortTime } from './utils';
 import { getExtensionData } from './wcif-extensions';
 
 /**
- * 
- * @param {*} activityCode 
+ *
+ * @param {*} activityCode
  * @returns
  */
 export const parseActivityCode = (activityCode) => {
@@ -72,23 +72,22 @@ const getActivities = (activity) => activity.childActivities || activity.activit
 export const flatActivities = (activity) =>
   getActivities(activity).length > 0
     ? [
-      ...getActivities(activity).map((a) => ({
-        ...a,
-        parent: activity,
-      })),
-      ...flatMap(
-        getActivities(activity).map((a) => ({
+        ...getActivities(activity).map((a) => ({
           ...a,
           parent: activity,
         })),
-        flatActivities
-      ),
-    ]
+        ...flatMap(
+          getActivities(activity).map((a) => ({
+            ...a,
+            parent: activity,
+          })),
+          flatActivities
+        ),
+      ]
     : getActivities(activity).map((a) => ({
-      ...a,
-      parent: activity,
-    }));
-
+        ...a,
+        parent: activity,
+      }));
 
 /**
  * Creates a flat array of activities
@@ -112,7 +111,8 @@ export const allRoundActivities = (wcif) => {
   return activities;
 };
 
-export const allActivitiesByRoom = (wcif, roomId) => flatActivities(rooms(wcif).find((room) => room.id === roomId))
+export const allActivitiesByRoom = (wcif, roomId) =>
+  flatActivities(rooms(wcif).find((room) => room.id === roomId));
 
 export const maxActivityId = (wcif) =>
   Math.max(...allActivities(wcif).map((activity) => activity.id));
@@ -133,7 +133,6 @@ export const activityById = (wcif, activityId) => {
   return activitiesById.get(activityId);
 };
 
-
 const activitiesByCodeAndRoomCache = new Map();
 export const activityByActivityCode = (wcif, roomId, activityCode) => {
   const id = `${roomId}-${activityCode}`;
@@ -151,8 +150,7 @@ export const activityByActivityCode = (wcif, roomId, activityCode) => {
   }
 
   throw new Error(`Activity not found: ${activityCode} in room: ${roomId}`);
-}
-
+};
 
 export const updateActivity = (wcif, updatedActivity) =>
   mapIn(wcif, ['schedule', 'venues'], (venue) =>
@@ -185,9 +183,9 @@ export const groupActivitiesByRound = (wcif, roundId) =>
     hasDistributedAttempts(roundId)
       ? [roundActivity]
       : roundActivity.childActivities.map((activity) => ({
-        ...activity,
-        parent: roundActivity,
-      }))
+          ...activity,
+          parent: roundActivity,
+        }))
   );
 
 export const roomsWithTimezoneAndGroups = (wcif, roundId) =>

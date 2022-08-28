@@ -10,9 +10,9 @@ export const updateIn = (object, [property, ...properyChain], updater) =>
   properyChain.length === 0
     ? { ...object, [property]: updater(object[property]) }
     : {
-      ...object,
-      [property]: updateIn(object[property], properyChain, updater),
-    };
+        ...object,
+        [property]: updateIn(object[property], properyChain, updater),
+      };
 
 /**
  * Returns a copy of the object with the value at the specified path set to the given one.
@@ -122,10 +122,10 @@ export const flatMap = (arr, fn) => arr.reduce((xs, x) => xs.concat(fn(x)), []);
 export const flatten = (arr) => arr.reduce((xs, x) => xs.concat(x), []);
 
 /**
- * 
- * @param {Array} arr - Array of elements 
- * @param {*} fn - returns a value to group by 
- * @returns 
+ *
+ * @param {Array} arr - Array of elements
+ * @param {*} fn - returns a value to group by
+ * @returns
  */
 export const groupBy = (arr, fn) =>
   arr.reduce((obj, x) => updateIn(obj, [fn(x)], (xs) => (xs || []).concat(x)), {});

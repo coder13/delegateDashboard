@@ -1,7 +1,15 @@
-import { rooms, flatActivities, parseActivityCode, generateNextChildActivityId, createGroupActivity, activityByActivityCode, allActivities } from './activities'
+import {
+  rooms,
+  flatActivities,
+  parseActivityCode,
+  generateNextChildActivityId,
+  createGroupActivity,
+  activityByActivityCode,
+  allActivities,
+} from './activities';
 import { events } from './events';
-import { groupBy, mapIn } from './utils';
 import { createGroupAssignment } from './groups';
+import { groupBy, mapIn } from './utils';
 
 export const validate = (wcif) => (data) => {
   const checks = [];
@@ -24,51 +32,57 @@ export const validate = (wcif) => (data) => {
     checks.push({
       key: 'email-filled',
       passed: false,
-      message: 'Missing email in some rows'
+      message: 'Missing email in some rows',
     });
   } else {
     checks.push({
       key: 'email-filled',
       passed: true,
-      message: 'All rows have an email defined'
+      message: 'All rows have an email defined',
     });
   }
 
   const events = wcif.events.map((event) => event.id);
-  const personsMissingEvents = data.data.map((row) => ({
-    email: row.email,
-    assignments: events
-      .map((eventId) => {
-        const data = row[eventId].trim();
+  const personsMissingEvents = data.data
+    .map((row) => ({
+      email: row.email,
+      assignments: events
+        .map((eventId) => {
+          const data = row[eventId].trim();
 
-        if (!data || data === '-') {
-          return null;
-        }
+          if (!data || data === '-') {
+            return null;
+          }
 
-        return {
-          eventId,
-          data,
-        };
-      })
-      .filter((data) => data !== null),
-    raw: row,
-  })).filter(({ email, assignments, raw }) => {
-    const person = wcif.persons.find((person) => (person.email === email));
-    if (!person) {
-      checks.push({
-        key: 'person-missing',
-        passed: false,
-        message: `Person with email ${email} is missing from the WCIF`,
-      });
-      return true;
-    }
+          return {
+            eventId,
+            data,
+          };
+        })
+        .filter((data) => data !== null),
+      raw: row,
+    }))
+    .filter(({ email, assignments, raw }) => {
+      const person = wcif.persons.find((person) => person.email === email);
+      if (!person) {
+        checks.push({
+          key: 'person-missing',
+          passed: false,
+          message: `Person with email ${email} is missing from the WCIF`,
+        });
+        return true;
+      }
 
-    if (person.registration.eventIds.some((eventId) => !assignments.some((assignment) => assignment.eventId === eventId))) {
-      return true;
-    }
+      if (
+        person.registration.eventIds.some(
+          (eventId) => !assignments.some((assignment) => assignment.eventId === eventId)
+        )
+      ) {
+        return true;
+      }
 
-    return false;
-  });
+      return false;
+    });
 
   // Find situation where a person does not have a value for their event column
   // TODO: cross reference with person's registered events
@@ -88,27 +102,27 @@ export const validate = (wcif) => (data) => {
   }
 
   return checks;
-}
+};
 
 const numberRegex = /^([1-9]\d*)$/i;
-const staffAssignmentRegex = /^(?<assignment>[RSJ])(?<groupNumber>[1-9]\d*)$/i
+const staffAssignmentRegex = /^(?<assignment>[RSJ])(?<groupNumber>[1-9]\d*)$/i;
 
 const competitorAssignmentRegexWithoutStage = /^(?<groupNumber>[1-9]\d*)$/i;
 const competitorAssignmentRegexWithStage = /^(?<stage>[A-Z])(?:\s*)(?<groupNumber>[1-9]\d*)$/i;
 
 /**
  * Requires that the CSV row has a field that is exactly the eventId
- * @param {*} stages 
- * @param {*} row 
- * @param {*} person 
- * @param {*} eventId 
- * @returns 
+ * @param {*} stages
+ * @param {*} row
+ * @param {*} person
+ * @param {*} eventId
+ * @returns
  */
 export const findCompetingAssignment = (stages, row, person, eventId) => {
   const data = row[eventId].trim();
 
   if (!data || data === '-') {
-    throw new Error('Competitor is given no assignment for event they are registered for')
+    throw new Error('Competitor is given no assignment for event they are registered for');
   }
 
   const matchWithStage = data.match(competitorAssignmentRegexWithStage);
@@ -117,7 +131,9 @@ export const findCompetingAssignment = (stages, row, person, eventId) => {
     const room = stages.find((s) => s.name.startsWith(stage));
 
     if (!room) {
-      throw new Error(`Can't determine stage ${stage} for competitor ${person.name}. Raw Data: ${data}`);
+      throw new Error(
+        `Can't determine stage ${stage} for competitor ${person.name}. Raw Data: ${data}`
+      );
     }
 
     return {
@@ -144,12 +160,14 @@ export const findCompetingAssignment = (stages, row, person, eventId) => {
       groupNumber,
       activityCode: `${eventId}-r1-g${groupNumber}`,
       assignmentCode: 'competitor',
-      roomId: stages[0].id
+      roomId: stages[0].id,
     };
   }
 
   throw new Error(`Invalid competitor assignment data`, {
-    data, person, eventId
+    data,
+    person,
+    eventId,
   });
 };
 
@@ -180,37 +198,44 @@ export const findStaffingAssignments = (stages, data, row, person, eventId) => {
     registrantId: person.registrantId,
     eventId: eventId,
     roundNumber: 1,
-  }
+  };
 
-  const assignments = cellData.trim().split(/[,;]/).map((assignment) => {
-    const plainNumberMatch = assignment.match(numberRegex);
-    const staffAssignmentMatch = assignment.match(staffAssignmentRegex);
+  const assignments = cellData
+    .trim()
+    .split(/[,;]/)
+    .map((assignment) => {
+      const plainNumberMatch = assignment.match(numberRegex);
+      const staffAssignmentMatch = assignment.match(staffAssignmentRegex);
 
-    if (!plainNumberMatch && !staffAssignmentMatch) {
-      return null;
-    }
+      if (!plainNumberMatch && !staffAssignmentMatch) {
+        return null;
+      }
 
-    const groupNumber = plainNumberMatch ? parseInt(assignment, 10) : parseInt(staffAssignmentMatch.groups.groupNumber, 10);
-    const assignmentCode = staffAssignmentMatch ? StaffAssignmentMap[staffAssignmentMatch.groups.assignment] : 'staff-judge';
+      const groupNumber = plainNumberMatch
+        ? parseInt(assignment, 10)
+        : parseInt(staffAssignmentMatch.groups.groupNumber, 10);
+      const assignmentCode = staffAssignmentMatch
+        ? StaffAssignmentMap[staffAssignmentMatch.groups.assignment]
+        : 'staff-judge';
 
-    return {
-      ...baseAssignmentData,
-      activityCode: `${eventId}-r1-g${groupNumber}`,
-      groupNumber,
-      assignmentCode,
-      roomId: stages.length === 1 ? stages[0].id : undefined,
-    };
-  });
+      return {
+        ...baseAssignmentData,
+        activityCode: `${eventId}-r1-g${groupNumber}`,
+        groupNumber,
+        assignmentCode,
+        roomId: stages.length === 1 ? stages[0].id : undefined,
+      };
+    });
 
   return assignments.filter(Boolean);
-}
+};
 
 /**
  * Translates CSV contents to competitor assignments and also lists missing group activities
- * @param {*} wcif 
- * @param {*} data 
- * @param {*} cb 
- * @returns 
+ * @param {*} wcif
+ * @param {*} data
+ * @param {*} cb
+ * @returns
  */
 export const generateAssignments = (wcif, data) => {
   const assignments = [];
@@ -218,7 +243,7 @@ export const generateAssignments = (wcif, data) => {
   const eventIds = wcif.events.map((event) => event.id);
 
   data.data.forEach((row) => {
-    const person = wcif.persons.find((person) => (person.email === row.email));
+    const person = wcif.persons.find((person) => person.email === row.email);
 
     // Do not create competing assignments for events a person has not registered for
     person.registration.eventIds.forEach((eventId) => {
@@ -246,7 +271,7 @@ export const generateAssignments = (wcif, data) => {
   });
 
   return assignments;
-}
+};
 
 export const determineMissingGroupActivities = (wcif, assignments) => {
   const missingActivities = [];
@@ -257,19 +282,29 @@ export const determineMissingGroupActivities = (wcif, assignments) => {
 
   assignments
     // sort assignments to process competitor assignments first
-    .sort((a, b) => ['competitor'].indexOf(a.assignmentCode) - ['competitor'].indexOf(b.assignmentCode))
+    .sort(
+      (a, b) => ['competitor'].indexOf(a.assignmentCode) - ['competitor'].indexOf(b.assignmentCode)
+    )
     .forEach((assignment) => {
       if (!assignment.roomId) {
         return;
       }
 
-      if (missingActivities.find((activity) => activity.activityCode === assignment.activityCode && activity.roomId === assignment.roomId)) {
+      if (
+        missingActivities.find(
+          (activity) =>
+            activity.activityCode === assignment.activityCode &&
+            activity.roomId === assignment.roomId
+        )
+      ) {
         return;
       }
 
       // Both the WCIF and assignment data are in sync on how many stages there are
       if (stages.length === 1) {
-        const activity = stages[0].activities.find((activity) => activity.activityCode === assignment.activityCode);
+        const activity = stages[0].activities.find(
+          (activity) => activity.activityCode === assignment.activityCode
+        );
         if (!activity) {
           missingActivities.push({
             activityCode: assignment.activityCode,
@@ -278,7 +313,9 @@ export const determineMissingGroupActivities = (wcif, assignments) => {
         }
       } else if (stages.length > 1) {
         const room = stages.find((stage) => stage.room.id === assignment.roomId);
-        const activity = room.activities.find((activity) => activity.activityCode === assignment.activityCode);
+        const activity = room.activities.find(
+          (activity) => activity.activityCode === assignment.activityCode
+        );
 
         if (!activity) {
           missingActivities.push({
@@ -296,10 +333,13 @@ export const determineMissingGroupActivities = (wcif, assignments) => {
     if (aParsedActivityCode.eventId === bParsedActivityCode.eventId) {
       return aParsedActivityCode.groupNumber - bParsedActivityCode.groupNumber;
     } else {
-      return events.findIndex((e) => e.id === aParsedActivityCode.eventId) - events.findIndex((e) => e.id === bParsedActivityCode.eventId);
+      return (
+        events.findIndex((e) => e.id === aParsedActivityCode.eventId) -
+        events.findIndex((e) => e.id === bParsedActivityCode.eventId)
+      );
     }
   });
-}
+};
 
 /**
  * Returns assignments
@@ -310,7 +350,6 @@ export const determineStageForAssignments = (wcif, assignments) => {
 
   return assignments.map((assignment) => {
     if (assignment.roomId) {
-
       return assignment;
     }
 
@@ -319,21 +358,25 @@ export const determineStageForAssignments = (wcif, assignments) => {
       return assignment;
     }
 
-    const activitiesForCode = activities.filter((activity) => activity.activityCode === assignment.activityCode);
+    const activitiesForCode = activities.filter(
+      (activity) => activity.activityCode === assignment.activityCode
+    );
     const rooms = activitiesForCode.map((activity) => activity.parent.room);
 
     if (stageCountsByActivityCode.has(assignment.activityCode)) {
       const counts = stageCountsByActivityCode.get(assignment.activityCode);
 
-      const roomSizes = rooms.map((room) => ({
-        roomId: room.id,
-        size: counts[room.id],
-      })).sort((a, b) => a.size - b.size);
+      const roomSizes = rooms
+        .map((room) => ({
+          roomId: room.id,
+          size: counts[room.id],
+        }))
+        .sort((a, b) => a.size - b.size);
 
       return {
         ...assignment,
         roomId: roomSizes[0].roomId,
-      }
+      };
     } else {
       const counts = {};
       rooms.forEach((room) => {
@@ -346,15 +389,15 @@ export const determineStageForAssignments = (wcif, assignments) => {
       return {
         ...assignment,
         roomId: rooms[0].id,
-      }
+      };
     }
   });
-}
+};
 
 /**
- * 
- * @param {*} wcif 
- * @param {*} missingActivities 
+ *
+ * @param {*} wcif
+ * @param {*} missingActivities
  * @returns WCIF with missing activities added
  */
 export const generateMissingGroupActivities = (wcif, missingActivities) => {
@@ -372,15 +415,19 @@ export const generateMissingGroupActivities = (wcif, missingActivities) => {
       const { activityCode, roomId } = group;
       const { groupNumber } = parseActivityCode(activityCode);
 
-      const venue = schedule.venues.find((venue) => venue.rooms.some((room) => room.id === roomId))
+      const venue = schedule.venues.find((venue) => venue.rooms.some((room) => room.id === roomId));
       const room = venue.rooms.find((room) => room.id === roomId);
-      const roundActivity = room.activities.find((activity) => activity.activityCode === eventRound);
+      const roundActivity = room.activities.find(
+        (activity) => activity.activityCode === eventRound
+      );
 
       if (!roundActivity) {
-        throw new Error('')
+        throw new Error('');
       }
 
-      roundActivity.childActivities.push(createGroupActivity(startingActivityId, roundActivity, groupNumber));
+      roundActivity.childActivities.push(
+        createGroupActivity(startingActivityId, roundActivity, groupNumber)
+      );
 
       startingActivityId += 1;
     });
@@ -393,42 +440,48 @@ export const generateMissingGroupActivities = (wcif, missingActivities) => {
 };
 
 export const balanceStartAndEndTimes = (wcif, missingActivities) => {
-  return mapIn(wcif, ['schedule', 'venues'], (venue) => mapIn(venue, ['rooms'], (room) => {
-    return mapIn(room, ['activities'], (activity) => {
-      const groupCount = activity.childActivities.length;
-      if (!groupCount) {
-        return activity;
-      }
-
-      const roundStartDate = new Date(activity.startTime);
-      const roundEndDate = new Date(activity.endTime);
-      const dateDiff = roundEndDate - roundStartDate;
-      const timePerGroup = dateDiff / groupCount;
-
-
-      return mapIn(activity, ['childActivities'], (childActivity) => {
-        const missingActivity = missingActivities.find((missing) => missing.activityCode === childActivity.activityCode && missing.roomId === room.id);
-
-        if (!missingActivity) {
-          return childActivity;
+  return mapIn(wcif, ['schedule', 'venues'], (venue) =>
+    mapIn(venue, ['rooms'], (room) => {
+      return mapIn(room, ['activities'], (activity) => {
+        const groupCount = activity.childActivities.length;
+        if (!groupCount) {
+          return activity;
         }
 
-        const groupNumber = parseActivityCode(childActivity.activityCode).groupNumber;
+        const roundStartDate = new Date(activity.startTime);
+        const roundEndDate = new Date(activity.endTime);
+        const dateDiff = roundEndDate - roundStartDate;
+        const timePerGroup = dateDiff / groupCount;
 
-        return {
-          ...childActivity,
-          startTime: new Date(roundStartDate.getTime() + timePerGroup * (groupNumber - 1)).toISOString(),
-          endTime: new Date(roundStartDate.getTime() + timePerGroup * (groupNumber)).toISOString(),
-        };
-      })
-    });
-  }));
-}
+        return mapIn(activity, ['childActivities'], (childActivity) => {
+          const missingActivity = missingActivities.find(
+            (missing) =>
+              missing.activityCode === childActivity.activityCode && missing.roomId === room.id
+          );
+
+          if (!missingActivity) {
+            return childActivity;
+          }
+
+          const groupNumber = parseActivityCode(childActivity.activityCode).groupNumber;
+
+          return {
+            ...childActivity,
+            startTime: new Date(
+              roundStartDate.getTime() + timePerGroup * (groupNumber - 1)
+            ).toISOString(),
+            endTime: new Date(roundStartDate.getTime() + timePerGroup * groupNumber).toISOString(),
+          };
+        });
+      });
+    })
+  );
+};
 
 /**
- * 
- * @param {*} wcif 
- * @param {*} assignments 
+ *
+ * @param {*} wcif
+ * @param {*} assignments
  * @returns WCIF with assignments added
  */
 export const upsertCompetitorAssignments = (wcif, assignments) => {
@@ -438,10 +491,16 @@ export const upsertCompetitorAssignments = (wcif, assignments) => {
     const person = persons.find((person) => person.registrantId === assignment.registrantId);
     const activity = activityByActivityCode(wcif, assignment.roomId, assignment.activityCode);
 
-    const newAssignment = createGroupAssignment(person.registrantId, activity.id, assignment.assignmentCode).assignment;
+    const newAssignment = createGroupAssignment(
+      person.registrantId,
+      activity.id,
+      assignment.assignmentCode
+    ).assignment;
 
     if (person.assignments.find((assignment) => assignment.activityId === activity.id)) {
-      person.assignments = person.assignments.map((assignment) => assignment.activityId === activity.id ? newAssignment : assignment);
+      person.assignments = person.assignments.map((assignment) =>
+        assignment.activityId === activity.id ? newAssignment : assignment
+      );
     } else {
       person.assignments.push(newAssignment);
     }
@@ -450,5 +509,5 @@ export const upsertCompetitorAssignments = (wcif, assignments) => {
   return {
     ...wcif,
     persons,
-  }
-}
+  };
+};

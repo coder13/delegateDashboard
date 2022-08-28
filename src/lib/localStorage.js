@@ -1,4 +1,4 @@
-import { WCA_OAUTH_CLIENT_ID } from "./wca-env";
+import { WCA_OAUTH_CLIENT_ID } from './wca-env';
 
 export const localStorageKey = (key) => `groups.${WCA_OAUTH_CLIENT_ID}.${key}`;
 export const getLocalStorage = (key) => localStorage.getItem(localStorageKey(key));
