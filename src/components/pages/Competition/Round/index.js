@@ -50,7 +50,7 @@ import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import PersonsAssignmentsDialog from '../../../shared/PersonsAssignmentsDialog';
 import PersonsDialog from '../../../shared/PersonsDialog';
 import ConfigureGroupCountsDialog from './ConfigureGroupCountsDialog';
-import ConfigureScramblersDialog from './ConfigureScramblersDialog';
+import ConfigureAssignmentsDialog from './ConfigureAssignmentsDialog';
 import GroupCard from './GroupCard';
 
 /**
@@ -75,7 +75,7 @@ const RoundPage = () => {
   const confirm = useConfirm();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { eventId, roundNumber } = useParams();
-  const [configureScramblersDialog, setConfigureScramblersDialog] = useState(false);
+  const [configureAssignmentsDialog, setConfigureAssignmentsDialog] = useState(false);
   const [configureGroupCountsDialog, setConfigureGroupCountsDialog] = useState(false);
   const [showPersonsDialog, setShowPersonsDialog] = useState({
     open: false,
@@ -375,7 +375,7 @@ const RoundPage = () => {
   };
 
   const onAssignStaff = () => {
-    setConfigureScramblersDialog(true);
+    setConfigureAssignmentsDialog(true);
   };
 
   if (roundActivities.length === 0) {
@@ -394,7 +394,7 @@ const RoundPage = () => {
     } else if (groups.length > 0 && personsAssignedToCompeteOrJudge === 0) {
       return (
         <>
-          <Button onClick={onAssignStaff}>Pick Scramblers</Button>
+          <Button onClick={onAssignStaff}>Configure Staff Assignments</Button>
           <Button onClick={onGenerateGroupActitivites}>
             Assign Competitor and Judging Assignments
           </Button>
@@ -407,10 +407,10 @@ const RoundPage = () => {
     } else if (personsAssignedToCompeteOrJudge > 0) {
       return (
         <>
-          <Button onClick={onAssignStaff}>Pick Scramblers</Button>
+          <Button onClick={onAssignStaff}>Configure Staff Assignments</Button>
           <div style={{ display: 'flex', flex: 1 }} />
           <Button color="error" onClick={onResetGroupNonScramblingActitivites}>
-            Reset Non-scrambling Assignments
+            Reset Assignments
           </Button>
         </>
       );
@@ -499,9 +499,9 @@ const RoundPage = () => {
           <GroupCard key={group.id} groupActivity={group} />
         ))}
       </Grid>
-      <ConfigureScramblersDialog
-        open={configureScramblersDialog}
-        onClose={() => setConfigureScramblersDialog(false)}
+      <ConfigureAssignmentsDialog
+        open={configureAssignmentsDialog}
+        onClose={() => setConfigureAssignmentsDialog(false)}
         round={round}
         activityCode={activityCode}
         groups={groups}

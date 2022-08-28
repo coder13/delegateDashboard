@@ -6,6 +6,7 @@ import {
   FETCHED_WCIF,
   UPLOADING_WCIF,
   ADD_PERSON_ASSIGNMENT,
+  UPSERT_PERSON_ASSIGNMENT,
   BULK_ADD_PERSON_ASSIGNMENT,
   REMOVE_PERSON_ASSIGNMENT,
   BULK_REMOVE_PERSON_ASSIGNMENT,
@@ -88,6 +89,22 @@ const reducers = {
           ? {
             ...person,
             assignments: [...person.assignments, action.assignment],
+          }
+          : person
+      ),
+    },
+  }),
+  [UPSERT_PERSON_ASSIGNMENT]: (state, action) => ({
+    ...state,
+    needToSave: true,
+    changedKeys: new Set([...state.changedKeys, 'persons']),
+    wcif: {
+      ...state.wcif,
+      persons: state.wcif.persons.map((person) =>
+        person.registrantId === action.registrantId
+          ? {
+            ...person,
+            assignments: [...person.assignments.filter((a) => a.id !== action.assignment.activityId), action.assignment],
           }
           : person
       ),
@@ -248,7 +265,6 @@ const reducers = {
 
 function reducer(state = INITIAL_STATE, action) {
   if (reducers[action.type]) {
-    console.log(state);
     return reducers[action.type](state, action);
   }
   return state;

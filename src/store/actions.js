@@ -11,6 +11,7 @@ export const UPLOADING_WCIF = 'uploading_wcif';
 export const UPDATE_WCIF_ERRORS = 'update_wcif_errors';
 export const TOGGLE_PERSON_ROLE = 'toggle_person_role';
 export const ADD_PERSON_ASSIGNMENT = 'add_person_assignment';
+export const UPSERT_PERSON_ASSIGNMENT = 'upsert_person_assignment';
 export const BULK_ADD_PERSON_ASSIGNMENT = 'bulk_add_person_assignment';
 export const REMOVE_PERSON_ASSIGNMENT = 'remove_person_assignment';
 export const BULK_REMOVE_PERSON_ASSIGNMENT = 'bulk_remove_person_assignment';
@@ -98,6 +99,16 @@ export const togglePersonRole = (registrantId, roleId) => ({
  */
 export const addPersonAssignment = (registrantId, assignment) => ({
   type: ADD_PERSON_ASSIGNMENT,
+  registrantId,
+  assignment,
+});
+
+/**
+ * @param {number} registrantId
+ * @param {Assignment} assignment
+ */
+export const upsertPersonAssignment = (registrantId, assignment) => ({
+  type: UPSERT_PERSON_ASSIGNMENT,
   registrantId,
   assignment,
 });
