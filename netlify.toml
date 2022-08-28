@@ -2,3 +2,6 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+[context.production.environment]
+  REACT_APP_WCA_ORIGIN = "http://wwww.worldcubeassociation.org"
