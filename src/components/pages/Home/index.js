@@ -17,7 +17,7 @@ const Home = () => {
             <Typography>
               Welcome to Delegate Dashboard!
               <br />
-              The first stage-conscious groups management tool for WCA competitions
+              A stage-conscious groups management tool for WCA competitions
               <br />
               Use this tool to generate and configure groups, export data, or import your own groups!
               <br />
