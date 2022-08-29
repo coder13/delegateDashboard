@@ -16,6 +16,8 @@
     "@wca/helpers": "^1.1.1",
     "clsx": "^1.1.1",
     "export-to-csv": "^0.2.1",
+    "fuse.js": "^6.6.2",
+    "lodash.debounce": "^4.0.8",
     "material-ui-confirm": "^3.0.4",
     "notistack": "^1.0.10",
     "prop-types": "^15.8.1",
@@ -37,7 +39,7 @@
     "lint": "eslint ./",
     "test": "react-scripts test --passWithNoTests",
     "prepare": "husky install",
-    "prettier": "prettier ./src/**/*.js --write"
+    "prettier": "prettier \"src/**/*.js\" --write"
   },
   "eslintConfig": {
     "extends": [

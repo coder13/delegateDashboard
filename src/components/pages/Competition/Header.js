@@ -1,15 +1,28 @@
-import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
-import { AppBar as MuiAppBar, Button, Divider, IconButton, List, ListItem, ListItemIcon, ListItemText, ListSubheader, styled, Toolbar, Typography } from "@mui/material"
-import MenuIcon from "@mui/icons-material/Menu";
-import HomeIcon from '@mui/icons-material/Home';
+import { useSnackbar } from 'notistack';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
+import HomeIcon from '@mui/icons-material/Home';
+import MenuIcon from '@mui/icons-material/Menu';
 import PeopleIcon from '@mui/icons-material/People';
-import ViewListIcon from '@mui/icons-material/ViewList';
 import ScheduleIcon from '@mui/icons-material/Schedule';
-import { uploadCurrentWCIFChanges } from "../../../store/actions";
-import { useSnackbar } from "notistack";
+import ViewListIcon from '@mui/icons-material/ViewList';
+import {
+  AppBar as MuiAppBar,
+  Button,
+  Divider,
+  IconButton,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+  styled,
+  Toolbar,
+  Typography,
+} from '@mui/material';
+import { uploadCurrentWCIFChanges } from '../../../store/actions';
 
 export const drawerWidth = 240;
 
@@ -88,7 +101,7 @@ export const DrawerLinks = () => {
       </ListItem>
     </List>
   );
-}
+};
 
 export const Header = ({ open, onMenuOpen }) => {
   const { name } = useSelector((state) => state.wcif);
@@ -96,14 +109,16 @@ export const Header = ({ open, onMenuOpen }) => {
   const { enqueueSnackbar } = useSnackbar();
 
   const handleSaveChanges = () => {
-    dispatch(uploadCurrentWCIFChanges((e) => {
-      if (e) {
-        enqueueSnackbar('Error saving changes', { variant: 'error' });
-      } else {
-        enqueueSnackbar('Saved!', { variant: 'success' });
-      }
-    }))
-  }
+    dispatch(
+      uploadCurrentWCIFChanges((e) => {
+        if (e) {
+          enqueueSnackbar('Error saving changes', { variant: 'error' });
+        } else {
+          enqueueSnackbar('Saved!', { variant: 'success' });
+        }
+      })
+    );
+  };
 
   return (
     <AppBar position="static" open={open}>
@@ -114,8 +129,7 @@ export const Header = ({ open, onMenuOpen }) => {
           color="inherit"
           aria-label="menu"
           sx={{ mr: 2 }}
-          onClick={onMenuOpen}
-        >
+          onClick={onMenuOpen}>
           <MenuIcon />
         </IconButton>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
@@ -127,5 +141,5 @@ export const Header = ({ open, onMenuOpen }) => {
         </Button>
       </Toolbar>
     </AppBar>
-  )
-}
+  );
+};

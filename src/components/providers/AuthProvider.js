@@ -28,7 +28,7 @@ export default function AuthProvider({ children }) {
     if (token) {
       setAccessToken(token);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     const hash = window.location.hash.replace(/^#/, '');
@@ -36,7 +36,7 @@ export default function AuthProvider({ children }) {
 
     if (hashParams.has('access_token')) {
       setAccessToken(hashParams.get('access_token'));
-      setLocalStorage('accessToken', hashParams.get('access_token'))
+      setLocalStorage('accessToken', hashParams.get('access_token'));
     }
 
     if (hashParams.has('expires_in')) {

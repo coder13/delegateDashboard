@@ -18,17 +18,17 @@ const GroupCard = ({ groupActivity }) => {
   const mapNames = (array) =>
     array.length
       ? array
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map(({ registrantId, name }) => (
-          <MaterialLink to={`/competitions/${wcif.id}/persons/${registrantId}`}>
-            {name}
-          </MaterialLink>
-        ))
-        .reduce((a, b) => (
-          <>
-            {a}, {b}
-          </>
-        ))
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map(({ registrantId, name }) => (
+            <MaterialLink to={`/competitions/${wcif.id}/persons/${registrantId}`}>
+              {name}
+            </MaterialLink>
+          ))
+          .reduce((a, b) => (
+            <>
+              {a}, {b}
+            </>
+          ))
       : null;
 
   const { eventId } = parseActivityCode(groupActivity.activityCode);
@@ -113,7 +113,9 @@ const GroupCard = ({ groupActivity }) => {
       />
       <div>
         {errors.map((error) => (
-          <Alert key={error.message} severity="error">{error.message}</Alert>
+          <Alert key={error.message} severity="error">
+            {error.message}
+          </Alert>
         ))}
       </div>
       <CardContent>

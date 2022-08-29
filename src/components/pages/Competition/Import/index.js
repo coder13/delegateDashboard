@@ -1,11 +1,28 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Button, Divider, Grid, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { usePapaParse } from 'react-papaparse';
-import CSVPreview from './CSVPreview';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Alert,
+  Button,
+  Divider,
+  Grid,
+  Typography,
+} from '@mui/material';
+import {
+  validate,
+  generateAssignments,
+  determineMissingGroupActivities,
+  upsertCompetitorAssignments,
+  generateMissingGroupActivities,
+  determineStageForAssignments,
+  balanceStartAndEndTimes,
+} from '../../../../lib/import';
 import { partialUpdateWCIF } from '../../../../store/actions';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
-import { validate, generateAssignments, determineMissingGroupActivities, upsertCompetitorAssignments, generateMissingGroupActivities, determineStageForAssignments, balanceStartAndEndTimes } from '../../../../lib/import';
+import CSVPreview from './CSVPreview';
 
 const mapCSVFieldToData = (necessaryFields) => (field) => {
   if (necessaryFields.indexOf(field) > -1) {
@@ -13,7 +30,7 @@ const mapCSVFieldToData = (necessaryFields) => (field) => {
   }
 
   return null;
-}
+};
 
 const ImportPage = () => {
   const wcif = useSelector((state) => state.wcif);
@@ -29,7 +46,10 @@ const ImportPage = () => {
   const [missingGroupActivities, setMissingGroupActivities] = useState();
   const [assignmentGenerationError, setAssignmentGenerationError] = useState();
   const validateContents = useMemo(() => wcif && validate(wcif), [wcif]);
-  const validation = useMemo(() => validateContents && CSVContents && validateContents(CSVContents), [validateContents, CSVContents]);
+  const validation = useMemo(
+    () => validateContents && CSVContents && validateContents(CSVContents),
+    [validateContents, CSVContents]
+  );
 
   useEffect(() => {
     setBreadcrumbs([
@@ -72,7 +92,7 @@ const ImportPage = () => {
               meta: {
                 ...results.meta,
                 fields: [...new Set(results.meta.fields)],
-              }
+              },
             });
           },
         });
@@ -99,23 +119,21 @@ const ImportPage = () => {
 
   const onGenerateMissingGroupActivities = () => {
     try {
-
-      dispatch(partialUpdateWCIF({
-        schedule: balanceStartAndEndTimes(
-          generateMissingGroupActivities(
-            wcif,
+      dispatch(
+        partialUpdateWCIF({
+          schedule: balanceStartAndEndTimes(
+            generateMissingGroupActivities(wcif, missingGroupActivities),
             missingGroupActivities
-          ),
-          missingGroupActivities
-        ).schedule,
-      }));
+          ).schedule,
+        })
+      );
 
       setMissingGroupActivities(null);
     } catch (e) {
       console.error(e);
       setAssignmentGenerationError(e);
     }
-  }
+  };
 
   const onImportCompetitorAssignments = () => {
     const newWcif = upsertCompetitorAssignments(
@@ -123,11 +141,13 @@ const ImportPage = () => {
       determineStageForAssignments(wcif, competitorAssignments)
     );
 
-    dispatch(partialUpdateWCIF({
-      persons: newWcif.persons,
-      schedule: newWcif.schedule,
-    }));
-  }
+    dispatch(
+      partialUpdateWCIF({
+        persons: newWcif.persons,
+        schedule: newWcif.schedule,
+      })
+    );
+  };
 
   console.log(CSVColumnMap);
 
@@ -141,13 +161,17 @@ const ImportPage = () => {
           </AccordionSummary>
           <AccordionDetails>
             <Typography variant="body1">
-              The following are instructions on how to properly format data to import it into delegate dashboard and thus, the WCA website.
+              The following are instructions on how to properly format data to import it into
+              delegate dashboard and thus, the WCA website.
               <br />
-              The first item to note is that whatever CSV you upload must have 1 row per person, identified by their email.
+              The first item to note is that whatever CSV you upload must have 1 row per person,
+              identified by their email.
               <br />
               You must also have a column for each event containing a competitor's competing group.
               <br />
-              If you wish to specify staffing assignments, you will also include those. This column name can have any format so long as it includes the event Id but is not only the eventId. A perfectly fine format would be '{'{'}eventId{'}'}-staff'
+              If you wish to specify staffing assignments, you will also include those. This column
+              name can have any format so long as it includes the event Id but is not only the
+              eventId. A perfectly fine format would be '{'{'}eventId{'}'}-staff'
             </Typography>
           </AccordionDetails>
         </Accordion>
@@ -159,7 +183,7 @@ const ImportPage = () => {
             <Typography>
               The competing group format is as follows:
               <br />
-              {"<First letter of the stage><Number of the group>"}
+              {'<First letter of the stage><Number of the group>'}
             </Typography>
           </AccordionDetails>
         </Accordion>
@@ -169,15 +193,19 @@ const ImportPage = () => {
           </AccordionSummary>
           <AccordionDetails>
             <Typography>
-              The Staffing group format column should contain values separated by a commad `,` or a semicolon `;` where each value specifies an assignment between running, scrambling, or judging.
+              The Staffing group format column should contain values separated by a commad `,` or a
+              semicolon `;` where each value specifies an assignment between running, scrambling, or
+              judging.
               <br />
               Each staff group assignment format is as follows:
               <br />
-              {"<R | J | S><Number of the group>"}
+              {'<R | J | S><Number of the group>'}
               <br />
-              There is no way to pick which state a group assignment is on. They will be randomly distributed between the stages.
+              There is no way to pick which state a group assignment is on. They will be randomly
+              distributed between the stages.
               <br />
-              You have the ability to visit the page for a round and configure which stage a group assignment is on.
+              You have the ability to visit the page for a round and configure which stage a group
+              assignment is on.
             </Typography>
           </AccordionDetails>
         </Accordion>
@@ -187,16 +215,8 @@ const ImportPage = () => {
       <Grid item sx={{ padding: '1em' }}>
         <Typography variant="h5">Import data from CSV</Typography>
         <form>
-          <input
-            type="file"
-            accept=".csv"
-            onChange={handleOnChange}
-          />
-          <Button
-            variant="contained"
-            onClick={handleOnSubmit}
-            style={{ marginLeft: '1em' }}
-          >
+          <input type="file" accept=".csv" onChange={handleOnChange} />
+          <Button variant="contained" onClick={handleOnSubmit} style={{ marginLeft: '1em' }}>
             IMPORT CSV
           </Button>
         </form>
@@ -211,9 +231,9 @@ const ImportPage = () => {
               <Alert key={check.key + index} severity={check.passed ? 'success' : 'error'}>
                 {check.message}
                 <br />
-                {check.data && check.key === 'has-all-competing-event-column' && (
-                  check.data.map((i) => i.email).join(', ')
-                )}
+                {check.data &&
+                  check.key === 'has-all-competing-event-column' &&
+                  check.data.map((i) => i.email).join(', ')}
               </Alert>
             ))}
           </Grid>
@@ -253,20 +273,44 @@ const ImportPage = () => {
               <br />
               If it is, click the button below to import it into delegate dashboard.
             </Typography>
-            <Typography>
-              {CSVContents.data.length} people found
-            </Typography>
-            <Button variant="contained" disabled={!!competitorAssignments?.length || validation.some((check) => !check.passed)} onClick={onGenerateCompetitorAssignments}>GENERATE COMPETITOR ASSIGNMENTS</Button>
+            <Typography>{CSVContents.data.length} people found</Typography>
+            <Button
+              variant="contained"
+              disabled={
+                !!competitorAssignments?.length || validation.some((check) => !check.passed)
+              }
+              onClick={onGenerateCompetitorAssignments}>
+              GENERATE COMPETITOR ASSIGNMENTS
+            </Button>
             <Typography>{competitorAssignments?.length || 0} generated assignments</Typography>
-            <Typography>{missingGroupActivities ? missingGroupActivities.length : '???'} missing group activities{missingGroupActivities?.length ? `: (${missingGroupActivities.map((a) => `${a.activityCode}:${a.roomId}`).join(', ')})` : ''}</Typography>
+            <Typography>
+              {missingGroupActivities ? missingGroupActivities.length : '???'} missing group
+              activities
+              {missingGroupActivities?.length
+                ? `: (${missingGroupActivities
+                    .map((a) => `${a.activityCode}:${a.roomId}`)
+                    .join(', ')})`
+                : ''}
+            </Typography>
             {assignmentGenerationError && (
-              <Alert severity="error">
-                {assignmentGenerationError.message}
-              </Alert>
+              <Alert severity="error">{assignmentGenerationError.message}</Alert>
             )}
-            <Button variant="contained" disabled={!missingGroupActivities || missingGroupActivities.length === 0} onClick={onGenerateMissingGroupActivities}>GENERATE MISSING GROUP ACTIVITIES</Button>
+            <Button
+              variant="contained"
+              disabled={!missingGroupActivities || missingGroupActivities.length === 0}
+              onClick={onGenerateMissingGroupActivities}>
+              GENERATE MISSING GROUP ACTIVITIES
+            </Button>
             <br />
-            <Button variant="contained" disabled={(missingGroupActivities && missingGroupActivities.length) || !competitorAssignments?.length} onClick={onImportCompetitorAssignments}>IMPORT COMPETITOR ASSIGNMENTS</Button>
+            <Button
+              variant="contained"
+              disabled={
+                (missingGroupActivities && missingGroupActivities.length) ||
+                !competitorAssignments?.length
+              }
+              onClick={onImportCompetitorAssignments}>
+              IMPORT COMPETITOR ASSIGNMENTS
+            </Button>
           </Grid>
         </>
       )}

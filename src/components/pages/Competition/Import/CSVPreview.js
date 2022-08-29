@@ -1,15 +1,25 @@
-import { Accordion, AccordionDetails, AccordionSummary, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from '@mui/material';
 
 export default function CSVPreview({ CSVContents }) {
   return (
     <Accordion>
       <AccordionSummary>Preview</AccordionSummary>
-      <AccordionDetails style={{
-        display: 'flex',
-        flexDirection: 'row',
-        overflowX: 'auto',
-        width: '80vw'
-      }}>
+      <AccordionDetails
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          overflowX: 'auto',
+          width: '80vw',
+        }}>
         <Table size="small">
           <TableHead>
             <TableRow>
@@ -30,5 +40,5 @@ export default function CSVPreview({ CSVContents }) {
         </Table>
       </AccordionDetails>
     </Accordion>
-  )
+  );
 }

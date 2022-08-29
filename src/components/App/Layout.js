@@ -1,9 +1,9 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import { styled } from '@mui/system';
-import Footer from './Footer';
-import { useAuth } from '../providers/AuthProvider';
 import { Alert, AlertTitle } from '@mui/material';
+import { styled } from '@mui/system';
+import { useAuth } from '../providers/AuthProvider';
+import Footer from './Footer';
 
 const RootDiv = styled('div')({
   display: 'flex',

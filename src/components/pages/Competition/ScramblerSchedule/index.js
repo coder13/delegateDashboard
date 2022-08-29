@@ -1,6 +1,17 @@
-import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import {
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Radio,
+  RadioGroup,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from '@mui/material';
 import {
   activityCodeToName,
   allActivities,
@@ -19,17 +30,19 @@ export default function ScramblerSchedule() {
   const mapNames = (array) =>
     array.length
       ? array
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map(({ registrantId, name }) => (
-          <MaterialLink key={registrantId} to={`/competitions/${wcif.id}/persons/${registrantId}`}>
-            {name}
-          </MaterialLink>
-        ))
-        .reduce((a, b) => (
-          <>
-            {a}, {b}
-          </>
-        ))
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map(({ registrantId, name }) => (
+            <MaterialLink
+              key={registrantId}
+              to={`/competitions/${wcif.id}/persons/${registrantId}`}>
+              {name}
+            </MaterialLink>
+          ))
+          .reduce((a, b) => (
+            <>
+              {a}, {b}
+            </>
+          ))
       : null;
 
   const _rooms = rooms(wcif);
@@ -78,10 +91,7 @@ export default function ScramblerSchedule() {
     <div>
       <FormControl>
         <FormLabel>Room</FormLabel>
-        <RadioGroup
-          value={roomSelector}
-          onChange={(e) => setRoomSelector(e.target.value)}
-        >
+        <RadioGroup value={roomSelector} onChange={(e) => setRoomSelector(e.target.value)}>
           {_rooms.map((room) => (
             <FormControlLabel key={room.id} value={room.id} control={<Radio />} label={room.name} />
           ))}
@@ -107,7 +117,14 @@ export default function ScramblerSchedule() {
                 <>
                   <TableRow key={activity.id}>
                     <TableCell colSpan={2}>
-                      {activity.activityCode && <span className={`cubing-icon event-${parseActivityCode(activity.activityCode).eventId}`} style={{ marginRight: '0.5em' }} />}
+                      {activity.activityCode && (
+                        <span
+                          className={`cubing-icon event-${
+                            parseActivityCode(activity.activityCode).eventId
+                          }`}
+                          style={{ marginRight: '0.5em' }}
+                        />
+                      )}
                       {activityCodeToName(activity.activityCode)}
                     </TableCell>
                   </TableRow>

@@ -1,7 +1,9 @@
 import { formatCentiseconds } from '@wca/helpers';
+import { useConfirm } from 'material-ui-confirm';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import CheckIcon from '@mui/icons-material/Check';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import {
   Button,
   Dialog,
@@ -26,37 +28,46 @@ import {
   Typography,
   useMediaQuery,
 } from '@mui/material';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { styled, useTheme } from '@mui/system';
 import { rooms, parseActivityCode, activityCodeToName } from '../../../../lib/activities';
 import { isOrganizerOrDelegate } from '../../../../lib/persons';
 import { flatten } from '../../../../lib/utils';
-import { upsertPersonAssignment, removePersonAssignment, bulkRemovePersonAssignment } from '../../../../store/actions';
+import {
+  upsertPersonAssignment,
+  removePersonAssignment,
+  bulkRemovePersonAssignment,
+} from '../../../../store/actions';
 import TableAssignmentCell from './TableAssignmentCell';
-import { useConfirm } from 'material-ui-confirm';
 
-const Toolbar = styled(MuiToolbar)(({ theme }) => `
+const Toolbar = styled(MuiToolbar)(
+  ({ theme }) => `
   padding: 0 ${theme.spacing(2)};
   justify-content: space-between;
-`);
+`
+);
 
-const Assignments = [{
-  id: 'competitor',
-  name: 'Competitor',
-  key: 'c',
-}, {
-  id: 'staff-scrambler',
-  name: 'Scrambler',
-  key: 's',
-}, {
-  id: 'staff-runner',
-  name: 'Runner',
-  key: 'r',
-}, {
-  id: 'staff-judge',
-  name: 'Judge',
-  key: 'j',
-}];
+const Assignments = [
+  {
+    id: 'competitor',
+    name: 'Competitor',
+    key: 'c',
+  },
+  {
+    id: 'staff-scrambler',
+    name: 'Scrambler',
+    key: 's',
+  },
+  {
+    id: 'staff-runner',
+    name: 'Runner',
+    key: 'r',
+  },
+  {
+    id: 'staff-judge',
+    name: 'Judge',
+    key: 'j',
+  },
+];
 
 const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
   const wcif = useSelector((state) => state.wcif);
@@ -80,42 +91,48 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
     setAnchorEl(null);
   };
 
-  const groupsRooms = useMemo(() => rooms(wcif).filter((room) =>
-    flatten(room.activities.map((activity) => activity.childActivities)).some((activity) =>
-      groups.find((g) => g.id === activity.id)
-    )
-  ), [groups, wcif]);
+  const groupsRooms = useMemo(
+    () =>
+      rooms(wcif).filter((room) =>
+        flatten(room.activities.map((activity) => activity.childActivities)).some((activity) =>
+          groups.find((g) => g.id === activity.id)
+        )
+      ),
+    [groups, wcif]
+  );
 
-  const persons = useMemo(() =>
-    wcif.persons
-      .filter(
-        (p) =>
-          isOrganizerOrDelegate(p) ||
-          (
-            p?.registration?.status === 'accepted' &&
-            (p.roles.some((r) => r.indexOf('staff') > -1) || showAllCompetitors) &&
-            p.registration.eventIds.indexOf(eventId) > -1
-          )
-      )
-      .map((person) => ({
-        ...person,
-        pr: person.personalBests.find((pb) => pb.eventId === eventId && pb.type === 'average')?.best,
-      }))
-      .sort((a, b) => {
-        if (competitorSort === 'speed') {
-          return (a.pr || Number.MAX_VALUE) - (b.pr || Number.MAX_VALUE)
-        }
+  const persons = useMemo(
+    () =>
+      wcif.persons
+        .filter(
+          (p) =>
+            isOrganizerOrDelegate(p) ||
+            (p?.registration?.status === 'accepted' &&
+              (p.roles.some((r) => r.indexOf('staff') > -1) || showAllCompetitors) &&
+              p.registration.eventIds.indexOf(eventId) > -1)
+        )
+        .map((person) => ({
+          ...person,
+          pr: person.personalBests.find((pb) => pb.eventId === eventId && pb.type === 'average')
+            ?.best,
+        }))
+        .sort((a, b) => {
+          if (competitorSort === 'speed') {
+            return (a.pr || Number.MAX_VALUE) - (b.pr || Number.MAX_VALUE);
+          }
 
-        return a.name.localeCompare(b.name);
-      })
-    , [competitorSort, eventId, showAllCompetitors, wcif.persons]);
+          return a.name.localeCompare(b.name);
+        }),
+    [competitorSort, eventId, showAllCompetitors, wcif.persons]
+  );
 
-  const getAssignmentCodeForPersonGroup = useCallback((registrantId, activityId) => {
-    const assignments = persons.find((p) => p.registrantId === registrantId).assignments;
-    return assignments.find(
-      (a) => a.activityId === activityId
-    )?.assignmentCode;
-  }, [persons]);
+  const getAssignmentCodeForPersonGroup = useCallback(
+    (registrantId, activityId) => {
+      const assignments = persons.find((p) => p.registrantId === registrantId).assignments;
+      return assignments.find((a) => a.activityId === activityId)?.assignmentCode;
+    },
+    [persons]
+  );
 
   const handleUpdateAssignmentForPerson = (registrantId, activityId) => () => {
     if (getAssignmentCodeForPersonGroup(registrantId, activityId) === paintingAssignmentCode) {
@@ -131,13 +148,16 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
   };
 
   const handleResetAssignments = () => {
-    confirm('Are you sure you want to reset all assignments and start over')
-      .then(() => {
-        dispatch(bulkRemovePersonAssignment(groups.map((groupActivity) => ({
-          activityId: groupActivity.id
-        }))))
-      })
-  }
+    confirm('Are you sure you want to reset all assignments and start over').then(() => {
+      dispatch(
+        bulkRemovePersonAssignment(
+          groups.map((groupActivity) => ({
+            activityId: groupActivity.id,
+          }))
+        )
+      );
+    });
+  };
 
   const handleKeyDown = (e) => {
     if (e.ctrlKey) {
@@ -173,7 +193,9 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth fullScreen={fullScreen}>
-      <DialogTitle sx={{ paddingTop: '0.25em', paddingBottom: '0.25em' }}>Configuring Assignments For {activityCodeToName(activityCode)}</DialogTitle>
+      <DialogTitle sx={{ paddingTop: '0.25em', paddingBottom: '0.25em' }}>
+        Configuring Assignments For {activityCodeToName(activityCode)}
+      </DialogTitle>
       <DialogContent style={{ padding: 0 }}>
         <Toolbar className="flex-row">
           <div>
@@ -182,10 +204,14 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
               <RadioGroup
                 row
                 value={paintingAssignmentCode}
-                onChange={(e) => setPaintingAssignmentCode(e.target.value)}
-              >
+                onChange={(e) => setPaintingAssignmentCode(e.target.value)}>
                 {Assignments.map((assignment) => (
-                  <FormControlLabel key={assignment.id} value={assignment.id} control={<Radio />} label={assignment.name} />
+                  <FormControlLabel
+                    key={assignment.id}
+                    value={assignment.id}
+                    control={<Radio />}
+                    label={assignment.name}
+                  />
                 ))}
               </RadioGroup>
             </FormControl>
@@ -197,8 +223,7 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
               <RadioGroup
                 row
                 value={competitorSort}
-                onChange={(e) => setCompetitorSort(e.target.value)}
-              >
+                onChange={(e) => setCompetitorSort(e.target.value)}>
                 <FormControlLabel value="speed" control={<Radio />} label="Speed" />
                 <FormControlLabel value="name" control={<Radio />} label="Name" />
               </RadioGroup>
@@ -226,8 +251,7 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
             transformOrigin={{
               vertical: 'top',
               horizontal: 'left',
-            }}
-          >
+            }}>
             <MenuItem onClick={handleResetAssignments}>Reset Assignments</MenuItem>
           </Menu>
         </Toolbar>
@@ -268,15 +292,20 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
             {persons.map((person) => (
               <TableRow hover key={person.registrantId} style={{}}>
                 <TableCell>{person.name}</TableCell>
-                <TableCell style={{ textAlign: 'center' }}>{person.pr && formatCentiseconds(person.pr)}</TableCell>
+                <TableCell style={{ textAlign: 'center' }}>
+                  {person.pr && formatCentiseconds(person.pr)}
+                </TableCell>
                 <TableCell
                   style={{
                     paddingTop: 0,
                     paddingBottom: 0,
                     textAlign: 'center',
-                  }}
-                >
-                  {person.registration.eventIds.indexOf(eventId) > -1 ? <CheckIcon fontSize="small" /> : ''}
+                  }}>
+                  {person.registration.eventIds.indexOf(eventId) > -1 ? (
+                    <CheckIcon fontSize="small" />
+                  ) : (
+                    ''
+                  )}
                 </TableCell>
                 {groupsRooms.map((room) =>
                   groups
@@ -284,8 +313,14 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
                     .map((groupActivity) => (
                       <TableAssignmentCell
                         key={groupActivity.id}
-                        value={getAssignmentCodeForPersonGroup(person.registrantId, groupActivity.id)}
-                        onClick={handleUpdateAssignmentForPerson(person.registrantId, groupActivity.id)}
+                        value={getAssignmentCodeForPersonGroup(
+                          person.registrantId,
+                          groupActivity.id
+                        )}
+                        onClick={handleUpdateAssignmentForPerson(
+                          person.registrantId,
+                          groupActivity.id
+                        )}
                       />
                     ))
                 )}
@@ -301,24 +336,16 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
         <div style={{ display: 'flex', flexDirction: 'row' }}>
           <Typography>
             <span>Assigning: </span>
-            <b>
-              {Assignments.find((a) => a.id === paintingAssignmentCode)?.name}
-            </b>
+            <b>{Assignments.find((a) => a.id === paintingAssignmentCode)?.name}</b>
             {' | '}
             <span>Showing: </span>
-            <b>
-              {showAllCompetitors ? 'All Competitors' : 'staff'}
-            </b>
+            <b>{showAllCompetitors ? 'All Competitors' : 'staff'}</b>
             {' | '}
             <span>Sorting By: </span>
-            <b>
-              {competitorSort}
-            </b>
+            <b>{competitorSort}</b>
             {' | '}
             <span>Total Persons Shown: </span>
-            <b>
-              {persons.length}
-            </b>
+            <b>{persons.length}</b>
           </Typography>
         </div>
         <div style={{ display: 'flex', flexGrow: 1 }} />

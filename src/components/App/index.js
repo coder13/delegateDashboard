@@ -2,9 +2,7 @@ import React from 'react';
 import Navigation from './Navigation';
 
 const App = () => {
-  return (
-    <Navigation />
-  );
+  return <Navigation />;
 };
 
 export default App;

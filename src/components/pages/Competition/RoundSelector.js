@@ -2,6 +2,7 @@ import '@cubing/icons';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Link as RouterLink, useParams } from 'react-router-dom';
+import { Divider, FormControlLabel, Switch } from '@mui/material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
@@ -14,7 +15,6 @@ import { personsShouldBeInRound } from '../../../lib/persons';
 import { pluralize } from '../../../lib/utils';
 import { getExtensionData } from '../../../lib/wcif-extensions';
 import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
-import { Divider, FormControlLabel, Switch } from '@mui/material';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -89,15 +89,17 @@ const RoundSelectorPage = () => {
                     })
                   ).length;
 
-                  const realGroupsGeneratedText = realGroups?.length && `${pluralize(realGroups.length, 'group', 'groups')} generated`;
+                  const realGroupsGeneratedText =
+                    realGroups?.length &&
+                    `${pluralize(realGroups.length, 'group', 'groups')} generated`;
                   const configuredGroupsText = groupsData?.groups
                     ? `${pluralize(groupsData?.groups, 'group', 'groups')} configured`
                     : 'No Groups Configured';
 
-
                   const textToShow = [
                     realGroups?.length ? realGroupsGeneratedText : configuredGroupsText,
-                    `${pluralize(personsAssigned, 'person', 'people')} assigned of ${_personsShouldBeInRound || '???'
+                    `${pluralize(personsAssigned, 'person', 'people')} assigned of ${
+                      _personsShouldBeInRound || '???'
                     }`,
                   ];
 

@@ -12,7 +12,10 @@ import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import Typography from '@mui/material/Typography';
 import { sortBy } from '../../lib/utils';
-import { getUpcomingManageableCompetitions, getPastManageableCompetitions } from '../../lib/wcaAPI.js';
+import {
+  getUpcomingManageableCompetitions,
+  getPastManageableCompetitions,
+} from '../../lib/wcaAPI.js';
 import { useAuth } from '../providers/AuthProvider.js';
 
 const FlagIcon = FlagIconFactory(React, { useCssModules: false });

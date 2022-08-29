@@ -49,8 +49,8 @@ import {
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import PersonsAssignmentsDialog from '../../../shared/PersonsAssignmentsDialog';
 import PersonsDialog from '../../../shared/PersonsDialog';
-import ConfigureGroupCountsDialog from './ConfigureGroupCountsDialog';
 import ConfigureAssignmentsDialog from './ConfigureAssignmentsDialog';
+import ConfigureGroupCountsDialog from './ConfigureGroupCountsDialog';
 import GroupCard from './GroupCard';
 
 /**
@@ -372,7 +372,12 @@ const RoundPage = () => {
   };
 
   if (roundActivities.length === 0) {
-    return <div>No Group Activities found. <br />If you're viewing 3x3 fewest moves, there's likely not much to do here yet.</div>;
+    return (
+      <div>
+        No Group Activities found. <br />
+        If you're viewing 3x3 fewest moves, there's likely not much to do here yet.
+      </div>
+    );
   }
 
   const actionButtons = () => {

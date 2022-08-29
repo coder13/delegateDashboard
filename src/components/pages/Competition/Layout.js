@@ -1,6 +1,8 @@
+import { useSnackbar } from 'notistack';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, Outlet } from 'react-router-dom';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import {
   Alert,
   Backdrop,
@@ -17,14 +19,12 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import { useSnackbar } from 'notistack';
+import { styled } from '@mui/system';
+import { getLocalStorage, setLocalStorage } from '../../../lib/localStorage';
 import { fetchWCIF, uploadCurrentWCIFChanges } from '../../../store/actions';
 import BreadcrumbsProvider, { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
 import MaterialLink from '../../shared/MaterialLink';
 import { DrawerHeader, DrawerLinks, drawerWidth, Header } from './Header';
-import { styled } from '@mui/system';
-import { getLocalStorage, setLocalStorage } from '../../../lib/localStorage';
 
 const Errors = ({ errors }) => {
   return (
@@ -49,9 +49,7 @@ const BreadCrumbsGridItem = () => {
   return (
     <Grid item>
       <Breadcrumbs aria-label="breadcrumbs">
-        <MaterialLink to={`/`}>
-          Competitions
-        </MaterialLink>
+        <MaterialLink to={`/`}>Competitions</MaterialLink>
         <MaterialLink to={`/competitions/${competitionId}`}>
           {wcif.name || competitionId}
         </MaterialLink>
@@ -87,7 +85,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(
       marginLeft: `${drawerWidth}px`,
     }),
     overflowY: 'auto',
-  }),
+  })
 );
 
 const CompetitionLayout = () => {
@@ -102,14 +100,16 @@ const CompetitionLayout = () => {
   const errors = useSelector((state) => state.errors);
 
   const handleSaveChanges = useCallback(() => {
-    dispatch(uploadCurrentWCIFChanges((e) => {
-      if (e) {
-        enqueueSnackbar('Error saving changes', { variant: 'error' });
-      } else {
-        enqueueSnackbar('Saved!', { variant: 'success' });
-      }
-    }))
-  }, [dispatch, enqueueSnackbar])
+    dispatch(
+      uploadCurrentWCIFChanges((e) => {
+        if (e) {
+          enqueueSnackbar('Error saving changes', { variant: 'error' });
+        } else {
+          enqueueSnackbar('Saved!', { variant: 'success' });
+        }
+      })
+    );
+  }, [dispatch, enqueueSnackbar]);
 
   useEffect(() => {
     dispatch(fetchWCIF(competitionId));
@@ -119,23 +119,26 @@ const CompetitionLayout = () => {
     setLocalStorage('drawer-open', drawerOpen);
   }, [drawerOpen]);
 
-  const handleKeyDown = useCallback((event) => {
-    if (!event) {
-      return;
-    }
+  const handleKeyDown = useCallback(
+    (event) => {
+      if (!event) {
+        return;
+      }
 
-    if (event.ctrlKey && event.key === 's') {
-      event.preventDefault();
-      handleSaveChanges();
-    }
-  }, [handleSaveChanges]);
+      if (event.ctrlKey && event.key === 's') {
+        event.preventDefault();
+        handleSaveChanges();
+      }
+    },
+    [handleSaveChanges]
+  );
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-    }
+    };
   }, [handleKeyDown]);
 
   return (
@@ -152,8 +155,7 @@ const CompetitionLayout = () => {
             width: drawerWidth,
             boxSizing: 'border-box',
           },
-        }}
-      >
+        }}>
         <DrawerHeader>
           <IconButton onClick={() => setDrawerOpen(false)}>
             <ChevronLeftIcon />
@@ -170,15 +172,10 @@ const CompetitionLayout = () => {
                 <Alert
                   severity={needToSave ? 'error' : 'warning'}
                   action={
-                    <Button
-                      color="inherit"
-                      size="small"
-                      onClick={handleSaveChanges}
-                    >
+                    <Button color="inherit" size="small" onClick={handleSaveChanges}>
                       SAVE
                     </Button>
-                  }
-                >
+                  }>
                   Don't Forget to save changes!
                 </Alert>
               </Grid>
@@ -188,19 +185,14 @@ const CompetitionLayout = () => {
                   <Errors errors={errors} />
                 </Grid>
               )}
-              {fetchingWCIF &&
-                (
-                  <Backdrop
-                    sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-                    open={fetchingWCIF}
-                  >
-                    <CircularProgress color="inherit" />
-                  </Backdrop>
-                )
-              }
-              <Grid item>
-                {wcif?.id && wcif?.name && <Outlet />}
-              </Grid>
+              {fetchingWCIF && (
+                <Backdrop
+                  sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                  open={fetchingWCIF}>
+                  <CircularProgress color="inherit" />
+                </Backdrop>
+              )}
+              <Grid item>{wcif?.id && wcif?.name && <Outlet />}</Grid>
             </Grid>
           </Container>
         </BreadcrumbsProvider>

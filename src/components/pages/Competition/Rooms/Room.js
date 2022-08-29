@@ -162,9 +162,9 @@ const Room = ({ venue, room }) => {
                     roundNumber === 1
                       ? eventRegistrationCounts[eventId]
                       : advancingCompetitors(
-                        advancementCondition,
-                        eventRegistrationCounts[eventId]
-                      );
+                          advancementCondition,
+                          eventRegistrationCounts[eventId]
+                        );
                   const actualCompetitors = round.results.length;
 
                   const groupData = getGroupData(activity);
@@ -234,7 +234,7 @@ const Room = ({ venue, room }) => {
                       </TableCell>
                       <TableCell>
                         {activity.childActivities.length !==
-                          (groupData?.groups || round.scrambleSetCount) ? (
+                        (groupData?.groups || round.scrambleSetCount) ? (
                           <Button
                             variant="contained"
                             disabled={!canCreateGroups}
