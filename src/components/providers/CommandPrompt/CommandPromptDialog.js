@@ -1,6 +1,7 @@
 import Fuse from 'fuse.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from "react-router-dom";
 import SearchIcon from '@mui/icons-material/Search';
 import { Box, IconButton, InputBase, List, Paper } from '@mui/material';
 import { useTheme } from '@mui/styles';
@@ -19,6 +20,7 @@ const options = {
 function CommandPromptDialog({ open, onClose }) {
   const wcif = useSelector((state) => state.wcif);
   const theme = useTheme();
+  const navigate = useNavigate();
   const [command, setCommand] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selected, setSelected] = useState(0);
@@ -56,15 +58,48 @@ function CommandPromptDialog({ open, onClose }) {
     setSelected(0);
   }, [debouncedCommand, fuse]);
 
+  const handleClose = useCallback(() => {
+    setCommand('');
+    setSearchResults([]);
+    onClose();
+  }, [onClose]);
+
+  const onEnter = useCallback((result) => {
+    const selectedItem = (result || searchResults[selected])?.item;
+    if (!selectedItem) {
+      return;
+    }
+
+    switch (selectedItem.class) {
+      case 'person':
+        navigate(`/competitions/${wcif.id}/persons/${selectedItem.id}`);
+        break;
+      case 'activity':
+        navigate(`/competitions/${wcif.id}/events/${selectedItem.activityCode}`);
+        break;
+      default:
+        break;
+    }
+
+    handleClose();
+  }, [handleClose, navigate, searchResults, selected, wcif.id])
+
   const handleKeyDown = useCallback(
     (e) => {
       if (e.key === 'ArrowDown') {
         setSelected((selected + 1) % searchResults.length);
       } else if (e.key === 'ArrowUp') {
         setSelected((selected - 1) % searchResults.length);
+      } else if (e.key === 'Enter') {
+        const result = searchResults[selected];
+        if (result) {
+          onEnter();
+        }
+      } else if (e.key === 'Escape') {
+        handleClose();
       }
     },
-    [searchResults.length, selected]
+    [handleClose, onEnter, searchResults, selected]
   );
 
   useEffect(() => {
@@ -104,7 +139,7 @@ function CommandPromptDialog({ open, onClose }) {
             sx={{ p: '0.25em 0.5em', display: 'flex', alignItems: 'center' }}
             onSubmit={(e) => e.preventDefault()}>
             <InputBase
-              autoFocus
+              inputRef={(input) => input && input.focus()}
               value={command}
               onChange={(e) => {
                 setCommand(e.target.value);
@@ -135,12 +170,14 @@ function CommandPromptDialog({ open, onClose }) {
                       key={result.item.class + result.item.id}
                       selected={selected === index}
                       {...result.item}
+                      onClick={() => onEnter(result)}
                     />
                   ) : (
                     <ActivityListItem
                       key={result.item.class + result.item.id}
                       selected={selected === index}
                       {...result.item}
+                      onClick={() => onEnter(result)}
                     />
                   )
                 )}
