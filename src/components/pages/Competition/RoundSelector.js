@@ -1,14 +1,15 @@
 import '@cubing/icons';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link as RouterLink, useParams } from 'react-router-dom';
-import { Divider, FormControlLabel, Switch } from '@mui/material';
+import { Collapse, Divider, FormControlLabel, Switch } from '@mui/material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import { makeStyles } from '@mui/styles';
+import { TransitionGroup } from 'react-transition-group';
 import { activityById, groupActivitiesByRound, parseActivityCode } from '../../../lib/activities';
 import { eventNameById } from '../../../lib/events';
 import { personsShouldBeInRound } from '../../../lib/persons';
@@ -44,7 +45,7 @@ const RoundSelectorPage = () => {
   const wcif = useSelector((state) => state.wcif);
   const classes = useStyles();
 
-  const [showAllRounds, setShowAllRounds] = React.useState(false);
+  const [showAllRounds, setShowAllRounds] = useState(false);
 
   useEffect(() => {
     setBreadcrumbs([
@@ -65,9 +66,11 @@ const RoundSelectorPage = () => {
       <Divider />
       <List className={classes.root}>
         {wcif.events.map((event) => (
-          <li key={event.id} className={classes.listSection}>
-            <ul className={classes.ul}>
-              {showAllRounds && <ListSubheader>{eventNameById(event.id)}</ListSubheader>}
+          <React.Fragment key={event.id}>
+            <Collapse in={showAllRounds}>
+              <ListSubheader>{eventNameById(event.id)}</ListSubheader>
+            </Collapse>
+            <TransitionGroup>
               {event.rounds
                 .filter((round) => {
                   const { roundNumber } = parseActivityCode(round.id);
@@ -98,29 +101,29 @@ const RoundSelectorPage = () => {
 
                   const textToShow = [
                     realGroups?.length ? realGroupsGeneratedText : configuredGroupsText,
-                    `${pluralize(personsAssigned, 'person', 'people')} assigned of ${
-                      _personsShouldBeInRound || '???'
+                    `${pluralize(personsAssigned, 'person', 'people')} assigned of ${_personsShouldBeInRound || '???'
                     }`,
                   ];
 
                   return (
-                    <ListItem
-                      key={round.id}
-                      button
-                      component={RouterLink}
-                      to={`/competitions/${competitionId}/events/${round.id}`}>
-                      <ListItemAvatar>
-                        <span className={`cubing-icon event-${event.id}`} />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={`${eventNameById(event.id)} Round ${index + 1}`}
-                        secondary={textToShow.join(' | ')}
-                      />
-                    </ListItem>
+                    <Collapse key={round.id}>
+                      <ListItem
+                        button
+                        component={RouterLink}
+                        to={`/competitions/${competitionId}/events/${round.id}`}>
+                        <ListItemAvatar>
+                          <span className={`cubing-icon event-${event.id}`} />
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={`${eventNameById(event.id)} Round ${index + 1}`}
+                          secondary={textToShow.join(' | ')}
+                        />
+                      </ListItem>
+                    </Collapse>
                   );
                 })}
-            </ul>
-          </li>
+            </TransitionGroup>
+          </React.Fragment>
         ))}
       </List>
     </>
