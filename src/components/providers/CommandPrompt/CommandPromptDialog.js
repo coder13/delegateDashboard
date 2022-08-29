@@ -3,13 +3,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from "react-router-dom";
 import SearchIcon from '@mui/icons-material/Search';
-import { Box, IconButton, InputBase, List, Paper } from '@mui/material';
+import { Box, ClickAwayListener, IconButton, InputBase, Paper } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { allActivities } from '../../../lib/activities';
 import { acceptedRegistrations } from '../../../lib/persons';
 import useDebounce from '../../hooks/useDebounce';
-import ActivityListItem from './ActivityListItem';
-import PersonListItem from './PersonListItem';
+import SearchResultList from './SearchResultList';
 
 const options = {
   keys: ['name', 'wcaId', 'activityCode'],
@@ -65,7 +64,7 @@ function CommandPromptDialog({ open, onClose }) {
   }, [onClose]);
 
   const onEnter = useCallback((result) => {
-    const selectedItem = (result || searchResults[selected])?.item;
+    const selectedItem = (result || searchResults[selected]);
     if (!selectedItem) {
       return;
     }
@@ -110,7 +109,7 @@ function CommandPromptDialog({ open, onClose }) {
   }, [handleKeyDown]);
 
   return (
-    <>
+    <ClickAwayListener onClickAway={handleClose}>
       <Box
         style={{
           zIndex: theme.zIndex.drawer * 10,
@@ -163,32 +162,14 @@ function CommandPromptDialog({ open, onClose }) {
               transition: theme.transitions.create(['top', 'left', 'width']),
             }}>
             {searchResults?.length ? (
-              <List>
-                {searchResults.map((result, index) =>
-                  result?.item?.class === 'person' ? (
-                    <PersonListItem
-                      key={result.item.class + result.item.id}
-                      selected={selected === index}
-                      {...result.item}
-                      onClick={() => onEnter(result)}
-                    />
-                  ) : (
-                    <ActivityListItem
-                      key={result.item.class + result.item.id}
-                      selected={selected === index}
-                      {...result.item}
-                      onClick={() => onEnter(result)}
-                    />
-                  )
-                )}
-              </List>
+              <SearchResultList searchResults={searchResults} selected={selected} onSelect={onEnter} />
             ) : (
               <Paper style={{ padding: '1em' }}>Nothing found</Paper>
             )}
           </div>
         </Paper>
       </Box>
-    </>
+    </ClickAwayListener>
   );
 }
 

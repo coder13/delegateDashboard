@@ -5,7 +5,6 @@ export default function CommandPromptProvider({ children }) {
   const [open, setOpen] = useState(true);
 
   const handleKeyDown = (e) => {
-    console.log(e.key);
     if (e.ctrlKey & (e.key === 'p')) {
       e.preventDefault();
       setOpen(true);
