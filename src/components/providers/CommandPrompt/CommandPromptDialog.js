@@ -1,49 +1,17 @@
 import Fuse from 'fuse.js';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import {
-  Box,
-  CircularProgress,
-  IconButton,
-  InputBase,
-  List,
-  ListItem,
-  ListItemText,
-  Paper,
-} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import { Box, IconButton, InputBase, List, Paper } from '@mui/material';
 import { useTheme } from '@mui/styles';
+import { allActivities } from '../../../lib/activities';
 import { acceptedRegistrations } from '../../../lib/persons';
-
-/**
- * https://usehooks.com/useDebounce/
- * @param {*} value 
- * @param {*} delay 
- * @returns 
- */
-function useDebounce(value, delay) {
-  // State and setters for debounced value
-  const [debouncedValue, setDebouncedValue] = useState(value);
-  useEffect(
-    () => {
-      // Update debounced value after delay
-      const handler = setTimeout(() => {
-        setDebouncedValue(value);
-      }, delay);
-      // Cancel the timeout if value changes (also on delay change or unmount)
-      // This is how we prevent debounced value from updating if value is changed ...
-      // .. within the delay period. Timeout gets cleared and restarted.
-      return () => {
-        clearTimeout(handler);
-      };
-    },
-    [value, delay] // Only re-call effect if value or delay changes
-  );
-  return debouncedValue;
-}
+import useDebounce from '../../hooks/useDebounce';
+import ActivityListItem from './ActivityListItem';
+import PersonListItem from './PersonListItem';
 
 const options = {
-  keys: ['name', 'wcaId'],
+  keys: ['name', 'wcaId', 'activityCode'],
   minMatchCharLength: 3,
   includeScore: true,
 };
@@ -53,41 +21,90 @@ function CommandPromptDialog({ open, onClose }) {
   const theme = useTheme();
   const [command, setCommand] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [selected, setSelected] = useState(0);
 
   const persons = useMemo(() => acceptedRegistrations(wcif.persons), [wcif]);
+  const activities = useMemo(() => allActivities(wcif), [wcif]);
 
-  const fuse = useMemo(() => new Fuse(persons, options), [persons]);
+  const fuse = useMemo(
+    () =>
+      new Fuse(
+        [
+          ...persons.map((p) => ({
+            ...p,
+            class: 'person',
+            id: p.registrantId,
+          })),
+          ...activities.map((a) => ({
+            ...a,
+            class: 'activity',
+          })),
+        ],
+        options
+      ),
+    [persons, activities]
+  );
 
-  const debouncedCommand = useDebounce(command, 1000);
+  const debouncedCommand = useDebounce(command, 400);
 
   useEffect(() => {
     if (debouncedCommand) {
-      setSearchResults(fuse.search(debouncedCommand).filter(({ score }) => score < 0.20));
+      setSearchResults(fuse.search(debouncedCommand).filter(({ score }) => score < 1));
     } else {
       setSearchResults([]);
     }
+    setSelected(0);
   }, [debouncedCommand, fuse]);
+
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === 'ArrowDown') {
+        setSelected((selected + 1) % searchResults.length);
+      } else if (e.key === 'ArrowUp') {
+        setSelected((selected - 1) % searchResults.length);
+      }
+    },
+    [searchResults.length, selected]
+  );
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   return (
     <>
       <Box
         style={{
           zIndex: theme.zIndex.drawer * 10,
-          top: open ? 0 : '-15%',
+          top: open ? 0 : '-100%',
           left: open ? '25%' : '50%',
           width: open ? '50%' : 0,
+          maxHeight: '50vh',
+
           position: 'fixed',
           // display: open ? 'block' : 'none',
           border: theme.palette.divider,
           transition: theme.transitions.create(['top', 'left', 'width']),
+          overflow: 'hidden',
+          boxShadow: theme.shadows[6],
         }}>
-        <Paper>
+        <Paper
+          style={{
+            display: 'flex',
+            flex: 1,
+            flexDirection: 'column',
+            maxHeight: '50vh',
+            overflow: 'hidden',
+          }}>
           <Paper
             component="form"
             sx={{ p: '0.25em 0.5em', display: 'flex', alignItems: 'center' }}
-            onSubmit={(e) => e.preventDefault()}
-          >
+            onSubmit={(e) => e.preventDefault()}>
             <InputBase
+              autoFocus
               value={command}
               onChange={(e) => {
                 setCommand(e.target.value);
@@ -95,24 +112,43 @@ function CommandPromptDialog({ open, onClose }) {
               placeholder="Search for competitors, rounds, and more..."
               sx={{
                 ml: 1,
-                flex: 1
+                flex: 1,
               }}
             />
             <IconButton type="button" sx={{ p: '0.5em' }} aria-label="search">
               <SearchIcon />
             </IconButton>
           </Paper>
-          {searchResults?.length ? (
-            <List>
-              {searchResults?.slice(0, 10)?.map((result) => (
-                <ListItem>
-                  <ListItemText primary={result.item.name} secondary={result.item.wcaId} />
-                </ListItem>
-              ))}
-            </List>
-          ) : (
-            <Paper style={{ padding: '1em' }}>Nothing found</Paper>
-          )}
+          <div
+            style={{
+              overflowY: 'auto',
+              display: 'flex',
+              flex: 1,
+              flexDirection: 'column',
+              transition: theme.transitions.create(['top', 'left', 'width']),
+            }}>
+            {searchResults?.length ? (
+              <List>
+                {searchResults.map((result, index) =>
+                  result?.item?.class === 'person' ? (
+                    <PersonListItem
+                      key={result.item.class + result.item.id}
+                      selected={selected === index}
+                      {...result.item}
+                    />
+                  ) : (
+                    <ActivityListItem
+                      key={result.item.class + result.item.id}
+                      selected={selected === index}
+                      {...result.item}
+                    />
+                  )
+                )}
+              </List>
+            ) : (
+              <Paper style={{ padding: '1em' }}>Nothing found</Paper>
+            )}
+          </div>
         </Paper>
       </Box>
     </>
