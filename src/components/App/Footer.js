@@ -4,6 +4,8 @@ import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import grey from '@mui/material/colors/grey';
 import { makeStyles } from '@mui/styles';
+import { WCA_ORIGIN } from '../../lib/wca-env';
+import { Divider } from '@mui/material';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -45,6 +47,19 @@ const Footer = () => {
             target="_blank"
             rel="noopener noreferrer">
             Caleb Hoover
+          </Link>
+        </Typography>
+      </Grid>
+      <Divider orientation="vertical" variant="middle" style={{ margin: '0 0.5em' }} />
+      <Grid item>
+        <Typography variant="body2">
+          {'Using data from '}
+          <Link
+            className={classes.link}
+            href={WCA_ORIGIN}
+            target="_blank"
+            rel="noopener noreferrer">
+            {WCA_ORIGIN}
           </Link>
         </Typography>
       </Grid>
