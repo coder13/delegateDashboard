@@ -1,6 +1,6 @@
 {
   "name": "delegate_dashboard",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "private": true,
   "dependencies": {
     "@cubing/icons": "^1.0.6",

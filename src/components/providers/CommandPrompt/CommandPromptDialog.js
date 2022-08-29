@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from "react-router-dom";
 import SearchIcon from '@mui/icons-material/Search';
-import { Box, ClickAwayListener, IconButton, InputBase, Paper } from '@mui/material';
+import { Box, ClickAwayListener, IconButton, InputAdornment, InputBase, Paper } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { allActivities } from '../../../lib/activities';
 import { acceptedRegistrations } from '../../../lib/persons';
@@ -18,19 +18,25 @@ const options = {
 
 function CommandPromptDialog({ open, onClose }) {
   const wcif = useSelector((state) => state.wcif);
+  const competitions = useSelector((state) => state.competitions);
+  const [currentCompetitionId, setCurrentCompetitionId] = useState(wcif?.id);
   const theme = useTheme();
   const navigate = useNavigate();
   const [command, setCommand] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selected, setSelected] = useState(0);
 
+  useEffect(() => {
+    setCurrentCompetitionId(wcif.id);
+  }, [wcif])
+
   const persons = useMemo(() => acceptedRegistrations(wcif.persons), [wcif]);
   const activities = useMemo(() => allActivities(wcif), [wcif]);
 
   const fuse = useMemo(
-    () =>
-      new Fuse(
-        [
+    () => {
+      if (currentCompetitionId && wcif) {
+        const data = [
           ...persons.map((p) => ({
             ...p,
             class: 'person',
@@ -40,10 +46,22 @@ function CommandPromptDialog({ open, onClose }) {
             ...a,
             class: 'activity',
           })),
-        ],
-        options
-      ),
-    [persons, activities]
+        ];
+        return new Fuse(data, {
+          ...options,
+          keys: ['name', 'wcaId', 'activityCode'],
+        })
+      } else {
+        return new Fuse(competitions.map((c) => ({
+          ...c,
+          class: 'competition',
+        })), {
+          ...options,
+          keys: ['name', 'shortName', 'id'],
+        })
+      }
+    },
+    [currentCompetitionId, wcif, persons, activities, competitions]
   );
 
   const debouncedCommand = useDebounce(command, 400);
@@ -52,10 +70,16 @@ function CommandPromptDialog({ open, onClose }) {
     if (debouncedCommand) {
       setSearchResults(fuse.search(debouncedCommand).filter(({ score }) => score < 1));
     } else {
-      setSearchResults([]);
+      if (!currentCompetitionId) {
+        setSearchResults(competitions.slice(0, 3).map((c) => ({
+          item: c,
+        })));
+      } else {
+        setSearchResults([]);
+      }
     }
     setSelected(0);
-  }, [debouncedCommand, fuse]);
+  }, [competitions, currentCompetitionId, debouncedCommand, fuse]);
 
   const handleClose = useCallback(() => {
     setCommand('');
@@ -64,24 +88,22 @@ function CommandPromptDialog({ open, onClose }) {
   }, [onClose]);
 
   const onEnter = useCallback((result) => {
-    const selectedItem = (result || searchResults[selected]);
-    if (!selectedItem) {
-      return;
-    }
-
-    switch (selectedItem.class) {
+    switch (result.class) {
       case 'person':
-        navigate(`/competitions/${wcif.id}/persons/${selectedItem.id}`);
+        navigate(`/competitions/${wcif.id}/persons/${result.id}`);
         break;
       case 'activity':
-        navigate(`/competitions/${wcif.id}/events/${selectedItem.activityCode}`);
+        navigate(`/competitions/${wcif.id}/events/${result.activityCode}`);
+        break;
+      case 'competition':
+        navigate(`/competitions/${result.id}`);
         break;
       default:
         break;
     }
 
     handleClose();
-  }, [handleClose, navigate, searchResults, selected, wcif.id])
+  }, [handleClose, navigate, wcif.id])
 
   const handleKeyDown = useCallback(
     (e) => {
@@ -92,13 +114,17 @@ function CommandPromptDialog({ open, onClose }) {
       } else if (e.key === 'Enter') {
         const result = searchResults[selected];
         if (result) {
-          onEnter();
+          onEnter(result.item);
         }
       } else if (e.key === 'Escape') {
         handleClose();
+      } else if (e.key === 'Backspace') {
+        if (command.length === 0) {
+          setCurrentCompetitionId(null);
+        }
       }
     },
-    [handleClose, onEnter, searchResults, selected]
+    [command.length, handleClose, onEnter, searchResults, selected]
   );
 
   useEffect(() => {
@@ -143,7 +169,14 @@ function CommandPromptDialog({ open, onClose }) {
               onChange={(e) => {
                 setCommand(e.target.value);
               }}
-              placeholder="Search for competitors, rounds, and more..."
+              placeholder={currentCompetitionId ? 'Search for competitors, rounds, and more...' : 'Search for competitions...'}
+              startAdornment={<InputAdornment position="start">
+                {currentCompetitionId ? (
+                  currentCompetitionId
+                ) : (
+                  '/'
+                )}
+              </InputAdornment>}
               sx={{
                 ml: 1,
                 flex: 1,

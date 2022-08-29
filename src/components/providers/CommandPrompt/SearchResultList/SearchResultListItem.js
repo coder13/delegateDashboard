@@ -1,5 +1,6 @@
 import { ListItemButton, ListItemText } from '@mui/material';
 import ActivityListItem from './ActivityListItem';
+import CompetitionListItem from './CompetitionListItem';
 import PersonListItem from './PersonListItem';
 
 function SearchResultListItem({ selected, onClick, ...props }) {
@@ -12,6 +13,10 @@ function SearchResultListItem({ selected, onClick, ...props }) {
       case 'activity':
         return (
           <ActivityListItem {...props} />
+        );
+      case 'competition':
+        return (
+          <CompetitionListItem {...props} />
         );
       default:
         return (

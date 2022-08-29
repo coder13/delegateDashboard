@@ -1,9 +1,11 @@
 import { sortWcifEvents } from '../lib/events';
 import { updateIn, pick } from '../lib/utils';
-import { getWcif, patchWcif } from '../lib/wcaAPI';
+import { getManageableCompetitions, getWcif, patchWcif } from '../lib/wcaAPI';
 import { validateWcif } from '../lib/wcif-validation';
 
-export const FETCH_MANAGED_COMPS = 'fetch_managed_comps';
+export const FETCHING_COMPETITIONS = 'fetching_competitions';
+export const SET_ERROR_FETCHING_COMPS = 'set_error_fetching_comps';
+export const SET_COMPETITIONS = 'set_competitions';
 export const FETCHING_WCIF = 'fetching_wcif';
 export const FETCH_WCIF = 'fetch_wcif';
 export const FETCHED_WCIF = 'fetched_wcif';
@@ -21,6 +23,10 @@ export const UPDATE_ROUND_CHILD_ACTIVITIES = 'update_round_child_activities';
 export const UPSERT_ROUND_CHILD_ACTIVITIES = 'upsert_round_child_activities';
 export const UPDATE_ROUND_EXTENSION_DATA = 'update_round_extension_data';
 export const PARTIAL_UPDATE_WCIF = 'partial_update_wcif';
+
+const fetchingCompetitions = () => ({
+  type: FETCHING_COMPETITIONS,
+})
 
 const fetchingWCIF = () => ({
   type: FETCHING_WCIF,
@@ -48,6 +54,25 @@ const updateUploading = (uploading) => ({
   type: UPLOADING_WCIF,
   uploading,
 });
+
+const setCompetitions = (competitions) => ({
+  type: SET_COMPETITIONS,
+  competitions,
+});
+
+export const fetchCompetitions = () => (dispatch) => {
+  dispatch(fetchingCompetitions());
+  getManageableCompetitions()
+    .then((comps) => {
+      dispatch(setCompetitions(comps));
+    })
+    .catch((error) => {
+      dispatch({
+        type: SET_ERROR_FETCHING_COMPS,
+        error,
+      });
+    });
+}
 
 export const fetchWCIF = (competitionId) => (dispatch) => {
   dispatch(fetchingWCIF());
@@ -77,7 +102,6 @@ export const uploadCurrentWCIFChanges = (cb) => (dispatch, getState) => {
   dispatch(updateUploading(true));
   patchWcif(competitionId, changes)
     .then(() => {
-      console.log('finished');
       dispatch(updateUploading(false));
       cb();
     })

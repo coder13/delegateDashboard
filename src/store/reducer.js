@@ -1,6 +1,7 @@
 import { mapIn, updateIn } from '../lib/utils';
 import { setExtensionData } from '../lib/wcif-extensions';
 import {
+  SET_COMPETITIONS,
   TOGGLE_PERSON_ROLE,
   FETCHING_WCIF,
   FETCHED_WCIF,
@@ -16,6 +17,8 @@ import {
   UPDATE_ROUND_CHILD_ACTIVITIES,
   UPDATE_ROUND_EXTENSION_DATA,
   PARTIAL_UPDATE_WCIF,
+  FETCHING_COMPETITIONS,
+  SET_ERROR_FETCHING_COMPS,
 } from './actions';
 
 const INITIAL_STATE = {
@@ -34,10 +37,25 @@ const INITIAL_STATE = {
       venues: [],
     },
   },
+  competitions: [],
   errors: [],
 };
 
 const reducers = {
+  [FETCHING_COMPETITIONS]: (state) => ({
+    ...state,
+    fetchingCompetitions: true,
+  }),
+  [SET_ERROR_FETCHING_COMPS]: (state, { error }) => ({
+    ...state,
+    fetchingCompetitions: false,
+    fetchingCompetitionsError: error,
+  }),
+  [SET_COMPETITIONS]: (state, action) => ({
+    ...state,
+    fetchingCompetitions: false,
+    competitions: action.competitions,
+  }),
   [FETCHING_WCIF]: (state, action) => ({
     ...state,
     fetchingWCIF: (console.log(43, state), action.fetching),
@@ -68,12 +86,12 @@ const reducers = {
       persons: state.wcif.persons.map((person) =>
         person.registrantId === action.registrantId
           ? {
-              ...person,
-              roles:
-                person.roles.indexOf(action.roleId) > -1
-                  ? person.roles.filter((role) => role !== action.roleId)
-                  : person.roles.concat(action.roleId),
-            }
+            ...person,
+            roles:
+              person.roles.indexOf(action.roleId) > -1
+                ? person.roles.filter((role) => role !== action.roleId)
+                : person.roles.concat(action.roleId),
+          }
           : person
       ),
     },
@@ -87,9 +105,9 @@ const reducers = {
       persons: state.wcif.persons.map((person) =>
         person.registrantId === action.registrantId
           ? {
-              ...person,
-              assignments: [...person.assignments, action.assignment],
-            }
+            ...person,
+            assignments: [...person.assignments, action.assignment],
+          }
           : person
       ),
     },
@@ -103,12 +121,12 @@ const reducers = {
       persons: state.wcif.persons.map((person) =>
         person.registrantId === action.registrantId
           ? {
-              ...person,
-              assignments: [
-                ...person.assignments.filter((a) => a.id !== action.assignment.activityId),
-                action.assignment,
-              ],
-            }
+            ...person,
+            assignments: [
+              ...person.assignments.filter((a) => a.id !== action.assignment.activityId),
+              action.assignment,
+            ],
+          }
           : person
       ),
     },
@@ -122,9 +140,9 @@ const reducers = {
       persons: state.wcif.persons.map((person) =>
         person.registrantId === action.registrantId
           ? {
-              ...person,
-              assignments: person.assignments.filter((a) => a.activityId !== action.activityId),
-            }
+            ...person,
+            assignments: person.assignments.filter((a) => a.activityId !== action.activityId),
+          }
           : person
       ),
     },
@@ -219,9 +237,9 @@ const reducers = {
         mapIn(room, ['activities'], (activity) =>
           activity.id === action.activityId
             ? {
-                ...activity,
-                childActivities: action.childActivities,
-              }
+              ...activity,
+              childActivities: action.childActivities,
+            }
             : activity
         )
       )

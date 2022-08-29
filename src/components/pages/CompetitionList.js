@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import FlagIconFactory from 'react-flag-icon-css';
 import ReactLoading from 'react-loading';
+import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import PublicIcon from '@mui/icons-material/Public';
 import Container from '@mui/material/Container';
@@ -11,12 +12,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import Typography from '@mui/material/Typography';
-import { sortBy } from '../../lib/utils';
-import {
-  getUpcomingManageableCompetitions,
-  getPastManageableCompetitions,
-} from '../../lib/wcaAPI.js';
-import { useAuth } from '../providers/AuthProvider.js';
 
 const FlagIcon = FlagIconFactory(React, { useCssModules: false });
 
@@ -41,35 +36,11 @@ const CompetitionLink = ({ comp, ...props }) => (
 );
 
 const CompetitionList = () => {
-  const [upcomingCompetitions, setUpcomingCompetitions] = useState([]);
-  const [pastCompetitions, setPastCompetitions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const { user } = useAuth();
-
-  useEffect(() => {
-    if (user) {
-      getUpcomingManageableCompetitions()
-        .then((competitions) => {
-          setUpcomingCompetitions(sortBy(competitions, (competition) => competition.start_date));
-        })
-        .catch((error) => {
-          setError(error.message);
-          setLoading(false);
-        })
-        .finally(() => setLoading(false));
-
-      getPastManageableCompetitions()
-        .then((competitions) => {
-          setPastCompetitions(sortBy(competitions, (competition) => -competition.start_date));
-        })
-        .catch((error) => {
-          setError(error);
-          setLoading(false);
-        })
-        .finally(() => setLoading(false));
-    }
-  }, [user]);
+  const competitions = useSelector((state) => state.competitions);
+  const loadingComps = useSelector((state) => state.fetchingCompetitions);
+  const error = useSelector((state) => state.fetchingCompetitionsError);
+  const upcomingCompetitions = competitions.filter((comp) => new Date(comp.start_date).getTime() > Date.now());
+  const pastCompetitions = competitions.filter((comp) => new Date(comp.start_date).getTime() < Date.now());
 
   if (error) {
     return (
@@ -86,7 +57,7 @@ const CompetitionList = () => {
     );
   }
 
-  if (loading) {
+  if (loadingComps) {
     return (
       <Container
         maxWidth="sm"

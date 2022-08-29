@@ -7,6 +7,14 @@ export const getMe = () => {
   return wcaApiFetch(`/me`);
 };
 
+export const getManageableCompetitions = () => {
+  const params = new URLSearchParams({
+    managed_by_me: true,
+  });
+  return wcaApiFetch(`/competitions?${params.toString()}`);
+};
+
+
 export const getUpcomingManageableCompetitions = () => {
   const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const params = new URLSearchParams({
