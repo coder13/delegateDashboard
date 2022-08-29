@@ -2,6 +2,7 @@ import '@cubing/icons';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
+import { TransitionGroup } from 'react-transition-group';
 import { Collapse, Divider, FormControlLabel, Switch } from '@mui/material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -9,7 +10,6 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import { makeStyles } from '@mui/styles';
-import { TransitionGroup } from 'react-transition-group';
 import { activityById, groupActivitiesByRound, parseActivityCode } from '../../../lib/activities';
 import { eventNameById } from '../../../lib/events';
 import { personsShouldBeInRound } from '../../../lib/persons';
@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
 const RoundSelectorPage = () => {
   const { setBreadcrumbs } = useBreadcrumbs();
   const { competitionId } = useParams();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const wcif = useSelector((state) => state.wcif);
   const classes = useStyles();
 
@@ -133,7 +133,8 @@ const RoundSelectorPage = () => {
 
                   const textToShow = [
                     realGroups?.length ? realGroupsGeneratedText : configuredGroupsText,
-                    `${pluralize(personsAssigned, 'person', 'people')} assigned of ${_personsShouldBeInRound || '???'
+                    `${pluralize(personsAssigned, 'person', 'people')} assigned of ${
+                      _personsShouldBeInRound || '???'
                     }`,
                   ];
 
@@ -143,8 +144,7 @@ const RoundSelectorPage = () => {
                         button
                         component={RouterLink}
                         to={`/competitions/${competitionId}/events/${round.id}`}
-                        selected={round.id === selectedId}
-                      >
+                        selected={round.id === selectedId}>
                         <ListItemAvatar>
                           <span className={`cubing-icon event-${event.id}`} />
                         </ListItemAvatar>

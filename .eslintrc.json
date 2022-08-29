@@ -2,6 +2,7 @@
   "extends": ["react-app", "prettier"],
   "rules": {
     "import/first": 0,
-    "no-restricted-globals": 0
+    "no-restricted-globals": 0,
+    "no-unused-vars": ["error"]
   }
 }
