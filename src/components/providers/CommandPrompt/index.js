@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import CommandPromptDialog from './CommandPromptDialog';
 
 export default function CommandPromptProvider({ children }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   const handleKeyDown = (e) => {
     if (e.ctrlKey & (e.key === 'p')) {
