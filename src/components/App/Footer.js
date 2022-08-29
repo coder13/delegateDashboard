@@ -24,11 +24,11 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const links = [
-  { text: 'GitHub', url: 'https://github.com/coder13/groups' },
+  { text: 'GitHub', url: 'https://github.com/coder13/delegateDashboard' },
   { text: 'Contact', url: 'mailto:choover11@gmail.com' },
   {
     text: `v${process.env.REACT_APP_VERSION}`,
-    url: 'https://github.com/coder13/groups',
+    url: 'https://github.com/coder13/delegateDashboard',
   },
 ];
 
