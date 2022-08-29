@@ -4,4 +4,4 @@
   status = 200
 
 [context.production.environment]
-  REACT_APP_WCA_ORIGIN = "https://wwww.worldcubeassociation.org"
+  REACT_APP_WCA_ORIGIN = "https://www.worldcubeassociation.org"
