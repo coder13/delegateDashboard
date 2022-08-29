@@ -20,7 +20,7 @@ export default function CommandPromptProvider({ children }) {
   }, [user]);
 
   useEffect(() => {
-    if (user) {
+    if (!user) {
       return;
     }
 
