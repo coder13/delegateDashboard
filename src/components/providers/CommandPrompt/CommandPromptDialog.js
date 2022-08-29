@@ -1,9 +1,16 @@
 import Fuse from 'fuse.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
-import { Box, ClickAwayListener, IconButton, InputAdornment, InputBase, Paper } from '@mui/material';
+import {
+  Box,
+  ClickAwayListener,
+  IconButton,
+  InputAdornment,
+  InputBase,
+  Paper,
+} from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { allActivities } from '../../../lib/activities';
 import { acceptedRegistrations } from '../../../lib/persons';
@@ -28,41 +35,41 @@ function CommandPromptDialog({ open, onClose }) {
 
   useEffect(() => {
     setCurrentCompetitionId(wcif.id);
-  }, [wcif])
+  }, [wcif]);
 
   const persons = useMemo(() => acceptedRegistrations(wcif.persons), [wcif]);
   const activities = useMemo(() => allActivities(wcif), [wcif]);
 
-  const fuse = useMemo(
-    () => {
-      if (currentCompetitionId && wcif) {
-        const data = [
-          ...persons.map((p) => ({
-            ...p,
-            class: 'person',
-            id: p.registrantId,
-          })),
-          ...activities.map((a) => ({
-            ...a,
-            class: 'activity',
-          })),
-        ];
-        return new Fuse(data, {
-          ...options,
-          keys: ['name', 'wcaId', 'activityCode'],
-        })
-      } else {
-        return new Fuse(competitions.map((c) => ({
+  const fuse = useMemo(() => {
+    if (currentCompetitionId && wcif) {
+      const data = [
+        ...persons.map((p) => ({
+          ...p,
+          class: 'person',
+          id: p.registrantId,
+        })),
+        ...activities.map((a) => ({
+          ...a,
+          class: 'activity',
+        })),
+      ];
+      return new Fuse(data, {
+        ...options,
+        keys: ['name', 'wcaId', 'activityCode'],
+      });
+    } else {
+      return new Fuse(
+        competitions.map((c) => ({
           ...c,
           class: 'competition',
-        })), {
+        })),
+        {
           ...options,
           keys: ['name', 'shortName', 'id'],
-        })
-      }
-    },
-    [currentCompetitionId, wcif, persons, activities, competitions]
-  );
+        }
+      );
+    }
+  }, [currentCompetitionId, wcif, persons, activities, competitions]);
 
   const debouncedCommand = useDebounce(command, 400);
 
@@ -71,9 +78,11 @@ function CommandPromptDialog({ open, onClose }) {
       setSearchResults(fuse.search(debouncedCommand).filter(({ score }) => score < 1));
     } else {
       if (!currentCompetitionId) {
-        setSearchResults(competitions.slice(0, 3).map((c) => ({
-          item: c,
-        })));
+        setSearchResults(
+          competitions.slice(0, 3).map((c) => ({
+            item: c,
+          }))
+        );
       } else {
         setSearchResults([]);
       }
@@ -87,31 +96,37 @@ function CommandPromptDialog({ open, onClose }) {
     onClose();
   }, [onClose]);
 
-  const onEnter = useCallback((result) => {
-    switch (result.class) {
-      case 'person':
-        navigate(`/competitions/${wcif.id}/persons/${result.id}`);
-        break;
-      case 'activity':
-        navigate(`/competitions/${wcif.id}/events/${result.activityCode}`);
-        break;
-      case 'competition':
-        navigate(`/competitions/${result.id}`);
-        break;
-      default:
-        break;
-    }
+  const onEnter = useCallback(
+    (result) => {
+      switch (result.class) {
+        case 'person':
+          navigate(`/competitions/${wcif.id}/persons/${result.id}`);
+          break;
+        case 'activity':
+          navigate(`/competitions/${wcif.id}/events/${result.activityCode}`);
+          break;
+        case 'competition':
+          navigate(`/competitions/${result.id}`);
+          break;
+        default:
+          break;
+      }
 
-    handleClose();
-  }, [handleClose, navigate, wcif.id])
+      handleClose();
+    },
+    [handleClose, navigate, wcif.id]
+  );
 
   const handleKeyDown = useCallback(
     (e) => {
       if (e.key === 'ArrowDown') {
+        e.preventDefault();
         setSelected((selected + 1) % searchResults.length);
       } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
         setSelected((selected - 1) % searchResults.length);
       } else if (e.key === 'Enter') {
+        e.preventDefault();
         const result = searchResults[selected];
         if (result) {
           onEnter(result.item);
@@ -167,16 +182,18 @@ function CommandPromptDialog({ open, onClose }) {
               inputRef={(input) => input && input.focus()}
               value={command}
               onChange={(e) => {
-                setCommand(e.target.value);
+                open && setCommand(e.target.value);
               }}
-              placeholder={currentCompetitionId ? 'Search for competitors, rounds, and more...' : 'Search for competitions...'}
-              startAdornment={<InputAdornment position="start">
-                {currentCompetitionId ? (
-                  currentCompetitionId
-                ) : (
-                  '/'
-                )}
-              </InputAdornment>}
+              placeholder={
+                currentCompetitionId
+                  ? 'Search for competitors, rounds, and more...'
+                  : 'Search for competitions...'
+              }
+              startAdornment={
+                <InputAdornment position="start">
+                  {currentCompetitionId ? currentCompetitionId : '/'}
+                </InputAdornment>
+              }
               sx={{
                 ml: 1,
                 flex: 1,
@@ -195,7 +212,11 @@ function CommandPromptDialog({ open, onClose }) {
               transition: theme.transitions.create(['top', 'left', 'width']),
             }}>
             {searchResults?.length ? (
-              <SearchResultList searchResults={searchResults} selected={selected} onSelect={onEnter} />
+              <SearchResultList
+                searchResults={searchResults}
+                selected={selected}
+                onSelect={onEnter}
+              />
             ) : (
               <Paper style={{ padding: '1em' }}>Nothing found</Paper>
             )}

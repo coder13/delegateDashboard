@@ -84,6 +84,7 @@ export default function AuthProvider({ children }) {
         .catch((err) => {
           console.error(err);
           setUserFetchError(err);
+          signOut();
         });
     }
   }, [accessToken]);
