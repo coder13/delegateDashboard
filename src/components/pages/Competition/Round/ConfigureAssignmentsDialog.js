@@ -32,7 +32,7 @@ import {
 import { grey, red, yellow } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 import { styled, useTheme } from '@mui/system';
-import { rooms, parseActivityCode, activityCodeToName } from '../../../../lib/activities';
+import { parseActivityCode, activityCodeToName } from '../../../../lib/activities';
 import { acceptedRegistration, isOrganizerOrDelegate } from '../../../../lib/persons';
 import { flatten } from '../../../../lib/utils';
 import {
@@ -40,6 +40,11 @@ import {
   removePersonAssignment,
   bulkRemovePersonAssignment,
 } from '../../../../store/actions';
+import {
+  selectPersonsShouldBeInRound,
+  selectRoundById,
+  selectWcifRooms,
+} from '../../../../store/selectors';
 import TableAssignmentCell from './TableAssignmentCell';
 
 const useStyles = makeStyles(() => ({
@@ -96,7 +101,8 @@ const Assignments = [
 
 const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
   const classes = useStyles();
-  const wcif = useSelector((state) => state.wcif);
+  const wcifRooms = useSelector((state) => selectWcifRooms(state));
+
   const dispatch = useDispatch();
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
@@ -119,26 +125,29 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
 
   const groupsRooms = useMemo(
     () =>
-      rooms(wcif).filter((room) =>
+      wcifRooms.filter((room) =>
         flatten(room.activities.map((activity) => activity.childActivities)).some((activity) =>
           groups.find((g) => g.id === activity.id)
         )
       ),
-    [groups, wcif]
+    [groups, wcifRooms]
   );
+
+  const round = useSelector((state) => selectRoundById(state, activityCode));
+  const personsShouldBeInRound = useSelector((state) => selectPersonsShouldBeInRound(state, round));
 
   const persons = useMemo(
     () =>
-      wcif.persons
+      personsShouldBeInRound
         .filter(
           (p) =>
+            showAllCompetitors ||
             isOrganizerOrDelegate(p) ||
-            (p?.registration?.status === 'accepted' &&
-              (p.roles.some((r) => r.indexOf('staff') > -1) || showAllCompetitors) &&
-              p?.registration?.eventIds.indexOf(eventId) > -1)
+            p.roles.some((r) => r.indexOf('staff') > -1)
         )
         .map((person) => ({
           ...person,
+          //  TODO: make event agnostic filter
           pr: person.personalBests.find((pb) => pb.eventId === eventId && pb.type === 'average')
             ?.best,
         }))
@@ -149,7 +158,7 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
 
           return a.name.localeCompare(b.name);
         }),
-    [competitorSort, eventId, showAllCompetitors, wcif.persons]
+    [competitorSort, eventId, personsShouldBeInRound, showAllCompetitors]
   );
 
   // const personsForActivityId = useCallback(
@@ -158,19 +167,23 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
   //   [persons]
   // );
 
+  const personAssignments = useCallback(
+    (registrantId) => persons.find((p) => p.registrantId === registrantId).assignments,
+    [persons]
+  );
+
   const getAssignmentCodeForPersonGroup = useCallback(
     (registrantId, activityId) => {
-      const assignments = persons.find((p) => p.registrantId === registrantId).assignments;
-      return assignments.find((a) => a.activityId === activityId)?.assignmentCode;
+      return personAssignments(registrantId).find((a) => a.activityId === activityId)
+        ?.assignmentCode;
     },
-    [persons]
+    [personAssignments]
   );
 
   const handleUpdateAssignmentForPerson = (registrantId, activityId) => () => {
     if (getAssignmentCodeForPersonGroup(registrantId, activityId) === paintingAssignmentCode) {
       dispatch(removePersonAssignment(registrantId, activityId));
     } else {
-      console.log(174, paintingAssignmentCode);
       dispatch(
         upsertPersonAssignment(registrantId, {
           activityId,

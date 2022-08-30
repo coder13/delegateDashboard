@@ -17,14 +17,15 @@ import {
 } from '@mui/material';
 import { activityDuration } from '../../../../lib/activities';
 import { createGroupsAcrossStages } from '../../../../lib/groups';
-import { personsShouldBeInRound } from '../../../../lib/persons';
 import { getExtensionData } from '../../../../lib/wcif-extensions';
 import { updateRoundActivities, updateRoundExtensionData } from '../../../../store/actions';
+import { selectPersonsShouldBeInRound } from '../../../../store/selectors';
 
 const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundActivities }) => {
   const wcif = useSelector((state) => state.wcif);
   const dispatch = useDispatch();
   const [groupsData, setGroupsData] = useState(getExtensionData('groups', round));
+  const actualCompetitors = useSelector((state) => selectPersonsShouldBeInRound(state, round));
 
   if (!open) {
     return '';
@@ -64,8 +65,6 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
       });
     }
   };
-
-  const actualCompetitors = personsShouldBeInRound(wcif, round);
 
   const roundSize = actualCompetitors.length;
   const activityMinutes = activityDuration(roundActivities[0]) / 60000;

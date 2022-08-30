@@ -33,10 +33,10 @@ export const personsRegistered = (persons, eventId) => {
  * or the actual people in the round
  * @returns {[Person]} - List of persons that should be in the round
  */
-export const personsShouldBeInRound = (wcif, round) => {
+export const personsShouldBeInRound = (persons, round) => {
   // This is the single biggest souce of truth
   if (round.results.length) {
-    return wcif.persons.filter((person) =>
+    return persons.filter((person) =>
       round.results.some((result) => person.registrantId === result.personId)
     );
   }
@@ -44,7 +44,7 @@ export const personsShouldBeInRound = (wcif, round) => {
   const { eventId, roundNumber } = parseActivityCode(round.id);
 
   if (roundNumber === 1) {
-    return personsRegistered(wcif.persons, eventId);
+    return personsRegistered(persons, eventId);
   } else {
     // Everything that follows is estimations
     // const event = wcif.events.find((i) => i.id === eventId);
@@ -65,17 +65,28 @@ export const personsShouldBeInRound = (wcif, round) => {
 };
 
 /**
+ * To be used with wcif data
  * @param {[Activity]} groups - list of groups to filter person assignments to
  */
-export const assignedInGroupsForRoles = (groups, roles) => (person) =>
+export const assignedInGroupsForRoles = (groups, test) => (person) =>
   person.assignments.some(
-    (a) => groups.some((g) => g.id === a.activityId) && roles.indexOf(a.assignmentCode) > -1
+    (a) => groups.some((g) => g.id === a.activityId) && test(a.assignmentCode) > -1
   );
 
 /**
- * @param {[Assignment]} assignments - List of assignments to check if a person is already assigned
+ * Not to be used with wcif data
+ * @param {[Assignment]} assignments - Returns true if a competitor has a competitor assignment
  */
-export const alreadyAssigned = (assignments) => (person) =>
-  !assignments.find(
+export const hasCompetitorAssignment = (assignments) => (person) =>
+  assignments.some(
     (a) => a.registrantId === person.registrantId && a.assignment.assignmentCode === 'competitor'
+  );
+
+/**
+ * Not to be used with wcif data
+ * @param {[Assignment]} assignments - Returns true if a competitor has a competitor assignment
+ */
+export const hasJudgingAssignment = (assignments) => (person) =>
+  assignments.some(
+    (a) => a.registrantId === person.registrantId && a.assignment.assignmentCode === 'staff-judge'
   );

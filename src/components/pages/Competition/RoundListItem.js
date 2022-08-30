@@ -6,11 +6,14 @@ import { Collapse } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
-import { activityById, groupActivitiesByRound, parseActivityCode } from '../../../lib/activities';
+import { groupActivitiesByRound, parseActivityCode } from '../../../lib/activities';
 import { eventNameById } from '../../../lib/events';
-import { personsShouldBeInRound } from '../../../lib/persons';
 import { pluralize } from '../../../lib/utils';
 import { getExtensionData } from '../../../lib/wcif-extensions';
+import {
+  selectPersonsAssignedForRound,
+  selectPersonsShouldBeInRound,
+} from '../../../store/selectors';
 
 function RoundListItem({ round, selected, ...props }) {
   const ref = useRef();
@@ -20,17 +23,13 @@ function RoundListItem({ round, selected, ...props }) {
 
   const { eventId, roundNumber } = parseActivityCode(round.id);
 
-  const _personsShouldBeInRound = personsShouldBeInRound(wcif, round)?.length;
+  const personsShouldBeInRoundCount = useSelector(
+    (state) => selectPersonsShouldBeInRound(state, round).length
+  );
 
-  const personsAssigned = wcif.persons.filter((p) =>
-    p.assignments.find((a) => {
-      const activity = activityById(wcif, a.activityId);
-      return (
-        activity.activityCode.split('-')[0] === round.id.split('-')[0] &&
-        activity.activityCode.split('-')[1] === round.id.split('-')[1]
-      );
-    })
-  ).length;
+  const personsAssignedCount = useSelector(
+    (state) => selectPersonsAssignedForRound(state, round.id).length
+  );
 
   const realGroupsGeneratedText =
     realGroups?.length && `${pluralize(realGroups.length, 'group', 'groups')} generated`;
@@ -40,8 +39,8 @@ function RoundListItem({ round, selected, ...props }) {
 
   const textToShow = [
     realGroups?.length ? realGroupsGeneratedText : configuredGroupsText,
-    `${pluralize(personsAssigned, 'person', 'people')} assigned of ${
-      _personsShouldBeInRound || '???'
+    `${pluralize(personsAssignedCount, 'person', 'people')} assigned of ${
+      personsShouldBeInRoundCount || '???'
     }`,
   ];
 
