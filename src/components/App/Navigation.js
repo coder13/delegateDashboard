@@ -1,5 +1,5 @@
-import React from 'react';
-import { Routes, Route, Outlet } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, Outlet, Navigate, useNavigate, useParams } from 'react-router-dom';
 import {
   Layout as CompetitionLayout,
   Home as CompetitionHomePage,
@@ -28,6 +28,17 @@ const AuthenticatedRoute = () => {
   return <Outlet />;
 };
 
+const Comp404 = () => {
+  const navigate = useNavigate();
+  const { competitionId } = useParams();
+
+  useEffect(() => {
+    navigate(`/competitions/${competitionId}`, { replace: true });
+  }, [competitionId, navigate]);
+
+  return null;
+};
+
 const Navigation = () => {
   return (
     <Routes>
@@ -46,7 +57,13 @@ const Navigation = () => {
             <Route path="export" element={<ExportPage />} />
             <Route path="import" element={<ImportPage />} />
             <Route path="scrambler-schedule" element={<ScramblerSchedulePage />} />
+
+            <Route path="*" element={<Comp404 />} />
           </Route>
+        </Route>
+
+        <Route path="*">
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Route>
     </Routes>
