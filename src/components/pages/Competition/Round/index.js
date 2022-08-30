@@ -36,7 +36,7 @@ import {
 } from '../../../../lib/groups';
 import {
   alreadyAssigned,
-  assignedToScrambleInGroups,
+  assignedInGroupsForRoles,
   personsShouldBeInRound,
 } from '../../../../lib/persons';
 import { byName } from '../../../../lib/utils';
@@ -120,11 +120,6 @@ const RoundPage = () => {
     [groups]
   );
 
-  const registeredPersonsForEvent = wcif.persons.filter(
-    ({ registration }) =>
-      registration?.status === 'accepted' && registration.eventIds.indexOf(eventId) > -1
-  );
-
   const personsAssigned = useMemo(
     () =>
       wcif.persons.filter((p) =>
@@ -142,7 +137,7 @@ const RoundPage = () => {
     [activityCode, wcif]
   );
 
-  const personsAssignedToCompeteOrJudge = useMemo(
+  const personsAssignedToCompete = useMemo(
     () =>
       wcif.persons.filter((p) =>
         p.assignments.find((a) => {
@@ -154,7 +149,7 @@ const RoundPage = () => {
           return (
             activity.activityCode.split('-')[0] === activityCode.split('-')[0] &&
             activity.activityCode.split('-')[1] === activityCode.split('-')[1] &&
-            ['competitor', 'staff-judge'].indexOf(a.assignmentCode) > -1
+            ['competitor'].indexOf(a.assignmentCode) > -1
           );
         })
       ).length,
@@ -179,35 +174,40 @@ const RoundPage = () => {
     );
 
     const assignments = [];
+    const personsToAssign = () =>
+      personsShouldBeInRound(wcif, round).filter(alreadyAssigned(assignments));
 
     // start with scramblers
-    const scramblers = personsAssigned
-      // Filter to persons with scrambling assignments in this round
-      .filter(assignedToScrambleInGroups(groups))
+    const staff = personsToAssign()
+      // Filter to persons with staff assignments in this round
+      .filter(assignedInGroupsForRoles(groups, ['staff-scrambler', 'staff-runner', 'staff-judge']))
       .map((p) => {
-        // determine scrambling assignment
-        const assignedScramblingActivities = p.assignments
+        // determine staff assignment
+        const assignedStaffActivities = p.assignments
           .filter(
             (a) =>
-              groups.some((g) => g.id === a.activityId) && a.assignmentCode === 'staff-scrambler'
+              groups.some((g) => g.id === a.activityId) &&
+              ['staff-scrambler', 'staff-runner', 'staff-judge'].indexOf(a.assignmentCode) > -1
           )
           .map(({ activityId }) => groups.find((g) => activityId === g.id));
-        const assignedScramblingActivityGroupNumbers = assignedScramblingActivities.map(
+
+        const assignedStaffActivityGroupNumbers = assignedStaffActivities.map(
           ({ activityCode }) => parseActivityCode(activityCode).groupNumber
         );
 
-        const minGroupNumber = Math.min(...assignedScramblingActivityGroupNumbers);
-        const minGroupIndex = assignedScramblingActivityGroupNumbers.indexOf(minGroupNumber);
+        const minGroupNumber = Math.min(...assignedStaffActivityGroupNumbers);
+        const minGroupIndex = assignedStaffActivityGroupNumbers.indexOf(minGroupNumber);
 
         return {
           registrantId: p.registrantId,
-          activity: assignedScramblingActivities[minGroupIndex],
+          activity: assignedStaffActivities[minGroupIndex],
+          competingActivityId: previousGroupForActivity(assignedStaffActivities[minGroupIndex]).id,
         };
       });
 
     assignments.push(
-      ...scramblers.map((s) =>
-        createGroupAssignment(s.registrantId, previousGroupForActivity(s.activity).id, 'competitor')
+      ...staff.map((s) =>
+        createGroupAssignment(s.registrantId, s.competingActivityId, 'competitor')
       )
     );
 
@@ -237,12 +237,12 @@ const RoundPage = () => {
         currentGroupPointer = (currentGroupPointer + groupsData.groups - 1) % groupsData.groups;
       };
 
-      registeredPersonsForEvent
+      personsToAssign()
         .filter((person) => person.roles.some((role) => role.indexOf('delegate') > -1))
         .filter(alreadyAssigned(assignments))
         .forEach(assignOrganizersOrStaff);
 
-      registeredPersonsForEvent
+      personsToAssign()
         .filter((person) => person.roles.some((role) => role.indexOf('organizer') > -1))
         .filter(alreadyAssigned(assignments))
         .forEach(assignOrganizersOrStaff);
@@ -291,7 +291,7 @@ const RoundPage = () => {
     const byResult = (result) => (a, b) =>
       findPR(b.personalBests, result).best - findPR(a.personalBests, result).best;
 
-    const everyoneElse = personsShouldBeInRound(wcif, round).filter(alreadyAssigned(assignments));
+    const everyoneElse = personsToAssign();
 
     const firstTimers = everyoneElse.filter((p) => !p.wcaId).sort(byName); // Everyone without a wca id
     const noSingleInEvent = everyoneElse
@@ -389,7 +389,7 @@ const RoundPage = () => {
           </Button>
         </>
       );
-    } else if (groups.length > 0 && personsAssignedToCompeteOrJudge === 0) {
+    } else if (groups.length > 0 && personsAssignedToCompete === 0) {
       return (
         <>
           <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
@@ -402,7 +402,7 @@ const RoundPage = () => {
           </Button>
         </>
       );
-    } else if (personsAssignedToCompeteOrJudge > 0) {
+    } else if (personsAssignedToCompete > 0) {
       return (
         <>
           <Button onClick={onConfigureAssignments}>Configure Assignments</Button>

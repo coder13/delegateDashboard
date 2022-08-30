@@ -26,7 +26,7 @@ export const PARTIAL_UPDATE_WCIF = 'partial_update_wcif';
 
 const fetchingCompetitions = () => ({
   type: FETCHING_COMPETITIONS,
-})
+});
 
 const fetchingWCIF = () => ({
   type: FETCHING_WCIF,
@@ -72,7 +72,7 @@ export const fetchCompetitions = () => (dispatch) => {
         error,
       });
     });
-}
+};
 
 export const fetchWCIF = (competitionId) => (dispatch) => {
   dispatch(fetchingWCIF());
@@ -107,6 +107,7 @@ export const uploadCurrentWCIFChanges = (cb) => (dispatch, getState) => {
     })
     .catch((e) => {
       console.error(e);
+      dispatch(updateUploading(false));
       cb(e);
     });
 };

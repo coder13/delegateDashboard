@@ -1,4 +1,5 @@
 import { formatCentiseconds } from '@wca/helpers';
+import clsx from 'clsx';
 import { useConfirm } from 'material-ui-confirm';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -28,9 +29,11 @@ import {
   Typography,
   useMediaQuery,
 } from '@mui/material';
+import { grey, red, yellow } from '@mui/material/colors';
+import { makeStyles } from '@mui/styles';
 import { styled, useTheme } from '@mui/system';
 import { rooms, parseActivityCode, activityCodeToName } from '../../../../lib/activities';
-import { isOrganizerOrDelegate } from '../../../../lib/persons';
+import { acceptedRegistration, isOrganizerOrDelegate } from '../../../../lib/persons';
 import { flatten } from '../../../../lib/utils';
 import {
   upsertPersonAssignment,
@@ -38,6 +41,28 @@ import {
   bulkRemovePersonAssignment,
 } from '../../../../store/actions';
 import TableAssignmentCell from './TableAssignmentCell';
+
+const useStyles = makeStyles(() => ({
+  firstTimer: {
+    backgroundColor: grey[50],
+    '&:hover': {
+      backgroundColor: grey[100],
+    },
+  },
+  delegateOrOrganizer: {
+    backgroundColor: yellow[50],
+    '&:hover': {
+      backgroundColor: yellow[100],
+    },
+  },
+  disabled: {
+    backgroundColor: red[50],
+    '&:hover': {
+      backgroundColor: red[100],
+    },
+  },
+  hover: {},
+}));
 
 const Toolbar = styled(MuiToolbar)(
   ({ theme }) => `
@@ -70,6 +95,7 @@ const Assignments = [
 ];
 
 const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
+  const classes = useStyles();
   const wcif = useSelector((state) => state.wcif);
   const dispatch = useDispatch();
   const theme = useTheme();
@@ -109,7 +135,7 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
             isOrganizerOrDelegate(p) ||
             (p?.registration?.status === 'accepted' &&
               (p.roles.some((r) => r.indexOf('staff') > -1) || showAllCompetitors) &&
-              p.registration.eventIds.indexOf(eventId) > -1)
+              p?.registration?.eventIds.indexOf(eventId) > -1)
         )
         .map((person) => ({
           ...person,
@@ -290,7 +316,15 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
           </TableHead>
           <TableBody>
             {persons.map((person) => (
-              <TableRow hover key={person.registrantId} style={{}}>
+              <TableRow
+                hover
+                key={person.registrantId}
+                className={clsx({
+                  [classes.firstTimer]: acceptedRegistration(person) && !person.wcaId,
+                  [classes.delegateOrOrganizer]:
+                    acceptedRegistration(person) && isOrganizerOrDelegate(person),
+                  [classes.disabled]: !acceptedRegistration(person),
+                })}>
                 <TableCell>{person.name}</TableCell>
                 <TableCell style={{ textAlign: 'center' }}>
                   {person.pr && formatCentiseconds(person.pr)}
@@ -301,7 +335,7 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
                     paddingBottom: 0,
                     textAlign: 'center',
                   }}>
-                  {person.registration.eventIds.indexOf(eventId) > -1 ? (
+                  {person?.registration?.eventIds.indexOf(eventId) > -1 ? (
                     <CheckIcon fontSize="small" />
                   ) : (
                     ''

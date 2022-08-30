@@ -67,9 +67,9 @@ export const personsShouldBeInRound = (wcif, round) => {
 /**
  * @param {[Activity]} groups - list of groups to filter person assignments to
  */
-export const assignedToScrambleInGroups = (groups) => (person) =>
+export const assignedInGroupsForRoles = (groups, roles) => (person) =>
   person.assignments.some(
-    (a) => groups.some((g) => g.id === a.activityId) && a.assignmentCode === 'staff-scrambler'
+    (a) => groups.some((g) => g.id === a.activityId) && roles.indexOf(a.assignmentCode) > -1
   );
 
 /**
