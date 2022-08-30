@@ -152,6 +152,12 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
     [competitorSort, eventId, showAllCompetitors, wcif.persons]
   );
 
+  // const personsForActivityId = useCallback(
+  //   (activityId, role) =>
+  //     persons.filter((p) => p.assignments.some((a) => a.assignmentCode === role)),
+  //   [persons]
+  // );
+
   const getAssignmentCodeForPersonGroup = useCallback(
     (registrantId, activityId) => {
       const assignments = persons.find((p) => p.registrantId === registrantId).assignments;
@@ -164,6 +170,7 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
     if (getAssignmentCodeForPersonGroup(registrantId, activityId) === paintingAssignmentCode) {
       dispatch(removePersonAssignment(registrantId, activityId));
     } else {
+      console.log(174, paintingAssignmentCode);
       dispatch(
         upsertPersonAssignment(registrantId, {
           activityId,
@@ -364,6 +371,60 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
               </TableRow>
             ))}
           </TableBody>
+          {/* <TableFooter>
+            <TableRow>
+              <TableCell colSpan={3}>{'Total Competitors'}</TableCell>
+              {groupsRooms.map((room) =>
+                groups
+                  .filter((group) => group.parent.room.name === room.name)
+                  .map((groupActivity) => (
+                    <TableCell>
+                      {personsForActivityId(groupActivity.id, 'competitor').length}
+                    </TableCell>
+                  ))
+              )}
+              <TableCell></TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell colSpan={3}>{'Total Judges'}</TableCell>
+              {groupsRooms.map((room) =>
+                groups
+                  .filter((group) => group.parent.room.name === room.name)
+                  .map((groupActivity) => (
+                    <TableCell>
+                      {personsForActivityId(groupActivity.id, 'staff-judge').length}
+                    </TableCell>
+                  ))
+              )}
+              <TableCell></TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell colSpan={3}>{'Total Scramblers'}</TableCell>
+              {groupsRooms.map((room) =>
+                groups
+                  .filter((group) => group.parent.room.name === room.name)
+                  .map((groupActivity) => (
+                    <TableCell>
+                      {personsForActivityId(groupActivity.id, 'staff-scrambler').length}
+                    </TableCell>
+                  ))
+              )}
+              <TableCell></TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell colSpan={3}>{'Total Runners'}</TableCell>
+              {groupsRooms.map((room) =>
+                groups
+                  .filter((group) => group.parent.room.name === room.name)
+                  .map((groupActivity) => (
+                    <TableCell>
+                      {personsForActivityId(groupActivity.id, 'staff-runner').length}
+                    </TableCell>
+                  ))
+              )}
+              <TableCell></TableCell>
+            </TableRow>
+          </TableFooter> */}
         </Table>
       </DialogContent>
       <DialogActions>
