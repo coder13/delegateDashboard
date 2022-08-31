@@ -6,7 +6,6 @@ import {
   Roles as RolesPage,
   Rooms as RoomsPage,
   Round as RoundPage,
-  RoundSelector as RoundSelectorPage,
   Person as PersonPage,
   Assignments as AssignmentsPage,
   Export as ExportPage,
@@ -51,7 +50,6 @@ const Navigation = () => {
             <Route path="roles" element={<RolesPage />} />
             <Route path="rooms" element={<RoomsPage />} />
             <Route path="events/:eventId-r:roundNumber" element={<RoundPage />} />
-            <Route path="events" element={<RoundSelectorPage />} />
             <Route path="persons/:registrantId" element={<PersonPage />} />
             <Route path="assignments" element={<AssignmentsPage />} />
             <Route path="export" element={<ExportPage />} />

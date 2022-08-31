@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Card, Grid, Typography } from '@mui/material';
 import { CardContent } from '@mui/material';
+import RoundSelectorPage from '../../components/RoundSelector';
 import { acceptedRegistrations } from '../../lib/persons';
 import { pluralize } from '../../lib/utils';
 import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
-import RoundSelectorPage from './RoundSelector';
 
 const CompetitionSummary = () => {
   const wcif = useSelector((state) => state.wcif);
@@ -32,10 +33,16 @@ const CompetitionSummary = () => {
 
 const CompetitionHome = () => {
   const { setBreadcrumbs } = useBreadcrumbs();
+  const { competitionId } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     setBreadcrumbs([]);
   }, [setBreadcrumbs]);
+
+  const handleSelected = (roundId) => {
+    navigate(`/competitions/${competitionId}/events/${roundId}`);
+  };
 
   return (
     <Grid container direction="column" spacing={1}>
@@ -43,7 +50,7 @@ const CompetitionHome = () => {
         <CompetitionSummary />
       </Grid>
       <Grid item>
-        <RoundSelectorPage />
+        <RoundSelectorPage competitionId={competitionId} onSelected={handleSelected} />
       </Grid>
     </Grid>
   );

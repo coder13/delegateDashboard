@@ -1,7 +1,6 @@
 import '@cubing/icons';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
 import { TransitionGroup } from 'react-transition-group';
 import { Collapse, Divider, FormControlLabel, Switch } from '@mui/material';
 import List from '@mui/material/List';
@@ -10,8 +9,7 @@ import { makeStyles } from '@mui/styles';
 import { parseActivityCode } from '../../lib/activities';
 import { eventNameById } from '../../lib/events';
 import { flatMap } from '../../lib/utils';
-import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
-import { useCommandPrompt } from '../../providers/CommandPrompt';
+import { useCommandPrompt } from '../../providers/CommandPromptProvider';
 import RoundListItem from './RoundListItem';
 
 const useStyles = makeStyles((theme) => ({
@@ -36,10 +34,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const RoundSelectorPage = () => {
-  const { setBreadcrumbs } = useBreadcrumbs();
-  const { competitionId } = useParams();
-  const navigate = useNavigate();
+const RoundSelector = ({ competitionId, onSelected }) => {
   const wcif = useSelector((state) => state.wcif);
   const classes = useStyles();
   const { open: commandPromptOpen } = useCommandPrompt();
@@ -56,14 +51,6 @@ const RoundSelectorPage = () => {
     return roundNumber === 1;
   });
 
-  useEffect(() => {
-    setBreadcrumbs([
-      {
-        text: 'Events',
-      },
-    ]);
-  }, [setBreadcrumbs]);
-
   const handleKeyDown = (e) => {
     if (commandPromptOpen) {
       return;
@@ -78,7 +65,7 @@ const RoundSelectorPage = () => {
       const nextIndex = (selectedIndex + 1 + rounds.length) % rounds.length;
       setSelectedId(rounds[nextIndex]);
     } else if (e.key === 'Enter') {
-      navigate(`/competitions/${competitionId}/events/${selectedId}`);
+      onSelected(selectedId);
     } else if (e.key === ' ' || e.key === 'a') {
       setShowAllRounds(!showAllRounds);
     }
@@ -128,4 +115,4 @@ const RoundSelectorPage = () => {
   );
 };
 
-export default RoundSelectorPage;
+export default RoundSelector;

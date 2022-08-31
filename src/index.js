@@ -10,7 +10,7 @@ import App from './App/';
 import './assets/index.css';
 import QueryParamPreservingRouter from './components/QueryParamPreservingRouter';
 import AuthProvider from './providers/AuthProvider';
-import CommandPromptProvider from './providers/CommandPrompt';
+import CommandPromptProvider from './providers/CommandPromptProvider';
 import * as serviceWorker from './serviceWorker';
 import store from './store';
 import theme from './theme';

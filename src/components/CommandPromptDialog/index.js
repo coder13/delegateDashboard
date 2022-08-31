@@ -15,7 +15,7 @@ import { useTheme } from '@mui/styles';
 import useDebounce from '../../hooks/useDebounce';
 import { allActivities } from '../../lib/activities';
 import { acceptedRegistrations } from '../../lib/persons';
-import SearchResultList from './SearchResultList';
+import SearchResultList from '../SearchResultList';
 
 const options = {
   keys: ['name', 'wcaId', 'activityCode'],

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { useAuth } from '../../providers/AuthProvider';
-import CommandPromptDialog from './CommandPromptDialog';
+import CommandPromptDialog from '../components/CommandPromptDialog';
+import { useAuth } from './AuthProvider';
 
 const CommandPromptContext = createContext({
   open: false,
