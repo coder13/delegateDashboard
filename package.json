@@ -15,6 +15,7 @@
     "@testing-library/user-event": "^13.5.0",
     "@wca/helpers": "^1.1.1",
     "clsx": "^1.1.1",
+    "date-fns": "^2.29.2",
     "export-to-csv": "^0.2.1",
     "fuse.js": "^6.6.2",
     "lodash.debounce": "^4.0.8",

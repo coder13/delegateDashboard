@@ -1,3 +1,4 @@
+import { format, parseISO } from 'date-fns';
 import React from 'react';
 import FlagIconFactory from 'react-flag-icon-css';
 import ReactLoading from 'react-loading';
@@ -13,9 +14,25 @@ import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import Typography from '@mui/material/Typography';
 
+// https://github.com/thewca/wca-live/blob/8884f8dc5bb2efcc3874f9fff4f6f3c098efbd6a/client/src/lib/date.js#L10
+const formatDateRange = (startString, endString) => {
+  const [startDay, startMonth, startYear] = format(parseISO(startString), 'd MMM yyyy').split(' ');
+  const [endDay, endMonth, endYear] = format(parseISO(endString), 'd MMM yyyy').split(' ');
+  if (startString === endString) {
+    return `${startMonth} ${startDay}, ${startYear}`;
+  }
+  if (startMonth === endMonth && startYear === endYear) {
+    return `${startMonth} ${startDay} - ${endDay}, ${endYear}`;
+  }
+  if (startYear === endYear) {
+    return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${startYear}`;
+  }
+  return `${startMonth} ${startDay}, ${startYear} - ${endMonth} ${endDay}, ${endYear}`;
+};
+
 const FlagIcon = FlagIconFactory(React, { useCssModules: false });
 
-const CompetitionLink = ({ comp, ...props }) => (
+const CompetitionLink = ({ comp }) => (
   <ListItem button component={Link} to={`/competitions/${comp.id}`}>
     <ListItemIcon>
       {!comp.country_iso2 || RegExp('(x|X)', 'g').test(comp.country_iso2.toLowerCase()) ? (
@@ -24,14 +41,7 @@ const CompetitionLink = ({ comp, ...props }) => (
         <FlagIcon code={comp.country_iso2.toLowerCase()} size="lg" />
       )}
     </ListItemIcon>
-    <ListItemText
-      primary={comp.name}
-      secondary={new Date(comp.start_date).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })}
-    />
+    <ListItemText primary={comp.name} secondary={formatDateRange(comp.start_date, comp.end_date)} />
   </ListItem>
 );
 
@@ -39,8 +49,12 @@ const CompetitionList = () => {
   const competitions = useSelector((state) => state.competitions);
   const loadingComps = useSelector((state) => state.fetchingCompetitions);
   const error = useSelector((state) => state.fetchingCompetitionsError);
-  const upcomingCompetitions = competitions.filter((comp) => new Date(comp.start_date).getTime() > Date.now());
-  const pastCompetitions = competitions.filter((comp) => new Date(comp.start_date).getTime() < Date.now());
+  const upcomingCompetitions = competitions.filter(
+    (comp) => new Date(comp.start_date).getTime() > Date.now()
+  );
+  const pastCompetitions = competitions.filter(
+    (comp) => new Date(comp.end_date).getTime() < Date.now()
+  );
 
   if (error) {
     return (
