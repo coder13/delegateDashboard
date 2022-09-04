@@ -7,7 +7,6 @@ const useStyles = makeStyles(() => ({
   root: {
     display: 'flex',
     flexDirection: 'row',
-    width: '25%',
     justifyContent: 'space-around',
   },
   iconButtonOn: {
