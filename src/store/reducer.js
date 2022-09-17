@@ -59,7 +59,7 @@ const reducers = {
   }),
   [FETCHING_WCIF]: (state, action) => ({
     ...state,
-    fetchingWCIF: (console.log(43, state), action.fetching),
+    fetchingWCIF: action.fetching,
   }),
   [FETCHED_WCIF]: (state, action) => ({
     ...state,

@@ -14,7 +14,6 @@ export const getManageableCompetitions = () => {
   return wcaApiFetch(`/competitions?${params.toString()}`);
 };
 
-
 export const getUpcomingManageableCompetitions = () => {
   const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const params = new URLSearchParams({
@@ -47,10 +46,10 @@ export const saveWcifChanges = (previousWcif, newWcif) => {
   return patchWcif(newWcif.id, pick(newWcif, keysDiff));
 };
 
-export const wcaApiFetch = (path, fetchOptions = {}) => {
+export const wcaApiFetch = async (path, fetchOptions = {}) => {
   const baseApiUrl = `${WCA_ORIGIN}/api/v0`;
 
-  return fetch(
+  const res = await fetch(
     `${baseApiUrl}${path}`,
     Object.assign({}, fetchOptions, {
       headers: new Headers({
@@ -58,10 +57,11 @@ export const wcaApiFetch = (path, fetchOptions = {}) => {
         'Content-Type': 'application/json',
       }),
     })
-  )
-    .then((response) => {
-      if (!response.ok) throw new Error(response.statusText);
-      return response;
-    })
-    .then((response) => response.json());
+  );
+
+  if (!res.ok) {
+    throw new Error(`${res.status}${res.statusText ? `: ${res.statusText}` : ''}`);
+  }
+
+  return await res.json();
 };

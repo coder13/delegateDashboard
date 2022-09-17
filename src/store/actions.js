@@ -75,18 +75,19 @@ export const fetchCompetitions = () => (dispatch) => {
     });
 };
 
-export const fetchWCIF = (competitionId) => (dispatch) => {
+export const fetchWCIF = (competitionId) => async (dispatch) => {
   dispatch(fetchingWCIF());
-  getWcif(competitionId)
+  try {
+    const wcif = await getWcif(competitionId);
     /* Sort events, so that we don't need to remember about this everywhere. */
-    .then((wcif) => updateIn(wcif, ['events'], sortWcifEvents))
-    .then((wcif) => {
-      console.log(54);
-      dispatch(updateWCIF(wcif));
-      dispatch(updateWcifErrors(validateWcif(wcif)));
-    })
-    .catch((error) => updateWcifErrors([error.message]))
-    .finally(() => updateFetching(false));
+    const updatedWcif = updateIn(wcif, ['events'], sortWcifEvents);
+
+    dispatch(updateWCIF(updatedWcif));
+    dispatch(updateWcifErrors(validateWcif(updatedWcif)));
+  } catch (e) {
+    dispatch(updateWcifErrors([e], true));
+  }
+  dispatch(updateFetching(false));
 };
 
 export const uploadCurrentWCIFChanges = (cb) => (dispatch, getState) => {
