@@ -1,5 +1,5 @@
 import { formatCentiseconds } from '@wca/helpers';
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Card, CardHeader, CardContent, CardActions, Alert, IconButton } from '@mui/material';
@@ -11,81 +11,109 @@ import {
   activityDurationString,
   parseActivityCode,
 } from '../../../lib/activities';
+import { selectPersonsAssignedToActivitiyId } from '../../../store/selectors';
+
+const withAssignmentCode =
+  (activityId, assignmentCode) =>
+  ({ assignedActivity }) =>
+    assignedActivity.activityId === activityId &&
+    assignedActivity.assignmentCode.indexOf(assignmentCode) > -1;
 
 const GroupCard = ({ groupActivity }) => {
   const wcif = useSelector((state) => state.wcif);
-
-  const mapNames = (array) =>
-    array.length
-      ? array
-          .sort((a, b) => a.name.localeCompare(b.name))
-          .map(({ registrantId, name }) => (
-            <MaterialLink to={`/competitions/${wcif.id}/persons/${registrantId}`}>
-              {name}
-            </MaterialLink>
-          ))
-          .reduce((a, b) => (
-            <>
-              {a}, {b}
-            </>
-          ))
-      : null;
+  const personsAssigned = useSelector((state) =>
+    selectPersonsAssignedToActivitiyId(state, groupActivity.id)
+  ).map((p) => ({
+    ...p,
+    assignedActivity: p.assignments.find((a) => a.activityId === groupActivity.id),
+  }));
 
   const { eventId } = parseActivityCode(groupActivity.activityCode);
 
-  const personsAssigned = wcif.persons.filter((p) =>
-    p.assignments.find((a) => a.activityId === groupActivity.id)
+  const competitors = useMemo(
+    () => personsAssigned.filter(withAssignmentCode(groupActivity.id, 'competitor')),
+    [personsAssigned, groupActivity.id]
   );
-  const competitors = personsAssigned.filter((p) =>
-    p.assignments.find(
-      (a) => a.activityId === groupActivity.id && a.assignmentCode.indexOf('competitor') > -1
-    )
+  const staff = useMemo(
+    () => personsAssigned.filter(withAssignmentCode(groupActivity.id, 'staff-')),
+    [personsAssigned, groupActivity.id]
   );
-  const staff = personsAssigned.filter((p) =>
-    p.assignments.find(
-      (a) => a.activityId === groupActivity.id && a.assignmentCode.indexOf('staff-') > -1
-    )
+  const judges = useMemo(
+    () => staff.filter(withAssignmentCode(groupActivity.id, 'staff-judge')),
+    [staff, groupActivity.id]
   );
-  const judges = staff.filter((p) =>
-    p.assignments.find(
-      (a) => a.activityId === groupActivity.id && a.assignmentCode.indexOf('staff-judge') > -1
-    )
+  const scramblers = useMemo(
+    () => personsAssigned.filter(withAssignmentCode(groupActivity.id, 'staff-scrambler')),
+    [personsAssigned, groupActivity.id]
   );
-  const scramblers = staff.filter((p) =>
-    p.assignments.find(
-      (a) => a.activityId === groupActivity.id && a.assignmentCode.indexOf('staff-scrambler') > -1
-    )
-  );
-  const runners = staff.filter((p) =>
-    p.assignments.find(
-      (a) => a.activityId === groupActivity.id && a.assignmentCode.indexOf('staff-runner') > -1
-    )
-  );
-  const other = staff.filter((p) =>
-    p.assignments.find(
-      ({ activityId, assignmentCode }) =>
-        activityId === groupActivity.id &&
-        assignmentCode.indexOf('staff-') > -1 &&
-        ['judge', 'scrambler', 'runner'].indexOf(assignmentCode.split('-')[1]) === -1
-    )
+  const runners = useMemo(
+    () => staff.filter(withAssignmentCode(groupActivity.id, 'staff-runner')),
+    [staff, groupActivity.id]
   );
 
-  const errors = competitors
-    .filter((competitor) => {
-      return staff.find((s) => s.registrantId === competitor.registrantId);
-    })
-    .map((competitor) => ({
-      message: `${competitor.name} (${competitor.wcaId}) is both competing and staffing!`,
-    }));
+  const other = useMemo(
+    () =>
+      staff.filter((p) =>
+        p.assignments.find(
+          ({ activityId, assignmentCode }) =>
+            activityId === groupActivity.id &&
+            assignmentCode.indexOf('staff-') > -1 &&
+            ['judge', 'scrambler', 'runner'].indexOf(assignmentCode.split('-')[1]) === -1
+        )
+      ),
+    [groupActivity.id, staff]
+  );
+
+  const mapNames = useCallback(
+    (array) =>
+      array.length
+        ? array
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map(({ registrantId, name, assignments }) => {
+              const assignment = assignments.find((a) => a.activityId === groupActivity.id);
+
+              return (
+                <MaterialLink to={`/competitions/${wcif.id}/persons/${registrantId}`}>
+                  {`${name}${assignment?.stationNumber ? ` (${assignment.stationNumber})` : ''}`}
+                </MaterialLink>
+              );
+            })
+            .reduce((a, b) => (
+              <>
+                {a}, {b}
+              </>
+            ))
+        : null,
+    [groupActivity.id, wcif.id]
+  );
+
+  const errors = useMemo(
+    () =>
+      competitors
+        .filter((competitor) => {
+          return staff.find((s) => s.registrantId === competitor.registrantId);
+        })
+        .map((competitor) => ({
+          message: `${competitor.name} (${competitor.wcaId}) is both competing and staffing!`,
+        })),
+    [competitors, staff]
+  );
 
   const roomName = groupActivity.parent.room.name;
 
-  const personalRecords = competitors
-    .map((person) => {
-      const pr = person.personalBests.find((pb) => pb.eventId === eventId && pb.type === 'average');
-      return pr?.best;
-    })
-    .filter((pr) => !!pr);
+  const personalRecords = useMemo(
+    () =>
+      competitors
+        .map((person) => {
+          const pr = person.personalBests.find(
+            (pb) => pb.eventId === eventId && pb.type === 'average'
+          );
+          return pr?.best;
+        })
+        .filter((pr) => !!pr),
+    [competitors, eventId]
+  );
+
   const averageSpeed = Math.round(
     personalRecords.reduce((a, b) => a + b, 0) / personalRecords.length
   );
