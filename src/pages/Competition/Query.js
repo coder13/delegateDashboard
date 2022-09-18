@@ -16,34 +16,78 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { blue, green, red, yellow } from '@mui/material/colors';
 import { Box } from '@mui/system';
 import useDebounce from '../../hooks/useDebounce';
 import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
 
-const renderTree = (key, node, parent) => {
+const ColoredLabel = ({ text, color, label }) => (
+  <>
+    <span style={{ color: blue[800] }}>
+      {text}
+      {': '}
+    </span>
+    <span style={{ color }}>{label}</span>
+  </>
+);
+
+function renderLabel(key, node) {
+  if (node && Array.isArray(node) && node.length === 0) {
+    return <ColoredLabel text={key} color={blue[800]} label={JSON.stringify(node)} />;
+  }
+
+  // Checks if node is object and *not* null or undefined
   if (node && typeof node === 'object') {
     const extraProps = [
-      node.id ? `id: ${node.id}` : '',
-      node.registrantId ? `registrantId: ${node.registrantId}` : '',
-      node.name ? `name: ${node.name}` : '',
-      node.activityId ? `activityId: ${node.activityId}` : '',
-    ]
-      .filter(Boolean)
-      .join(', ');
+      node.id && renderLabel('id', node.id),
+      node.registrantId && renderLabel('registrantId', node.registrantId),
+      node.name && renderLabel('name', node.name),
+      node.activityId && renderLabel('activityId', node.activityId),
+    ].filter(Boolean);
 
     return (
-      <TreeItem
-        key={parent + key}
-        nodeId={parent + key}
-        label={`${key}${extraProps ? ` (${extraProps})` : ''}`}>
+      <>
+        <span style={{ color: blue[800] }}>
+          {key}
+          {!!extraProps?.length && ': '}
+        </span>
+        {!!extraProps?.length && (
+          <span style={{ color: blue[800] }}>
+            {'{ '}
+            {extraProps.reduce((a, b) => (
+              <>
+                {a}, {b}
+              </>
+            ))}
+            {' }'}
+          </span>
+        )}
+      </>
+    );
+  } else {
+    if (typeof node === 'string') {
+      return <ColoredLabel text={key} color={green[800]} label={JSON.stringify(node)} />;
+    } else if (typeof node === 'number') {
+      return <ColoredLabel text={key} color={yellow[900]} label={JSON.stringify(node)} />;
+    } else if (node === undefined || node === null) {
+      return <ColoredLabel text={key} color={red[800]} label={JSON.stringify(node)} />;
+    }
+
+    return `${key}: ${JSON.stringify(node)}`;
+  }
+}
+
+const renderTree = (key, node, parent) => {
+  // Checks if node is object and *not* null or undefined
+  if (node && typeof node === 'object') {
+    return (
+      <TreeItem key={parent + key} nodeId={parent + key} label={renderLabel(key, node)}>
         {Object.keys(node).map((_key) => renderTree(_key, node[_key], parent + key))}
       </TreeItem>
     );
   }
 
-  return (
-    <TreeItem key={parent + key} nodeId={parent + key} label={`${key}: ${JSON.stringify(node)}`} />
-  );
+  return <TreeItem key={parent + key} nodeId={parent + key} label={renderLabel(key, node)} />;
 };
 const JQPage = () => {
   const navigate = useNavigate();
@@ -170,7 +214,9 @@ const JQPage = () => {
           defaultCollapseIcon={<ExpandMoreIcon />}
           defaultExpandIcon={<ChevronRightIcon />}
           defaultExpanded={[debouncedInput]}>
-          {debouncedInput ? renderTree(debouncedInput, results) : renderTree('wcif', wcif)}
+          {debouncedInput
+            ? renderTree(debouncedInput, results.length === 1 ? results[0] : results)
+            : renderTree('wcif', wcif)}
         </TreeView>
       </Box>
     </Grid>
