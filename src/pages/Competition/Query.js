@@ -3,7 +3,7 @@ import TreeView from '@material-ui/lab/TreeView';
 import jp from 'jsonpath';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
@@ -21,7 +21,6 @@ import {
 } from '@mui/material';
 import { blue, green, red, yellow } from '@mui/material/colors';
 import { Box } from '@mui/system';
-import MaterialLink from '../../components/MaterialLink';
 import useDebounce from '../../hooks/useDebounce';
 import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
 
@@ -205,7 +204,7 @@ const JQPage = () => {
         <AccordionDetails>
           <List>
             <ListItemButton
-              component={MaterialLink}
+              component={Link}
               to={'?q=' + encodeURIComponent('events[*].rounds[*].id')}>
               <ListItemText primary="Get all round ids" />
             </ListItemButton>
