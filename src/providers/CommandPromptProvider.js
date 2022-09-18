@@ -40,7 +40,7 @@ export default function CommandPromptProvider({ children }) {
   return (
     <CommandPromptContext.Provider value={{ open, setOpen }}>
       {children}
-      {user && <CommandPromptDialog open={open} onClose={() => setOpen(false)} />}
+      {user && open && <CommandPromptDialog open={open} onClose={() => setOpen(false)} />}
     </CommandPromptContext.Provider>
   );
 }

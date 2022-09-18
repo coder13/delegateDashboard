@@ -7,6 +7,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import MenuIcon from '@mui/icons-material/Menu';
 import PeopleIcon from '@mui/icons-material/People';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import SearchIcon from '@mui/icons-material/Search';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import {
   AppBar as MuiAppBar,
@@ -97,6 +98,11 @@ export const DrawerLinks = () => {
           url: `/competitions/${competitionId}/assignments`,
           icon: <ViewListIcon />,
           text: 'Assignments',
+        },
+        {
+          url: `/competitions/${competitionId}/query`,
+          icon: <SearchIcon />,
+          text: 'Query',
         },
       ],
     }),
