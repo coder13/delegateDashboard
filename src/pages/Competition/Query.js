@@ -3,7 +3,7 @@ import TreeView from '@material-ui/lab/TreeView';
 import jp from 'jsonpath';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
@@ -13,13 +13,23 @@ import {
   Alert,
   Grid,
   LinearProgress,
+  List,
+  ListItemButton,
+  ListItemText,
   TextField,
   Typography,
 } from '@mui/material';
 import { blue, green, red, yellow } from '@mui/material/colors';
 import { Box } from '@mui/system';
+import MaterialLink from '../../components/MaterialLink';
 import useDebounce from '../../hooks/useDebounce';
 import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
+
+function useQuery() {
+  const { search } = useLocation();
+
+  return React.useMemo(() => new URLSearchParams(search), [search]);
+}
 
 const ColoredLabel = ({ text, color, label }) => (
   <>
@@ -91,20 +101,23 @@ const renderTree = (key, node, parent) => {
 };
 const JQPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { q } = useParams();
+  const queryParams = useQuery();
   const { setBreadcrumbs } = useBreadcrumbs();
-  const [input, setInput] = useState(q || '');
+  const [input, setInput] = useState(queryParams.get('query') || '');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const wcif = useSelector((state) => state.wcif);
   const debouncedInput = useDebounce(input, 800);
 
+  useEffect(() => {
+    setInput(queryParams.get('query'));
+  }, [queryParams]);
+
   const handleInputChange = (e) => {
     setInput(e.target.value);
     setLoading(true);
-    navigate({ ...location, search: e.target.value ? `?q=${e.target.value}` : '' });
+    navigate({ ...location, search: e.target.value ? `?query=${e.target.value}` : '' });
   };
 
   useEffect(() => {
@@ -187,11 +200,22 @@ const JQPage = () => {
           </dl>
         </AccordionDetails>
       </Accordion>
+      <Accordion>
+        <AccordionSummary>Examples</AccordionSummary>
+        <AccordionDetails>
+          <List>
+            <ListItemButton
+              component={MaterialLink}
+              to={'?q=' + encodeURIComponent('events[*].rounds[*].id')}>
+              <ListItemText primary="Get all round ids" />
+            </ListItemButton>
+          </List>
+        </AccordionDetails>
+      </Accordion>
       <br />
       <Box sx={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
         <TextField
-          id="outlined-multiline-flexible"
-          label="Multiline"
+          label="Query"
           variant="outlined"
           fullWidth
           autoFocus
