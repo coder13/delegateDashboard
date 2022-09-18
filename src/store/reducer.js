@@ -1,3 +1,4 @@
+import { addAssignmentToPerson, removeAssignmentFromPerson, upsertAssignmentsOnPerson } from '../lib/persons';
 import { mapIn, updateIn } from '../lib/utils';
 import { setExtensionData } from '../lib/wcif-extensions';
 import {
@@ -97,27 +98,29 @@ const reducers = {
       ),
     },
   }),
-  [ADD_PERSON_ASSIGNMENT]: (state, action) => ({
+  [ADD_PERSON_ASSIGNMENTS]: (state, action) => ({
     ...state,
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'persons']),
-    wcif: {
-      ...state.wcif,
-      persons: state.wcif.persons.map((person) =>
-        person.registrantId === action.registrantId
-          ? {
-              ...person,
-              assignments: [...person.assignments, action.assignment],
-            }
-          : person
-      ),
-    },
+    wcif: mapIn(state.wcif, ['persons'], (person) =>
+      person.registrantId === action.registrantId ? addAssignmentToPerson(action) : person
+    ),
   }),
-  [UPSERT_PERSON_ASSIGNMENT]: (state, action) => ({
+  [REMOVE_PERSON_ASSIGNMENTS]: (state, action) => ({
     ...state,
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'persons']),
-    wcif: {
+    wcif: mapIn(state.wcif, ['persons'], (person) =>
+      person.registrantId === action.registrantId ? removeAssignmentFromPerson(action) : person
+    ),
+  }),
+  [UPSERT_PERSON_ASSIGNMENTS]: (state, action) => ({
+    ...state,
+    needToSave: true,
+    changedKeys: new Set([...state.changedKeys, 'persons']),
+    wcif: mapIn(state.wcif, ['persons'], (person) =>
+      person.registrantId === action.registrantId ? upsertAssignmentsOnPerson(action) : person
+    ),
       ...state.wcif,
       persons: state.wcif.persons.map((person) =>
         person.registrantId === action.registrantId
@@ -132,22 +135,7 @@ const reducers = {
       ),
     },
   }),
-  [REMOVE_PERSON_ASSIGNMENT]: (state, action) => ({
-    ...state,
-    needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'persons']),
-    wcif: {
-      ...state.wcif,
-      persons: state.wcif.persons.map((person) =>
-        person.registrantId === action.registrantId
-          ? {
-              ...person,
-              assignments: person.assignments.filter((a) => a.activityId !== action.activityId),
-            }
-          : person
-      ),
-    },
-  }),
+  [BULK_UPSERT_PERSON_ASSIGNMENT]: (state, action) => ({}),
   [BULK_ADD_PERSON_ASSIGNMENT]: (state, action) => ({
     ...state,
     needToSave: true,

@@ -36,9 +36,9 @@ import { parseActivityCode, activityCodeToName } from '../../../lib/activities';
 import { acceptedRegistration, isOrganizerOrDelegate } from '../../../lib/persons';
 import { flatten } from '../../../lib/utils';
 import {
-  upsertPersonAssignment,
-  removePersonAssignment,
-  bulkRemovePersonAssignment,
+  upsertPersonAssignments,
+  removePersonAssignments,
+  bulkRemovePersonAssignments,
 } from '../../../store/actions';
 import {
   selectPersonsShouldBeInRound,
@@ -182,13 +182,15 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
 
   const handleUpdateAssignmentForPerson = (registrantId, activityId) => () => {
     if (getAssignmentCodeForPersonGroup(registrantId, activityId) === paintingAssignmentCode) {
-      dispatch(removePersonAssignment(registrantId, activityId));
+      dispatch(removePersonAssignments(registrantId, activityId));
     } else {
       dispatch(
-        upsertPersonAssignment(registrantId, {
-          activityId,
-          assignmentCode: paintingAssignmentCode,
-        })
+        upsertPersonAssignments(registrantId, [
+          {
+            activityId,
+            assignmentCode: paintingAssignmentCode,
+          },
+        ])
       );
     }
   };
@@ -196,7 +198,7 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
   const handleResetAssignments = () => {
     confirm('Are you sure you want to reset all assignments and start over').then(() => {
       dispatch(
-        bulkRemovePersonAssignment(
+        bulkRemovePersonAssignments(
           groups.map((groupActivity) => ({
             activityId: groupActivity.id,
           }))
