@@ -98,7 +98,7 @@ const renderTree = (key, node, parent) => {
 
   return <TreeItem key={parent + key} nodeId={parent + key} label={renderLabel(key, node)} />;
 };
-const JQPage = () => {
+const QueryPage = () => {
   const navigate = useNavigate();
   const queryParams = useQuery();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -110,7 +110,7 @@ const JQPage = () => {
   const debouncedInput = useDebounce(input, 800);
 
   useEffect(() => {
-    setInput(queryParams.get('query'));
+    setInput(queryParams.get('query') || '');
   }, [queryParams]);
 
   const handleInputChange = (e) => {
@@ -205,7 +205,7 @@ const JQPage = () => {
           <List>
             <ListItemButton
               component={Link}
-              to={'?q=' + encodeURIComponent('events[*].rounds[*].id')}>
+              to={'?query=' + encodeURIComponent('events[*].rounds[*].id')}>
               <ListItemText primary="Get all round ids" />
             </ListItemButton>
           </List>
@@ -235,8 +235,7 @@ const JQPage = () => {
         <TreeView
           style={{}}
           defaultCollapseIcon={<ExpandMoreIcon />}
-          defaultExpandIcon={<ChevronRightIcon />}
-          defaultExpanded={[debouncedInput]}>
+          defaultExpandIcon={<ChevronRightIcon />}>
           {debouncedInput
             ? renderTree(debouncedInput, results.length === 1 ? results[0] : results)
             : renderTree('wcif', wcif)}
@@ -246,4 +245,4 @@ const JQPage = () => {
   );
 };
 
-export default JQPage;
+export default QueryPage;
