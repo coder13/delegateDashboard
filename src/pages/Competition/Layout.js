@@ -5,6 +5,7 @@ import { useParams, Outlet } from 'react-router-dom';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import {
   Alert,
+  AlertTitle,
   Backdrop,
   Breadcrumbs,
   Button,
@@ -14,9 +15,7 @@ import {
   Drawer,
   Grid,
   IconButton,
-  List,
-  ListItem,
-  ListItemText,
+  Stack,
   Typography,
 } from '@mui/material';
 import { styled } from '@mui/system';
@@ -30,13 +29,13 @@ const Errors = ({ errors }) => {
   return (
     <div>
       <Typography>Errors!</Typography>
-      <List>
+      <Stack>
         {errors.map((err) => (
-          <ListItem key={err}>
-            <ListItemText primary={err.message} secondary={JSON.stringify(err.data)} />
-          </ListItem>
+          <Alert severity="error" key={err}>
+            <AlertTitle>{err.message}</AlertTitle>
+          </Alert>
         ))}
-      </List>
+      </Stack>
     </div>
   );
 };

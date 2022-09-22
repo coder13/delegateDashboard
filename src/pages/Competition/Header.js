@@ -1,5 +1,5 @@
-import { useSnackbar } from 'notistack';
-import { useDispatch, useSelector } from 'react-redux';
+import { useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
@@ -7,10 +7,10 @@ import HomeIcon from '@mui/icons-material/Home';
 import MenuIcon from '@mui/icons-material/Menu';
 import PeopleIcon from '@mui/icons-material/People';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import SearchIcon from '@mui/icons-material/Search';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import {
   AppBar as MuiAppBar,
-  Button,
   Divider,
   IconButton,
   List,
@@ -22,7 +22,6 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import { uploadCurrentWCIFChanges } from '../../store/actions';
 
 export const drawerWidth = 240;
 
@@ -44,6 +43,13 @@ const AppBar = styled(MuiAppBar, {
   }),
 }));
 
+const MenuLink = ({ url, icon, text }) => (
+  <ListItem button key={url} component={Link} to={url}>
+    <ListItemIcon>{icon}</ListItemIcon>
+    <ListItemText primary={text} />
+  </ListItem>
+);
+
 export const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -55,70 +61,75 @@ export const DrawerHeader = styled('div')(({ theme }) => ({
 
 export const DrawerLinks = () => {
   const competitionId = useSelector((state) => state.wcif.id);
+  const menuLinks = useMemo(
+    () => ({
+      top: [
+        {
+          url: `/competitions/${competitionId}`,
+          icon: <HomeIcon />,
+          text: 'Home',
+        },
+        {
+          url: `/competitions/${competitionId}/roles`,
+          icon: <PeopleIcon />,
+          text: 'Configure Staff',
+        },
+        {
+          url: `/competitions/${competitionId}/scrambler-schedule`,
+          icon: <ScheduleIcon />,
+          text: 'Scrambler Schedule',
+        },
+        {
+          type: 'divider',
+        },
+        {
+          url: `/competitions/${competitionId}/import`,
+          icon: <FileUploadIcon />,
+          text: 'Import Data',
+        },
+        {
+          url: `/competitions/${competitionId}/export`,
+          icon: <FileDownloadIcon />,
+          text: 'Export Data',
+        },
+      ],
+      debug: [
+        {
+          url: `/competitions/${competitionId}/assignments`,
+          icon: <ViewListIcon />,
+          text: 'Assignments',
+        },
+        {
+          url: `/competitions/${competitionId}/query`,
+          icon: <SearchIcon />,
+          text: 'Query',
+        },
+      ],
+    }),
+    [competitionId]
+  );
+
+  const renderLinkOrDivider = (link, index) =>
+    link.type === 'divider' ? (
+      <Divider key={'divider' + index} />
+    ) : (
+      <MenuLink key={link.url} {...link} />
+    );
 
   return (
     <List style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <ListItem button component={Link} to={`/competitions/${competitionId}`}>
-        <ListItemIcon>
-          <HomeIcon />
-        </ListItemIcon>
-        <ListItemText primary={'Competition Home'} />
-      </ListItem>
-      <ListItem button component={Link} to={`/competitions/${competitionId}/roles`}>
-        <ListItemIcon>
-          <PeopleIcon />
-        </ListItemIcon>
-        <ListItemText primary={'Configure Staff'} />
-      </ListItem>
-      <ListItem button component={Link} to={`/competitions/${competitionId}/scrambler-schedule`}>
-        <ListItemIcon>
-          <ScheduleIcon />
-        </ListItemIcon>
-        <ListItemText primary={'Scrambler Schedule'} />
-      </ListItem>
-      <Divider />
-      <ListItem button component={Link} to={`/competitions/${competitionId}/import`}>
-        <ListItemIcon>
-          <FileUploadIcon />
-        </ListItemIcon>
-        <ListItemText primary={'Import Data'} />
-      </ListItem>
-      <ListItem button component={Link} to={`/competitions/${competitionId}/export`}>
-        <ListItemIcon>
-          <FileDownloadIcon />
-        </ListItemIcon>
-        <ListItemText primary={'Export Data'} />
-      </ListItem>
+      {menuLinks.top.map(renderLinkOrDivider)}
       <Divider />
       <div style={{ display: 'flex', flex: 1 }} />
       <Divider />
       <ListSubheader>Debug</ListSubheader>
-      <ListItem button component={Link} to={`/competitions/${competitionId}/assignments`}>
-        <ListItemIcon>
-          <ViewListIcon />
-        </ListItemIcon>
-        <ListItemText primary={'View All Assignments'} />
-      </ListItem>
+      {menuLinks.debug.map(renderLinkOrDivider)}
     </List>
   );
 };
 
 export const Header = ({ open, onMenuOpen }) => {
   const { name } = useSelector((state) => state.wcif);
-  const dispatch = useDispatch();
-  const { enqueueSnackbar } = useSnackbar();
-
-  const handleSaveChanges = () => {
-    dispatch(
-      uploadCurrentWCIFChanges((e) => {
-        if (e) {
-          enqueueSnackbar('Error saving changes', { variant: 'error' });
-        } else {
-          enqueueSnackbar('Saved!', { variant: 'success' });
-        }
-      })
-    );
-  };
 
   return (
     <AppBar position="static" open={open}>
@@ -136,9 +147,6 @@ export const Header = ({ open, onMenuOpen }) => {
           {name}
         </Typography>
         <div style={{ display: 'flex', flexGrow: 1 }} />
-        <Button color="inherit" onClick={handleSaveChanges}>
-          Save Changes
-        </Button>
       </Toolbar>
     </AppBar>
   );

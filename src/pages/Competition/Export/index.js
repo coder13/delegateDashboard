@@ -212,7 +212,7 @@ const ExportPage = () => {
           people.forEach((person) => {
             scorecards.push({
               id: person.registrantId,
-              competition_name: wcif.id,
+              competition_name: wcif.name,
               event_name: eventNameById(event.id),
               round_number: parseActivityCode(round.id)?.roundNumber,
               group_name: competingAssignmentToText(groupActivity),
@@ -239,7 +239,7 @@ const ExportPage = () => {
         'competition_name',
         'event_name',
         'round_number',
-        'group',
+        'group_name',
         'stage',
         'group_number',
         'full_name',

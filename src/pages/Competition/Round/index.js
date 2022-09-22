@@ -148,6 +148,7 @@ const RoundPage = () => {
             g.parent.room.name === roundActivity.room.name &&
             parseActivityCode(g.activityCode)?.groupNumber === index + 1
         );
+
         return group.id;
       })
     );
@@ -200,6 +201,7 @@ const RoundPage = () => {
 
         const activity = assignedStaffActivities[minGroupIndex];
         const competingActivity = previousGroupForActivity(activity);
+
         return createGroupAssignment(person.registrantId, competingActivity.id, 'competitor');
       });
 
@@ -253,22 +255,15 @@ const RoundPage = () => {
       const min = Math.min(...groupSizes.map((i) => i.size));
       const smallestGroupActivity = groupSizes.find((g) => g.size === min).activity;
 
-      return {
-        competing: smallestGroupActivity.id,
-      };
+      return smallestGroupActivity.id;
     };
 
     const assignCompeting = (person) => {
-      const nextGroupActivity = nextGroupToAssign();
+      const nextGroupActivityId = nextGroupToAssign();
 
-      assignments.push({
-        registrantId: person.registrantId,
-        assignment: {
-          assignmentCode: 'competitor',
-          activityId: nextGroupActivity.competing,
-          stationNumber: null,
-        },
-      });
+      assignments.push(
+        createGroupAssignment(person.registrantId, nextGroupActivityId, 'competitor')
+      );
     };
 
     const findPR = (personalBests, type) =>
@@ -319,6 +314,7 @@ const RoundPage = () => {
 
         const groupActivity = groups.find((g) => competingAssignment.activityId === g.id);
         const nextGroup = nextGroupForActivity(groupActivity);
+
         return assignments.push(
           createGroupAssignment(person.registrantId, nextGroup.id, 'staff-judge')
         );

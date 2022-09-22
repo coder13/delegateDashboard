@@ -6,6 +6,9 @@ const selectWcif = (state) => state.wcif;
 
 export const selectWcifRooms = createSelector(selectWcif, (wcif) => rooms(wcif));
 
+/**
+ * Return a filtered array of all persons who's registration is defined and status is `accepted`
+ */
 export const selectAcceptedPersons = createSelector(selectWcif, (wcif) =>
   acceptedRegistrations(wcif.persons)
 );
@@ -53,4 +56,13 @@ export const selectPersonsAssignedForRound = createSelector(
 export const selectPersonsShouldBeInRound = createSelector(
   [selectAcceptedPersons, (_, round) => round],
   (acceptedPersons, round) => personsShouldBeInRound(acceptedPersons, round)
+);
+
+/**
+ * Return a list of persons who are assigned to the given activity
+ */
+export const selectPersonsAssignedToActivitiyId = createSelector(
+  [selectAcceptedPersons, (_, activityId) => activityId],
+  (persons, activityId) =>
+    persons.filter(({ assignments }) => assignments.some((a) => a.activityId === activityId))
 );

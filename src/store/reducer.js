@@ -19,6 +19,7 @@ import {
   PARTIAL_UPDATE_WCIF,
   FETCHING_COMPETITIONS,
   SET_ERROR_FETCHING_COMPS,
+  RESET_ALL_GROUP_ASSIGNMENTS,
 } from './actions';
 
 const INITIAL_STATE = {
@@ -58,7 +59,7 @@ const reducers = {
   }),
   [FETCHING_WCIF]: (state, action) => ({
     ...state,
-    fetchingWCIF: (console.log(43, state), action.fetching),
+    fetchingWCIF: action.fetching,
   }),
   [FETCHED_WCIF]: (state, action) => ({
     ...state,
@@ -281,6 +282,15 @@ const reducers = {
         return round;
       })
     ),
+  }),
+  [RESET_ALL_GROUP_ASSIGNMENTS]: (state) => ({
+    ...state,
+    needToSave: true,
+    changedKeys: new Set([...state.changedKeys, 'persons']),
+    wcif: mapIn(state.wcif, ['persons'], (person) => ({
+      ...person,
+      assignments: [],
+    })),
   }),
 };
 
