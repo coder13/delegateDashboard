@@ -179,7 +179,7 @@ export const bulkRemovePersonAssignments = (assignments) => ({
 
 /**
  * For whoever matches the passed assignments, creates or updates the assignments
- * @param {array} assignments - [{activityId?, registrantId?, assignmentCode?}]
+ * @param {array} assignments - [{activityId, registrantId, assignment}]
  */
 export const bulkUpsertPersonAssignments = (assignments) => ({
   type: BULK_UPSERT_PERSON_ASSIGNMENTS,

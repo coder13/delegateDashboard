@@ -1,23 +1,26 @@
 import { formatCentiseconds } from '@wca/helpers';
-import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { useMemo, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Typography,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
 import { DataGrid, GridToolbarContainer } from '@mui/x-data-grid';
 import { activityCodeIsChild, parseActivityCode, roomByActivity } from '../../../lib/activities';
 import { getSeedResult } from '../../../lib/persons';
+import { bulkUpsertPersonAssignments, upsertPersonAssignments } from '../../../store/actions';
 import { selectPersonsAssignedForRound, selectActivityById } from '../../../store/selectors';
 
 const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
   const wcif = useSelector((state) => state.wcif);
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
+  const dataGridRef = useRef(null);
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -59,6 +62,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
 
   const rows = personsAssignedToCompete.map(({ assignment, ...person }) => ({
     id: person.registrantId,
+    assignment: assignment,
     name: person.name,
     seedResult: getSeedResult(wcif, activityCode, person),
     roomName: assignment.room.name,
@@ -90,12 +94,68 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
     },
   ];
 
-  const arbitrarilyAssignStationNumbers = () => {};
+  const arbitrarilyAssignStationNumbers = () => {
+    const newAssignments = [];
+    const lastStationNumberMap = new Map();
+
+    for (let i = 0; i < personsAssignedToCompete.length; i++) {
+      const groupId = personsAssignedToCompete[i].assignment.activity.id;
+      const stationNumber = lastStationNumberMap.get(groupId) || 1;
+
+      newAssignments.push({
+        registrantId: personsAssignedToCompete[i].registrantId,
+        activityId: groupId,
+        assignment: {
+          assignmentCode: 'competitor',
+          stationNumber: stationNumber,
+        },
+      });
+
+      lastStationNumberMap.set(groupId, stationNumber + 1);
+    }
+
+    dispatch(bulkUpsertPersonAssignments(newAssignments));
+  };
+
+  const resetStationNumbers = () => {
+    dispatch(
+      bulkUpsertPersonAssignments(
+        personsAssignedToCompete.map(({ registrantId, assignment }) => ({
+          registrantId,
+          activityId: assignment.activity.id,
+          assignment: {
+            assignmentCode: 'competitor',
+            stationNumber: null,
+          },
+        }))
+      )
+    );
+  };
+
+  const handleCellEditStop = ({ row }, event) => {
+    const stationNumber = parseInt(event?.target?.value, 10);
+    if (stationNumber) {
+      console.log(119, row, event.target.value);
+      dispatch(
+        upsertPersonAssignments(row.id, [
+          {
+            activityId: row.assignment.activityId,
+            assignmentCode: row.assignment.assignmentCode,
+            stationNumber: parseInt(event.target.value, 10),
+          },
+        ])
+      );
+    }
+  };
 
   const Toolbar = () => (
     <GridToolbarContainer>
-      <Button variant="contained" onClick={arbitrarilyAssignStationNumbers}>
+      <Button sx={{ m: 1 }} variant="contained" onClick={arbitrarilyAssignStationNumbers}>
         Arbitrarily Assign Station Numbers
+      </Button>
+      <div style={{ display: 'flex', flexGrow: 1 }} />
+      <Button sx={{ m: 1 }} variant="contained" color="error" onClick={resetStationNumbers}>
+        Reset Station Numbers
       </Button>
     </GridToolbarContainer>
   );
@@ -106,13 +166,19 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
       <DialogContent sx={{ height: '80vh', p: 0 }}>
         <DataGrid
           rows={rows}
-          experimentalFeatures={{ newEditingApi: true }}
           columns={columns}
           components={{ Toolbar }}
           componentsProps={{ Toolbar: { p: 2 } }}
+          ref={dataGridRef}
+          experimentalFeatures={{ newEditingApi: true }}
+          onCellEditStop={handleCellEditStop}
         />
       </DialogContent>
       <DialogActions style={{ display: 'flex' }}>
+        <Typography>
+          Assigns station numbers in order of registration ID (i.e. first registered person). Column
+          sorting does nothing.
+        </Typography>
         <div style={{ display: 'flex', flexGrow: 1 }} />
         <Button onClick={onClose}>Close</Button>{' '}
       </DialogActions>

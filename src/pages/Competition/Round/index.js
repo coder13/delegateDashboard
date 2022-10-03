@@ -40,8 +40,8 @@ import { byName } from '../../../lib/utils';
 import { getExtensionData } from '../../../lib/wcif-extensions';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import {
-  bulkAddPersonAssignment,
-  bulkRemovePersonAssignment,
+  bulkAddPersonAssignments,
+  bulkRemovePersonAssignments,
   updateRoundChildActivities,
 } from '../../../store/actions';
 import {
@@ -79,7 +79,7 @@ const RoundPage = () => {
   const activityCode = `${eventId}-r${roundNumber}`;
   const [configureAssignmentsDialog, setConfigureAssignmentsDialog] = useState(false);
   const [configureGroupCountsDialog, setConfigureGroupCountsDialog] = useState(false);
-  const [configureStationNumbersDialog, setConfigureStationNumbersDialog] = useState(activityCode);
+  const [configureStationNumbersDialog, setConfigureStationNumbersDialog] = useState(false);
   const [showPersonsDialog, setShowPersonsDialog] = useState({
     open: false,
     title: undefined,
@@ -319,7 +319,7 @@ const RoundPage = () => {
         );
       });
 
-    dispatch(bulkAddPersonAssignment(assignments));
+    dispatch(bulkAddPersonAssignments(assignments));
   };
 
   const onResetGroupActitivites = () => {
@@ -331,7 +331,7 @@ const RoundPage = () => {
       .then(() => {
         // remove competitor assignments for groups
         dispatch(
-          bulkRemovePersonAssignment([
+          bulkRemovePersonAssignments([
             ...groups.map((group) => ({
               activityId: group.id,
             })),
@@ -356,7 +356,7 @@ const RoundPage = () => {
       .then(() => {
         // remove competitor assignments for groups
         dispatch(
-          bulkRemovePersonAssignment([
+          bulkRemovePersonAssignments([
             ...groups.map((group) => ({
               activityId: group.id,
               assignmentCode: 'staff-judge',

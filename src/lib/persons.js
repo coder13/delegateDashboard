@@ -171,43 +171,35 @@ export const getSeedResult = (wcif, activityCode, person) => {
   return findResultFromRound(wcif, `${eventId}-r${roundNumber - 1}`, person.registrantId);
 };
 
-export const addAssignmentsToPerson =
-  ({ assignments }) =>
-  (person) => {
-    return {
-      ...person,
-      assignments: [...person.assignments, assignments],
-    };
+export const addAssignmentsToPerson = (person, assignments) => {
+  return {
+    ...person,
+    assignments: [...person.assignments, assignments],
   };
+};
 
-export const removeAssignmentsFromPerson =
-  ({ registrantId, activityId }) =>
-  (person) => {
-    if (person.registrantId === registrantId) {
-      return {
-        ...person,
-        assignments: person.assignments.filter((a) => a.activityId !== activityId),
-      };
-    }
-
-    return person;
+export const removeAssignmentsFromPerson = (person, activityId) => {
+  return {
+    ...person,
+    assignments: person.assignments.filter((a) => a.activityId !== activityId),
   };
+};
 
 /**
  * Upserts the list of assignments for a person
+ * For each assignment passed in, it removes the existing assignments matching the activityId
+ * and replaces them with the updated version of the assignment
  * @param {*} param0
  * @returns
  */
-export const upsertAssignmentsOnPerson =
-  ({ assignments }) =>
-  (person) => {
-    return {
-      ...person,
-      assignments: [
-        ...person.assignments.filter(
-          (a) => a.activityId !== assignments.some((a2) => a2.activityId === a.activityId)
-        ),
-        ...assignments,
-      ],
-    };
+export const upsertAssignmentsOnPerson = (person, assignments) => {
+  return {
+    ...person,
+    assignments: [
+      ...person.assignments.filter(
+        (a) => !assignments.some((a2) => a2.activityId === a.activityId)
+      ),
+      ...assignments,
+    ],
   };
+};
