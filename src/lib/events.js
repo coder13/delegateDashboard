@@ -30,11 +30,11 @@ export const sortWcifEvents = (wcifEvents) =>
   sortBy(wcifEvents, (wcifEvent) => events.findIndex((event) => event.id === wcifEvent.id));
 
 const roundFormats = [
-  { id: 'a', short: 'ao5', long: 'Average of 5' },
-  { id: 'm', short: 'mo3', long: 'Mean of 5' },
-  { id: '3', short: 'bo3', long: 'Best of 3' },
-  { id: '2', short: 'bo2', long: 'Best of 2' },
-  { id: '1', short: 'bo1', long: 'Best of 1' },
+  { id: 'a', short: 'ao5', long: 'Average of 5', rankingResult: 'average' },
+  { id: 'm', short: 'mo3', long: 'Mean of 5', rankingResult: 'average' },
+  { id: '3', short: 'bo3', long: 'Best of 3', rankingResult: 'single' },
+  { id: '2', short: 'bo2', long: 'Best of 2', rankingResult: 'single' },
+  { id: '1', short: 'bo1', long: 'Best of 1', rankingResult: 'single' },
 ];
 
 export const roundFormatById = (id) => roundFormats.find((roundFormat) => roundFormat.id === id);

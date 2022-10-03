@@ -1,4 +1,9 @@
-import { createGroupActivity, generateNextChildActivityId, parseActivityCode } from './activities';
+import {
+  createGroupActivity,
+  generateNextChildActivityId,
+  parseActivityCode,
+  groupActivitiesByRound,
+} from './activities';
 
 /**
  * Takes WCIF to compute the initial startActivityId.
@@ -80,3 +85,21 @@ export const computeGroupSizes = (assignments) => (activity) => ({
       assignment.activityId === activity.id && assignment.assignmentCode === 'competitor'
   ).length,
 });
+
+/**
+ * computes group sizes for each group defined by the roundId
+ * @param {WCCIF} wcif
+ * @param {string} roundId
+ * @returns
+ */
+export const computeGroupSizesForRoundId = (wcif, roundId) => {
+  const groups = groupActivitiesByRound(wcif, roundId);
+  return groups.map((group) => ({
+    activity: group,
+    size: wcif.persons.filter(
+      (p) =>
+        p.assignments.filter((a) => a.activityId === group.id && a.assignmentCode === 'competitor')
+          .length > 0
+    ).length,
+  }));
+};

@@ -1,5 +1,5 @@
 import { createSelector } from 'reselect';
-import { activityById, parseActivityCode, rooms } from '../lib/activities';
+import { activityById, activityCodeIsChild, parseActivityCode, rooms } from '../lib/activities';
 import { acceptedRegistrations, personsShouldBeInRound } from '../lib/persons';
 
 const selectWcif = (state) => state.wcif;
@@ -32,7 +32,6 @@ export const selectActivityById = createSelector(
 export const selectPersonsAssignedForRound = createSelector(
   [selectAcceptedPersons, selectActivityById, (_, roundId) => roundId],
   (acceptedPersons, selectActivityById, roundId) => {
-    const parsedRoundId = parseActivityCode(roundId);
     return acceptedPersons.filter((p) =>
       p.assignments.find((a) => {
         const activity = selectActivityById(a.activityId);
@@ -42,12 +41,7 @@ export const selectPersonsAssignedForRound = createSelector(
           return false;
         }
 
-        const parsedActivityCode = parseActivityCode(activity.activityCode);
-
-        return (
-          parsedActivityCode.eventId === parsedRoundId.eventId &&
-          parsedActivityCode.roundNumber === parsedRoundId.roundNumber
-        );
+        return activityCodeIsChild(roundId, activity.activityCode);
       })
     );
   }
