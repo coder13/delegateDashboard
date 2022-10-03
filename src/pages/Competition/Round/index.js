@@ -35,13 +35,13 @@ import {
   nextGroupForActivity,
   previousGroupForActivity,
 } from '../../../lib/groups';
-import { hasCompetitorAssignment } from '../../../lib/persons';
+import { byResult, findPR, hasCompetitorAssignment } from '../../../lib/persons';
 import { byName } from '../../../lib/utils';
 import { getExtensionData } from '../../../lib/wcif-extensions';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import {
-  bulkAddPersonAssignment,
-  bulkRemovePersonAssignment,
+  bulkAddPersonAssignments,
+  bulkRemovePersonAssignments,
   updateRoundChildActivities,
 } from '../../../store/actions';
 import {
@@ -51,6 +51,7 @@ import {
 } from '../../../store/selectors';
 import ConfigureAssignmentsDialog from './ConfigureAssignmentsDialog';
 import ConfigureGroupCountsDialog from './ConfigureGroupCountsDialog';
+import ConfigureStationNumbersDialog from './ConfigureStationNumbersDialog';
 import GroupCard from './GroupCard';
 
 /**
@@ -75,15 +76,16 @@ const RoundPage = () => {
   const confirm = useConfirm();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { eventId, roundNumber } = useParams();
+  const activityCode = `${eventId}-r${roundNumber}`;
   const [configureAssignmentsDialog, setConfigureAssignmentsDialog] = useState(false);
   const [configureGroupCountsDialog, setConfigureGroupCountsDialog] = useState(false);
+  const [configureStationNumbersDialog, setConfigureStationNumbersDialog] = useState(false);
   const [showPersonsDialog, setShowPersonsDialog] = useState({
     open: false,
     title: undefined,
     persons: [],
   });
   const [showPersonsAssignmentsDialog, setShowPersonsAssignmentsDialog] = useState(false);
-  const activityCode = `${eventId}-r${roundNumber}`;
 
   const wcif = useSelector((state) => state.wcif);
   const round = useSelector((state) => selectRoundById(state, activityCode));
@@ -130,16 +132,16 @@ const RoundPage = () => {
     [personsAssigned]
   );
 
+  /**
+   * Fills in assignment gaps. Everyone should end up having a competitor assignment and staff assignment
+   * 1. Start with giving out competitor assignments.
+   *   1a Start with assigning competitor assignments to people who are already assigned to staff
+   *   1b Assign organizers and delegates their competing assignments, don't assign  staff assignments
+   *   1c Then hand out competitor assignments to people who are not assigned to staff
+   *
+   * 2. Then give out judging assignments to competitors without staff assignments
+   */
   const onGenerateGroupActitivites = () => {
-    /**
-     * Fills in assignment gaps. Everyone should end up having a competitor assignment and staff assignment
-     * 1. Start with giving out competitor assignments.
-     *   1a Start with assigning competitor assignments to people who are already assigned to staff
-     *   1b Assign organizers and delegates their competing assignments, don't assign  staff assignments
-     *   1c Then hand out competitor assignments to people who are not assigned to staff
-     * 2 Then give out judging assignments to competitors without staff assignments
-     */
-
     // This creates a list of groupActivityIds by stage sorted by group number
     const groupActivityIds = roundActivities.map((roundActivity) =>
       roundActivity.childActivities.map((g, index) => {
@@ -266,12 +268,6 @@ const RoundPage = () => {
       );
     };
 
-    const findPR = (personalBests, type) =>
-      personalBests.find((pr) => pr.eventId === eventId && pr.type === type);
-
-    const byResult = (result) => (a, b) =>
-      findPR(b.personalBests, result).best - findPR(a.personalBests, result).best;
-
     // Assign competitors assignments to those missing competitor assignments
 
     const everyoneElse = personsShouldBeInRound.filter(missingCompetitorAssignments);
@@ -282,14 +278,17 @@ const RoundPage = () => {
       .sort(byName); // everyone with no single
     const noAverageInEvent = everyoneElse
       .filter(
-        (p) => p.wcaId && !findPR(p.personalBests, 'average') && findPR(p.personalBests, 'single')
+        (p) =>
+          p.wcaId &&
+          !findPR(p.personalBests, eventId, 'average') &&
+          findPR(p.personalBests, eventId, 'single')
       )
       .sort(byName)
-      .sort(byResult('single')); // everyone with no average
+      .sort(byResult('single', eventId)); // everyone with no average
     const hasResults = everyoneElse
-      .filter((p) => p.wcaId && findPR(p.personalBests, 'average'))
+      .filter((p) => p.wcaId && findPR(p.personalBests, eventId, 'average'))
       .sort(byName)
-      .sort(byResult('average'));
+      .sort(byResult('average', eventId));
 
     firstTimers.forEach(assignCompeting);
     noSingleInEvent.forEach(assignCompeting);
@@ -320,7 +319,7 @@ const RoundPage = () => {
         );
       });
 
-    dispatch(bulkAddPersonAssignment(assignments));
+    dispatch(bulkAddPersonAssignments(assignments));
   };
 
   const onResetGroupActitivites = () => {
@@ -332,7 +331,7 @@ const RoundPage = () => {
       .then(() => {
         // remove competitor assignments for groups
         dispatch(
-          bulkRemovePersonAssignment([
+          bulkRemovePersonAssignments([
             ...groups.map((group) => ({
               activityId: group.id,
             })),
@@ -357,7 +356,7 @@ const RoundPage = () => {
       .then(() => {
         // remove competitor assignments for groups
         dispatch(
-          bulkRemovePersonAssignment([
+          bulkRemovePersonAssignments([
             ...groups.map((group) => ({
               activityId: group.id,
               assignmentCode: 'staff-judge',
@@ -416,6 +415,9 @@ const RoundPage = () => {
       return (
         <>
           <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
+          <Button onClick={() => setConfigureStationNumbersDialog(activityCode)}>
+            Configure Station Numbers
+          </Button>
           <div style={{ display: 'flex', flex: 1 }} />
           <Button color="error" onClick={onResetGroupNonScramblingActitivites}>
             Reset Competitor and Judging Assignments
@@ -521,6 +523,13 @@ const RoundPage = () => {
         round={round}
         roundActivities={roundActivities}
       />
+      {configureStationNumbersDialog && (
+        <ConfigureStationNumbersDialog
+          open={Boolean(configureStationNumbersDialog)}
+          onClose={() => setConfigureStationNumbersDialog(false)}
+          activityCode={configureStationNumbersDialog}
+        />
+      )}
       <PersonsDialog
         open={showPersonsDialog?.open}
         persons={showPersonsDialog?.persons}

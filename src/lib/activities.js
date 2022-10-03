@@ -1,20 +1,30 @@
 import { eventNameById } from './events';
-import { mapIn, updateIn, setIn, flatMap, shortTime } from './utils';
+import { mapIn, flatMap, shortTime } from './utils';
 import { getExtensionData } from './wcif-extensions';
 
+/** Activity Codes */
+
+const ParseActivityCodeCache = new Map();
 /**
  *
  * @param {*} activityCode
  * @returns
  */
 export const parseActivityCode = (activityCode) => {
+  if (ParseActivityCodeCache.has(activityCode)) {
+    return ParseActivityCodeCache.get(activityCode);
+  }
+
   const [, e, r, g, a] = activityCode.match(/(\w+)(?:-r(\d+))?(?:-g(\d+))?(?:-a(\d+))?/);
-  return {
+  const parsedActivityCode = {
     eventId: e,
     roundNumber: r && parseInt(r, 10),
     groupNumber: g && parseInt(g, 10),
     attemptNumber: a && parseInt(a, 10),
   };
+
+  ParseActivityCodeCache.set(activityCode, parsedActivityCode);
+  return parsedActivityCode;
 };
 
 export const activityCodeToName = (activityCode) => {
@@ -29,6 +39,22 @@ export const activityCodeToName = (activityCode) => {
     .join(', ');
 };
 
+/**
+ * Determines if the child activitiyCode is a child of the parent activityCode
+ * @param {*} parentActivitiyCode
+ * @returns
+ */
+export const activityCodeIsChild = (parentActivitiyCode) => (childActivityCode) => {
+  const parent = parseActivityCode(parentActivitiyCode);
+  const child = parseActivityCode(childActivityCode);
+
+  return (
+    parent.eventId === child.eventId &&
+    (!parent.roundNumber || parent.roundNumber === child.roundNumber) &&
+    (!parent.groupNumber || parent.groupNumber === child.groupNumber) &&
+    (!parent.attemptNumber || parent.attemptNumber === child.attemptNumber)
+  );
+};
 export const hasDistributedAttempts = (activityCode) =>
   ['333fm', '333mbf'].includes(parseActivityCode(activityCode).eventId);
 
@@ -55,8 +81,16 @@ export const activitiesIntersection = (first, second) => {
 
 export const rooms = (wcif) => flatMap(wcif.schedule.venues, (venue) => venue.rooms);
 
+const findId = (activites, activityId) =>
+  activites.some(
+    ({ id, activities, childActivities }) =>
+      id === activityId ||
+      (activities ? findId(activities, activityId) : false) ||
+      (childActivities ? findId(childActivities, activityId) : false)
+  );
+
 export const roomByActivity = (wcif, activityId) =>
-  rooms(wcif).find((room) => room.activities.some(({ id }) => id === activityId));
+  rooms(wcif).find((room) => findId(room.activities, activityId));
 
 export const stationsByActivity = (wcif, activityId) =>
   getExtensionData('RoomConfig', roomByActivity(wcif, activityId)).stations;
@@ -260,37 +294,6 @@ export const anyGroupAssignedOrCreated = (wcif) =>
 
 export const anyResults = (wcif) =>
   wcif.events.some((event) => event.rounds.some((round) => round.results.length > 0));
-
-/* Clears groups and assignments only for rounds without results. */
-export const clearGroupsAndAssignments = (wcif) => {
-  const clearableRounds = roundsWithoutResults(wcif);
-  const clearableRoundIds = clearableRounds.map(({ id }) => id);
-  const clearableActivities = flatMap(clearableRounds, (round) =>
-    groupActivitiesByRound(wcif, round.id)
-  );
-  const clearableActivityIds = clearableActivities.map(({ id }) => id);
-
-  const persons = wcif.persons.map((person) =>
-    updateIn(person, ['assignments'], (assignments) =>
-      assignments
-        .filter(({ activityId }) => !clearableActivityIds.includes(activityId))
-        .filter(
-          ({ assignmentCode }) =>
-            !assignmentCode.startsWith('staff-') && assignmentCode !== 'competitor'
-        )
-    )
-  );
-  const schedule = mapIn(wcif.schedule, ['venues'], (venue) =>
-    mapIn(venue, ['rooms'], (room) =>
-      mapIn(room, ['activities'], (activity) =>
-        clearableRoundIds.includes(activity.activityCode)
-          ? setIn(activity, ['childActivities'], [])
-          : activity
-      )
-    )
-  );
-  return { ...wcif, persons, schedule };
-};
 
 export const generateNextChildActivityId = (wcif) => {
   const activities = allActivities(wcif);

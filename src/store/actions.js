@@ -12,11 +12,12 @@ export const FETCHED_WCIF = 'fetched_wcif';
 export const UPLOADING_WCIF = 'uploading_wcif';
 export const UPDATE_WCIF_ERRORS = 'update_wcif_errors';
 export const TOGGLE_PERSON_ROLE = 'toggle_person_role';
-export const ADD_PERSON_ASSIGNMENT = 'add_person_assignment';
-export const UPSERT_PERSON_ASSIGNMENT = 'upsert_person_assignment';
-export const BULK_ADD_PERSON_ASSIGNMENT = 'bulk_add_person_assignment';
-export const REMOVE_PERSON_ASSIGNMENT = 'remove_person_assignment';
-export const BULK_REMOVE_PERSON_ASSIGNMENT = 'bulk_remove_person_assignment';
+export const ADD_PERSON_ASSIGNMENTS = 'add_person_assignments';
+export const REMOVE_PERSON_ASSIGNMENTS = 'remove_person_assignments';
+export const UPSERT_PERSON_ASSIGNMENTS = 'upsert_person_assignments';
+export const BULK_ADD_PERSON_ASSIGNMENTS = 'bulk_add_person_assignments';
+export const BULK_REMOVE_PERSON_ASSIGNMENTS = 'bulk_remove_person_assignment';
+export const BULK_UPSERT_PERSON_ASSIGNMENTS = 'bulk_upsert_person_assignments';
 export const UPDATE_GROUP_COUNT = 'update_group_count';
 export const UPDATE_ROUND_ACTIVITIES = 'update_round_activities';
 export const UPDATE_ROUND_CHILD_ACTIVITIES = 'update_round_child_activities';
@@ -121,41 +122,46 @@ export const togglePersonRole = (registrantId, roleId) => ({
 });
 
 /**
+ * Adds assignments to a person
  * @param {number} registrantId
- * @param {Assignment} assignment
+ * @param {Assignment[]} assignments
  */
-export const addPersonAssignment = (registrantId, assignment) => ({
-  type: ADD_PERSON_ASSIGNMENT,
+export const addPersonAssignments = (registrantId, assignments) => ({
+  type: ADD_PERSON_ASSIGNMENTS,
   registrantId,
-  assignment,
-});
-
-/**
- * @param {number} registrantId
- * @param {Assignment} assignment
- */
-export const upsertPersonAssignment = (registrantId, assignment) => ({
-  type: UPSERT_PERSON_ASSIGNMENT,
-  registrantId,
-  assignment,
-});
-
-/**
- * @param {array} assignments - [{activityId, registrantId, assignment: Assignment}]
- */
-export const bulkAddPersonAssignment = (assignments) => ({
-  type: BULK_ADD_PERSON_ASSIGNMENT,
   assignments,
 });
 
 /**
+ * Removes assignments from a person matching the activityId
  * @param {number} registrantId
  * @param {number} activityId
  */
-export const removePersonAssignment = (registrantId, activityId) => ({
-  type: REMOVE_PERSON_ASSIGNMENT,
+export const removePersonAssignments = (registrantId, activityId) => ({
+  type: REMOVE_PERSON_ASSIGNMENTS,
   registrantId,
   activityId,
+});
+
+/**
+ * For a given person, creates or updates the assignments
+ * @param {number} registrantId
+ * @param {Assignment[]} assignments
+ */
+export const upsertPersonAssignments = (registrantId, assignments) => ({
+  type: UPSERT_PERSON_ASSIGNMENTS,
+  registrantId,
+  assignments,
+});
+
+/**
+ * For whoever matches the passed assignments,
+ * adds the respective assignments to each person
+ * @param {array} assignments - [{activityId, registrantId, assignment: Assignment}]
+ */
+export const bulkAddPersonAssignments = (assignments) => ({
+  type: BULK_ADD_PERSON_ASSIGNMENTS,
+  assignments,
 });
 
 /**
@@ -166,8 +172,17 @@ export const removePersonAssignment = (registrantId, activityId) => ({
  * if more than 1 is specified, then it will preform an *and*
  * @param {array} assignments - [{activityId?, registrantId?, assignmentCode?}]
  */
-export const bulkRemovePersonAssignment = (assignments) => ({
-  type: BULK_REMOVE_PERSON_ASSIGNMENT,
+export const bulkRemovePersonAssignments = (assignments) => ({
+  type: BULK_REMOVE_PERSON_ASSIGNMENTS,
+  assignments,
+});
+
+/**
+ * For whoever matches the passed assignments, creates or updates the assignments
+ * @param {array} assignments - [{activityId, registrantId, assignment}]
+ */
+export const bulkUpsertPersonAssignments = (assignments) => ({
+  type: BULK_UPSERT_PERSON_ASSIGNMENTS,
   assignments,
 });
 
