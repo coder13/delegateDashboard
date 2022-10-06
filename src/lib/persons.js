@@ -102,7 +102,8 @@ export const findPR = (personalBests, eventId, type) =>
  * @returns
  */
 export const byResult = (result, eventId) => (a, b) =>
-  findPR(b.personalBests, result).best - findPR(a.personalBests, eventId, result).best;
+  (findPR(b.personalBests, result)?.best || Number.MAX_SAFE_INTEGER) -
+  (findPR(a.personalBests, eventId, result)?.best || Number.MAX_SAFE_INTEGER);
 
 export const findResultFromRound = (wcif, roundId, personId) => {
   const { eventId } = parseActivityCode(roundId);

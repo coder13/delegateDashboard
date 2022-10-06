@@ -25,6 +25,7 @@ export const UPSERT_ROUND_CHILD_ACTIVITIES = 'upsert_round_child_activities';
 export const UPDATE_ROUND_EXTENSION_DATA = 'update_round_extension_data';
 export const PARTIAL_UPDATE_WCIF = 'partial_update_wcif';
 export const RESET_ALL_GROUP_ASSIGNMENTS = 'reset_all_group_assignments';
+export const GENERATE_ASSIGNMENTS = 'generate_assignments';
 
 const fetchingCompetitions = () => ({
   type: FETCHING_COMPETITIONS,
@@ -224,4 +225,14 @@ export const partialUpdateWCIF = (wcif) => ({
 
 export const resetAllGroupAssignments = () => ({
   type: RESET_ALL_GROUP_ASSIGNMENTS,
+});
+
+/**
+ *
+ * @param {ActivityCode} roundId
+ * @returns
+ */
+export const generateAssignments = (roundId) => ({
+  type: GENERATE_ASSIGNMENTS,
+  roundId,
 });
