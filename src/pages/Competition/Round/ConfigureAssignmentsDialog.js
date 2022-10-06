@@ -33,7 +33,7 @@ import { grey, red, yellow } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 import { styled, useTheme } from '@mui/system';
 import { parseActivityCode, activityCodeToName } from '../../../lib/activities';
-import { acceptedRegistration, isOrganizerOrDelegate } from '../../../lib/persons';
+import { acceptedRegistration, getSeedResult, isOrganizerOrDelegate } from '../../../lib/persons';
 import { flatten } from '../../../lib/utils';
 import {
   upsertPersonAssignments,
@@ -99,7 +99,8 @@ const Assignments = [
   },
 ];
 
-const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
+const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => {
+  const wcif = useSelector((state) => state.wcif);
   const classes = useStyles();
   const wcifRooms = useSelector((state) => selectWcifRooms(state));
 
@@ -147,18 +148,19 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
         )
         .map((person) => ({
           ...person,
-          //  TODO: make event agnostic filter
-          pr: person.personalBests.find((pb) => pb.eventId === eventId && pb.type === 'average')
-            ?.best,
+          seedResult: getSeedResult(wcif, activityCode, person),
         }))
         .sort((a, b) => {
           if (competitorSort === 'speed') {
-            return (a.pr || Number.MAX_VALUE) - (b.pr || Number.MAX_VALUE);
+            return (
+              (a.seedResult?.ranking || Number.MAX_VALUE) -
+              (b.seedResult?.ranking || Number.MAX_VALUE)
+            );
           }
 
           return a.name.localeCompare(b.name);
         }),
-    [competitorSort, eventId, personsShouldBeInRound, showAllCompetitors]
+    [activityCode, competitorSort, personsShouldBeInRound, showAllCompetitors, wcif]
   );
 
   // const personsForActivityId = useCallback(
@@ -349,7 +351,7 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
                 })}>
                 <TableCell>{person.name}</TableCell>
                 <TableCell style={{ textAlign: 'center' }}>
-                  {person.pr && formatCentiseconds(person.pr)}
+                  {person.seedResult && formatCentiseconds(person.seedResult.rankingResult)}
                 </TableCell>
                 <TableCell
                   style={{
@@ -465,4 +467,4 @@ const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
   );
 };
 
-export default ConfigureScramblersDialog;
+export default ConfigureAssignmentsDialog;

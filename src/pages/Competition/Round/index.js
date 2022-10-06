@@ -35,7 +35,12 @@ import {
   nextGroupForActivity,
   previousGroupForActivity,
 } from '../../../lib/groups';
-import { byResult, findPR, hasCompetitorAssignment } from '../../../lib/persons';
+import {
+  byResult,
+  findPR,
+  findResultFromRound,
+  hasCompetitorAssignment,
+} from '../../../lib/persons';
 import { byName } from '../../../lib/utils';
 import { getExtensionData } from '../../../lib/wcif-extensions';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
@@ -88,6 +93,7 @@ const RoundPage = () => {
   const [showPersonsAssignmentsDialog, setShowPersonsAssignmentsDialog] = useState(false);
 
   const wcif = useSelector((state) => state.wcif);
+  const event = useSelector((state) => state.wcif.events.find((e) => e.id === eventId));
   const round = useSelector((state) => selectRoundById(state, activityCode));
   const personsShouldBeInRound = useSelector((state) => selectPersonsShouldBeInRound(state, round));
 
@@ -268,32 +274,113 @@ const RoundPage = () => {
       );
     };
 
+    const hasNoSingleInRound = (person) => {
+      if (roundNumber === 1) {
+        return person.wcaId && !person.personalBests.find((pr) => pr.eventId === eventId);
+      }
+
+      const previousRound = event.rounds[roundNumber - 2];
+      const previousRoundResults = previousRound.results.find(
+        (i) => i.personId === person.registrantId
+      );
+
+      return !previousRoundResults;
+    };
+
+    const hasNoAverageInRound = (person) => {
+      if (roundNumber === 1) {
+        return (
+          person.wcaId &&
+          !findPR(person.personalBests, eventId, 'average') &&
+          findPR(person.personalBests, eventId, 'single')
+        );
+      }
+
+      const previousRound = event.rounds[roundNumber - 2];
+      const previousRoundResults = previousRound.results.find(
+        (i) => i.personId === person.registrantId
+      );
+
+      if (!previousRoundResults) {
+        return true;
+      }
+
+      if (previousRoundResults.average <= -1) {
+        return true;
+      }
+    };
+
+    const hasAverageInRound = (person) => {
+      if (roundNumber === 1) {
+        return (
+          person.wcaId &&
+          !findPR(person.personalBests, eventId, 'average') &&
+          findPR(person.personalBests, eventId, 'single')
+        );
+      }
+
+      const previousRound = event.rounds[roundNumber - 2];
+      const previousRoundResults = previousRound.results.find(
+        (i) => i.personId === person.registrantId
+      );
+
+      if (!previousRoundResults) {
+        return false;
+      }
+
+      if (previousRoundResults.average > 0) {
+        return false;
+      }
+    };
+
     // Assign competitors assignments to those missing competitor assignments
 
-    const everyoneElse = personsShouldBeInRound.filter(missingCompetitorAssignments);
+    if (roundNumber === 1) {
+      const everyoneElse = personsShouldBeInRound.filter(missingCompetitorAssignments);
 
-    const firstTimers = everyoneElse.filter((p) => !p.wcaId).sort(byName); // Everyone without a wca id
-    const noSingleInEvent = everyoneElse
-      .filter((p) => p.wcaId && !p.personalBests.find((pr) => pr.eventId === eventId))
-      .sort(byName); // everyone with no single
-    const noAverageInEvent = everyoneElse
-      .filter(
-        (p) =>
-          p.wcaId &&
-          !findPR(p.personalBests, eventId, 'average') &&
-          findPR(p.personalBests, eventId, 'single')
-      )
-      .sort(byName)
-      .sort(byResult('single', eventId)); // everyone with no average
-    const hasResults = everyoneElse
-      .filter((p) => p.wcaId && findPR(p.personalBests, eventId, 'average'))
-      .sort(byName)
-      .sort(byResult('average', eventId));
+      const firstTimers = everyoneElse.filter((p) => !p.wcaId).sort(byName); // Everyone without a wca id
+      const noSingleInEvent = everyoneElse.filter(hasNoSingleInRound).sort(byName); // everyone with no single
+      const noAverageInEvent = everyoneElse
+        .filter(hasNoAverageInRound)
+        .sort(byName)
+        .sort(byResult('single', eventId)); // everyone with no average
+      const hasResults = everyoneElse
+        .filter(hasAverageInRound)
+        .sort(byName)
+        .sort(byResult('average', eventId));
 
-    firstTimers.forEach(assignCompeting);
-    noSingleInEvent.forEach(assignCompeting);
-    noAverageInEvent.forEach(assignCompeting);
-    hasResults.forEach(assignCompeting);
+      firstTimers.forEach(assignCompeting);
+      noSingleInEvent.forEach(assignCompeting);
+      noAverageInEvent.forEach(assignCompeting);
+      hasResults.forEach(assignCompeting);
+    } else {
+      const everyoneElse = personsShouldBeInRound
+        .filter(missingCompetitorAssignments)
+        .sort((a, b) => {
+          const aResults = findResultFromRound(
+            wcif,
+            `${eventId}-r${roundNumber - 1}`,
+            a.registrantId
+          );
+          const bResults = findResultFromRound(
+            wcif,
+            `${eventId}-r${roundNumber - 1}`,
+            b.registrantId
+          );
+
+          if (!aResults) {
+            // b is better
+            return 1;
+          } else if (!bResults) {
+            // a is better
+            return -1;
+          } else {
+            return aResults.ranking - bResults.ranking;
+          }
+        });
+
+      everyoneElse.forEach(assignCompeting);
+    }
 
     // assign remaining judging assignments to those missing judging assignments
 
@@ -309,9 +396,11 @@ const RoundPage = () => {
           return;
         }
 
-        const competingAssignment = findAssignments(person, isCompetitorAssignment)[0].assignment;
+        const competingAssignment = findAssignments(person, isCompetitorAssignment)[0];
+        const competingAssignmentActivityId =
+          competingAssignment?.assignment?.activityId || competingAssignment?.activityId;
 
-        const groupActivity = groups.find((g) => competingAssignment.activityId === g.id);
+        const groupActivity = groups.find((g) => competingAssignmentActivityId === g.id);
         const nextGroup = nextGroupForActivity(groupActivity);
 
         return assignments.push(

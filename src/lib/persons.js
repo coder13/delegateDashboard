@@ -106,7 +106,6 @@ export const byResult = (result, eventId) => (a, b) =>
 
 export const findResultFromRound = (wcif, roundId, personId) => {
   const { eventId } = parseActivityCode(roundId);
-  const roundFormat = roundFormatById(eventId);
 
   const event = wcif.events.find((e) => e.id === eventId);
   const round = event.rounds.find((r) => r.id === roundId);
@@ -115,7 +114,8 @@ export const findResultFromRound = (wcif, roundId, personId) => {
     return;
   }
 
-  const results = round.results;
+  const { format, results } = round;
+  const roundFormat = roundFormatById(format);
 
   if (results.length === 0) {
     return;
@@ -174,7 +174,7 @@ export const getSeedResult = (wcif, activityCode, person) => {
 export const addAssignmentsToPerson = (person, assignments) => {
   return {
     ...person,
-    assignments: [...person.assignments, assignments],
+    assignments: [...person.assignments, ...assignments],
   };
 };
 

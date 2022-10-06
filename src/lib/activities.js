@@ -44,7 +44,7 @@ export const activityCodeToName = (activityCode) => {
  * @param {*} parentActivitiyCode
  * @returns
  */
-export const activityCodeIsChild = (parentActivitiyCode) => (childActivityCode) => {
+export const activityCodeIsChild = (parentActivitiyCode, childActivityCode) => {
   const parent = parseActivityCode(parentActivitiyCode);
   const child = parseActivityCode(childActivityCode);
 

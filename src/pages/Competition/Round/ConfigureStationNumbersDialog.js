@@ -53,7 +53,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
             .find(
               ({ assignmentCode, activity }) =>
                 assignmentCode === 'competitor' &&
-                activityCodeIsChild(activityCode)(activity.activityCode)
+                activityCodeIsChild(activityCode, activity.activityCode)
             ),
         }))
         .filter((p) => Boolean(p.assignment)),
