@@ -29,6 +29,20 @@ export const selectRoundById = createSelector(
 );
 
 /**
+ * @example
+ * ```
+ * selectEventByActivityCode(state, activityCode)
+ * ```
+ */
+export const selectEventByActivityCode = createSelector(
+  [selectWcif, (_, activityCode) => activityCode],
+  (wcif, activityCode) => {
+    const { eventId } = parseActivityCode(activityCode);
+    return wcif.events.find((event) => event.id === eventId);
+  }
+);
+
+/**
  * Selected the activity by activityCode. Searches entire WCIF for it.
  * @example
  * ```

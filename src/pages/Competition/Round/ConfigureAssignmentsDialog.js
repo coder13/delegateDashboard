@@ -33,7 +33,12 @@ import { grey, red, yellow } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 import { styled, useTheme } from '@mui/system';
 import { parseActivityCode, activityCodeToName } from '../../../lib/activities';
-import { acceptedRegistration, getSeedResult, isOrganizerOrDelegate } from '../../../lib/persons';
+import {
+  acceptedRegistration,
+  byPROrResult,
+  getSeedResult,
+  isOrganizerOrDelegate,
+} from '../../../lib/persons';
 import { flatten } from '../../../lib/utils';
 import {
   upsertPersonAssignments,
@@ -101,6 +106,8 @@ const Assignments = [
 
 const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => {
   const wcif = useSelector((state) => state.wcif);
+  const { eventId, roundNumber } = parseActivityCode(activityCode);
+  const event = wcif.events.find((e) => e.id === eventId);
   const classes = useStyles();
   const wcifRooms = useSelector((state) => selectWcifRooms(state));
 
@@ -108,7 +115,6 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const confirm = useConfirm();
-  const { eventId } = parseActivityCode(activityCode);
 
   const [showAllCompetitors, setShowAllCompetitors] = useState(false);
   const [paintingAssignmentCode, setPaintingAssignmentCode] = useState('staff-scrambler');
@@ -152,15 +158,20 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
         }))
         .sort((a, b) => {
           if (competitorSort === 'speed') {
-            return (
-              (a.seedResult?.ranking || Number.MAX_VALUE) -
-              (b.seedResult?.ranking || Number.MAX_VALUE)
-            );
+            return byPROrResult(event, roundNumber)(a, b);
           }
 
           return a.name.localeCompare(b.name);
         }),
-    [activityCode, competitorSort, personsShouldBeInRound, showAllCompetitors, wcif]
+    [
+      activityCode,
+      competitorSort,
+      event,
+      personsShouldBeInRound,
+      roundNumber,
+      showAllCompetitors,
+      wcif,
+    ]
   );
 
   // const personsForActivityId = useCallback(
@@ -324,8 +335,8 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
             </TableRow>
             <TableRow>
               <TableCell style={{ width: '20%' }}>Name</TableCell>
-              <TableCell style={{ width: '1em' }}>Average</TableCell>
-              <TableCell style={{ width: '1em' }}>Registered</TableCell>
+              <TableCell style={{ width: '1em', textAlign: 'center' }}>Seed Result</TableCell>
+              <TableCell style={{ width: '1em', textAlign: 'center' }}>Registered</TableCell>
               {groupsRooms.map((room) =>
                 groups
                   .filter((group) => group.parent.room.name === room.name)

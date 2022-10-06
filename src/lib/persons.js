@@ -97,13 +97,89 @@ export const findPR = (personalBests, eventId, type) =>
 
 /**
  * Comparator for array.sort
- * @param {*} result
- * @param {*} eventId
+ * TODO: cleanup
+ * @param {Result} result
+ * @param {EventId} eventId
+ * @param {'single' | 'average'} type
+ * @returns {(a: Person, b: Person) => number}
+ */
+export const byPsychsheet = (eventId) => (a, b) => {
+  if (!a.wcaId && b.wcaId) {
+    return 1;
+  } else if (a.wcaId && !b.wcaId) {
+    return -1;
+  } else if (!a.wcaId && !b.wcaId) {
+    return 0;
+  }
+
+  const aPRs = a.personalBests.filter((pr) => pr.eventId === eventId);
+  const bPRs = b.personalBests.filter((pr) => pr.eventId === eventId);
+
+  if (!aPRs.length && bPRs.length) {
+    return 1;
+  } else if (aPRs.length && !bPRs.length) {
+    return -1;
+  } else if (!aPRs.length && !bPRs.length) {
+    return 0;
+  }
+
+  const aSingle = findPR(aPRs, eventId, 'single');
+  const bSingle = findPR(bPRs, eventId, 'single');
+  const aAverage = findPR(aPRs, eventId, 'average');
+  const bAverage = findPR(bPRs, eventId, 'average');
+
+  if (!aAverage && bAverage) {
+    return 1;
+  } else if (aAverage && !bAverage) {
+    return -1;
+  } else if (aAverage && bAverage) {
+    return aAverage.worldRanking - bAverage.worldRanking;
+  }
+
+  // If we get here, we know that both competitors have a single
+  if (aSingle && bSingle) {
+    return aSingle.worldRanking - bSingle.worldRanking;
+  }
+};
+
+/**
+ * Comparator for array.sort
+ * Sorts people by their ranking in the round
+ * @param {*} results
  * @returns
  */
-export const byResult = (result, eventId) => (a, b) =>
-  (findPR(b.personalBests, result)?.best || Number.MAX_SAFE_INTEGER) -
-  (findPR(a.personalBests, eventId, result)?.best || Number.MAX_SAFE_INTEGER);
+export const byResult = (results) => (a, b) => {
+  const aResult =
+    results.find((r) => r.personId === a.registrantId)?.ranking || Number.MAX_SAFE_INTEGER;
+  const bResult =
+    results.find((r) => r.personId === b.registrantId)?.ranking || Number.MAX_SAFE_INTEGER;
+
+  return aResult - bResult;
+};
+
+/**
+ * "Scores" People's results or PRs and sorts differently depending on roundNumber.
+ * People's scores
+ * @param {Event} event
+ * @param {ActivityCode} roundId
+ * @param {Result[]} roundResults
+ * @returns
+ */
+export const byPROrResult = (event, roundNumber) => (personA, personB) => {
+  if (roundNumber === 1) {
+    return byPsychsheet(event.id)(personA, personB);
+  }
+
+  const previousRound = event.rounds.find(
+    (r) => parseActivityCode(r.id).roundNumber === roundNumber - 1
+  );
+
+  if (!previousRound.results?.length) {
+    return 0;
+  }
+
+  return byResult(previousRound.results)(personA, personB);
+};
 
 export const findResultFromRound = (wcif, roundId, personId) => {
   const { eventId } = parseActivityCode(roundId);

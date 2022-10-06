@@ -10,10 +10,14 @@ import {
   nextGroupForActivity,
   previousGroupForActivity,
 } from '../../lib/groups';
-import { byResult, findPR, findResultFromRound, hasCompetitorAssignment } from '../../lib/persons';
+import { byPROrResult, hasCompetitorAssignment } from '../../lib/persons';
 import { byName } from '../../lib/utils';
 import { getExtensionData } from '../../lib/wcif-extensions';
-import { selectPersonsShouldBeInRound, selectRoundById } from '../selectors';
+import {
+  selectEventByActivityCode,
+  selectPersonsShouldBeInRound,
+  selectRoundById,
+} from '../selectors';
 import { bulkAddPersonAssignments } from './competitorAssignments';
 
 /**
@@ -107,8 +111,9 @@ const createAssignmentQueries = (wcif, activityCode, assignments) => {
 
 const generateCompetingGroupActitivitesForEveryone = (state, roundActivityCode, assignments) => {
   const round = selectRoundById(state, roundActivityCode);
-  const { eventId, roundNumber } = parseActivityCode(roundActivityCode);
+  const { roundNumber } = parseActivityCode(roundActivityCode);
 
+  const event = selectEventByActivityCode(state, roundActivityCode);
   const personsShouldBeInRound = selectPersonsShouldBeInRound(state, round);
 
   const { groups, missingCompetitorAssignments } = createAssignmentQueries(
@@ -129,117 +134,16 @@ const generateCompetingGroupActitivitesForEveryone = (state, roundActivityCode, 
     return smallestGroupActivity.id;
   };
 
-  const assignCompetingGroup = (person) => {
-    assignments.push(
-      createGroupAssignment(person.registrantId, nextGroupActivityIdToAssign(), 'competitor')
-    );
-  };
-
-  const hasNoSingleInRound = (person) => {
-    if (roundNumber === 1) {
-      return person.wcaId && !person.personalBests.find((pr) => pr.eventId === eventId);
-    }
-
-    const previousRound = event.rounds[roundNumber - 2];
-    const previousRoundResults = previousRound.results.find(
-      (i) => i.personId === person.registrantId
-    );
-
-    return !previousRoundResults;
-  };
-
-  const hasNoAverageInRound = (person) => {
-    if (roundNumber === 1) {
-      return (
-        person.wcaId &&
-        !findPR(person.personalBests, eventId, 'average') &&
-        findPR(person.personalBests, eventId, 'single')
+  personsShouldBeInRound
+    .filter(missingCompetitorAssignments)
+    .sort(byName)
+    .sort(byPROrResult(event, roundNumber))
+    .forEach((person) => {
+      debugger;
+      assignments.push(
+        createGroupAssignment(person.registrantId, nextGroupActivityIdToAssign(), 'competitor')
       );
-    }
-
-    const previousRound = event.rounds[roundNumber - 2];
-    const previousRoundResults = previousRound.results.find(
-      (i) => i.personId === person.registrantId
-    );
-
-    if (!previousRoundResults) {
-      return true;
-    }
-
-    if (previousRoundResults.average <= -1) {
-      return true;
-    }
-  };
-
-  const hasAverageInRound = (person) => {
-    if (roundNumber === 1) {
-      return person.wcaId && findPR(person.personalBests, eventId, 'average');
-    }
-
-    const previousRound = event.rounds[roundNumber - 2];
-    const previousRoundResults = previousRound.results.find(
-      (i) => i.personId === person.registrantId
-    );
-
-    if (!previousRoundResults) {
-      return false;
-    }
-
-    if (previousRoundResults.average > 0) {
-      return false;
-    }
-  };
-
-  // Assign competitors assignments to those missing competitor assignments
-
-  if (roundNumber === 1) {
-    const everyoneElse = personsShouldBeInRound.filter(missingCompetitorAssignments);
-
-    // Query for groups of people
-    const firstTimers = everyoneElse.filter((p) => !p.wcaId).sort(byName); // Everyone without a wca id
-    const noSingleInEvent = everyoneElse.filter(hasNoSingleInRound).sort(byName); // everyone with no single
-    const noAverageInEvent = everyoneElse
-      .filter(hasNoAverageInRound)
-      .sort(byName)
-      .sort(byResult('single', eventId)); // everyone with no average
-    const hasResults = everyoneElse
-      .filter(hasAverageInRound)
-      .sort(byName)
-      .sort(byResult('average', eventId));
-
-    [...firstTimers, ...noSingleInEvent, ...noAverageInEvent, ...hasResults].forEach(
-      assignCompetingGroup
-    );
-  } else {
-    const everyoneElse = personsShouldBeInRound
-      .filter(missingCompetitorAssignments)
-      .sort((a, b) => {
-        const aResults = findResultFromRound(
-          state.wcif,
-          `${eventId}-r${roundNumber - 1}`,
-          a.registrantId
-        );
-        const bResults = findResultFromRound(
-          state.wcif,
-          `${eventId}-r${roundNumber - 1}`,
-          b.registrantId
-        );
-
-        if (!aResults) {
-          // b is better
-          return 1;
-        } else if (!bResults) {
-          // a is better
-          return -1;
-        } else {
-          return aResults.ranking - bResults.ranking;
-        }
-      });
-
-    everyoneElse.forEach(assignCompetingGroup);
-  }
-
-  // assign remaining judging assignments to those missing judging assignments
+    });
 
   return assignments;
 };
@@ -314,6 +218,8 @@ const generateGroupAssignmentsForDelegatesAndOrganizers = (
   assignments,
   options
 ) => {
+  const { roundNumber } = parseActivityCode(roundActivityCode);
+  const event = selectEventByActivityCode(state, roundActivityCode);
   const round = selectRoundById(state, roundActivityCode);
   const { groupActivityIds, missingCompetitorAssignments } = createAssignmentQueries(
     state.wcif,
@@ -351,12 +257,11 @@ const generateGroupAssignmentsForDelegatesAndOrganizers = (
     const round = selectRoundById(state, roundActivityCode);
     selectPersonsShouldBeInRound(state, round)
       .filter(missingCompetitorAssignments)
-      .filter((person) => person.roles.some((role) => role.indexOf('delegate') > -1))
-      .forEach(assignOrganizersOrStaff);
-
-    selectPersonsShouldBeInRound(state, round)
-      .filter(missingCompetitorAssignments)
-      .filter((person) => person.roles.some((role) => role.indexOf('organizer') > -1))
+      .filter((person) =>
+        person.roles.some((role) => role.indexOf('delegate') > -1 || role.indexOf('organizer') > -1)
+      )
+      .sort(byName)
+      .sort(byPROrResult(event, roundNumber))
       .forEach(assignOrganizersOrStaff);
   }
 
