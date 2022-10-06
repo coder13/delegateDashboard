@@ -13,17 +13,28 @@ export const selectAcceptedPersons = createSelector(selectWcif, (wcif) =>
   acceptedRegistrations(wcif.persons)
 );
 
+/**
+ * @example
+ * ```
+ * selectRoundById(state, activityCode)
+ * ```
+ */
 export const selectRoundById = createSelector(
-  [selectWcif, (_, roundId) => parseActivityCode(roundId)],
-  (wcif, parsedRoundId) =>
-    wcif.events
-      .find((event) => event.id === parsedRoundId.eventId)
-      .rounds.find((r) => {
-        const { roundNumber } = parseActivityCode(r.id);
-        return parsedRoundId.roundNumber === roundNumber;
-      })
+  [selectWcif, (_, activityId) => activityId],
+  (wcif, roundActivityId) => {
+    const { eventId } = parseActivityCode(roundActivityId);
+    const event = wcif.events.find((event) => event.id === eventId);
+    return event.rounds.find((r) => r.id === roundActivityId);
+  }
 );
 
+/**
+ * Selected the activity by activityCode. Searches entire WCIF for it.
+ * @example
+ * ```
+ * selectActivityById(state)(activityCode)
+ * ```
+ */
 export const selectActivityById = createSelector(
   [selectWcif, (_, activityId) => activityId],
   (wcif) => (id) => activityById(wcif, id)
@@ -31,10 +42,10 @@ export const selectActivityById = createSelector(
 
 export const selectPersonsAssignedForRound = createSelector(
   [selectAcceptedPersons, selectActivityById, (_, roundId) => roundId],
-  (acceptedPersons, selectActivityById, roundId) => {
+  (acceptedPersons, _selectActivityById, roundId) => {
     return acceptedPersons.filter((p) =>
       p.assignments.find((a) => {
-        const activity = selectActivityById(a.activityId);
+        const activity = _selectActivityById(a.activityId);
 
         if (!activity) {
           console.error(`Can't find activity for activityId ${a.activityId}`);

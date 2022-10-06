@@ -122,7 +122,7 @@ const GroupCard = ({ groupActivity }) => {
 
   const minutes = activityDuration(groupActivity) / 60000;
   const subheader = [
-    `Time: ${activityDurationString(groupActivity)} (${minutes} Minutes)`,
+    `Time: ${activityDurationString(groupActivity)} (${minutes.toFixed(2)} Minutes)`,
     `Group Size: ${personsAssigned.length}`,
     `Average PR: ${averageSpeed ? formatCentiseconds(averageSpeed) : '???'}`,
     `First Timers: ${firstTimers.length}`,

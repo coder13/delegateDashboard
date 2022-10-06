@@ -13,23 +13,8 @@ import {
 import { byResult, findPR, findResultFromRound, hasCompetitorAssignment } from '../../lib/persons';
 import { byName } from '../../lib/utils';
 import { getExtensionData } from '../../lib/wcif-extensions';
-import { selectPersonsShouldBeInRound } from '../selectors';
+import { selectPersonsShouldBeInRound, selectRoundById } from '../selectors';
 import { bulkAddPersonAssignments } from './competitorAssignments';
-
-/**
- * TODO: Create a setting for this
- * This is an *opinion*
- */
-const SORT_ORGANIZATION_STAFF_IN_LAST_GROUPS = true;
-
-export function generateAssignments(state, action) {
-  return {
-    ...state,
-    ...bulkAddPersonAssignments(state, {
-      assignments: generateGroupActitivites(state, action.roundId),
-    }),
-  };
-}
 
 /**
  * Fills in assignment gaps. Everyone should end up having a competitor assignment and staff assignment
@@ -40,15 +25,30 @@ export function generateAssignments(state, action) {
  *
  * 2. Then give out judging assignments to competitors without staff assignments
  */
-const generateGroupActitivites = (state, activityCode) => {
-  const { wcif } = state;
-  const { eventId, roundNumber } = parseActivityCode(activityCode);
-  const event = wcif.events.find((e) => e.id === eventId);
-  const round = event.rounds.find((r) => r.id === activityCode);
+export function generateAssignments(state, action) {
+  return {
+    ...state,
+    ...bulkAddPersonAssignments(state, {
+      assignments: [
+        generateCompetingAssignmentsForStaff,
+        generateGroupAssignmentsForDelegatesAndOrganizers,
+        generateCompetingGroupActitivitesForEveryone,
+        generateJudgeAssignmentsFromCompetingAssignments,
+      ].reduce((acc, generateFn) => generateFn(state, action.roundId, acc, action.options), []),
+    }),
+  };
+}
 
-  const groupsData = getExtensionData('groups', round);
-
+/**
+ * Creates query functions to operate on a working array of assignments and the groups
+ * @param {*} assignments
+ * @param {Activity[]} groupActivities
+ * @returns
+ */
+const createAssignmentQueries = (wcif, activityCode, assignments) => {
   const _allActivities = allActivities(wcif);
+
+  const groups = groupActivitiesByRound(wcif, activityCode);
 
   // list of each stage's round activity
   const roundActivities = _allActivities
@@ -57,10 +57,6 @@ const generateGroupActitivites = (state, activityCode) => {
       ...activity,
       room: roomByActivity(wcif, activity.id),
     }));
-
-  const groups = groupActivitiesByRound(wcif, activityCode);
-
-  const personsShouldBeInRound = selectPersonsShouldBeInRound(state, round);
 
   // This creates a list of groupActivityIds by stage sorted by group number
   const groupActivityIds = roundActivities.map((roundActivity) =>
@@ -77,9 +73,6 @@ const generateGroupActitivites = (state, activityCode) => {
 
   const isCurrentGroupActivity = (groupActivityId) =>
     groupActivityIds.some((g) => g.includes(groupActivityId));
-
-  // Evolving set of assignments to manipulate before doing a bulk update to redux;
-  const assignments = [];
 
   // Checks both already computed assignments and evolving set if any match the test
   const hasAssignments = (p, test) =>
@@ -98,79 +91,37 @@ const generateGroupActitivites = (state, activityCode) => {
   const missingCompetitorAssignments = (p) => !hasAssignments(p, isCompetitorAssignment);
   const hasStaffAssignment = (p) => hasAssignments(p, isStaffAssignment);
 
-  // Step 1
-  // start with competitors who have no competitor assignments but have staffing assignments
-  const personsWithStaffAssignments = personsShouldBeInRound
-    .filter((p) => missingCompetitorAssignments(p) && hasStaffAssignment(p))
-    // Filter to persons with staff assignments in this round
-    .map((person) => {
-      // Determines the soonest group that this person can be assigned to
+  return {
+    isCurrentGroupActivity,
+    hasAssignments,
+    findAssignments,
+    isCompetitorAssignment,
+    isStaffAssignment,
+    missingCompetitorAssignments,
+    hasStaffAssignment,
+    groups,
+    groupActivityIds,
+    roundActivities,
+  };
+};
 
-      // determine staff assignment
-      const assignedStaffActivities = findAssignments(person, isStaffAssignment).map(
-        ({ activityId }) => groups.find((g) => activityId === g.id)
-      );
+const generateCompetingGroupActitivitesForEveryone = (state, roundActivityCode, assignments) => {
+  const round = selectRoundById(state, roundActivityCode);
+  const { eventId, roundNumber } = parseActivityCode(roundActivityCode);
 
-      // Figure out the group numbers
-      const assignedStaffActivityGroupNumbers = assignedStaffActivities.map(
-        ({ activityCode }) => parseActivityCode(activityCode).groupNumber
-      );
+  const personsShouldBeInRound = selectPersonsShouldBeInRound(state, round);
 
-      const minGroupNumber = Math.min(...assignedStaffActivityGroupNumbers);
-      const minGroupIndex = assignedStaffActivityGroupNumbers.indexOf(minGroupNumber);
-
-      const activity = assignedStaffActivities[minGroupIndex];
-      const competingActivity = previousGroupForActivity(activity);
-
-      return createGroupAssignment(person.registrantId, competingActivity.id, 'competitor');
-    });
-
-  assignments.push(...personsWithStaffAssignments);
-
-  // Now for other non-scrambler staff
-
-  // Generate competing assignments for organizers and delegates
-  if (SORT_ORGANIZATION_STAFF_IN_LAST_GROUPS) {
-    let currentGroupPointer = groupActivityIds[0].length - 1; // start with the last group
-
-    const assignOrganizersOrStaff = (person) => {
-      const stagesInGroup = groupActivityIds
-        .map((g) => g[currentGroupPointer])
-        .map((activityId) => ({
-          activityId: activityId,
-          size: assignments.filter(
-            ({ assignment }) =>
-              assignment.activityId === activityId && assignment.assignmentCode === 'competitor'
-          ).length,
-        }));
-
-      const min = Math.min(...stagesInGroup.map((i) => i.size));
-      const smallestGroupActivityId = stagesInGroup.find((g) => g.size === min).activityId;
-
-      assignments.push(
-        createGroupAssignment(person.registrantId, smallestGroupActivityId, 'competitor')
-      );
-
-      // decrement and loop
-      currentGroupPointer = (currentGroupPointer + groupsData.groups - 1) % groupsData.groups;
-    };
-
-    personsShouldBeInRound
-      .filter(missingCompetitorAssignments)
-      .filter((person) => person.roles.some((role) => role.indexOf('delegate') > -1))
-      .forEach(assignOrganizersOrStaff);
-
-    personsShouldBeInRound
-      .filter(missingCompetitorAssignments)
-      .filter((person) => person.roles.some((role) => role.indexOf('organizer') > -1))
-      .forEach(assignOrganizersOrStaff);
-  }
+  const { groups, missingCompetitorAssignments } = createAssignmentQueries(
+    state.wcif,
+    roundActivityCode,
+    assignments
+  );
 
   /**
    * Determines the next smallest group that this person can be assigned to
-   * @returns
+   * @returns {number} activityId
    */
-  const nextGroupToAssign = () => {
+  const nextGroupActivityIdToAssign = () => {
     const groupSizes = groups.map(computeGroupSizes(assignments));
     const min = Math.min(...groupSizes.map((i) => i.size));
     const smallestGroupActivity = groupSizes.find((g) => g.size === min).activity;
@@ -178,10 +129,10 @@ const generateGroupActitivites = (state, activityCode) => {
     return smallestGroupActivity.id;
   };
 
-  const assignCompeting = (person) => {
-    const nextGroupActivityId = nextGroupToAssign();
-
-    assignments.push(createGroupAssignment(person.registrantId, nextGroupActivityId, 'competitor'));
+  const assignCompetingGroup = (person) => {
+    assignments.push(
+      createGroupAssignment(person.registrantId, nextGroupActivityIdToAssign(), 'competitor')
+    );
   };
 
   const hasNoSingleInRound = (person) => {
@@ -244,6 +195,7 @@ const generateGroupActitivites = (state, activityCode) => {
   if (roundNumber === 1) {
     const everyoneElse = personsShouldBeInRound.filter(missingCompetitorAssignments);
 
+    // Query for groups of people
     const firstTimers = everyoneElse.filter((p) => !p.wcaId).sort(byName); // Everyone without a wca id
     const noSingleInEvent = everyoneElse.filter(hasNoSingleInRound).sort(byName); // everyone with no single
     const noAverageInEvent = everyoneElse
@@ -255,23 +207,20 @@ const generateGroupActitivites = (state, activityCode) => {
       .sort(byName)
       .sort(byResult('average', eventId));
 
-    console.log(firstTimers, noSingleInEvent, noAverageInEvent, hasResults);
-
-    firstTimers.forEach(assignCompeting);
-    noSingleInEvent.forEach(assignCompeting);
-    noAverageInEvent.forEach(assignCompeting);
-    hasResults.forEach(assignCompeting);
+    [...firstTimers, ...noSingleInEvent, ...noAverageInEvent, ...hasResults].forEach(
+      assignCompetingGroup
+    );
   } else {
     const everyoneElse = personsShouldBeInRound
       .filter(missingCompetitorAssignments)
       .sort((a, b) => {
         const aResults = findResultFromRound(
-          wcif,
+          state.wcif,
           `${eventId}-r${roundNumber - 1}`,
           a.registrantId
         );
         const bResults = findResultFromRound(
-          wcif,
+          state.wcif,
           `${eventId}-r${roundNumber - 1}`,
           b.registrantId
         );
@@ -287,12 +236,143 @@ const generateGroupActitivites = (state, activityCode) => {
         }
       });
 
-    everyoneElse.forEach(assignCompeting);
+    everyoneElse.forEach(assignCompetingGroup);
   }
 
   // assign remaining judging assignments to those missing judging assignments
 
-  personsShouldBeInRound
+  return assignments;
+};
+
+const generateCompetingAssignmentsForStaff = (state, roundActivityCode, assignments) => {
+  const round = selectRoundById(state, roundActivityCode);
+
+  const {
+    groups,
+    findAssignments,
+    isStaffAssignment,
+    missingCompetitorAssignments,
+    hasStaffAssignment,
+  } = createAssignmentQueries(state.wcif, roundActivityCode, assignments);
+
+  /**
+   * Determines the soonest group that this person is assigned
+   * @param {Person} person
+   * @return {Activity}
+   */
+  const getSoonestAssignedActivity = (person) => {
+    const assignedStaffActivities = findAssignments(person, isStaffAssignment);
+    if (assignedStaffActivities.length === 0) {
+      return;
+    }
+
+    // Determine the first group number
+    let minGroupNumber = Number.MAX_SAFE_INTEGER;
+    let minGroupIndex = Number.MAX_SAFE_INTEGER;
+    for (let i = 0; i < assignedStaffActivities.length; i++) {
+      const assignedStaffActivityId = assignedStaffActivities[i].activityId;
+      const assignedStaffActivity = groups.find((g) => g.id === assignedStaffActivityId);
+      const groupNumber = parseActivityCode(assignedStaffActivity.activityCode).groupNumber;
+
+      if (groupNumber < minGroupNumber) {
+        minGroupNumber = groupNumber;
+        minGroupIndex = i;
+      }
+    }
+
+    const activityId = assignedStaffActivities[minGroupIndex]?.activityId;
+    if (!activityId) {
+      return;
+    }
+
+    return groups.find((g) => activityId === g.id);
+  };
+
+  // Step 1
+  // start with competitors who have no competitor assignments but have staffing assignments
+  selectPersonsShouldBeInRound(state, round)
+    .filter((p) => missingCompetitorAssignments(p) && hasStaffAssignment(p))
+    // Filter to persons with staff assignments in this round
+    .forEach((person) => {
+      const soonestActivity = getSoonestAssignedActivity(person);
+      if (!soonestActivity) {
+        return;
+      }
+
+      const competingActivity = previousGroupForActivity(getSoonestAssignedActivity(person));
+      assignments.push(
+        createGroupAssignment(person.registrantId, competingActivity.id, 'competitor')
+      );
+    });
+
+  return assignments;
+};
+
+const generateGroupAssignmentsForDelegatesAndOrganizers = (
+  state,
+  roundActivityCode,
+  assignments,
+  options
+) => {
+  const round = selectRoundById(state, roundActivityCode);
+  const { groupActivityIds, missingCompetitorAssignments } = createAssignmentQueries(
+    state.wcif,
+    roundActivityCode,
+    assignments
+  );
+
+  const groupsData = getExtensionData('groups', round);
+
+  if (options.sortOrganizationStaffInLastGroups) {
+    let currentGroupPointer = groupActivityIds[0].length - 1; // start with the last group
+
+    const assignOrganizersOrStaff = (person) => {
+      const stagesInGroup = groupActivityIds
+        .map((g) => g[currentGroupPointer])
+        .map((activityId) => ({
+          activityId: activityId,
+          size: assignments.filter(
+            ({ assignment }) =>
+              assignment.activityId === activityId && assignment.assignmentCode === 'competitor'
+          ).length,
+        }));
+
+      const min = Math.min(...stagesInGroup.map((i) => i.size));
+      const smallestGroupActivityId = stagesInGroup.find((g) => g.size === min).activityId;
+
+      assignments.push(
+        createGroupAssignment(person.registrantId, smallestGroupActivityId, 'competitor')
+      );
+
+      // decrement and loop
+      currentGroupPointer = (currentGroupPointer + groupsData.groups - 1) % groupsData.groups;
+    };
+
+    const round = selectRoundById(state, roundActivityCode);
+    selectPersonsShouldBeInRound(state, round)
+      .filter(missingCompetitorAssignments)
+      .filter((person) => person.roles.some((role) => role.indexOf('delegate') > -1))
+      .forEach(assignOrganizersOrStaff);
+
+    selectPersonsShouldBeInRound(state, round)
+      .filter(missingCompetitorAssignments)
+      .filter((person) => person.roles.some((role) => role.indexOf('organizer') > -1))
+      .forEach(assignOrganizersOrStaff);
+  }
+
+  return assignments;
+};
+
+const generateJudgeAssignmentsFromCompetingAssignments = (
+  state,
+  roundActivityCode,
+  assignments
+) => {
+  const { findAssignments, groups, isCompetitorAssignment, hasStaffAssignment } =
+    createAssignmentQueries(state.wcif, roundActivityCode, assignments);
+
+  const round = selectRoundById(state, roundActivityCode);
+  selectPersonsShouldBeInRound(state, round)
     .filter(hasCompetitorAssignment)
     .filter((p) => !hasStaffAssignment(p)) // should be similar to everyoneElse
     .forEach((person) => {
