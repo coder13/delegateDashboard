@@ -1,4 +1,3 @@
-import { selectPersonsShouldBeInRound } from '../../store/selectors';
 import { createGroupAssignment } from '../groups';
 import { byPROrResult } from '../persons';
 import { byName } from '../utils';
@@ -11,9 +10,9 @@ export const generateGroupAssignmentsForDelegatesAndOrganizers =
       event,
       round,
       roundNumber,
-      queries: { missingCompetitorAssignments },
+      queries: { personsShouldBeInRound, missingCompetitorAssignments },
     }) =>
-      selectPersonsShouldBeInRound(state, round)
+      personsShouldBeInRound
         .filter(missingCompetitorAssignments)
         .filter((person) =>
           person.roles.some(

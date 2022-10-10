@@ -21,7 +21,7 @@ function RoundListItem({ round, selected, ...props }) {
   const { eventId, roundNumber } = parseActivityCode(round.id);
 
   const personsShouldBeInRoundCount = useSelector(
-    (state) => selectPersonsShouldBeInRound(state, round).length
+    (state) => selectPersonsShouldBeInRound(state)(round).length
   );
 
   const personsAssignedCount = useSelector(

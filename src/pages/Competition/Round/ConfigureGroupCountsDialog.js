@@ -25,7 +25,7 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
   const wcif = useSelector((state) => state.wcif);
   const dispatch = useDispatch();
   const [groupsData, setGroupsData] = useState(getExtensionData('groups', round));
-  const actualCompetitors = useSelector((state) => selectPersonsShouldBeInRound(state, round));
+  const actualCompetitors = useSelector((state) => selectPersonsShouldBeInRound(state)(round));
 
   if (!open) {
     return '';

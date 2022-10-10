@@ -19,14 +19,11 @@ export const selectAcceptedPersons = createSelector(selectWcif, (wcif) =>
  * selectRoundById(state, activityCode)
  * ```
  */
-export const selectRoundById = createSelector(
-  [selectWcif, (_, activityId) => activityId],
-  (wcif, roundActivityId) => {
-    const { eventId } = parseActivityCode(roundActivityId);
-    const event = wcif.events.find((event) => event.id === eventId);
-    return event.rounds.find((r) => r.id === roundActivityId);
-  }
-);
+export const selectRoundById = createSelector([selectWcif], (wcif) => (roundActivityId) => {
+  const { eventId } = parseActivityCode(roundActivityId);
+  const event = wcif.events.find((event) => event.id === eventId);
+  return event.rounds.find((r) => r.id === roundActivityId);
+});
 
 /**
  * @example
@@ -73,8 +70,8 @@ export const selectPersonsAssignedForRound = createSelector(
 );
 
 export const selectPersonsShouldBeInRound = createSelector(
-  [selectAcceptedPersons, (_, round) => round],
-  (acceptedPersons, round) => personsShouldBeInRound(acceptedPersons, round)
+  [selectAcceptedPersons],
+  (acceptedPersons) => (round) => personsShouldBeInRound(acceptedPersons, round)
 );
 
 /**

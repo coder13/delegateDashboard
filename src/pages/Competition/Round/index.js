@@ -74,8 +74,8 @@ const RoundPage = () => {
   const [showPersonsAssignmentsDialog, setShowPersonsAssignmentsDialog] = useState(false);
 
   const wcif = useSelector((state) => state.wcif);
-  const round = useSelector((state) => selectRoundById(state, activityCode));
-  const personsShouldBeInRound = useSelector((state) => selectPersonsShouldBeInRound(state, round));
+  const round = useSelector((state) => selectRoundById(state)(activityCode));
+  const personsShouldBeInRound = useSelector((state) => selectPersonsShouldBeInRound(state)(round));
 
   useEffect(() => {
     setBreadcrumbs([

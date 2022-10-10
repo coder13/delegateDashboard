@@ -1,4 +1,3 @@
-import { selectPersonsShouldBeInRound } from '../../store/selectors';
 import { computeGroupSizes, createGroupAssignment } from '../groups';
 import { byPROrResult } from '../persons';
 import { byName } from '../utils';
@@ -10,9 +9,9 @@ export const generateCompetingGroupActitivitesForEveryone = createArbitraryGroup
     event,
     round,
     roundNumber,
-    queries: { missingCompetitorAssignments },
+    queries: { personsShouldBeInRound, missingCompetitorAssignments },
   }) =>
-    selectPersonsShouldBeInRound(state, round)
+    personsShouldBeInRound
       .filter(missingCompetitorAssignments)
       .sort(byName)
       .sort(byPROrResult(event, roundNumber)),

@@ -1,4 +1,3 @@
-import { selectPersonsShouldBeInRound } from '../../store/selectors';
 import { parseActivityCode } from '../activities';
 import { createGroupAssignment, previousGroupForActivity } from '../groups';
 import { createArbitraryGroupAssignmentStrategy } from './helpers';
@@ -7,11 +6,8 @@ export const generateCompetingAssignmentsForStaff = createArbitraryGroupAssignme
   computePersons: ({
     state,
     round,
-    queries: { hasStaffAssignment, missingCompetitorAssignments },
-  }) =>
-    selectPersonsShouldBeInRound(state, round).filter(
-      (p) => missingCompetitorAssignments(p) && hasStaffAssignment(p)
-    ),
+    queries: { personsShouldBeInRound, hasStaffAssignment, missingCompetitorAssignments },
+  }) => personsShouldBeInRound.filter(hasStaffAssignment).filter(missingCompetitorAssignments),
 
   /**
    * Determines the soonest group that this person is assigned

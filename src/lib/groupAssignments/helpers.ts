@@ -1,10 +1,10 @@
-import { selectEventByActivityCode, selectRoundById } from '../../store/selectors';
 import {
   allActivities,
   groupActivitiesByRound,
   parseActivityCode,
   roomByActivity,
 } from '../activities';
+import { personsShouldBeInRound } from '../persons';
 import { getExtensionData } from '../wcif-extensions';
 
 /**
@@ -14,8 +14,10 @@ import { getExtensionData } from '../wcif-extensions';
  */
 export const createArbitraryGroupAssignmentStrategy =
   (computeContext) => (state, roundActivityCode, assignments, options) => {
-    const round = selectRoundById(state, roundActivityCode);
-    const event = selectEventByActivityCode(state, roundActivityCode);
+    const { wcif } = state;
+    const { eventId } = parseActivityCode(roundActivityCode);
+    const event = wcif.events.find((e) => e.id === eventId);
+    const round = event.rounds.find((r) => r.id === roundActivityCode);
     const groupsData = getExtensionData('groups', round);
 
     const { computePersons, computeAssignments, ...rest } = computeContext;
@@ -27,7 +29,7 @@ export const createArbitraryGroupAssignmentStrategy =
       groupsData,
       ...parseActivityCode(roundActivityCode),
       assignments,
-      queries: createAssignmentQueries(state.wcif, roundActivityCode, assignments),
+      queries: createAssignmentQueries(state, roundActivityCode, assignments),
       options,
       ...rest,
     };
@@ -53,10 +55,14 @@ export const createArbitraryGroupAssignmentStrategy =
  * @param {Activity[]} groupActivities
  * @returns
  */
-export const createAssignmentQueries = (wcif, activityCode, assignments) => {
+export const createAssignmentQueries = (state: any, activityCode, assignments) => {
+  const { wcif } = state;
   const _allActivities = allActivities(wcif);
+  const { eventId } = parseActivityCode(activityCode);
 
   const groups = groupActivitiesByRound(wcif, activityCode);
+  const event = wcif.events.find((e) => e.id === eventId);
+  const round = event.rounds.find((r) => r.id === activityCode);
 
   // list of each stage's round activity
   const roundActivities = _allActivities
@@ -68,7 +74,7 @@ export const createAssignmentQueries = (wcif, activityCode, assignments) => {
 
   // This creates a list of groupActivityIds by stage sorted by group number
   const groupActivityIds = roundActivities.map((roundActivity) =>
-    roundActivity.childActivities.map((g, index) => {
+    roundActivity.childActivities.map((_, index) => {
       const group = groups.find(
         (g) =>
           g.parent.room.name === roundActivity.room.name &&
@@ -100,6 +106,7 @@ export const createAssignmentQueries = (wcif, activityCode, assignments) => {
   const hasStaffAssignment = (p) => hasAssignments(p, isStaffAssignment);
 
   return {
+    personsShouldBeInRound: personsShouldBeInRound(wcif.persons, round),
     isCurrentGroupActivity,
     hasAssignments,
     findAssignments,

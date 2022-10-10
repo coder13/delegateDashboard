@@ -1,12 +1,11 @@
-import { selectPersonsShouldBeInRound } from '../../store/selectors';
 import { createGroupAssignment, nextGroupForActivity } from '../groups';
 import { hasCompetitorAssignment, isOrganizerOrDelegate } from '../persons';
 import { createArbitraryGroupAssignmentStrategy } from './helpers';
 
 export const generateJudgeAssignmentsFromCompetingAssignments =
   createArbitraryGroupAssignmentStrategy({
-    computePersons: ({ state, round, queries: { hasStaffAssignment } }) =>
-      selectPersonsShouldBeInRound(state, round)
+    computePersons: ({ state, round, queries: { personsShouldBeInRound, hasStaffAssignment } }) =>
+      personsShouldBeInRound
         .filter(hasCompetitorAssignment)
         .filter((p) => !hasStaffAssignment(p))
         .filter((p) => !isOrganizerOrDelegate(p)),
