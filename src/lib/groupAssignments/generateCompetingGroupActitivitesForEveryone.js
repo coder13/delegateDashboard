@@ -31,6 +31,9 @@ export const generateCompetingGroupActitivitesForEveryone = createArbitraryGroup
     nextGroupActivityIdToAssign,
     queries: { groups },
   }) => {
+    // eslint-disable-next-line
+    console.log(`Generating Competing assignments for ${persons.length} competitors`, persons);
+
     persons.forEach((person) => {
       assignments.push(
         createGroupAssignment(

@@ -9,13 +9,16 @@ export const generateJudgeAssignmentsFromCompetingAssignments =
       selectPersonsShouldBeInRound(state, round)
         .filter(hasCompetitorAssignment)
         .filter((p) => !hasStaffAssignment(p))
-        .filter((p) => isOrganizerOrDelegate(p)),
+        .filter((p) => !isOrganizerOrDelegate(p)),
 
     computeAssignments: ({
       persons,
       assignments,
       queries: { groups, findAssignments, isCompetitorAssignment },
     }) => {
+      // eslint-disable-next-line
+      console.log(`Generating judging assignments for ${persons.length} compettors`, persons);
+
       persons.forEach((person) => {
         const competingAssignment = findAssignments(person, isCompetitorAssignment)[0];
         if (!competingAssignment) {

@@ -24,6 +24,12 @@ export const generateGroupAssignmentsForDelegatesAndOrganizers =
         .sort(byPROrResult(event, roundNumber)),
 
     computeAssignments: ({ assignments, persons, groupsData, queries: { groupActivityIds } }) => {
+      // eslint-disable-next-line
+      console.log(
+        `Generating Competing assignments for ${persons.length} organizers & delegates`,
+        persons
+      );
+
       let currentGroupPointer = groupActivityIds[0].length - 1; // start with the last group
       const assignOrganizersOrStaff = (person) => {
         const stagesInGroup = groupActivityIds

@@ -54,6 +54,9 @@ export const generateCompetingAssignmentsForStaff = createArbitraryGroupAssignme
     getSoonestAssignedActivity,
     queries: { groups, findAssignments, isStaffAssignment },
   }) => {
+    // eslint-disable-next-line
+    console.log(`Generating Competing assignments for ${persons.length} staff`, persons);
+
     persons.forEach((person) => {
       const soonestActivity = getSoonestAssignedActivity({
         person,
