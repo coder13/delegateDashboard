@@ -1,6 +1,6 @@
 import { selectPersonsShouldBeInRound } from '../../store/selectors';
 import { createGroupAssignment, nextGroupForActivity } from '../groups';
-import { hasCompetitorAssignment } from '../persons';
+import { hasCompetitorAssignment, isOrganizerOrDelegate } from '../persons';
 import { createArbitraryGroupAssignmentStrategy } from './helpers';
 
 export const generateJudgeAssignmentsFromCompetingAssignments =
@@ -8,7 +8,8 @@ export const generateJudgeAssignmentsFromCompetingAssignments =
     computePersons: ({ state, round, queries: { hasStaffAssignment } }) =>
       selectPersonsShouldBeInRound(state, round)
         .filter(hasCompetitorAssignment)
-        .filter((p) => !hasStaffAssignment(p)), // should be similar to everyoneElse
+        .filter((p) => !hasStaffAssignment(p))
+        .filter((p) => isOrganizerOrDelegate(p)),
 
     computeAssignments: ({
       persons,
@@ -16,14 +17,6 @@ export const generateJudgeAssignmentsFromCompetingAssignments =
       queries: { groups, findAssignments, isCompetitorAssignment },
     }) => {
       persons.forEach((person) => {
-        if (
-          person.roles.some(
-            (role) => role.indexOf('delegate') > -1 || role.indexOf('organizer') > -1
-          )
-        ) {
-          return;
-        }
-
         const competingAssignment = findAssignments(person, isCompetitorAssignment)[0];
         if (!competingAssignment) {
           console.error(
@@ -32,11 +25,15 @@ export const generateJudgeAssignmentsFromCompetingAssignments =
           );
           return;
         }
+
+        // Get competing group activity Id
         const competingAssignmentActivityId =
           competingAssignment?.assignment?.activityId || competingAssignment?.activityId;
 
+        // Get groupActivity from the id
         const groupActivity = groups.find((g) => competingAssignmentActivityId === g.id);
 
+        // simply compute the next group based on the activity
         const nextGroup = nextGroupForActivity(groupActivity);
 
         assignments.push(createGroupAssignment(person.registrantId, nextGroup.id, 'staff-judge'));

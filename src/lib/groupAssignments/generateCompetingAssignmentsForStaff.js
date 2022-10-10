@@ -48,17 +48,29 @@ export const generateCompetingAssignmentsForStaff = createArbitraryGroupAssignme
     return groups.find((g) => activityId === g.id);
   },
 
-  computeAssignments: ({ persons, assignments, getSoonestAssignedActivity }) => {
+  computeAssignments: ({
+    persons,
+    assignments,
+    getSoonestAssignedActivity,
+    queries: { groups, findAssignments, isStaffAssignment },
+  }) => {
     persons.forEach((person) => {
-      const soonestActivity = getSoonestAssignedActivity(person);
+      const soonestActivity = getSoonestAssignedActivity({
+        person,
+        groups,
+        findAssignments,
+        isStaffAssignment,
+      });
       if (!soonestActivity) {
         return;
       }
 
-      const competingActivity = previousGroupForActivity(getSoonestAssignedActivity(person));
+      const competingActivity = previousGroupForActivity(soonestActivity);
       assignments.push(
         createGroupAssignment(person.registrantId, competingActivity.id, 'competitor')
       );
     });
+
+    return assignments;
   },
 });
