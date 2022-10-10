@@ -9,7 +9,7 @@ export const acceptedRegistration = (person) => person.registration?.status === 
 export const registeredForEvent =
   (eventId) =>
   ({ registration }) =>
-    registration.eventIds.indexOf(eventId) > -1;
+    !!registration?.eventIds?.length && registration.eventIds.indexOf(eventId) > -1;
 
 /**
  * Determines if a person is a delegate / trainee-delegate / organizer

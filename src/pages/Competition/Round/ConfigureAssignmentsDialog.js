@@ -145,7 +145,7 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
         .filter(
           (p) =>
             acceptedRegistration(p) &&
-            ((showAllCompetitors && isRegistered(p.registration)) ||
+            ((showAllCompetitors && isRegistered(p)) ||
               isOrganizerOrDelegate(p) ||
               p.roles.some((r) => r.indexOf('staff') > -1))
         )
