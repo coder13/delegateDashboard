@@ -1,3 +1,4 @@
+import { Assignment, Competition, Person } from '@wca/helpers';
 import {
   allActivities,
   groupActivitiesByRound,
@@ -55,14 +56,18 @@ export const createArbitraryGroupAssignmentStrategy =
  * @param {Activity[]} groupActivities
  * @returns
  */
-export const createAssignmentQueries = (state: any, activityCode, assignments) => {
+export const createAssignmentQueries = (
+  state: { wcif: Competition },
+  activityCode,
+  assignments: { registrantId: number; assignment: Assignment }[]
+) => {
   const { wcif } = state;
   const _allActivities = allActivities(wcif);
   const { eventId } = parseActivityCode(activityCode);
 
   const groups = groupActivitiesByRound(wcif, activityCode);
   const event = wcif.events.find((e) => e.id === eventId);
-  const round = event.rounds.find((r) => r.id === activityCode);
+  const round = event?.rounds?.find((r) => r.id === activityCode);
 
   // list of each stage's round activity
   const roundActivities = _allActivities
@@ -73,7 +78,7 @@ export const createAssignmentQueries = (state: any, activityCode, assignments) =
     }));
 
   // This creates a list of groupActivityIds by stage sorted by group number
-  const groupActivityIds = roundActivities.map((roundActivity) =>
+  const groupActivityIds: number[][] = roundActivities.map((roundActivity) =>
     roundActivity.childActivities.map((_, index) => {
       const group = groups.find(
         (g) =>
@@ -85,25 +90,32 @@ export const createAssignmentQueries = (state: any, activityCode, assignments) =
     })
   );
 
-  const isCurrentGroupActivity = (groupActivityId) =>
+  const isCurrentGroupActivity = (groupActivityId: number) =>
     groupActivityIds.some((g) => g.includes(groupActivityId));
 
+  type HasAssignmentTest = (assignment: Assignment) => boolean;
+
   // Checks both already computed assignments and evolving set if any match the test
-  const hasAssignments = (p, test) =>
-    assignments.some((a) => a.registrantId === p.registrantId && test(a.assignment)) ||
-    p.assignments.some((a) => isCurrentGroupActivity(a.activityId) && test(a));
+  const hasAssignments = (p: Person, test: HasAssignmentTest) =>
+    Boolean(
+      assignments.some((a) => a.registrantId === p.registrantId && test(a.assignment)) ||
+        p.assignments?.some((a) => isCurrentGroupActivity(+a.activityId) && test(a))
+    );
 
   // Checks both already computed assignments and evolving set
-  const findAssignments = (p, test) => [
+  const findAssignments = (p: Person, test) => [
     ...assignments.filter((a) => a.registrantId === p.registrantId && test(a.assignment)),
-    ...p.assignments.filter((a) => isCurrentGroupActivity(a.activityId) && test(a)),
+    ...(p.assignments?.filter((a) => isCurrentGroupActivity(+a.activityId) && test(a)) || []),
   ];
 
-  const isCompetitorAssignment = (assignment) => assignment.assignmentCode === 'competitor';
-  const isStaffAssignment = (assignment) => assignment.assignmentCode.startsWith('staff');
+  const isCompetitorAssignment: HasAssignmentTest = (assignment) =>
+    assignment.assignmentCode === 'competitor';
 
-  const missingCompetitorAssignments = (p) => !hasAssignments(p, isCompetitorAssignment);
-  const hasStaffAssignment = (p) => hasAssignments(p, isStaffAssignment);
+  const isStaffAssignment: HasAssignmentTest = (assignment) =>
+    assignment.assignmentCode.startsWith('staff');
+
+  const missingCompetitorAssignments = (p: Person) => !hasAssignments(p, isCompetitorAssignment);
+  const hasStaffAssignment = (p: Person) => hasAssignments(p, isStaffAssignment);
 
   return {
     personsShouldBeInRound: personsShouldBeInRound(wcif.persons, round),
