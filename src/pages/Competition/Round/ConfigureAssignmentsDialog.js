@@ -38,6 +38,7 @@ import {
   byPROrResult,
   getSeedResult,
   isOrganizerOrDelegate,
+  registeredForEvent,
 } from '../../../lib/persons';
 import { flatten } from '../../../lib/utils';
 import {
@@ -45,11 +46,7 @@ import {
   removePersonAssignments,
   bulkRemovePersonAssignments,
 } from '../../../store/actions';
-import {
-  selectPersonsShouldBeInRound,
-  selectRoundById,
-  selectWcifRooms,
-} from '../../../store/selectors';
+import { selectWcifRooms } from '../../../store/selectors';
 import TableAssignmentCell from './TableAssignmentCell';
 
 const useStyles = makeStyles(() => ({
@@ -140,17 +137,17 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
     [groups, wcifRooms]
   );
 
-  const round = useSelector((state) => selectRoundById(state, activityCode));
-  const personsShouldBeInRound = useSelector((state) => selectPersonsShouldBeInRound(state, round));
+  const isRegistered = registeredForEvent(eventId);
 
   const persons = useMemo(
     () =>
-      personsShouldBeInRound
+      wcif.persons
         .filter(
           (p) =>
-            showAllCompetitors ||
-            isOrganizerOrDelegate(p) ||
-            p.roles.some((r) => r.indexOf('staff') > -1)
+            acceptedRegistration(p) &&
+            ((showAllCompetitors && isRegistered(p.registration)) ||
+              isOrganizerOrDelegate(p) ||
+              p.roles.some((r) => r.indexOf('staff') > -1))
         )
         .map((person) => ({
           ...person,
@@ -163,15 +160,7 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
 
           return a.name.localeCompare(b.name);
         }),
-    [
-      activityCode,
-      competitorSort,
-      event,
-      personsShouldBeInRound,
-      roundNumber,
-      showAllCompetitors,
-      wcif,
-    ]
+    [activityCode, competitorSort, event, isRegistered, roundNumber, showAllCompetitors, wcif]
   );
 
   // const personsForActivityId = useCallback(
