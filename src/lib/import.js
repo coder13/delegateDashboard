@@ -1,11 +1,11 @@
 import {
-  rooms,
-  flatActivities,
+  findRooms,
+  allChildActivities,
   parseActivityCode,
   generateNextChildActivityId,
   createGroupActivity,
   activityByActivityCode,
-  allActivities,
+  findAllActivities,
 } from './activities';
 import { events } from './events';
 import { createGroupAssignment } from './groups';
@@ -239,7 +239,7 @@ export const findStaffingAssignments = (stages, data, row, person, eventId) => {
  */
 export const generateAssignments = (wcif, data) => {
   const assignments = [];
-  const stages = rooms(wcif);
+  const stages = findRooms(wcif);
   const eventIds = wcif.events.map((event) => event.id);
 
   data.data.forEach((row) => {
@@ -275,9 +275,9 @@ export const generateAssignments = (wcif, data) => {
 
 export const determineMissingGroupActivities = (wcif, assignments) => {
   const missingActivities = [];
-  const stages = rooms(wcif).map((room) => ({
+  const stages = findRooms(wcif).map((room) => ({
     room,
-    activities: flatActivities(room),
+    activities: allChildActivities(room),
   }));
 
   assignments
@@ -346,7 +346,7 @@ export const determineMissingGroupActivities = (wcif, assignments) => {
  */
 export const determineStageForAssignments = (wcif, assignments) => {
   const stageCountsByActivityCode = new Map();
-  const activities = allActivities(wcif);
+  const activities = findAllActivities(wcif);
 
   return assignments.map((assignment) => {
     if (assignment.roomId) {

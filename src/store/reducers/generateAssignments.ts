@@ -1,3 +1,5 @@
+import { Competition } from '@wca/helpers';
+import { InProgressAssignmment } from '../../lib/assignments';
 import { generateCompetingAssignmentsForStaff } from '../../lib/groupAssignments/generateCompetingAssignmentsForStaff';
 import { generateCompetingGroupActitivitesForEveryone } from '../../lib/groupAssignments/generateCompetingGroupActitivitesForEveryone';
 import { generateGroupAssignmentsForDelegatesAndOrganizers } from '../../lib/groupAssignments/generateGroupAssignmentsForDelegatesAndOrganizers';
@@ -13,16 +15,31 @@ import { bulkAddPersonAssignments } from './competitorAssignments';
  *
  * 2. Then give out judging assignments to competitors without staff assignments
  */
-export function generateAssignments(state, action) {
-  return {
-    ...state,
-    ...bulkAddPersonAssignments(state, {
-      assignments: [
-        generateCompetingAssignmentsForStaff,
-        generateGroupAssignmentsForDelegatesAndOrganizers,
-        generateCompetingGroupActitivitesForEveryone,
-        generateJudgeAssignmentsFromCompetingAssignments,
-      ].reduce((acc, generateFn) => generateFn(state, action.roundId, acc, action.options), []),
-    }),
-  };
+export function generateAssignments(
+  state: {
+    wcif: Competition;
+  },
+  action
+) {
+  const initializedGenerators = [
+    generateCompetingAssignmentsForStaff,
+    generateGroupAssignmentsForDelegatesAndOrganizers,
+    generateCompetingGroupActitivitesForEveryone,
+    generateJudgeAssignmentsFromCompetingAssignments,
+  ]
+    .map((generator) => generator(state.wcif, action.roundId))
+    .filter(Boolean) as ((a: InProgressAssignmment[]) => InProgressAssignmment[])[];
+
+  const newAssignments = initializedGenerators.reduce((accumulatingAssignments, generateFn) => {
+    debugger;
+    const generatedAssignments = generateFn(accumulatingAssignments);
+    console.log('generatedAssignments', generatedAssignments);
+    return [...accumulatingAssignments, ...generatedAssignments];
+  }, [] as InProgressAssignmment[]);
+
+  console.log('Generating new assignmments', newAssignments);
+
+  return bulkAddPersonAssignments(state, {
+    assignments: newAssignments,
+  });
 }

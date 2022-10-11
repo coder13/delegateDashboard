@@ -1,25 +1,32 @@
+import { Activity, Assignment, Competition } from '@wca/helpers';
 import {
   createGroupActivity,
   generateNextChildActivityId,
   parseActivityCode,
-  groupActivitiesByRound,
+  findGroupActivitiesByRound,
+  ActivityWithParent,
 } from './activities';
+import { InProgressAssignmment } from './assignments';
 
 /**
  * Takes WCIF to compute the initial startActivityId.
  * Then increments startActivityId as it generates groups across all stages
  * @returns {[RoundActivity]} Returns updated roundActivities
  */
-export const createGroupsAcrossStages = (wcif, roundActivities, groupCount) => {
+export const createGroupsAcrossStages = (
+  wcif: Competition,
+  roundActivities: Activity[],
+  groupCount: number
+) => {
   let startActivityId = generateNextChildActivityId(wcif);
 
   return roundActivities.map((roundActivity) => {
     const startDate = new Date(roundActivity.startTime);
     const endDate = new Date(roundActivity.endTime);
-    const dateDiff = endDate - startDate;
+    const dateDiff = endDate.getTime() - startDate.getTime();
     const timePerGroup = dateDiff / groupCount;
 
-    const childActivities = [];
+    const childActivities: Activity[] = [];
     for (let i = 0; i < groupCount; i++) {
       childActivities.push(
         createGroupActivity(
@@ -44,11 +51,17 @@ export const createGroupsAcrossStages = (wcif, roundActivities, groupCount) => {
 /**
  * @param {activity} activity - A modified activity that includes a parent reference
  */
-export const previousGroupForActivity = (activity) => {
-  const groupCount = activity.parent.childActivities.length;
-  const previousGroupNumber =
-    ((parseActivityCode(activity.activityCode).groupNumber - 2 + groupCount) % groupCount) + 1;
-  const previousGroup = activity.parent.childActivities.find(
+export const previousGroupForActivity = (activity: ActivityWithParent): Activity | undefined => {
+  const groups = activity.parent.childActivities;
+  if (!groups) {
+    return;
+  }
+
+  const groupCount = groups.length;
+  const { groupNumber = 0 } = parseActivityCode(activity.activityCode);
+
+  const previousGroupNumber = ((groupNumber - 2 + groupCount) % groupCount) + 1;
+  const previousGroup = groups.find(
     (g) => parseActivityCode(g.activityCode).groupNumber === previousGroupNumber
   );
   return previousGroup;
@@ -57,10 +70,15 @@ export const previousGroupForActivity = (activity) => {
 /**
  * @param {activity} activity - A modified activity that includes a parent reference
  */
-export const nextGroupForActivity = (activity) => {
-  const { groupNumber } = parseActivityCode(activity.activityCode);
-  const nextGroupNumber = (groupNumber % activity.parent.childActivities.length) + 1;
-  const nextGroup = activity.parent.childActivities.find(
+export const nextGroupForActivity = (activity: ActivityWithParent): Activity | undefined => {
+  const groups = activity.parent.childActivities;
+  if (!groups) {
+    return;
+  }
+
+  const { groupNumber = 0 } = parseActivityCode(activity.activityCode);
+  const nextGroupNumber = (groupNumber % groups.length) + 1;
+  const nextGroup = groups.find(
     (g) => parseActivityCode(g.activityCode).groupNumber === nextGroupNumber
   );
   return nextGroup;
@@ -69,7 +87,12 @@ export const nextGroupForActivity = (activity) => {
 /**
  * So that I don't have to remember the data format
  */
-export const createGroupAssignment = (registrantId, activityId, assignmentCode, stationNumber) => ({
+export const createGroupAssignment = (
+  registrantId: number,
+  activityId: any,
+  assignmentCode: string,
+  stationNumber?: number
+): InProgressAssignmment => ({
   registrantId: registrantId,
   assignment: {
     assignmentCode,
@@ -78,11 +101,11 @@ export const createGroupAssignment = (registrantId, activityId, assignmentCode, 
   },
 });
 
-export const computeGroupSizes = (assignments) => (activity) => ({
+export const computeGroupSizes = (assignments: Assignment[]) => (activity: Activity) => ({
   activity: activity,
   size: assignments.filter(
-    ({ assignment }) =>
-      assignment.activityId === activity.id && assignment.assignmentCode === 'competitor'
+    ({ activityId, assignmentCode }) =>
+      +activityId === activity.id && assignmentCode === 'competitor'
   ).length,
 });
 
@@ -93,7 +116,7 @@ export const computeGroupSizes = (assignments) => (activity) => ({
  * @returns
  */
 export const computeGroupSizesForRoundId = (wcif, roundId) => {
-  const groups = groupActivitiesByRound(wcif, roundId);
+  const groups = findGroupActivitiesByRound(wcif, roundId);
   return groups.map((group) => ({
     activity: group,
     size: wcif.persons.filter(

@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import useDebounce from '../../hooks/useDebounce';
-import { allActivities } from '../../lib/activities';
+import { findAllActivities } from '../../lib/activities';
 import { acceptedRegistrations } from '../../lib/persons';
 import SearchResultList from '../SearchResultList';
 
@@ -38,7 +38,7 @@ function CommandPromptDialog({ open, onClose }) {
   }, [wcif]);
 
   const persons = useMemo(() => acceptedRegistrations(wcif.persons), [wcif]);
-  const activities = useMemo(() => allActivities(wcif), [wcif]);
+  const activities = useMemo(() => findAllActivities(wcif), [wcif]);
 
   const fuse = useMemo(() => {
     if (currentCompetitionId && wcif) {

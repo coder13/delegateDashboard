@@ -1,10 +1,15 @@
 import { createSelector } from 'reselect';
-import { activityById, activityCodeIsChild, parseActivityCode, rooms } from '../lib/activities';
+import {
+  findActivityById,
+  activityCodeIsChild,
+  parseActivityCode,
+  findRooms,
+} from '../lib/activities';
 import { acceptedRegistrations, personsShouldBeInRound } from '../lib/persons';
 
 const selectWcif = (state) => state.wcif;
 
-export const selectWcifRooms = createSelector(selectWcif, (wcif) => rooms(wcif));
+export const selectWcifRooms = createSelector(selectWcif, (wcif) => findRooms(wcif));
 
 /**
  * Return a filtered array of all persons who's registration is defined and status is `accepted`
@@ -48,7 +53,7 @@ export const selectEventByActivityCode = createSelector(
  */
 export const selectActivityById = createSelector(
   [selectWcif, (_, activityId) => activityId],
-  (wcif) => (id) => activityById(wcif, id)
+  (wcif) => (id) => findActivityById(wcif, id)
 );
 
 export const selectPersonsAssignedForRound = createSelector(
@@ -71,7 +76,7 @@ export const selectPersonsAssignedForRound = createSelector(
 
 export const selectPersonsShouldBeInRound = createSelector(
   [selectAcceptedPersons],
-  (acceptedPersons) => (round) => personsShouldBeInRound(acceptedPersons, round)
+  (acceptedPersons) => (round) => personsShouldBeInRound(round)(acceptedPersons)
 );
 
 /**

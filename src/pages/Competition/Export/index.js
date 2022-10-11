@@ -3,7 +3,7 @@ import { ExportToCsv } from 'export-to-csv';
 import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { Button, Grid, Typography } from '@mui/material';
-import { groupActivitiesByRound, parseActivityCode } from '../../../lib/activities';
+import { findGroupActivitiesByRound, parseActivityCode } from '../../../lib/activities';
 import { eventNameById, roundFormatById } from '../../../lib/events';
 import { acceptedRegistrations } from '../../../lib/persons';
 import { flatten } from '../../../lib/utils';
@@ -45,7 +45,7 @@ const ExportPage = () => {
   const wcif = useSelector((state) => state.wcif);
 
   const memodGroupActivitiesForRound = useCallback(
-    (activityCode) => groupActivitiesByRound(wcif, activityCode),
+    (activityCode) => findGroupActivitiesByRound(wcif, activityCode),
     [wcif]
   );
 

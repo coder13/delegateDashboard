@@ -12,7 +12,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
-import { activityById } from '../../lib/activities';
+import { findActivityById } from '../../lib/activities';
 import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
 
 const useStyles = makeStyles((theme) => ({
@@ -46,7 +46,7 @@ const PersonPage = () => {
     setAssignments(
       person.assignments
         .map((assignment) => ({
-          activity: activityById(wcif, assignment.activityId),
+          activity: findActivityById(wcif, assignment.activityId),
           ...assignment,
         }))
         .sort(

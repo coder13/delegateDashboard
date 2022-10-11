@@ -15,10 +15,10 @@ import {
 import MaterialLink from '../../../components/MaterialLink';
 import {
   activityCodeToName,
-  allActivities,
-  allRoundActivities,
+  findAllActivities,
+  findAllRoundActivities,
   parseActivityCode,
-  rooms,
+  findRooms,
 } from '../../../lib/activities';
 import { flatMap, groupBy } from '../../../lib/utils';
 
@@ -45,19 +45,19 @@ export default function ScramblerSchedule() {
           ))
       : null;
 
-  const _rooms = rooms(wcif);
+  const _rooms = findRooms(wcif);
 
   const [roomSelector, setRoomSelector] = useState(_rooms[0].id);
 
   const _allRoundActivities = useMemo(
     () =>
-      allRoundActivities(wcif)
+      findAllRoundActivities(wcif)
         .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
         .filter((activity) => activity.childActivities.length !== 0)
         .filter((activity) => activity.room.id === roomSelector),
     [roomSelector, wcif]
   );
-  const _allActivities = useMemo(() => allActivities(wcif), [wcif]);
+  const _allActivities = useMemo(() => findAllActivities(wcif), [wcif]);
 
   const getActivity = useCallback(
     (assignment) => _allActivities.find(({ id }) => id === assignment.activityId),

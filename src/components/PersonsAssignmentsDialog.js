@@ -12,13 +12,13 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { groupActivitiesByRound, parseActivityCode } from '../lib/activities';
+import { findGroupActivitiesByRound, parseActivityCode } from '../lib/activities';
 import { byName } from '../lib/utils';
 
 const PersonsAssignmentsDialog = ({ open, onClose, roundId, persons }) => {
   const wcif = useSelector((state) => state.wcif);
 
-  const groupActivities = groupActivitiesByRound(wcif, roundId);
+  const groupActivities = findGroupActivitiesByRound(wcif, roundId);
 
   const personAssignmentsInRound = useCallback(
     (person) =>

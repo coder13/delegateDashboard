@@ -1,4 +1,4 @@
-import { activityCodeToName, allActivities, roundActivities } from './activities';
+import { activityCodeToName, findAllActivities, findRoundActivitiesById } from './activities';
 import { acceptedRegistrations } from './persons';
 import { flatMap } from './utils';
 
@@ -38,7 +38,7 @@ export const validateWcif = (wcif) => {
     );
 
     const roundActivityErrors = flatMap(event.rounds, (round) =>
-      roundActivities(wcif, round.id).length > 0
+      findRoundActivitiesById(wcif, round.id).length > 0
         ? []
         : [
             {
@@ -56,7 +56,7 @@ export const validateWcif = (wcif) => {
 
   const personAssignmentMissingActivityErrors = [];
 
-  const allActivityIds = allActivities(wcif).map((activity) => activity.id);
+  const allActivityIds = findAllActivities(wcif).map((activity) => activity.id);
 
   acceptedRegistrations(persons).forEach((person) => {
     person.assignments.forEach((assignment) => {

@@ -6,7 +6,7 @@ import { Collapse } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
-import { groupActivitiesByRound, parseActivityCode } from '../../lib/activities';
+import { findGroupActivitiesByRound, parseActivityCode } from '../../lib/activities';
 import { eventNameById } from '../../lib/events';
 import { pluralize } from '../../lib/utils';
 import { getExtensionData } from '../../lib/wcif-extensions';
@@ -15,7 +15,7 @@ import { selectPersonsAssignedForRound, selectPersonsShouldBeInRound } from '../
 function RoundListItem({ round, selected, ...props }) {
   const ref = useRef();
   const wcif = useSelector((state) => state.wcif);
-  const realGroups = groupActivitiesByRound(wcif, round.id);
+  const realGroups = findGroupActivitiesByRound(wcif, round.id);
   const groupsData = getExtensionData('groups', round);
 
   const { eventId, roundNumber } = parseActivityCode(round.id);

@@ -23,9 +23,9 @@ import PersonsAssignmentsDialog from '../../../components/PersonsAssignmentsDial
 import PersonsDialog from '../../../components/PersonsDialog';
 import {
   activityCodeToName,
-  allActivities,
+  findAllActivities,
   byGroupNumber,
-  groupActivitiesByRound,
+  findGroupActivitiesByRound,
   roomByActivity,
 } from '../../../lib/activities';
 import { byName } from '../../../lib/utils';
@@ -85,7 +85,7 @@ const RoundPage = () => {
     ]);
   }, [setBreadcrumbs, round.id]);
 
-  const _allActivities = allActivities(wcif);
+  const _allActivities = findAllActivities(wcif);
 
   // list of each stage's round activity
   const roundActivities = _allActivities
@@ -97,7 +97,7 @@ const RoundPage = () => {
 
   const groupsData = getExtensionData('groups', round);
 
-  const groups = groupActivitiesByRound(wcif, activityCode);
+  const groups = findGroupActivitiesByRound(wcif, activityCode);
 
   const sortedGroups = useMemo(
     () =>

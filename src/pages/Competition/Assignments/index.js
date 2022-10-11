@@ -18,7 +18,7 @@ import {
   Typography,
 } from '@mui/material';
 import EventSelector from '../../../components/EventSelector';
-import { allActivities, rooms } from '../../../lib/activities';
+import { findAllActivities, findRooms } from '../../../lib/activities';
 import { acceptedRegistrations } from '../../../lib/persons';
 import { flatten } from '../../../lib/utils';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
@@ -27,7 +27,7 @@ import { resetAllGroupAssignments } from '../../../store/actions';
 const AssignmentsPage = () => {
   const wcif = useSelector((state) => state.wcif);
   const eventIds = useMemo(() => wcif.events.map((e) => e.id), [wcif.events]);
-  const stages = useMemo(() => rooms(wcif), [wcif]);
+  const stages = useMemo(() => findRooms(wcif), [wcif]);
   const dispatch = useDispatch();
   const { setBreadcrumbs } = useBreadcrumbs();
   const confirm = useConfirm();
@@ -43,7 +43,7 @@ const AssignmentsPage = () => {
     ]);
   }, [setBreadcrumbs]);
 
-  const _allActivities = allActivities(wcif);
+  const _allActivities = findAllActivities(wcif);
 
   const allPersonsAssignments = useMemo(
     () =>

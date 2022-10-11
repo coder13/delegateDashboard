@@ -41,7 +41,7 @@ export const upsertPersonAssignments = (state, action) => ({
 
 /**
  * @param {*} state
- * @param {*} action
+ * @param {{assignments: InProgressAssignmment[]}} action
  * @returns
  */
 export const bulkAddPersonAssignments = (state, action) => ({
@@ -52,7 +52,6 @@ export const bulkAddPersonAssignments = (state, action) => ({
     const personAssignments = action.assignments
       .filter((a) => a.registrantId === person.registrantId)
       .map((a) => ({
-        activityId: a.activityId,
         ...a.assignment,
       }));
 
