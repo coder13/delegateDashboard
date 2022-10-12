@@ -8,6 +8,7 @@ import {
   DialogTitle,
   FormGroup,
   TextField,
+  Typography,
 } from '@mui/material';
 import { parseActivityCode } from '../../../lib/activities';
 import { editActivity } from '../../../store/actions';
@@ -50,6 +51,10 @@ const ConfigureGroupDialog = ({ open, onClose, activity }) => {
         style={{
           padding: '1em',
         }}>
+        <Typography>
+          You likely shouldn't be using this dialog unless you know what you're doing.
+        </Typography>
+        <br />
         <FormGroup>
           <TextField margin="dense" label="id" value={id} onChange={(e) => setId(e.target.value)} />
           <TextField
