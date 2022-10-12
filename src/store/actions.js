@@ -26,6 +26,7 @@ export const UPDATE_ROUND_EXTENSION_DATA = 'update_round_extension_data';
 export const PARTIAL_UPDATE_WCIF = 'partial_update_wcif';
 export const RESET_ALL_GROUP_ASSIGNMENTS = 'reset_all_group_assignments';
 export const GENERATE_ASSIGNMENTS = 'generate_assignments';
+export const EDIT_ACTIVITY = 'edit_activity';
 
 const fetchingCompetitions = () => ({
   type: FETCHING_COMPETITIONS,
@@ -239,4 +240,16 @@ export const generateAssignments = (roundId, options) => ({
     sortOrganizationStaffInLastGroups: true,
     ...options,
   },
+});
+
+/**
+ * Queries activity based on the what and replaces it with the what
+ * @param {*} where
+ * @param {*} what
+ * @returns
+ */
+export const editActivity = (where, what) => ({
+  type: EDIT_ACTIVITY,
+  where,
+  what,
 });

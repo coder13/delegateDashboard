@@ -31,7 +31,6 @@ export function generateAssignments(
     .filter(Boolean) as ((a: InProgressAssignmment[]) => InProgressAssignmment[])[];
 
   const newAssignments = initializedGenerators.reduce((accumulatingAssignments, generateFn) => {
-    debugger;
     const generatedAssignments = generateFn(accumulatingAssignments);
     console.log('generatedAssignments', generatedAssignments);
     return [...accumulatingAssignments, ...generatedAssignments];

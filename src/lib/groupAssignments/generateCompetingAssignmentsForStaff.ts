@@ -25,8 +25,6 @@ const getSoonestAvailableActivity = (groups: ActivityWithParent[]) => (person: P
     .map(({ activityId }) => groups.find((g) => g.id === +activityId))
     .filter(Boolean) as Activity[];
 
-  debugger;
-
   // Filter to groups where the person does not have a staff assignment for the given group number
   return groups
     .filter(

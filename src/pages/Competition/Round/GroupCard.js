@@ -1,8 +1,17 @@
 import { formatCentiseconds } from '@wca/helpers';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { Card, CardHeader, CardContent, CardActions, Alert, IconButton } from '@mui/material';
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardActions,
+  Alert,
+  IconButton,
+  Menu,
+  MenuItem,
+} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import MaterialLink from '../../../components/MaterialLink';
@@ -12,6 +21,7 @@ import {
   parseActivityCode,
 } from '../../../lib/activities';
 import { selectPersonsAssignedToActivitiyId } from '../../../store/selectors';
+import ConfigureGroupDialog from './ConfigureGroupDialog';
 
 const withAssignmentCode =
   (activityId, assignmentCode) =>
@@ -27,6 +37,17 @@ const GroupCard = ({ groupActivity }) => {
     ...p,
     assignedActivity: p.assignments.find((a) => a.activityId === groupActivity.id),
   }));
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [editGroupDialogOpen, setEditGroupDialogOpen] = useState(false);
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   const { eventId } = parseActivityCode(groupActivity.activityCode);
 
@@ -129,54 +150,79 @@ const GroupCard = ({ groupActivity }) => {
   ].join(' | ');
 
   return (
-    <Card style={{ marginTop: '1em' }}>
-      <CardHeader
-        title={`${roomName}: Group ${parseActivityCode(groupActivity.activityCode).groupNumber}`}
-        subheader={subheader}
-        action={
-          <IconButton aria-label="settings">
-            <MoreVertIcon />
-          </IconButton>
-        }
-      />
-      <div>
-        {errors.map((error) => (
-          <Alert key={error.message} severity="error">
-            {error.message}
-          </Alert>
-        ))}
-      </div>
-      <CardContent>
-        <Grid container>
-          <Grid item xs={4} style={{ padding: '0.5em' }}>
-            <Typography variant="h6">Staff ({staff.length})</Typography>
-            <Typography>
-              <b>Judges: </b>
-              {mapNames(judges)}
-            </Typography>
-            <Typography>
-              <b>Scramblers: </b>
-              {mapNames(scramblers)}
-            </Typography>
-            <Typography>
-              <b>Runners: </b>
-              {mapNames(runners)}
-            </Typography>
-            {other.length > 0 && (
+    <>
+      <Card style={{ marginTop: '1em' }}>
+        <CardHeader
+          title={`${roomName}: Group ${parseActivityCode(groupActivity.activityCode).groupNumber}`}
+          subheader={subheader}
+          action={
+            <IconButton aria-label="settings" onClick={handleMenuOpen}>
+              <MoreVertIcon />
+            </IconButton>
+          }
+        />
+        <div>
+          {errors.map((error) => (
+            <Alert key={error.message} severity="error">
+              {error.message}
+            </Alert>
+          ))}
+        </div>
+        <CardContent>
+          <Grid container>
+            <Grid item xs={4} style={{ padding: '0.5em' }}>
+              <Typography variant="h6">Staff ({staff.length})</Typography>
               <Typography>
-                <b>Other: </b>
-                {mapNames(other)}
+                <b>Judges: </b>
+                {mapNames(judges)}
               </Typography>
-            )}
+              <Typography>
+                <b>Scramblers: </b>
+                {mapNames(scramblers)}
+              </Typography>
+              <Typography>
+                <b>Runners: </b>
+                {mapNames(runners)}
+              </Typography>
+              {other.length > 0 && (
+                <Typography>
+                  <b>Other: </b>
+                  {mapNames(other)}
+                </Typography>
+              )}
+            </Grid>
+            <Grid item xs={8} style={{ padding: '0.5em' }}>
+              <Typography variant="h6">Competitors: ({competitors.length})</Typography>
+              <Typography>{mapNames(competitors)}</Typography>
+            </Grid>
           </Grid>
-          <Grid item xs={8} style={{ padding: '0.5em' }}>
-            <Typography variant="h6">Competitors: ({competitors.length})</Typography>
-            <Typography>{mapNames(competitors)}</Typography>
-          </Grid>
-        </Grid>
-      </CardContent>
-      <CardActions></CardActions>
-    </Card>
+        </CardContent>
+        <CardActions></CardActions>
+      </Card>
+      <Menu
+        id="room-menu"
+        anchorEl={anchorEl}
+        keepMounted
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}>
+        <MenuItem onClick={() => setEditGroupDialogOpen(true)}>Edit</MenuItem>
+      </Menu>
+      {groupActivity && (
+        <ConfigureGroupDialog
+          open={editGroupDialogOpen}
+          onClose={() => setEditGroupDialogOpen(false)}
+          activity={groupActivity}
+        />
+      )}
+    </>
   );
 };
 

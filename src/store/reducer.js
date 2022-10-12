@@ -22,6 +22,7 @@ import {
   SET_ERROR_FETCHING_COMPS,
   RESET_ALL_GROUP_ASSIGNMENTS,
   GENERATE_ASSIGNMENTS,
+  EDIT_ACTIVITY,
 } from './actions';
 import * as Reducers from './reducers';
 
@@ -188,7 +189,56 @@ const reducers = {
     })),
   }),
   [GENERATE_ASSIGNMENTS]: Reducers.generateAssignments,
+  [EDIT_ACTIVITY]: (state, { where, what }) => {
+    return {
+      ...state,
+      needToSave: true,
+      changedKeys: new Set([...state.changedKeys, 'persons', 'schedule']),
+      wcif: {
+        ...state.wcif,
+        schedule: {
+          ...state.wcif.schedule,
+          venues: state.wcif.schedule.venues.map((venue) => ({
+            ...venue,
+            rooms: venue.rooms.map((room) => ({
+              ...room,
+              activities: room.activities.map(deepUpdate(where, what)),
+            })),
+          })),
+        },
+        persons: state.wcif.persons.map((person) => ({
+          ...person,
+          assignments: person.assignments.map((assignment) => {
+            if (assignment.activityId === where.id) {
+              return {
+                ...assignment,
+                activityId: what.id,
+              };
+            }
+
+            return assignment;
+          }),
+        })),
+      },
+    };
+  },
 };
+
+function deepUpdate(where, what) {
+  return (activity) => {
+    if (Object.keys(where).every((key) => activity[key] === where[key])) {
+      return {
+        ...activity,
+        ...what,
+      };
+    }
+
+    return {
+      ...activity,
+      childActivities: activity.childActivities.map(deepUpdate(where, what)),
+    };
+  };
+}
 
 function reducer(state = INITIAL_STATE, action) {
   if (reducers[action.type]) {
