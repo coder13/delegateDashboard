@@ -3,7 +3,7 @@ import { findGroupActivitiesByRound, parseActivityCode } from '../activities';
 import {
   findCompetingAssignment,
   hasCompetitorAssignment,
-  InProgressAssignmment,
+  InProgressAssignment,
   missingStaffAssignments,
 } from '../assignments';
 import { createGroupAssignment, nextGroupForActivity } from '../groups';
@@ -24,7 +24,7 @@ export const generateJudgeAssignmentsFromCompetingAssignments = (
     return;
   }
 
-  return (assignments: InProgressAssignmment[]): InProgressAssignmment[] => {
+  return (assignments: InProgressAssignment[]): InProgressAssignment[] => {
     const personFilterContext = { assignments, groupIds };
 
     const persons = personsShouldBeInRound(round)(wcif.persons)
@@ -67,6 +67,6 @@ export const generateJudgeAssignmentsFromCompetingAssignments = (
 
         return createGroupAssignment(person.registrantId, nextGroup.id, 'staff-judge');
       })
-      .filter(Boolean) as InProgressAssignmment[];
+      .filter(Boolean) as InProgressAssignment[];
   };
 };

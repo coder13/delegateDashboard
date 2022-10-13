@@ -19,6 +19,7 @@ import { selectPersonsAssignedForRound, selectPersonsShouldBeInRound } from '../
 import ConfigureAssignmentsDialog from '../Dialogs/ConfigureAssignmentsDialog';
 import ConfigureGroupCountsDialog from '../Dialogs/ConfigureGroupCountsDialog';
 import ConfigureStationNumbersDialog from '../Dialogs/ConfigureStationNumbersDialog';
+import GroupsGeneratorList from './GroupsGeneratorList';
 import { PersonsTable } from './PersonsTable';
 import StageList from './StageList';
 
@@ -180,6 +181,8 @@ export const RoundSummaryCard = ({ activityCode }) => {
         <StageList roundActivities={roundActivities} />
         <Divider />
         <PersonsTable activityCode={activityCode} />
+        <Divider />
+        <GroupsGeneratorList activityCode={activityCode} />
         <CardActions>{actionButtons()}</CardActions>
       </Card>
       <ConfigureAssignmentsDialog

@@ -1,7 +1,7 @@
 import { Competition, Event } from '@wca/helpers';
 import { findGroupActivitiesByRound, parseActivityCode } from '../activities';
 import {
-  InProgressAssignmment,
+  InProgressAssignment,
   isCompetitorAssignment,
   missingCompetitorAssignments,
 } from '../assignments';
@@ -44,7 +44,7 @@ export const generateCompetingGroupActitivitesForEveryone = (
     };
   }, {});
 
-  const nextGroupActivityIdToAssign = (assignments: InProgressAssignmment[]) => {
+  const nextGroupActivityIdToAssign = (assignments: InProgressAssignment[]) => {
     const groupSizes = assignments
       .filter((a) => isCompetitorAssignment(a.assignment))
       .reduce((sizes, { assignment }) => {
@@ -69,7 +69,7 @@ export const generateCompetingGroupActitivitesForEveryone = (
     return +sortedGroups[0].activityId;
   };
 
-  return (assignments: InProgressAssignmment[]): InProgressAssignmment[] => {
+  return (assignments: InProgressAssignment[]): InProgressAssignment[] => {
     const persons = personsShouldBeInRound(round)(wcif.persons)
       .filter(missingCompetitorAssignments({ assignments, groupIds }))
       .sort(byName)
@@ -87,7 +87,7 @@ export const generateCompetingGroupActitivitesForEveryone = (
           'competitor'
         ),
       ],
-      [] as InProgressAssignmment[]
+      [] as InProgressAssignment[]
     );
   };
 };

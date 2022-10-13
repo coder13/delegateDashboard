@@ -1,6 +1,6 @@
 import { Assignment, Person } from '@wca/helpers';
 
-export interface InProgressAssignmment {
+export interface InProgressAssignment {
   registrantId: number;
   assignment: Assignment;
 }
@@ -13,7 +13,7 @@ export const createGroupAssignment = (
   activityId: any,
   assignmentCode: string,
   stationNumber?: number
-): InProgressAssignmment => ({
+): InProgressAssignment => ({
   registrantId: registrantId,
   assignment: {
     assignmentCode,
@@ -43,7 +43,7 @@ export const isJudgeAssignment: HasAssignmentTest = (assignment: Assignment) =>
  */
 export const hasAssignment =
   (test: HasAssignmentTest) =>
-  ({ assignments, groupIds }: { assignments?: InProgressAssignmment[]; groupIds?: number[] }) =>
+  ({ assignments, groupIds }: { assignments?: InProgressAssignment[]; groupIds?: number[] }) =>
   (person: Person) => {
     if (groupIds && person.assignments?.some((a) => groupIds.includes(+a.activityId) && test(a))) {
       return true;
@@ -67,7 +67,7 @@ export const hasAssignment =
 
 export const doesNotHaveAssignment =
   (test: HasAssignmentTest) =>
-  ({ assignments, groupIds }: { assignments?: InProgressAssignmment[]; groupIds?: number[] }) =>
+  ({ assignments, groupIds }: { assignments?: InProgressAssignment[]; groupIds?: number[] }) =>
   (person: Person) => {
     return !hasAssignment(test)({ assignments, groupIds })(person);
   };
@@ -82,7 +82,7 @@ export const doesNotHaveAssignment =
  */
 export const filterAssignments =
   (test: HasAssignmentTest) =>
-  ({ assignments, groupIds }: { assignments?: InProgressAssignmment[]; groupIds?: number[] }) =>
+  ({ assignments, groupIds }: { assignments?: InProgressAssignment[]; groupIds?: number[] }) =>
   (person: Person) => {
     if (assignments || groupIds) {
       return [

@@ -1,4 +1,5 @@
 import { Competition } from '@wca/helpers';
+import { generateCompetingAssignmentsForStaff } from '../lib/groupAssignments/generateCompetingAssignmentsForStaff';
 
 const INITIAL_STATE: {
   anythingChanged: boolean;
@@ -18,6 +19,12 @@ const INITIAL_STATE: {
   wcif: Competition;
   competitions: [];
   errors: [];
+  groupGenerators: {
+    id: string;
+    name: string;
+    description: string;
+    generate: typeof generateCompetingAssignmentsForStaff;
+  }[];
 } = {
   anythingChanged: false,
   fetchingUser: false,
@@ -41,6 +48,14 @@ const INITIAL_STATE: {
   },
   competitions: [],
   errors: [],
+  groupGenerators: [
+    {
+      id: 'GenerateCompetingAssignmentsFromStaffAssignments',
+      name: 'Generate Competing Assignments From Staff Assignments',
+      description: 'Generates competing assignments based on pre-existing staff assignments.',
+      generate: generateCompetingAssignmentsForStaff,
+    },
+  ],
 };
 
 export default INITIAL_STATE;

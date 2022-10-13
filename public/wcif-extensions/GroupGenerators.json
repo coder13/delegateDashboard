@@ -1,0 +1,34 @@
+{
+  "$id": "https://github.com/coder13/delegateDashboard/blob/master/public/GroupGenerators.json",
+  "title": "Group Generators",
+  "description": "WCIF extension to configure group generators",
+  "type": "object",
+  "properties": {
+    "generators": {
+      "description": "An array of group generators and their configuration.",
+      "type": "array",
+      "items": {
+        "tite": "Group Generator",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "The id of the group generator. It will normally map to an already imported group generator."
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether this generator is enabled or not."
+          },
+          "options": {
+            "type": "object",
+            "description": "The options for this generator.",
+            "minimum": 1
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "generators"
+  ]
+}

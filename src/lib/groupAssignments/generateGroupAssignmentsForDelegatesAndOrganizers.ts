@@ -1,6 +1,6 @@
 import { Activity, Competition, Event } from '@wca/helpers';
 import { findRoundActivitiesById, parseActivityCode } from '../activities';
-import { InProgressAssignmment, missingCompetitorAssignments } from '../assignments';
+import { InProgressAssignment, missingCompetitorAssignments } from '../assignments';
 import { createGroupAssignment } from '../groups';
 import { byPROrResult, isOrganizerOrDelegate, personsShouldBeInRound } from '../persons';
 import { byName } from '../utils';
@@ -39,7 +39,7 @@ export const generateGroupAssignmentsForDelegatesAndOrganizers = (
     return;
   }
 
-  return (): InProgressAssignmment[] => {
+  return (): InProgressAssignment[] => {
     // eslint-disable-next-line
     console.log(
       `Generating Competing assignments for ${persons.length} organizers & delegates`,

@@ -1,5 +1,5 @@
 import { Competition } from '@wca/helpers';
-import { InProgressAssignmment } from '../../lib/assignments';
+import { InProgressAssignment } from '../../lib/assignments';
 import { generateCompetingAssignmentsForStaff } from '../../lib/groupAssignments/generateCompetingAssignmentsForStaff';
 import { generateCompetingGroupActitivitesForEveryone } from '../../lib/groupAssignments/generateCompetingGroupActitivitesForEveryone';
 import { generateGroupAssignmentsForDelegatesAndOrganizers } from '../../lib/groupAssignments/generateGroupAssignmentsForDelegatesAndOrganizers';
@@ -28,13 +28,13 @@ export function generateAssignments(
     generateJudgeAssignmentsFromCompetingAssignments,
   ]
     .map((generator) => generator(state.wcif, action.roundId))
-    .filter(Boolean) as ((a: InProgressAssignmment[]) => InProgressAssignmment[])[];
+    .filter(Boolean) as ((a: InProgressAssignment[]) => InProgressAssignment[])[];
 
   const newAssignments = initializedGenerators.reduce((accumulatingAssignments, generateFn) => {
     const generatedAssignments = generateFn(accumulatingAssignments);
     console.log('generatedAssignments', generatedAssignments);
     return [...accumulatingAssignments, ...generatedAssignments];
-  }, [] as InProgressAssignmment[]);
+  }, [] as InProgressAssignment[]);
 
   console.log('Generating new assignmments', newAssignments);
 

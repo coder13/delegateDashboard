@@ -7,7 +7,7 @@ import {
 } from '../activities';
 import {
   hasStaffAssignment,
-  InProgressAssignmment,
+  InProgressAssignment,
   isStaffAssignment,
   missingCompetitorAssignments,
 } from '../assignments';
@@ -63,7 +63,7 @@ export const generateCompetingAssignmentsForStaff = (
   // eslint-disable-next-line
   console.log(`Generating Competing assignments for ${persons.length} staff`, persons);
 
-  return (): InProgressAssignmment[] =>
+  return (): InProgressAssignment[] =>
     persons
       .map((person) => {
         const soonestActivity = getSoonestAvailableActivity(groups)(person);
@@ -75,5 +75,5 @@ export const generateCompetingAssignmentsForStaff = (
 
         return createGroupAssignment(person.registrantId, soonestActivity.id, 'competitor');
       })
-      .filter(Boolean) as InProgressAssignmment[];
+      .filter(Boolean) as InProgressAssignment[];
 };

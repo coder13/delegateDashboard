@@ -6,7 +6,7 @@ import {
   findGroupActivitiesByRound,
   ActivityWithParent,
 } from './activities';
-import { InProgressAssignmment } from './assignments';
+import { InProgressAssignment } from './assignments';
 
 /**
  * Takes WCIF to compute the initial startActivityId.
@@ -92,7 +92,7 @@ export const createGroupAssignment = (
   activityId: any,
   assignmentCode: string,
   stationNumber?: number
-): InProgressAssignmment => ({
+): InProgressAssignment => ({
   registrantId: registrantId,
   assignment: {
     assignmentCode,

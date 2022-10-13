@@ -24,6 +24,30 @@ const defaultExtensionData = {
     spreadGroupsAcrossAllStages: true,
     groups: 1,
   },
+  groupGenerators: {
+    generators: [
+      {
+        id: 'GenerateCompetingAssignmentsFromStaffAssignments',
+        enabled: true,
+        options: {},
+      },
+      {
+        id: 'GenerateGroupAssignmentsForDelegatesAndOrganizers',
+        enabled: true,
+        options: {},
+      },
+      {
+        id: 'GenerateCompetingGroupActivitiesForEveryone',
+        enabled: true,
+        options: {},
+      },
+      {
+        id: 'GenerateJudgeAssignmentsFromCompetingAssignments',
+        enabled: true,
+        options: {},
+      },
+    ],
+  },
 };
 
 /**
