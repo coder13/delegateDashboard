@@ -10,8 +10,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { parseActivityCode } from '../../../lib/activities';
-import { editActivity } from '../../../store/actions';
+import { parseActivityCode } from '../../lib/activities';
+import { editActivity } from '../../store/actions';
 
 const ConfigureGroupDialog = ({ open, onClose, activity }) => {
   const dispatch = useDispatch();

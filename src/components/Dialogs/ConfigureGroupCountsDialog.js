@@ -15,20 +15,25 @@ import {
   InputLabel,
   Typography,
 } from '@mui/material';
-import { activityDuration } from '../../../lib/activities';
-import { createGroupsAcrossStages } from '../../../lib/groups';
-import { getExtensionData } from '../../../lib/wcif-extensions';
-import { updateRoundActivities, updateRoundExtensionData } from '../../../store/actions';
-import { selectPersonsShouldBeInRound } from '../../../store/selectors';
+import { activityDuration, findRoundActivitiesById } from '../../lib/activities';
+import { createGroupsAcrossStages } from '../../lib/groups';
+import { getExtensionData } from '../../lib/wcif-extensions';
+import { updateRoundActivities, updateRoundExtensionData } from '../../store/actions';
+import { selectPersonsShouldBeInRound } from '../../store/selectors';
 
-const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundActivities }) => {
+const ConfigureGroupCountsDialog = ({ open, onClose, roundActivityCode }) => {
   const wcif = useSelector((state) => state.wcif);
   const dispatch = useDispatch();
-  const [groupsData, setGroupsData] = useState(getExtensionData('groups', round));
-  const actualCompetitors = useSelector((state) => selectPersonsShouldBeInRound(state)(round));
+  const event = wcif.events.find((e) => e.id === roundActivityCode.split('-')[0]);
+  const round = event?.rounds?.find((r) => r.id === roundActivityCode);
+  const roundActivities = findRoundActivitiesById(wcif, roundActivityCode);
 
-  if (!open) {
-    return '';
+  const [groupsData, setGroupsData] = useState(getExtensionData('groups', round));
+
+  const actualCompetitors = useSelector(selectPersonsShouldBeInRound(round));
+
+  if (!open || !roundActivityCode) {
+    return null;
   }
 
   const { spreadGroupsAcrossAllStages, groups: groupCount } = groupsData;
@@ -71,7 +76,7 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xl">
-      <DialogTitle>Configuring Group Counts For {activityCode}</DialogTitle>
+      <DialogTitle>Configuring Group Counts For {roundActivityCode}</DialogTitle>
       <DialogContent>
         <FormGroup>
           {multipleStages && (

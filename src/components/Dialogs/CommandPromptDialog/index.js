@@ -12,10 +12,10 @@ import {
   Paper,
 } from '@mui/material';
 import { useTheme } from '@mui/styles';
-import useDebounce from '../../hooks/useDebounce';
-import { findAllActivities } from '../../lib/activities';
-import { acceptedRegistrations } from '../../lib/persons';
-import SearchResultList from '../SearchResultList';
+import useDebounce from '../../../hooks/useDebounce';
+import { findAllActivities } from '../../../lib/activities';
+import { acceptedRegistrations } from '../../../lib/persons';
+import SearchResultListItem from '../../SearchResultList/SearchResultListItem';
 
 const options = {
   keys: ['name', 'wcaId', 'activityCode'],
@@ -212,7 +212,7 @@ function CommandPromptDialog({ open, onClose }) {
               transition: theme.transitions.create(['top', 'left', 'width']),
             }}>
             {searchResults?.length ? (
-              <SearchResultList
+              <SearchResultListItem
                 searchResults={searchResults}
                 selected={selected}
                 onSelect={onEnter}

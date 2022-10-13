@@ -1,3 +1,4 @@
+import { TypedUseSelectorHook, useSelector } from 'react-redux';
 import { createStore, applyMiddleware, compose } from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import reducer from './reducer';
@@ -10,3 +11,5 @@ export const store = createStore(reducer, composeEnhancer(applyMiddleware(thunkM
 export type RootState = ReturnType<typeof store.getState>;
 // Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
 export type AppDispatch = typeof store.dispatch;
+
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;

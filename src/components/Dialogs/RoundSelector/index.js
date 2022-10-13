@@ -6,9 +6,9 @@ import { Collapse, Divider, FormControlLabel, Switch } from '@mui/material';
 import List from '@mui/material/List';
 import ListSubheader from '@mui/material/ListSubheader';
 import { makeStyles } from '@mui/styles';
-import { earliestStartTimeForRound, parseActivityCode } from '../../lib/activities';
-import { eventNameById } from '../../lib/events';
-import { useCommandPrompt } from '../../providers/CommandPromptProvider';
+import { earliestStartTimeForRound, parseActivityCode } from '../../../lib/activities';
+import { eventNameById } from '../../../lib/events';
+import { useCommandPrompt } from '../../../providers/CommandPromptProvider';
 import RoundListItem from './RoundListItem';
 
 const useStyles = makeStyles((theme) => ({

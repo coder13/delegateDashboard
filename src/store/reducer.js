@@ -24,27 +24,8 @@ import {
   GENERATE_ASSIGNMENTS,
   EDIT_ACTIVITY,
 } from './actions';
+import INITIAL_STATE from './initialState';
 import * as Reducers from './reducers';
-
-const INITIAL_STATE = {
-  anythingChanged: false,
-  fetchingUser: false,
-  user: {},
-  fetchingWCIF: false,
-  uploadingWCIF: false,
-  needToSave: false,
-  changedKeys: new Set(),
-  wcif: {
-    name: undefined,
-    persons: [],
-    events: [],
-    schedule: {
-      venues: [],
-    },
-  },
-  competitions: [],
-  errors: [],
-};
 
 const reducers = {
   [FETCHING_COMPETITIONS]: (state) => ({

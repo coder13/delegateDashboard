@@ -32,7 +32,11 @@ import {
 import { grey, red, yellow } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 import { styled, useTheme } from '@mui/system';
-import { parseActivityCode, activityCodeToName } from '../../../lib/activities';
+import {
+  parseActivityCode,
+  activityCodeToName,
+  findGroupActivitiesByRound,
+} from '../../lib/activities';
 import {
   acceptedRegistration,
   byPROrResult,
@@ -40,15 +44,15 @@ import {
   isOrganizerOrDelegate,
   registeredForEvent,
   shouldBeInRound,
-} from '../../../lib/persons';
-import { flatten } from '../../../lib/utils';
+} from '../../lib/persons';
+import { flatten } from '../../lib/utils';
+import TableAssignmentCell from '../../pages/Competition/Round/TableAssignmentCell';
 import {
   upsertPersonAssignments,
   removePersonAssignments,
   bulkRemovePersonAssignments,
-} from '../../../store/actions';
-import { selectWcifRooms } from '../../../store/selectors';
-import TableAssignmentCell from './TableAssignmentCell';
+} from '../../store/actions';
+import { selectWcifRooms } from '../../store/selectors';
 
 const useStyles = makeStyles(() => ({
   firstTimer: {
@@ -102,13 +106,15 @@ const Assignments = [
   },
 ];
 
-const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => {
+const ConfigureAssignmentsDialog = ({ open, onClose, activityCode }) => {
   const wcif = useSelector((state) => state.wcif);
   const { eventId, roundNumber } = parseActivityCode(activityCode);
   const event = wcif.events.find((e) => e.id === eventId);
   const round = event?.rounds?.find((r) => r.id === activityCode);
   const classes = useStyles();
   const wcifRooms = useSelector((state) => selectWcifRooms(state));
+
+  const groups = findGroupActivitiesByRound(wcif, activityCode);
 
   const dispatch = useDispatch();
   const theme = useTheme();

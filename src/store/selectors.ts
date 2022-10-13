@@ -1,4 +1,6 @@
+import { Round } from '@wca/helpers';
 import { createSelector } from 'reselect';
+import { RootState } from '.';
 import {
   findActivityById,
   activityCodeIsChild,
@@ -7,7 +9,7 @@ import {
 } from '../lib/activities';
 import { acceptedRegistrations, personsShouldBeInRound } from '../lib/persons';
 
-const selectWcif = (state) => state.wcif;
+const selectWcif = (state: RootState) => state.wcif;
 
 export const selectWcifRooms = createSelector(selectWcif, (wcif) => findRooms(wcif));
 
@@ -27,7 +29,7 @@ export const selectAcceptedPersons = createSelector(selectWcif, (wcif) =>
 export const selectRoundById = createSelector([selectWcif], (wcif) => (roundActivityId) => {
   const { eventId } = parseActivityCode(roundActivityId);
   const event = wcif.events.find((event) => event.id === eventId);
-  return event.rounds.find((r) => r.id === roundActivityId);
+  return event?.rounds?.find((r) => r.id === roundActivityId);
 });
 
 /**
@@ -51,17 +53,14 @@ export const selectEventByActivityCode = createSelector(
  * selectActivityById(state)(activityCode)
  * ```
  */
-export const selectActivityById = createSelector(
-  [selectWcif, (_, activityId) => activityId],
-  (wcif) => (id) => findActivityById(wcif, id)
-);
+export const selectActivityById = (activityId: number) =>
+  createSelector([selectWcif], (wcif) => findActivityById(wcif, activityId));
 
-export const selectPersonsAssignedForRound = createSelector(
-  [selectAcceptedPersons, selectActivityById, (_, roundId) => roundId],
-  (acceptedPersons, _selectActivityById, roundId) => {
+export const selectPersonsAssignedForRound = (roundId: string) =>
+  createSelector([(state) => state, selectAcceptedPersons], (state, acceptedPersons) => {
     return acceptedPersons.filter((p) =>
-      p.assignments.find((a) => {
-        const activity = _selectActivityById(a.activityId);
+      p.assignments?.find((a) => {
+        const activity = selectActivityById(+a.activityId)(state);
 
         if (!activity) {
           console.error(`Can't find activity for activityId ${a.activityId}`);
@@ -71,13 +70,12 @@ export const selectPersonsAssignedForRound = createSelector(
         return activityCodeIsChild(roundId, activity.activityCode);
       })
     );
-  }
-);
+  });
 
-export const selectPersonsShouldBeInRound = createSelector(
-  [selectAcceptedPersons],
-  (acceptedPersons) => (round) => personsShouldBeInRound(round)(acceptedPersons)
-);
+export const selectPersonsShouldBeInRound = (round?: Round) =>
+  createSelector([selectAcceptedPersons], (acceptedPersons) =>
+    round ? personsShouldBeInRound(round)(acceptedPersons) : []
+  );
 
 /**
  * Return a list of persons who are assigned to the given activity
@@ -85,5 +83,5 @@ export const selectPersonsShouldBeInRound = createSelector(
 export const selectPersonsAssignedToActivitiyId = createSelector(
   [selectAcceptedPersons, (_, activityId) => activityId],
   (persons, activityId) =>
-    persons.filter(({ assignments }) => assignments.some((a) => a.activityId === activityId))
+    persons.filter(({ assignments }) => assignments?.some((a) => a.activityId === activityId))
 );

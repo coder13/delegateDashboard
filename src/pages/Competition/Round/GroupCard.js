@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import ConfigureGroupDialog from '../../../components/Dialogs/ConfigureGroupDialog';
 import MaterialLink from '../../../components/MaterialLink';
 import {
   activityDuration,
@@ -21,7 +22,6 @@ import {
   parseActivityCode,
 } from '../../../lib/activities';
 import { selectPersonsAssignedToActivitiyId } from '../../../store/selectors';
-import ConfigureGroupDialog from './ConfigureGroupDialog';
 
 const withAssignmentCode =
   (activityId, assignmentCode) =>

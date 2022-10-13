@@ -6,11 +6,14 @@ import { Collapse } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
-import { findGroupActivitiesByRound, parseActivityCode } from '../../lib/activities';
-import { eventNameById } from '../../lib/events';
-import { pluralize } from '../../lib/utils';
-import { getExtensionData } from '../../lib/wcif-extensions';
-import { selectPersonsAssignedForRound, selectPersonsShouldBeInRound } from '../../store/selectors';
+import { findGroupActivitiesByRound, parseActivityCode } from '../../../lib/activities';
+import { eventNameById } from '../../../lib/events';
+import { pluralize } from '../../../lib/utils';
+import { getExtensionData } from '../../../lib/wcif-extensions';
+import {
+  selectPersonsAssignedForRound,
+  selectPersonsShouldBeInRound,
+} from '../../../store/selectors';
 
 function RoundListItem({ round, selected, ...props }) {
   const ref = useRef();
@@ -21,11 +24,11 @@ function RoundListItem({ round, selected, ...props }) {
   const { eventId, roundNumber } = parseActivityCode(round.id);
 
   const personsShouldBeInRoundCount = useSelector(
-    (state) => selectPersonsShouldBeInRound(state)(round).length
+    (state) => selectPersonsShouldBeInRound(round)(state).length
   );
 
   const personsAssignedCount = useSelector(
-    (state) => selectPersonsAssignedForRound(state, round.id).length
+    (state) => selectPersonsAssignedForRound(round.id)(state).length
   );
 
   const realGroupsGeneratedText =

@@ -1,5 +1,5 @@
+import { Person } from '@wca/helpers';
 import { useCallback } from 'react';
-import { useSelector } from 'react-redux';
 import {
   Button,
   Dialog,
@@ -12,11 +12,24 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { findGroupActivitiesByRound, parseActivityCode } from '../lib/activities';
-import { byName } from '../lib/utils';
+import { findGroupActivitiesByRound, parseActivityCode } from '../../lib/activities';
+import { byName } from '../../lib/utils';
+import { useAppSelector } from '../../store';
 
-const PersonsAssignmentsDialog = ({ open, onClose, roundId, persons }) => {
-  const wcif = useSelector((state) => state.wcif);
+interface PersonsAssignmentsDialogProps {
+  open: boolean;
+  onClose: () => void;
+  roundId: string;
+  persons: Person[];
+}
+
+const PersonsAssignmentsDialog = ({
+  open,
+  onClose,
+  roundId,
+  persons,
+}: PersonsAssignmentsDialogProps) => {
+  const wcif = useAppSelector((state) => state.wcif);
 
   const groupActivities = findGroupActivitiesByRound(wcif, roundId);
 

@@ -3,10 +3,10 @@ import { ExportToCsv } from 'export-to-csv';
 import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { Button, Grid, Typography } from '@mui/material';
-import { findGroupActivitiesByRound, parseActivityCode } from '../../../lib/activities';
-import { eventNameById, roundFormatById } from '../../../lib/events';
-import { acceptedRegistrations } from '../../../lib/persons';
-import { flatten } from '../../../lib/utils';
+import { findGroupActivitiesByRound, parseActivityCode } from '../lib/activities';
+import { eventNameById, roundFormatById } from '../lib/events';
+import { acceptedRegistrations } from '../lib/persons';
+import { flatten } from '../lib/utils';
 
 const advancementConditionToText = ({ type, level }) => {
   switch (type) {

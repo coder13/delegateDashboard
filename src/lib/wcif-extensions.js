@@ -26,6 +26,12 @@ const defaultExtensionData = {
   },
 };
 
+/**
+ *
+ * @param {*} extensionName
+ * @param {Round | undefined} wcifEntity
+ * @returns
+ */
 export const getExtensionData = (extensionName, wcifEntity) => {
   const extension = wcifEntity.extensions.find(
     (extension) => extension.id === extensionId(extensionName)

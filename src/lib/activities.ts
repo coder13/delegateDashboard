@@ -1,4 +1,4 @@
-import { Activity, Competition, EventId, Room } from '@wca/helpers';
+import { Activity, Competition, EventId, Room, Schedule } from '@wca/helpers';
 import { eventNameById } from './events';
 import { shortTime } from './utils';
 
@@ -167,11 +167,11 @@ export const findGroupActivitiesByRound = (wcif: Competition, roundId: string) =
 /* Assigning tasks invokes activityById enormous number of times.
    But during that process activities (schedule) don't change.
    Caching is gives an invaluable speed boost in this case. */
-const activitiesByIdCachedBySchedule = new Map();
+const activitiesByIdCachedBySchedule = new Map<Schedule, Map<number, Activity>>();
 
-export const findActivityById = (wcif: Competition, activityId: number) => {
+export const findActivityById = (wcif: Competition, activityId: number): Activity | undefined => {
   if (activitiesByIdCachedBySchedule.has(wcif.schedule)) {
-    return activitiesByIdCachedBySchedule.get(wcif.schedule).get(activityId);
+    return activitiesByIdCachedBySchedule.get(wcif.schedule)?.get(activityId);
   }
 
   const activities = findAllActivities(wcif);

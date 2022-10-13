@@ -12,10 +12,10 @@ import {
   useTheme,
 } from '@mui/material';
 import { DataGrid, GridToolbarContainer } from '@mui/x-data-grid';
-import { activityCodeIsChild, parseActivityCode, roomByActivity } from '../../../lib/activities';
-import { getSeedResult } from '../../../lib/persons';
-import { bulkUpsertPersonAssignments, upsertPersonAssignments } from '../../../store/actions';
-import { selectPersonsAssignedForRound, selectActivityById } from '../../../store/selectors';
+import { activityCodeIsChild, parseActivityCode, roomByActivity } from '../../lib/activities';
+import { getSeedResult } from '../../lib/persons';
+import { bulkUpsertPersonAssignments, upsertPersonAssignments } from '../../store/actions';
+import { selectPersonsAssignedForRound, selectActivityById } from '../../store/selectors';
 
 const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
   const wcif = useSelector((state) => state.wcif);

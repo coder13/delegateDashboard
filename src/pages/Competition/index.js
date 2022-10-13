@@ -6,5 +6,5 @@ export { default as Round } from './Round';
 export { default as Person } from './Person';
 export { default as Assignments } from './Assignments';
 export { default as Import } from './Import';
-export { default as Export } from './Export';
+export { default as Export } from '../../components';
 export { default as ScramblerSchedule } from './ScramblerSchedule';

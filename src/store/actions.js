@@ -233,7 +233,7 @@ export const resetAllGroupAssignments = () => ({
  * @param {ActivityCode} roundId
  * @returns
  */
-export const generateAssignments = (roundId, options) => ({
+export const generateAssignments = (roundId, options = {}) => ({
   type: GENERATE_ASSIGNMENTS,
   roundId,
   options: {
