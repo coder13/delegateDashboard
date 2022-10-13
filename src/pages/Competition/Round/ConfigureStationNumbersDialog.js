@@ -135,7 +135,6 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
   const handleCellEditStop = ({ row }, event) => {
     const stationNumber = parseInt(event?.target?.value, 10);
     if (stationNumber) {
-      console.log(119, row, event.target.value);
       dispatch(
         upsertPersonAssignments(row.id, [
           {

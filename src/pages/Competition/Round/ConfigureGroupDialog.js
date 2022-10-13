@@ -41,7 +41,6 @@ const ConfigureGroupDialog = ({ open, onClose, activity }) => {
     onClose();
   };
 
-  console.log(16, activity);
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>

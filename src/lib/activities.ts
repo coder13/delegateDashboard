@@ -240,3 +240,14 @@ export const createGroupActivity = (
     extensions: [],
   };
 };
+
+export const earliestStartTimeForRound = (wcif: Competition, roundId: string) => {
+  const roundActivities = findRoundActivitiesById(wcif, roundId);
+  return roundActivities.reduce(
+    (minStartTime, activity) =>
+      activity.startTime && new Date(activity.startTime).getTime() < minStartTime.getTime()
+        ? new Date(activity.startTime)
+        : minStartTime,
+    new Date(roundActivities[0].startTime)
+  );
+};

@@ -6,9 +6,8 @@ import { Collapse, Divider, FormControlLabel, Switch } from '@mui/material';
 import List from '@mui/material/List';
 import ListSubheader from '@mui/material/ListSubheader';
 import { makeStyles } from '@mui/styles';
-import { parseActivityCode } from '../../lib/activities';
+import { earliestStartTimeForRound, parseActivityCode } from '../../lib/activities';
 import { eventNameById } from '../../lib/events';
-import { flatMap } from '../../lib/utils';
 import { useCommandPrompt } from '../../providers/CommandPromptProvider';
 import RoundListItem from './RoundListItem';
 
@@ -42,14 +41,26 @@ const RoundSelector = ({ competitionId, onSelected }) => {
   const [showAllRounds, setShowAllRounds] = useState(false);
   const [selectedId, setSelectedId] = useState(wcif?.events[0].rounds[0].id || null);
 
-  const rounds = flatMap(wcif.events, (event) => event.rounds.map((r) => r.id)).filter((rId) => {
-    if (showAllRounds) {
+  const shouldShowRound = (round) => {
+    const { roundNumber } = parseActivityCode(round.id);
+    if (roundNumber === 1 || showAllRounds) {
       return true;
     }
 
-    const { roundNumber } = parseActivityCode(rId);
-    return roundNumber === 1;
-  });
+    const earliestStartTime = earliestStartTimeForRound(wcif, round.id);
+    if (earliestStartTime && earliestStartTime.getTime() < Date.now()) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const rounds = wcif.events
+    .map((e) => e.rounds)
+    .flat()
+    .filter(shouldShowRound);
+
+  const roundIds = rounds.map((r) => r.id);
 
   const handleKeyDown = (e) => {
     if (commandPromptOpen) {
@@ -57,13 +68,13 @@ const RoundSelector = ({ competitionId, onSelected }) => {
     }
 
     if (e.key === 'ArrowUp') {
-      const selectedIndex = rounds.indexOf(selectedId);
-      const nextIndex = (selectedIndex - 1 + rounds.length) % rounds.length;
-      setSelectedId(rounds[nextIndex]);
+      const selectedIndex = roundIds.indexOf(selectedId);
+      const nextIndex = (selectedIndex - 1 + roundIds.length) % roundIds.length;
+      setSelectedId(roundIds[nextIndex]);
     } else if (e.key === 'ArrowDown') {
-      const selectedIndex = rounds.indexOf(selectedId);
-      const nextIndex = (selectedIndex + 1 + rounds.length) % rounds.length;
-      setSelectedId(rounds[nextIndex]);
+      const selectedIndex = roundIds.indexOf(selectedId);
+      const nextIndex = (selectedIndex + 1 + roundIds.length) % roundIds.length;
+      setSelectedId(roundIds[nextIndex]);
     } else if (e.key === 'Enter') {
       onSelected(selectedId);
     } else if (e.key === ' ' || e.key === 'a') {
@@ -88,18 +99,16 @@ const RoundSelector = ({ competitionId, onSelected }) => {
       />
       <Divider />
       <List className={classes.root}>
-        {wcif.events.map((event) => (
-          <React.Fragment key={event.id}>
-            <Collapse in={showAllRounds}>
-              <ListSubheader>{eventNameById(event.id)}</ListSubheader>
-            </Collapse>
-            <TransitionGroup>
-              {event.rounds
-                .filter((round) => {
-                  const { roundNumber } = parseActivityCode(round.id);
-                  return roundNumber === 1 || showAllRounds;
-                })
-                .map((round) => (
+        {wcif.events.map((event) => {
+          const roundsForEvent = rounds.filter((round) => round.id.split('-')[0] === event.id);
+
+          return (
+            <React.Fragment key={event.id}>
+              <Collapse in={showAllRounds || rounds.length > 1}>
+                <ListSubheader>{eventNameById(event.id)}</ListSubheader>
+              </Collapse>
+              <TransitionGroup>
+                {roundsForEvent.map((round) => (
                   <RoundListItem
                     key={round.id}
                     round={round}
@@ -107,9 +116,10 @@ const RoundSelector = ({ competitionId, onSelected }) => {
                     in={true}
                   />
                 ))}
-            </TransitionGroup>
-          </React.Fragment>
-        ))}
+              </TransitionGroup>
+            </React.Fragment>
+          );
+        })}
       </List>
     </>
   );

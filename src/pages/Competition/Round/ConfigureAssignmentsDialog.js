@@ -39,6 +39,7 @@ import {
   getSeedResult,
   isOrganizerOrDelegate,
   registeredForEvent,
+  shouldBeInRound,
 } from '../../../lib/persons';
 import { flatten } from '../../../lib/utils';
 import {
@@ -105,6 +106,7 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
   const wcif = useSelector((state) => state.wcif);
   const { eventId, roundNumber } = parseActivityCode(activityCode);
   const event = wcif.events.find((e) => e.id === eventId);
+  const round = event?.rounds?.find((r) => r.id === activityCode);
   const classes = useStyles();
   const wcifRooms = useSelector((state) => selectWcifRooms(state));
 
@@ -145,7 +147,7 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
         .filter(
           (p) =>
             acceptedRegistration(p) &&
-            ((showAllCompetitors && isRegistered(p)) ||
+            ((showAllCompetitors && isRegistered(p) && shouldBeInRound(round)(p)) ||
               isOrganizerOrDelegate(p) ||
               p.roles.some((r) => r.indexOf('staff') > -1))
         )
@@ -160,7 +162,16 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
 
           return a.name.localeCompare(b.name);
         }),
-    [activityCode, competitorSort, event, isRegistered, roundNumber, showAllCompetitors, wcif]
+    [
+      activityCode,
+      competitorSort,
+      event,
+      isRegistered,
+      round,
+      roundNumber,
+      showAllCompetitors,
+      wcif,
+    ]
   );
 
   // const personsForActivityId = useCallback(
