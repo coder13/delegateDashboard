@@ -25,7 +25,13 @@ export const generateCompetingGroupActitivitesForEveryone = (
   }
   const personsInRound = personsShouldBeInRound(round)(wcif.persons);
 
-  const allExistingCompetiorAssignments = personsInRound.reduce((sizes, person) => {
+  const allExistingCompetiorAssignments = {};
+
+  for (const group of groups) {
+    allExistingCompetiorAssignments[group.id] = 0;
+  }
+
+  personsInRound.reduce((sizes, person) => {
     const competingAssignment = person.assignments?.find(
       (a) => groupIds.includes(+a.activityId) && isCompetitorAssignment(a)
     );
@@ -33,7 +39,7 @@ export const generateCompetingGroupActitivitesForEveryone = (
     return {
       ...sizes,
       ...(competingAssignment
-        ? { [competingAssignment.activityId]: (sizes[competingAssignment.activityId] || 0) + 1 }
+        ? { [competingAssignment.activityId]: sizes[+competingAssignment.activityId] + 1 }
         : {}),
     };
   }, {});
@@ -48,13 +54,19 @@ export const generateCompetingGroupActitivitesForEveryone = (
         };
       }, allExistingCompetiorAssignments);
 
-    return +Object.keys(groupSizes)
+    const sortedGroups = Object.keys(groupSizes)
       .map((activityId) => ({
         activityId,
         size: groupSizes[activityId],
       }))
       .sort((a, b) => +a.activityId - +b.activityId)
-      .sort((a, b) => a.size - b.size)[0].activityId;
+      .sort((a, b) => a.size - b.size);
+
+    if (!sortedGroups.length) {
+      throw new Error('No groups found!');
+    }
+
+    return +sortedGroups[0].activityId;
   };
 
   return (assignments: InProgressAssignmment[]): InProgressAssignmment[] => {
