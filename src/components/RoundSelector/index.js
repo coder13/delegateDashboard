@@ -52,6 +52,10 @@ const RoundSelector = ({ competitionId, onSelected }) => {
       return true;
     }
 
+    if (round.results?.length) {
+      return true;
+    }
+
     return false;
   };
 
