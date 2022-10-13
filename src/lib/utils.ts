@@ -6,7 +6,7 @@
  * @param {Function} updater
  * @returns {Object}
  */
-export const updateIn = (object, [property, ...properyChain], updater) =>
+export const updateIn = (object, [property, ...properyChain]: string[], updater) =>
   properyChain.length === 0
     ? { ...object, [property]: updater(object[property]) }
     : {
@@ -57,7 +57,7 @@ export const mapIn = (object, properyChain, mapper) =>
  * @param {*} defaultValue
  * @returns {*}
  */
-export const getIn = (object, [property, ...propertyChain], defaultValue = null) =>
+export const getIn = (object, [property, ...propertyChain]: string[], defaultValue = null) =>
   object
     ? propertyChain.length === 0
       ? object.hasOwnProperty(property)
@@ -163,17 +163,19 @@ export const times = (n, fn) => Array.from({ length: n }, (_, index) => fn(index
 
 export const uniq = (arr) => [...new Set(arr)];
 
-export const sum = (arr) => arr.reduce((x, y) => x + y, 0);
-
 export const pick = (obj, keys) =>
   keys.reduce((newObj, key) => ({ ...newObj, [key]: obj[key] }), {});
 
-export const inRange = (x, a, b) => a <= x && x <= b;
+// Date utils
 
-export const addMilliseconds = (isoString, milliseconds) =>
+export const inRange = (x: Date, start: Date, end: Date) =>
+  start.getTime() <= x.getTime() && x.getTime() <= end.getTime();
+
+export const addMilliseconds = (isoString: string, milliseconds: number) =>
   new Date(new Date(isoString).getTime() + milliseconds).toISOString();
 
-export const isoTimeDiff = (first, second) => Math.abs(new Date(first) - new Date(second));
+export const isoTimeDiff = (first: string, second: string) =>
+  Math.abs(new Date(first).getTime() - new Date(second).getTime());
 
 export const shortTime = (isoString, timeZone = 'UTC') =>
   new Date(isoString).toLocaleTimeString('en-US', {
@@ -182,4 +184,10 @@ export const shortTime = (isoString, timeZone = 'UTC') =>
     minute: 'numeric',
   });
 
-export const byName = (a, b) => a.name.localeCompare(b.name);
+// Reduction utils
+
+export const sum = (arr: number[]) => arr.reduce((x, y) => x + y, 0);
+
+// Sorting utils
+
+export const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name);
