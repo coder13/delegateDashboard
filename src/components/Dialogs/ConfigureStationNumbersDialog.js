@@ -12,10 +12,15 @@ import {
   useTheme,
 } from '@mui/material';
 import { DataGrid, GridToolbarContainer } from '@mui/x-data-grid';
-import { activityCodeIsChild, parseActivityCode, roomByActivity } from '../../lib/activities';
+import {
+  activityCodeIsChild,
+  findActivityById,
+  parseActivityCode,
+  roomByActivity,
+} from '../../lib/activities';
 import { getSeedResult } from '../../lib/persons';
 import { bulkUpsertPersonAssignments, upsertPersonAssignments } from '../../store/actions';
-import { selectPersonsAssignedForRound, selectActivityById } from '../../store/selectors';
+import { selectPersonsAssignedForRound } from '../../store/selectors';
 
 const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
   const wcif = useSelector((state) => state.wcif);
@@ -24,11 +29,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
-  const getActivityFromId = useSelector((state) => selectActivityById(state));
-
-  const personsAssigned = useSelector((state) =>
-    selectPersonsAssignedForRound(state, activityCode)
-  );
+  const personsAssigned = useSelector(selectPersonsAssignedForRound(activityCode));
 
   const personsAssignedToCompete = useMemo(
     () =>
@@ -36,8 +37,8 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
         .map((p) => ({
           ...p,
           assignment: p.assignments
-            .map((a) => {
-              const activity = getActivityFromId(a.activityId);
+            ?.map((a) => {
+              const activity = findActivityById(wcif, a.activityId);
 
               if (!activity?.activityCode) {
                 return a;
@@ -57,7 +58,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
             ),
         }))
         .filter((p) => Boolean(p.assignment)),
-    [activityCode, getActivityFromId, personsAssigned, wcif]
+    [activityCode, personsAssigned, wcif]
   );
 
   const rows = personsAssignedToCompete.map(({ assignment, ...person }) => ({

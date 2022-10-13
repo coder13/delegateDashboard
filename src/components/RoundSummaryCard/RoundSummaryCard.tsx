@@ -2,17 +2,7 @@ import { Round } from '@wca/helpers';
 import { useConfirm } from 'material-ui-confirm';
 import { useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import {
-  Button,
-  Card,
-  CardActions,
-  CardHeader,
-  Divider,
-  List,
-  ListItemButton,
-  ListSubheader,
-  Typography,
-} from '@mui/material';
+import { Button, Card, CardActions, CardHeader, Divider, Typography } from '@mui/material';
 import {
   activityCodeToName,
   findGroupActivitiesByRound,
@@ -30,6 +20,7 @@ import ConfigureAssignmentsDialog from '../Dialogs/ConfigureAssignmentsDialog';
 import ConfigureGroupCountsDialog from '../Dialogs/ConfigureGroupCountsDialog';
 import ConfigureStationNumbersDialog from '../Dialogs/ConfigureStationNumbersDialog';
 import { PersonsTable } from './PersonsTable';
+import StageList from './StageList';
 
 export const RoundSummaryCard = ({ activityCode }) => {
   const { eventId } = parseActivityCode(activityCode);
@@ -186,15 +177,7 @@ export const RoundSummaryCard = ({ activityCode }) => {
     <>
       <Card>
         <CardHeader title={activityCodeToName(activityCode)} />
-        <List dense subheader={<ListSubheader id="stages">Stages</ListSubheader>}>
-          {roundActivities.map(({ id, startTime, endTime, room }) => (
-            <ListItemButton key={id}>
-              {room.name}: {new Date(startTime).toLocaleDateString()}{' '}
-              {new Date(startTime).toLocaleTimeString()} - {new Date(endTime).toLocaleTimeString()}{' '}
-              ({(new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000 / 60} Minutes)
-            </ListItemButton>
-          ))}
-        </List>
+        <StageList roundActivities={roundActivities} />
         <Divider />
         <PersonsTable activityCode={activityCode} />
         <CardActions>{actionButtons()}</CardActions>
