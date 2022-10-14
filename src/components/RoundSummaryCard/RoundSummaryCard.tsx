@@ -181,7 +181,6 @@ export const RoundSummaryCard = ({ activityCode }) => {
         <StageList roundActivities={roundActivities} />
         <Divider />
         <PersonsTable activityCode={activityCode} />
-        <Divider />
         <GroupsGeneratorList activityCode={activityCode} />
         <CardActions>{actionButtons()}</CardActions>
       </Card>

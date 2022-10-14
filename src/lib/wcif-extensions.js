@@ -1,3 +1,8 @@
+import CompetingAssignmentsForDelegatesAndOrganizers from './groupAssignments/CompetingAssignmentsForDelegatesAndOrganizers';
+import CompetingAssignmentsForEveryoneGenerator from './groupAssignments/CompetingAssignmentsForEveryone';
+import CompetingAssignmentsForStaffGenerator from './groupAssignments/CompetingAssignmentsFromStaffAssignments';
+import JudgeAssignmentsFromCompetingAssignments from './groupAssignments/JudgeAssignmentsFromCompetingAssignments';
+
 const extensionId = (extensionName) => `delegateDashboard.${extensionName}`;
 
 export const buildExtension = (extensionName, data) => ({
@@ -27,22 +32,22 @@ const defaultExtensionData = {
   groupGenerators: {
     generators: [
       {
-        id: 'GenerateCompetingAssignmentsFromStaffAssignments',
+        id: CompetingAssignmentsForStaffGenerator.id,
         enabled: true,
         options: {},
       },
       {
-        id: 'GenerateGroupAssignmentsForDelegatesAndOrganizers',
+        id: CompetingAssignmentsForDelegatesAndOrganizers.id,
         enabled: true,
         options: {},
       },
       {
-        id: 'GenerateCompetingGroupActivitiesForEveryone',
+        id: CompetingAssignmentsForEveryoneGenerator.id,
         enabled: true,
         options: {},
       },
       {
-        id: 'GenerateJudgeAssignmentsFromCompetingAssignments',
+        id: JudgeAssignmentsFromCompetingAssignments.id,
         enabled: true,
         options: {},
       },

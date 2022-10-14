@@ -1,15 +1,42 @@
 import { Round } from '@wca/helpers';
-import { Checkbox, List, ListItem, ListItemIcon, ListItemText, ListSubheader } from '@mui/material';
+import { CheckOutlined } from '@mui/icons-material';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Button,
+  Checkbox,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+} from '@mui/material';
+import { GroupGenerator } from '../../lib/groupAssignments/GroupGenerator';
 import { getExtensionData } from '../../lib/wcif-extensions';
 import { useAppSelector } from '../../store';
 
-const subheader = <ListSubheader>Group Generators</ListSubheader>;
+interface GroupGeneratorProps extends GroupGenerator {
+  enabled: boolean;
+  validated: boolean;
+}
 
-interface GroupsGeneratorListProps {
+const GroupGeneratorListItem = ({ id, name, enabled, validated }: GroupGeneratorProps) => {
+  return (
+    <ListItem key={id}>
+      <ListItemIcon>
+        <Checkbox checked={enabled} />
+      </ListItemIcon>
+      <ListItemText primary={name} />
+      {!validated ? <Button>Run</Button> : <CheckOutlined />}
+    </ListItem>
+  );
+};
+
+interface GroupGeneratorListProps {
   activityCode: string;
 }
 
-export default function GroupsGeneratorList({ activityCode }: GroupsGeneratorListProps) {
+export default function GroupsGeneratorList({ activityCode }: GroupGeneratorListProps) {
   const wcif = useAppSelector((state) => state.wcif);
   const event = wcif.events.find((e) => e.id === activityCode.split('-')[0]);
   const round = event?.rounds?.find((r) => r.id === activityCode) as Round;
@@ -20,23 +47,28 @@ export default function GroupsGeneratorList({ activityCode }: GroupsGeneratorLis
   console.log(20, configuredGenerators);
 
   return (
-    <List dense subheader={subheader}>
-      {configuredGenerators.map(({ id, enabled }) => {
-        const generator = generators.find((g) => g.id === id);
+    <Accordion disableGutters square>
+      <AccordionSummary>Group Generators</AccordionSummary>
+      <AccordionDetails>
+        <List dense>
+          {configuredGenerators.map(({ id, enabled }) => {
+            const generator = generators.find((g) => g.id === id);
 
-        if (!generator) {
-          return null;
-        }
+            if (!generator) {
+              return null;
+            }
 
-        return (
-          <ListItem key={id}>
-            <ListItemIcon>
-              <Checkbox checked={enabled} />
-            </ListItemIcon>
-            <ListItemText primary={generator?.name} />
-          </ListItem>
-        );
-      })}
-    </List>
+            return (
+              <GroupGeneratorListItem
+                key={id}
+                {...generator}
+                enabled={enabled}
+                validated={generator.validate(wcif, activityCode)}
+              />
+            );
+          })}
+        </List>
+      </AccordionDetails>
+    </Accordion>
   );
 }

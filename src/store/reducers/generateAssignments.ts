@@ -1,9 +1,4 @@
-import { Competition } from '@wca/helpers';
-import { InProgressAssignment } from '../../lib/assignments';
-import { generateCompetingAssignmentsForStaff } from '../../lib/groupAssignments/generateCompetingAssignmentsForStaff';
-import { generateCompetingGroupActitivitesForEveryone } from '../../lib/groupAssignments/generateCompetingGroupActitivitesForEveryone';
-import { generateGroupAssignmentsForDelegatesAndOrganizers } from '../../lib/groupAssignments/generateGroupAssignmentsForDelegatesAndOrganizers';
-import { generateJudgeAssignmentsFromCompetingAssignments } from '../../lib/groupAssignments/generateJudgeAssignmentsFromCompetingAssignments';
+import { AppState } from '../initialState';
 import { bulkAddPersonAssignments } from './competitorAssignments';
 
 /**
@@ -15,26 +10,20 @@ import { bulkAddPersonAssignments } from './competitorAssignments';
  *
  * 2. Then give out judging assignments to competitors without staff assignments
  */
-export function generateAssignments(
-  state: {
-    wcif: Competition;
-  },
-  action
-) {
-  const initializedGenerators = [
-    generateCompetingAssignmentsForStaff,
-    generateGroupAssignmentsForDelegatesAndOrganizers,
-    generateCompetingGroupActitivitesForEveryone,
-    generateJudgeAssignmentsFromCompetingAssignments,
-  ]
-    .map((generator) => generator(state.wcif, action.roundId))
-    .filter(Boolean) as ((a: InProgressAssignment[]) => InProgressAssignment[])[];
+export function generateAssignments(state: AppState, action) {
+  const initializedGenerators = state.groupGenerators.map((generator) =>
+    generator.generate(state.wcif, action.roundId)
+  );
 
   const newAssignments = initializedGenerators.reduce((accumulatingAssignments, generateFn) => {
+    if (!generateFn) {
+      return accumulatingAssignments;
+    }
+
     const generatedAssignments = generateFn(accumulatingAssignments);
     console.log('generatedAssignments', generatedAssignments);
     return [...accumulatingAssignments, ...generatedAssignments];
-  }, [] as InProgressAssignment[]);
+  }, []);
 
   console.log('Generating new assignmments', newAssignments);
 

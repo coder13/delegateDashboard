@@ -1,7 +1,11 @@
 import { Competition } from '@wca/helpers';
-import { generateCompetingAssignmentsForStaff } from '../lib/groupAssignments/generateCompetingAssignmentsForStaff';
+import CompetingAssignmentsForDelegatesAndOrganizers from '../lib/groupAssignments/CompetingAssignmentsForDelegatesAndOrganizers';
+import CompetingAssignmentsForEveryoneGenerator from '../lib/groupAssignments/CompetingAssignmentsForEveryone';
+import CompetingAssignmentsForStaffGenerator from '../lib/groupAssignments/CompetingAssignmentsFromStaffAssignments';
+import { GroupGenerator } from '../lib/groupAssignments/GroupGenerator';
+import JudgeAssignmentsFromCompetingAssignments from '../lib/groupAssignments/JudgeAssignmentsFromCompetingAssignments';
 
-const INITIAL_STATE: {
+export interface AppState {
   anythingChanged: boolean;
   fetchingUser: boolean;
   user: {
@@ -19,13 +23,10 @@ const INITIAL_STATE: {
   wcif: Competition;
   competitions: [];
   errors: [];
-  groupGenerators: {
-    id: string;
-    name: string;
-    description: string;
-    generate: typeof generateCompetingAssignmentsForStaff;
-  }[];
-} = {
+  groupGenerators: GroupGenerator[];
+}
+
+const INITIAL_STATE: AppState = {
   anythingChanged: false,
   fetchingUser: false,
   user: {},
@@ -49,12 +50,10 @@ const INITIAL_STATE: {
   competitions: [],
   errors: [],
   groupGenerators: [
-    {
-      id: 'GenerateCompetingAssignmentsFromStaffAssignments',
-      name: 'Generate Competing Assignments From Staff Assignments',
-      description: 'Generates competing assignments based on pre-existing staff assignments.',
-      generate: generateCompetingAssignmentsForStaff,
-    },
+    CompetingAssignmentsForStaffGenerator,
+    CompetingAssignmentsForDelegatesAndOrganizers,
+    CompetingAssignmentsForEveryoneGenerator,
+    JudgeAssignmentsFromCompetingAssignments,
   ],
 };
 
