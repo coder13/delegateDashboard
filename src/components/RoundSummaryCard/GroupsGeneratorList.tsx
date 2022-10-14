@@ -8,6 +8,7 @@ import {
   Checkbox,
   List,
   ListItem,
+  ListItemAvatar,
   ListItemIcon,
   ListItemText,
 } from '@mui/material';
@@ -20,14 +21,21 @@ interface GroupGeneratorProps extends GroupGenerator {
   validated: boolean;
 }
 
-const GroupGeneratorListItem = ({ id, name, enabled, validated }: GroupGeneratorProps) => {
+const GroupGeneratorListItem = ({
+  id,
+  name,
+  description,
+  enabled,
+  validated,
+}: GroupGeneratorProps) => {
   return (
-    <ListItem key={id}>
-      <ListItemIcon>
-        <Checkbox checked={enabled} />
-      </ListItemIcon>
-      <ListItemText primary={name} />
-      {!validated ? <Button>Run</Button> : <CheckOutlined />}
+    <ListItem key={id} secondaryAction={!validated ? <Button>Run</Button> : <CheckOutlined />}>
+      <ListItemAvatar>
+        <ListItemIcon>
+          <Checkbox checked={enabled} />
+        </ListItemIcon>
+      </ListItemAvatar>
+      <ListItemText primary={name} secondary={description} />
     </ListItem>
   );
 };
@@ -63,7 +71,7 @@ export default function GroupsGeneratorList({ activityCode }: GroupGeneratorList
                 key={id}
                 {...generator}
                 enabled={enabled}
-                validated={generator.validate(wcif, activityCode)}
+                validated={generator.initialize(wcif, activityCode)?.validate()}
               />
             );
           })}

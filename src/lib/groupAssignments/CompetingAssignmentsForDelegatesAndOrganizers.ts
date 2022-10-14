@@ -1,6 +1,6 @@
 import { Activity, Event } from '@wca/helpers';
 import { findRoundActivitiesById, parseActivityCode } from '../activities';
-import { InProgressAssignment, missingCompetitorAssignments } from '../assignments';
+import { missingCompetitorAssignments } from '../assignments';
 import { createGroupAssignment } from '../groups';
 import { byPROrResult, isOrganizerOrDelegate, personsShouldBeInRound } from '../persons';
 import { byName } from '../utils';
@@ -12,8 +12,7 @@ const CompetingAssignmentsForDelegatesAndOrganizers: GroupGenerator = {
   description:
     'Generates competing assignments for delegates and organizers spreading them out across the rounds.',
 
-  validate: () => true,
-  generate: (wcif, roundActivityCode) => {
+  initialize: (wcif, roundActivityCode) => {
     const { roundNumber } = parseActivityCode(roundActivityCode);
     const event = wcif.events?.find((e) => roundActivityCode.startsWith(e.id)) as Event;
     const round = event.rounds?.find((r) => r.id === roundActivityCode);
@@ -46,26 +45,33 @@ const CompetingAssignmentsForDelegatesAndOrganizers: GroupGenerator = {
       return;
     }
 
-    return (): InProgressAssignment[] => {
-      // eslint-disable-next-line
-      console.log(
-        `Generating Competing assignments for ${persons.length} organizers & delegates`,
-        persons
-      );
+    return {
+      validate: () => {
+        // The goal of this generator is to make sure there's at least 1 free delegate or organizer in each group (number).
 
-      return Array(Math.min(uniqueGroupNumbers.length, persons.length))
-        .fill(undefined)
-        .map((_, index) => {
-          // By definition, there should always be a person and group number
+        return true;
+      },
+      reduce: () => {
+        // eslint-disable-next-line
+        console.log(
+          `Generating Competing assignments for ${persons.length} organizers & delegates`,
+          persons
+        );
 
-          const person = persons[index];
-          const groupNumber = uniqueGroupNumbers[index];
-          const group = groups.find(
-            (g) => parseActivityCode(g.activityCode)?.groupNumber === groupNumber
-          ) as Activity;
+        return Array(Math.min(uniqueGroupNumbers.length, persons.length))
+          .fill(undefined)
+          .map((_, index) => {
+            // By definition, there should always be a person and group number
 
-          return createGroupAssignment(person.registrantId, group.id, 'competitor');
-        });
+            const person = persons[index];
+            const groupNumber = uniqueGroupNumbers[index];
+            const group = groups.find(
+              (g) => parseActivityCode(g.activityCode)?.groupNumber === groupNumber
+            ) as Activity;
+
+            return createGroupAssignment(person.registrantId, group.id, 'competitor');
+          });
+      },
     };
   },
 };

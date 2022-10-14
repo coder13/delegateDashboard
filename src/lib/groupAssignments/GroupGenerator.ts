@@ -1,7 +1,13 @@
 import { Competition } from '@wca/helpers';
 import { InProgressAssignment } from '../assignments';
 
-export type GeneratorReduceFn = (assignments: InProgressAssignment[]) => InProgressAssignment[];
+export type Generator = {
+  /**
+   * Validates that the groups have been generated according to the generator's rules.
+   */
+  validate: () => boolean;
+  reduce: (assignments: InProgressAssignment[]) => InProgressAssignment[];
+};
 
 export interface GroupGenerator {
   id: string;
@@ -9,8 +15,7 @@ export interface GroupGenerator {
   description: string;
 
   /**
-   * Validates that the groups have been generated according to the generator's rules.
+   * Initializes a generator that can be used to generate groups or validate that groups have been generated.
    */
-  validate: (wcif: Competition, roundActivityCode: string) => boolean;
-  generate: (wcif: Competition, roundActiviyCode: string) => GeneratorReduceFn | undefined;
+  initialize: (wcif: Competition, roundActivityCode: string) => Generator | undefined;
 }

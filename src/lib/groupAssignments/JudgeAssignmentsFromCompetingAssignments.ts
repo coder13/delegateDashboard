@@ -16,8 +16,7 @@ const JudgeAssignmentsFromCompetingAssignments: GroupGenerator = {
   description:
     "Generates judging assignments for competitors, who don't have any staff assignments, that follow directly after their competing assignments.",
 
-  validate: () => true,
-  generate: (wcif, roundActivityCode) => {
+  initialize: (wcif, roundActivityCode) => {
     const { roundNumber } = parseActivityCode(roundActivityCode);
     const event = wcif.events.find((e) => roundActivityCode.startsWith(e.id)) as Event;
     const round = event.rounds?.find((r) => r.id === roundActivityCode);
@@ -29,50 +28,62 @@ const JudgeAssignmentsFromCompetingAssignments: GroupGenerator = {
       return;
     }
 
-    return (assignments) => {
-      const personFilterContext = { assignments, groupIds };
+    return {
+      validate: () => {
+        const personFilterContext = { groupIds };
 
-      const persons = personsShouldBeInRound(round)(wcif.persons)
-        .filter(hasCompetitorAssignment(personFilterContext))
-        .filter(missingStaffAssignments(personFilterContext))
-        .filter((p) => !isOrganizerOrDelegate(p));
+        return (
+          personsShouldBeInRound(round)(wcif.persons)
+            .filter(hasCompetitorAssignment(personFilterContext))
+            .filter(missingStaffAssignments(personFilterContext))
+            .filter((p) => !isOrganizerOrDelegate(p)).length === 0
+        );
+      },
+      reduce: (assignments) => {
+        const personFilterContext = { assignments, groupIds };
 
-      // eslint-disable-next-line
-      console.log(`Generating judging assignments for ${persons.length} competitors`, persons);
+        const persons = personsShouldBeInRound(round)(wcif.persons)
+          .filter(hasCompetitorAssignment(personFilterContext))
+          .filter(missingStaffAssignments(personFilterContext))
+          .filter((p) => !isOrganizerOrDelegate(p));
 
-      return persons
-        .map((person) => {
-          const competingAssignment = findCompetingAssignment(personFilterContext)(person)?.[0];
-          if (!competingAssignment) {
-            throw new Error(
-              `No competing assignment for competitor that should have competing assignment: ${person.name}`
-            );
-          }
+        // eslint-disable-next-line
+        console.log(`Generating judging assignments for ${persons.length} competitors`, persons);
 
-          // Get competing group activity Id
-          const competingAssignmentActivityId = competingAssignment?.activityId;
+        return persons
+          .map((person) => {
+            const competingAssignment = findCompetingAssignment(personFilterContext)(person)?.[0];
+            if (!competingAssignment) {
+              throw new Error(
+                `No competing assignment for competitor that should have competing assignment: ${person.name}`
+              );
+            }
 
-          // Get groupActivity from the id
-          const groupActivity = groups.find((g) => +competingAssignmentActivityId === g.id);
+            // Get competing group activity Id
+            const competingAssignmentActivityId = competingAssignment?.activityId;
 
-          if (!groupActivity) {
-            console.error(
-              `No group activity found for competing assignment activity id: ${competingAssignmentActivityId}`
-            );
-            return null;
-          }
+            // Get groupActivity from the id
+            const groupActivity = groups.find((g) => +competingAssignmentActivityId === g.id);
 
-          // simply compute the next group based on the activity
-          const nextGroup = nextGroupForActivity(groupActivity);
+            if (!groupActivity) {
+              console.error(
+                `No group activity found for competing assignment activity id: ${competingAssignmentActivityId}`
+              );
+              return null;
+            }
 
-          if (!nextGroup) {
-            console.error('Could not compute group activity for person', person);
-            return null;
-          }
+            // simply compute the next group based on the activity
+            const nextGroup = nextGroupForActivity(groupActivity);
 
-          return createGroupAssignment(person.registrantId, nextGroup.id, 'staff-judge');
-        })
-        .filter(Boolean) as InProgressAssignment[];
+            if (!nextGroup) {
+              console.error('Could not compute group activity for person', person);
+              return null;
+            }
+
+            return createGroupAssignment(person.registrantId, nextGroup.id, 'staff-judge');
+          })
+          .filter(Boolean) as InProgressAssignment[];
+      },
     };
   },
 };

@@ -12,15 +12,15 @@ import { bulkAddPersonAssignments } from './competitorAssignments';
  */
 export function generateAssignments(state: AppState, action) {
   const initializedGenerators = state.groupGenerators.map((generator) =>
-    generator.generate(state.wcif, action.roundId)
+    generator.initialize(state.wcif, action.roundId)
   );
 
-  const newAssignments = initializedGenerators.reduce((accumulatingAssignments, generateFn) => {
-    if (!generateFn) {
+  const newAssignments = initializedGenerators.reduce((accumulatingAssignments, generator) => {
+    if (!generator) {
       return accumulatingAssignments;
     }
 
-    const generatedAssignments = generateFn(accumulatingAssignments);
+    const generatedAssignments = generator.reduce(accumulatingAssignments);
     console.log('generatedAssignments', generatedAssignments);
     return [...accumulatingAssignments, ...generatedAssignments];
   }, []);

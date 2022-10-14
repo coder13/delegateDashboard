@@ -1,4 +1,4 @@
-import { Event } from '@wca/helpers';
+import { Event, Person } from '@wca/helpers';
 import { findGroupActivitiesByRound, parseActivityCode } from '../activities';
 import {
   InProgressAssignment,
@@ -10,30 +10,25 @@ import { byPROrResult, personsShouldBeInRound } from '../persons';
 import { byName } from '../utils';
 import { GroupGenerator } from './GroupGenerator';
 
+const reduceSizes = (groupIds: number[]) => (sizes: Record<number, number>, person: Person) => {
+  const competingAssignment = person.assignments?.find(
+    (a) => groupIds.includes(+a.activityId) && isCompetitorAssignment(a)
+  );
+
+  return {
+    ...sizes,
+    ...(competingAssignment
+      ? { [competingAssignment.activityId]: sizes[+competingAssignment.activityId] + 1 }
+      : {}),
+  };
+};
+
 const CompetingAssignmentsForEveryoneGenerator: GroupGenerator = {
   id: 'CompetingAssignmentsForEveryone',
   name: 'Competing Assignments For Everyone',
   description: 'Generates competing assignments for everyone else',
 
-  validate: (wcif, roundActivityCode) => {
-    const event = wcif.events.find((e) => roundActivityCode.startsWith(e.id)) as Event;
-    const round = event.rounds?.find((r) => r.id === roundActivityCode);
-
-    if (!round) {
-      return false;
-    }
-
-    const groups = findGroupActivitiesByRound(wcif, roundActivityCode);
-    const groupIds = groups.map((g) => g.id);
-
-    const persons = personsShouldBeInRound(round)(wcif.persons).filter(
-      missingCompetitorAssignments({ groupIds })
-    );
-
-    return persons.length === 0;
-  },
-
-  generate: (wcif, roundActivityCode) => {
+  initialize: (wcif, roundActivityCode) => {
     const { roundNumber } = parseActivityCode(roundActivityCode);
     const event = wcif.events.find((e) => roundActivityCode.startsWith(e.id)) as Event;
     const round = event.rounds?.find((r) => r.id === roundActivityCode);
@@ -44,26 +39,15 @@ const CompetingAssignmentsForEveryoneGenerator: GroupGenerator = {
       // Likely shouldn't popup but need this check to make typescript happy
       return;
     }
+
     const personsInRound = personsShouldBeInRound(round)(wcif.persons);
 
-    const allExistingCompetiorAssignments = {};
+    const initialGroupSizes = groupIds.reduce((acc, groupId) => ({ ...acc, [groupId]: 0 }), {});
 
-    for (const group of groups) {
-      allExistingCompetiorAssignments[group.id] = 0;
-    }
-
-    personsInRound.reduce((sizes, person) => {
-      const competingAssignment = person.assignments?.find(
-        (a) => groupIds.includes(+a.activityId) && isCompetitorAssignment(a)
-      );
-
-      return {
-        ...sizes,
-        ...(competingAssignment
-          ? { [competingAssignment.activityId]: sizes[+competingAssignment.activityId] + 1 }
-          : {}),
-      };
-    }, {});
+    const allExistingCompetiorAssignments = personsInRound.reduce(
+      reduceSizes(groupIds),
+      initialGroupSizes
+    );
 
     const nextGroupActivityIdToAssign = (assignments: InProgressAssignment[]) => {
       const groupSizes = assignments
@@ -90,26 +74,30 @@ const CompetingAssignmentsForEveryoneGenerator: GroupGenerator = {
       return +sortedGroups[0].activityId;
     };
 
-    return (assignments) => {
-      const persons = personsShouldBeInRound(round)(wcif.persons)
-        .filter(missingCompetitorAssignments({ assignments, groupIds }))
-        .sort(byName)
-        .sort(byPROrResult(event, roundNumber));
+    return {
+      validate: () =>
+        personsInRound.filter(missingCompetitorAssignments({ groupIds })).length === 0,
+      reduce: (assignments) => {
+        const persons = personsInRound
+          .filter(missingCompetitorAssignments({ assignments, groupIds }))
+          .sort(byName)
+          .sort(byPROrResult(event, roundNumber));
 
-      // eslint-disable-next-line
-      console.log(`Generating Competing assignments for ${persons.length} competitors`, persons);
+        // eslint-disable-next-line
+        console.log(`Generating Competing assignments for ${persons.length} competitors`, persons);
 
-      return persons.reduce(
-        (acc, person) => [
-          ...acc,
-          createGroupAssignment(
-            person.registrantId,
-            nextGroupActivityIdToAssign([...acc, ...assignments]),
-            'competitor'
-          ),
-        ],
-        [] as InProgressAssignment[]
-      );
+        return persons.reduce(
+          (acc, person) => [
+            ...acc,
+            createGroupAssignment(
+              person.registrantId,
+              nextGroupActivityIdToAssign([...acc, ...assignments]),
+              'competitor'
+            ),
+          ],
+          [] as InProgressAssignment[]
+        );
+      },
     };
   },
 };

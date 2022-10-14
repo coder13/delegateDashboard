@@ -15,8 +15,7 @@ const CompetingAssignmentsForStaffGenerator: GroupGenerator = {
   name: 'Competing Assignments From Staff Assignments',
   description: 'Generates competing assignments from pre-existing staff assignments',
 
-  validate: () => true,
-  generate: (wcif, roundActivityCode) => {
+  initialize: (wcif, roundActivityCode) => {
     const event = wcif.events.find((e) => roundActivityCode.startsWith(e.id)) as Event;
     const round = event.rounds?.find((r) => r.id === roundActivityCode);
 
@@ -38,19 +37,22 @@ const CompetingAssignmentsForStaffGenerator: GroupGenerator = {
     // eslint-disable-next-line
     console.log(`Generating Competing assignments for ${persons.length} staff`, persons);
 
-    return (): InProgressAssignment[] =>
-      persons
-        .map((person) => {
-          const soonestActivity = getSoonestAvailableActivity(groups)(person);
+    return {
+      validate: () => true,
+      reduce: () =>
+        persons
+          .map((person) => {
+            const soonestActivity = getSoonestAvailableActivity(groups)(person);
 
-          if (!soonestActivity) {
-            console.error('Could not find soonest available activity for person', person);
-            return null;
-          }
+            if (!soonestActivity) {
+              console.error('Could not find soonest available activity for person', person);
+              return null;
+            }
 
-          return createGroupAssignment(person.registrantId, soonestActivity.id, 'competitor');
-        })
-        .filter(Boolean) as InProgressAssignment[];
+            return createGroupAssignment(person.registrantId, soonestActivity.id, 'competitor');
+          })
+          .filter(Boolean) as InProgressAssignment[],
+    };
   },
 };
 
