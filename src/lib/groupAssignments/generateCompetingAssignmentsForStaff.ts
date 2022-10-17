@@ -42,10 +42,12 @@ export const generateCompetingAssignmentsForStaff = (
   wcif: Competition,
   roundActivityCode: string
 ) => {
-  const event = wcif.events.find((e) => roundActivityCode.startsWith(e.id)) as Event;
+  const { eventId } = parseActivityCode(roundActivityCode);
+  const event = wcif.events.find((e) => e.id === eventId) as Event;
   const round = event.rounds?.find((r) => r.id === roundActivityCode);
 
   if (!round) {
+    console.error('Error finding round', roundActivityCode);
     return;
   }
 
@@ -57,6 +59,7 @@ export const generateCompetingAssignmentsForStaff = (
     .filter(missingCompetitorAssignments({ groupIds }));
 
   if (!persons.length) {
+    console.error('No staff to assign competing assignments to');
     return;
   }
 

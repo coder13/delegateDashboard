@@ -9,11 +9,12 @@ export const generateGroupAssignmentsForDelegatesAndOrganizers = (
   wcif: Competition,
   roundActivityCode: string
 ) => {
-  const { roundNumber } = parseActivityCode(roundActivityCode);
-  const event = wcif.events?.find((e) => roundActivityCode.startsWith(e.id)) as Event;
+  const { eventId, roundNumber } = parseActivityCode(roundActivityCode);
+  const event = wcif.events.find((e) => e.id === eventId) as Event;
   const round = event.rounds?.find((r) => r.id === roundActivityCode);
 
   if (!event || !round || !roundNumber) {
+    console.error('Error finding round', roundActivityCode);
     // Likely shouldn't popup but need this check to make typescript happy
     return;
   }
@@ -36,6 +37,7 @@ export const generateGroupAssignmentsForDelegatesAndOrganizers = (
     .sort(byPROrResult(event, roundNumber));
 
   if (!persons.length) {
+    console.error('No delegates or organizers to assign competing assignments for');
     return;
   }
 
