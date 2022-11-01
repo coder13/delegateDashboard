@@ -1,17 +1,12 @@
-import { Activity, Competition, Event, Person } from '@wca/helpers';
-import {
-  ActivityWithParent,
-  byGroupNumber,
-  findGroupActivitiesByRound,
-  parseActivityCode,
-} from '../activities';
+import { Competition, Event, Person } from '@wca/helpers';
+import { ActivityWithParent, findGroupActivitiesByRound, parseActivityCode } from '../activities';
 import {
   hasStaffAssignment,
   InProgressAssignmment,
   isStaffAssignment,
   missingCompetitorAssignments,
 } from '../assignments';
-import { createGroupAssignment } from '../groups';
+import { createGroupAssignment, previousGroupForActivity } from '../groups';
 import { personsShouldBeInRound } from '../persons';
 
 /**
@@ -23,19 +18,37 @@ const getSoonestAvailableActivity = (groups: ActivityWithParent[]) => (person: P
   const assignedStaffAssignments = person.assignments?.filter(isStaffAssignment) || []; // By definition, should have at least one
   const assignedStaffActivities = assignedStaffAssignments
     .map(({ activityId }) => groups.find((g) => g.id === +activityId))
-    .filter(Boolean) as Activity[];
+    .filter(Boolean) as ActivityWithParent[];
+  const assignedStaffActivityCodes = assignedStaffActivities.map((a) => a.activityCode);
+
+  const maybeEarliestStaffAssignment = assignedStaffActivities[0];
+
+  let maybeCompetingGroup = previousGroupForActivity(maybeEarliestStaffAssignment);
+  while (
+    maybeCompetingGroup?.activityCode && // type checking
+    assignedStaffActivityCodes.indexOf(maybeCompetingGroup?.activityCode) !== -1 && // not already assigned
+    maybeCompetingGroup?.activityCode === maybeEarliestStaffAssignment.activityCode // prevent infinite loop
+  ) {
+    if (!maybeCompetingGroup) {
+      return;
+    }
+
+    maybeCompetingGroup = previousGroupForActivity(maybeCompetingGroup);
+  }
+
+  return maybeCompetingGroup;
 
   // Filter to groups where the person does not have a staff assignment for the given group number
-  return groups
-    .filter(
-      (g) =>
-        !assignedStaffActivities.some(
-          (a) =>
-            parseActivityCode(g.activityCode).groupNumber ===
-            parseActivityCode(a.activityCode).groupNumber
-        )
-    )
-    .sort(byGroupNumber)[0];
+  // return groups
+  //   .filter(
+  //     (g) =>
+  //       !assignedStaffActivities.some(
+  //         (a) =>
+  //           parseActivityCode(g.activityCode).groupNumber ===
+  //           parseActivityCode(a.activityCode).groupNumber
+  //       )
+  //   )
+  //   .sort(byGroupNumber)[0];
 };
 
 export const generateCompetingAssignmentsForStaff = (
