@@ -203,7 +203,7 @@ export const findStaffingAssignments = (stages, data, row, person, eventId) => {
 
   const assignments = cellData
     .trim()
-    .split(/[,;]/)
+    .split(/[\s*,;\s*]/)
     .map((assignment) => {
       const plainNumberMatch = assignment.match(numberRegex);
       const staffAssignmentMatch = assignment.match(staffAssignmentRegex);
