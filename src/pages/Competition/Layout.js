@@ -5,7 +5,6 @@ import { useParams, Outlet } from 'react-router-dom';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import {
   Alert,
-  AlertTitle,
   Backdrop,
   Breadcrumbs,
   Button,
@@ -15,30 +14,15 @@ import {
   Drawer,
   Grid,
   IconButton,
-  Stack,
   Typography,
 } from '@mui/material';
 import { styled } from '@mui/system';
+import { Errors } from '../../components/Errors';
 import MaterialLink from '../../components/MaterialLink';
 import { getLocalStorage, setLocalStorage } from '../../lib/localStorage';
 import BreadcrumbsProvider, { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
 import { fetchWCIF, uploadCurrentWCIFChanges } from '../../store/actions';
 import { DrawerHeader, DrawerLinks, drawerWidth, Header } from './Header';
-
-const Errors = ({ errors }) => {
-  return (
-    <div>
-      <Typography>Errors!</Typography>
-      <Stack>
-        {errors.map((err) => (
-          <Alert severity="error" key={err}>
-            <AlertTitle>{err.message}</AlertTitle>
-          </Alert>
-        ))}
-      </Stack>
-    </div>
-  );
-};
 
 const BreadCrumbsGridItem = () => {
   const { breadcrumbs } = useBreadcrumbs();
