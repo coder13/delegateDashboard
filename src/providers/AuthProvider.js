@@ -32,6 +32,7 @@ export default function AuthProvider({ children }) {
 
   useEffect(() => {
     const hash = window.location.hash.replace(/^#/, '');
+    console.log(hash);
     const hashParams = new URLSearchParams(hash);
 
     if (hashParams.has('access_token')) {

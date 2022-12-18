@@ -196,6 +196,7 @@ export const findResultFromRound = (
 
   return {
     ...result,
+    ranking: result.ranking,
     rankingResult: rankingResult,
   };
 };

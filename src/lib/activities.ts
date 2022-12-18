@@ -71,11 +71,11 @@ export const activityDuration = ({ startTime, endTime }) =>
 export const activityDurationString = ({ startTime, endTime }, timezone = 'UTC') =>
   `${shortTime(startTime, timezone)} - ${shortTime(endTime, timezone)}`;
 
-export const activitiesOverlap = (first, second) =>
+export const activitiesOverlap = (first: Activity, second: Activity) =>
   new Date(first.startTime) < new Date(second.endTime) &&
   new Date(second.startTime) < new Date(first.endTime);
 
-export const activitiesIntersection = (first, second) => {
+export const activitiesIntersection = (first: Activity, second: Activity) => {
   if (!activitiesOverlap(first, second)) return 0;
   const [, middleStart, middleEnd] = [
     first.startTime,
@@ -243,6 +243,11 @@ export const createGroupActivity = (
 
 export const earliestStartTimeForRound = (wcif: Competition, roundId: string) => {
   const roundActivities = findRoundActivitiesById(wcif, roundId);
+
+  if (!roundActivities.length) {
+    return;
+  }
+
   return roundActivities.reduce(
     (minStartTime, activity) =>
       activity.startTime && new Date(activity.startTime).getTime() < minStartTime.getTime()

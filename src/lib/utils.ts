@@ -97,6 +97,18 @@ export const pluralize = (count, singular, plural) =>
   `${count} ${count === 1 ? singular : plural || singular + 's'}`;
 
 /**
+ * Pluralizes a word according to the given number.
+ * When no plural form given, uses singular form with an 's' appended.
+ *
+ * @param {number} count
+ * @param {string} singular
+ * @param {string} plural
+ * @returns {string}
+ */
+export const pluralizeWord = (count, singular, plural) =>
+  `${count === 1 ? singular : plural || singular + 's'}`;
+
+/**
  * Returns a new array with items summing up to 1, preserving elements proportionality.
  * When the given array is empty, returns an empty array.
  *

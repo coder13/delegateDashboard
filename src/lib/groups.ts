@@ -51,8 +51,10 @@ export const createGroupsAcrossStages = (
 /**
  * @param {activity} activity - A modified activity that includes a parent reference
  */
-export const previousGroupForActivity = (activity: ActivityWithParent): Activity | undefined => {
-  const groups = activity.parent.childActivities;
+export const previousGroupForActivity = (
+  activity: ActivityWithParent
+): ActivityWithParent | undefined => {
+  const groups = activity.parent.childActivities as ActivityWithParent[];
   if (!groups) {
     return;
   }

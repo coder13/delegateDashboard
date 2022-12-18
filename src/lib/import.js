@@ -178,9 +178,10 @@ const StaffAssignmentMap = {
 };
 
 export const findStaffingAssignments = (stages, data, row, person, eventId) => {
+  console.log(stages, data, row, person, eventId);
   const field = data.meta.fields.find((field) => {
-    // mentions the event id but isn't exactly the eventId. E.G. 333fm-staff instead of 333fm staff, or s-333 for 333 staff
-    return field.indexOf(eventId) > -1 && field !== eventId;
+    const split = field.split('-');
+    return split[0] === eventId && split[1] === 'staff';
   });
 
   if (!field) {
@@ -202,7 +203,7 @@ export const findStaffingAssignments = (stages, data, row, person, eventId) => {
 
   const assignments = cellData
     .trim()
-    .split(/[,;]/)
+    .split(/[\s*,;\s*]/)
     .map((assignment) => {
       const plainNumberMatch = assignment.match(numberRegex);
       const staffAssignmentMatch = assignment.match(staffAssignmentRegex);
@@ -363,6 +364,11 @@ export const determineStageForAssignments = (wcif, assignments) => {
     );
     const rooms = activitiesForCode.map((activity) => activity.parent.room);
 
+    console.log(
+      366,
+      assignment.activityCode,
+      stageCountsByActivityCode.has(assignment.activityCode)
+    );
     if (stageCountsByActivityCode.has(assignment.activityCode)) {
       const counts = stageCountsByActivityCode.get(assignment.activityCode);
 
@@ -373,17 +379,28 @@ export const determineStageForAssignments = (wcif, assignments) => {
         }))
         .sort((a, b) => a.size - b.size);
 
+      const selectedRoomId = roomSizes[0].roomId;
+      stageCountsByActivityCode.set(assignment.activityCode, {
+        ...counts,
+        [selectedRoomId]: counts[selectedRoomId] + 1,
+      });
+      console.log(392, counts);
+
       return {
         ...assignment,
         roomId: roomSizes[0].roomId,
       };
     } else {
+      // Initialize counts
       const counts = {};
       rooms.forEach((room) => {
         counts[room.id] = 0;
       });
 
+      // Set count for current room to 1
       counts[rooms[0].id] = 1;
+
+      // save it
       stageCountsByActivityCode.set(assignment.activityCode, counts);
 
       return {
