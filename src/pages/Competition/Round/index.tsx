@@ -1,17 +1,12 @@
-import { useEffect, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
+import { AssignmentsTable } from '../../../components/AssignmentsTable';
 import { RoundSummaryCard } from '../../../components/RoundSummaryCard/RoundSummaryCard';
-import {
-  findAllActivities,
-  byGroupNumber,
-  findGroupActivitiesByRound,
-  roomByActivity,
-} from '../../../lib/activities';
+import { findRoundActivitiesById } from '../../../lib/activities';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import { useAppSelector } from '../../../store';
 import { selectRoundById } from '../../../store/selectors';
-import GroupCard from './GroupCard';
 
 /**
  * I want some visualization of who's competing / staffing what for this particular round
@@ -29,8 +24,8 @@ const RoundPage = () => {
   const { eventId, roundNumber } = useParams();
   const activityCode = `${eventId}-r${roundNumber}`;
 
-  const wcif = useSelector((state) => state.wcif);
-  const round = useSelector((state) => selectRoundById(state)(activityCode));
+  const wcif = useAppSelector((state) => state.wcif);
+  const round = useAppSelector((state) => selectRoundById(state)(activityCode));
 
   useEffect(() => {
     setBreadcrumbs([
@@ -40,28 +35,8 @@ const RoundPage = () => {
     ]);
   }, [setBreadcrumbs, round.id]);
 
-  const _allActivities = findAllActivities(wcif);
-
   // list of each stage's round activity
-  const roundActivities = _allActivities
-    .filter((activity) => activity.activityCode === activityCode)
-    .map((activity) => ({
-      ...activity,
-      room: roomByActivity(wcif, activity.id),
-    }));
-
-  const groups = findGroupActivitiesByRound(wcif, activityCode);
-
-  const sortedGroups = useMemo(
-    () =>
-      groups.sort((groupA, groupB) => {
-        return (
-          byGroupNumber(groupA, groupB) ||
-          groupA?.parent?.room?.name?.localeCompare(groupB?.parent?.room?.name)
-        );
-      }),
-    [groups]
-  );
+  const roundActivities = findRoundActivitiesById(wcif, activityCode);
 
   if (roundActivities.length === 0) {
     return (
@@ -78,10 +53,17 @@ const RoundPage = () => {
         <RoundSummaryCard activityCode={activityCode} />
       </Grid>
 
-      <Grid item>
+      {/* <Grid item>
         {sortedGroups.map((group) => (
           <GroupCard key={group.id} groupActivity={group} />
         ))}
+      </Grid> */}
+      <Grid item>
+        <AssignmentsTable
+          activityCode={activityCode}
+          competitorSort="speed"
+          showAllCompetitors={true}
+        />
       </Grid>
     </Grid>
   );

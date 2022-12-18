@@ -102,7 +102,7 @@ export const roomByActivity = (wcif: Competition, activityId: string) =>
   findRooms(wcif)?.find((room) => findId(room.activities, activityId));
 
 export interface ActivityWithParent extends Activity {
-  parent: Activity;
+  parent: Activity | ActivityWithRoom;
 }
 
 /**
