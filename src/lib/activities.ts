@@ -243,6 +243,11 @@ export const createGroupActivity = (
 
 export const earliestStartTimeForRound = (wcif: Competition, roundId: string) => {
   const roundActivities = findRoundActivitiesById(wcif, roundId);
+
+  if (!roundActivities.length) {
+    return;
+  }
+
   return roundActivities.reduce(
     (minStartTime, activity) =>
       activity.startTime && new Date(activity.startTime).getTime() < minStartTime.getTime()

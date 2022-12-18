@@ -1,5 +1,4 @@
 import { formatCentiseconds } from '@wca/helpers';
-import clsx from 'clsx';
 import { useConfirm } from 'material-ui-confirm';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -29,48 +28,16 @@ import {
   Typography,
   useMediaQuery,
 } from '@mui/material';
-import { grey, red, yellow } from '@mui/material/colors';
-import { makeStyles } from '@mui/styles';
 import { styled, useTheme } from '@mui/system';
-import { parseActivityCode, activityCodeToName } from '../../../lib/activities';
+import { rooms, parseActivityCode, activityCodeToName } from '../../../../lib/activities';
+import { isOrganizerOrDelegate } from '../../../../lib/persons';
+import { flatten } from '../../../../lib/utils';
 import {
-  acceptedRegistration,
-  byPROrResult,
-  getSeedResult,
-  isOrganizerOrDelegate,
-  registeredForEvent,
-  shouldBeInRound,
-} from '../../../lib/persons';
-import { flatten } from '../../../lib/utils';
-import {
-  upsertPersonAssignments,
-  removePersonAssignments,
-  bulkRemovePersonAssignments,
-} from '../../../store/actions';
-import { selectWcifRooms } from '../../../store/selectors';
+  upsertPersonAssignment,
+  removePersonAssignment,
+  bulkRemovePersonAssignment,
+} from '../../../../store/actions';
 import TableAssignmentCell from './TableAssignmentCell';
-
-const useStyles = makeStyles(() => ({
-  firstTimer: {
-    backgroundColor: grey[50],
-    '&:hover': {
-      backgroundColor: grey[100],
-    },
-  },
-  delegateOrOrganizer: {
-    backgroundColor: yellow[50],
-    '&:hover': {
-      backgroundColor: yellow[100],
-    },
-  },
-  disabled: {
-    backgroundColor: red[50],
-    '&:hover': {
-      backgroundColor: red[100],
-    },
-  },
-  hover: {},
-}));
 
 const Toolbar = styled(MuiToolbar)(
   ({ theme }) => `
@@ -102,30 +69,13 @@ const Assignments = [
   },
 ];
 
-function calcRanking(person, lastPerson) {
-  if (!lastPerson?.seedResult?.ranking) {
-    return 1;
-  }
-
-  if (person?.seedResult?.rankingResult === lastPerson?.seedResult?.rankingResult) {
-    return lastPerson.seedResult.ranking;
-  }
-
-  return lastPerson.seedResult.ranking + 1;
-}
-
-const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => {
+const ConfigureScramblersDialog = ({ open, onClose, activityCode, groups }) => {
   const wcif = useSelector((state) => state.wcif);
-  const { eventId, roundNumber } = parseActivityCode(activityCode);
-  const event = wcif.events.find((e) => e.id === eventId);
-  const round = event?.rounds?.find((r) => r.id === activityCode);
-  const classes = useStyles();
-  const wcifRooms = useSelector((state) => selectWcifRooms(state));
-
   const dispatch = useDispatch();
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const confirm = useConfirm();
+  const { eventId } = parseActivityCode(activityCode);
 
   const [showAllCompetitors, setShowAllCompetitors] = useState(false);
   const [paintingAssignmentCode, setPaintingAssignmentCode] = useState('staff-scrambler');
@@ -143,96 +93,56 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
 
   const groupsRooms = useMemo(
     () =>
-      wcifRooms.filter((room) =>
+      rooms(wcif).filter((room) =>
         flatten(room.activities.map((activity) => activity.childActivities)).some((activity) =>
           groups.find((g) => g.id === activity.id)
         )
       ),
-    [groups, wcifRooms]
+    [groups, wcif]
   );
-
-  const isRegistered = registeredForEvent(eventId);
 
   const persons = useMemo(
     () =>
       wcif.persons
-        .filter((p) => acceptedRegistration(p) && isRegistered(p) && shouldBeInRound(round)(p))
-        .map((person) => ({
-          ...person,
-          seedResult: getSeedResult(wcif, activityCode, person),
-        }))
-        .sort((a, b) => byPROrResult(event, roundNumber)(a, b))
-        .reduce((persons, person) => {
-          const lastPerson = persons[persons.length - 1];
-          console.log(lastPerson, person);
-          return [
-            ...persons,
-            {
-              ...person,
-              seedResult: {
-                ...person.seedResult,
-                ranking: calcRanking(person, lastPerson),
-              },
-            },
-          ];
-        }, [])
         .filter(
           (p) =>
-            showAllCompetitors ||
             isOrganizerOrDelegate(p) ||
-            p.roles.some((r) => r.indexOf('staff') > -1)
+            (p?.registration?.status === 'accepted' &&
+              (p.roles.some((r) => r.indexOf('staff') > -1) || showAllCompetitors) &&
+              p.registration.eventIds.indexOf(eventId) > -1)
         )
+        .map((person) => ({
+          ...person,
+          pr: person.personalBests.find((pb) => pb.eventId === eventId && pb.type === 'average')
+            ?.best,
+        }))
         .sort((a, b) => {
           if (competitorSort === 'speed') {
-            return 0;
+            return (a.pr || Number.MAX_VALUE) - (b.pr || Number.MAX_VALUE);
           }
 
           return a.name.localeCompare(b.name);
         }),
-    [
-      activityCode,
-      competitorSort,
-      event,
-      isRegistered,
-      round,
-      roundNumber,
-      showAllCompetitors,
-      wcif,
-    ]
-  );
-
-  console.log(177, persons);
-
-  // const personsForActivityId = useCallback(
-  //   (activityId, role) =>
-  //     persons.filter((p) => p.assignments.some((a) => a.assignmentCode === role)),
-  //   [persons]
-  // );
-
-  const personAssignments = useCallback(
-    (registrantId) => persons.find((p) => p.registrantId === registrantId).assignments,
-    [persons]
+    [competitorSort, eventId, showAllCompetitors, wcif.persons]
   );
 
   const getAssignmentCodeForPersonGroup = useCallback(
     (registrantId, activityId) => {
-      return personAssignments(registrantId).find((a) => a.activityId === activityId)
-        ?.assignmentCode;
+      const assignments = persons.find((p) => p.registrantId === registrantId).assignments;
+      return assignments.find((a) => a.activityId === activityId)?.assignmentCode;
     },
-    [personAssignments]
+    [persons]
   );
 
   const handleUpdateAssignmentForPerson = (registrantId, activityId) => () => {
     if (getAssignmentCodeForPersonGroup(registrantId, activityId) === paintingAssignmentCode) {
-      dispatch(removePersonAssignments(registrantId, activityId));
+      dispatch(removePersonAssignment(registrantId, activityId));
     } else {
       dispatch(
-        upsertPersonAssignments(registrantId, [
-          {
-            activityId,
-            assignmentCode: paintingAssignmentCode,
-          },
-        ])
+        upsertPersonAssignment(registrantId, {
+          activityId,
+          assignmentCode: paintingAssignmentCode,
+        })
       );
     }
   };
@@ -240,7 +150,7 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
   const handleResetAssignments = () => {
     confirm('Are you sure you want to reset all assignments and start over').then(() => {
       dispatch(
-        bulkRemovePersonAssignments(
+        bulkRemovePersonAssignment(
           groups.map((groupActivity) => ({
             activityId: groupActivity.id,
           }))
@@ -352,7 +262,6 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
               <TableCell></TableCell>
               <TableCell></TableCell>
               <TableCell></TableCell>
-              <TableCell></TableCell>
               {groupsRooms.map((room) => (
                 <TableCell
                   key={room.id}
@@ -364,10 +273,9 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
               <TableCell></TableCell>
             </TableRow>
             <TableRow>
-              <TableCell style={{ width: '1em' }}>#</TableCell>
               <TableCell style={{ width: '20%' }}>Name</TableCell>
-              <TableCell style={{ width: '1em', textAlign: 'center' }}>Seed Result</TableCell>
-              <TableCell style={{ width: '1em', textAlign: 'center' }}>Registered</TableCell>
+              <TableCell style={{ width: '1em' }}>Average</TableCell>
+              <TableCell style={{ width: '1em' }}>Registered</TableCell>
               {groupsRooms.map((room) =>
                 groups
                   .filter((group) => group.parent.room.name === room.name)
@@ -382,20 +290,10 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
           </TableHead>
           <TableBody>
             {persons.map((person) => (
-              <TableRow
-                hover
-                key={person.registrantId}
-                className={clsx({
-                  [classes.firstTimer]: acceptedRegistration(person) && !person.wcaId,
-                  [classes.delegateOrOrganizer]:
-                    acceptedRegistration(person) && isOrganizerOrDelegate(person),
-                  [classes.disabled]: !acceptedRegistration(person),
-                })}>
-                <TableCell>{person?.seedResult?.ranking}</TableCell>
+              <TableRow hover key={person.registrantId} style={{}}>
                 <TableCell>{person.name}</TableCell>
                 <TableCell style={{ textAlign: 'center' }}>
-                  {!isNaN(person?.seedResult?.rankingResult) &&
-                    formatCentiseconds(person.seedResult.rankingResult)}
+                  {person.pr && formatCentiseconds(person.pr)}
                 </TableCell>
                 <TableCell
                   style={{
@@ -403,7 +301,7 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
                     paddingBottom: 0,
                     textAlign: 'center',
                   }}>
-                  {person?.registration?.eventIds.indexOf(eventId) > -1 ? (
+                  {person.registration.eventIds.indexOf(eventId) > -1 ? (
                     <CheckIcon fontSize="small" />
                   ) : (
                     ''
@@ -432,60 +330,6 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
               </TableRow>
             ))}
           </TableBody>
-          {/* <TableFooter>
-            <TableRow>
-              <TableCell colSpan={3}>{'Total Competitors'}</TableCell>
-              {groupsRooms.map((room) =>
-                groups
-                  .filter((group) => group.parent.room.name === room.name)
-                  .map((groupActivity) => (
-                    <TableCell>
-                      {personsForActivityId(groupActivity.id, 'competitor').length}
-                    </TableCell>
-                  ))
-              )}
-              <TableCell></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell colSpan={3}>{'Total Judges'}</TableCell>
-              {groupsRooms.map((room) =>
-                groups
-                  .filter((group) => group.parent.room.name === room.name)
-                  .map((groupActivity) => (
-                    <TableCell>
-                      {personsForActivityId(groupActivity.id, 'staff-judge').length}
-                    </TableCell>
-                  ))
-              )}
-              <TableCell></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell colSpan={3}>{'Total Scramblers'}</TableCell>
-              {groupsRooms.map((room) =>
-                groups
-                  .filter((group) => group.parent.room.name === room.name)
-                  .map((groupActivity) => (
-                    <TableCell>
-                      {personsForActivityId(groupActivity.id, 'staff-scrambler').length}
-                    </TableCell>
-                  ))
-              )}
-              <TableCell></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell colSpan={3}>{'Total Runners'}</TableCell>
-              {groupsRooms.map((room) =>
-                groups
-                  .filter((group) => group.parent.room.name === room.name)
-                  .map((groupActivity) => (
-                    <TableCell>
-                      {personsForActivityId(groupActivity.id, 'staff-runner').length}
-                    </TableCell>
-                  ))
-              )}
-              <TableCell></TableCell>
-            </TableRow>
-          </TableFooter> */}
         </Table>
       </DialogContent>
       <DialogActions>
@@ -511,4 +355,4 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
   );
 };
 
-export default ConfigureAssignmentsDialog;
+export default ConfigureScramblersDialog;
