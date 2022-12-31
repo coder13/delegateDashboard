@@ -30,18 +30,17 @@ export const generateGroupAssignmentsForDelegatesAndOrganizers = (
     )
   ).sort((a, b) => b - a);
 
-  const persons = personsShouldBeInRound(round)(wcif.persons)
-    .filter(missingCompetitorAssignments({ groupIds }))
-    .filter(isOrganizerOrDelegate)
-    .sort(byName)
-    .sort(byPROrResult(event, roundNumber));
+  return (assignments: InProgressAssignmment[]): InProgressAssignmment[] => {
+    const persons = personsShouldBeInRound(round)(wcif.persons)
+      .filter(missingCompetitorAssignments({ assignments, groupIds }))
+      .filter(isOrganizerOrDelegate)
+      .sort(byName)
+      .sort(byPROrResult(event, roundNumber));
 
-  if (!persons.length) {
-    console.error('No delegates or organizers to assign competing assignments for');
-    return;
-  }
-
-  return (): InProgressAssignmment[] => {
+    if (!persons.length) {
+      console.error('No delegates or organizers to assign competing assignments for');
+      return assignments;
+    }
     // eslint-disable-next-line
     console.log(
       `Generating Competing assignments for ${persons.length} organizers & delegates`,
