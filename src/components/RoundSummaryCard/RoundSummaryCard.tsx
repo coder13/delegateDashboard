@@ -16,7 +16,6 @@ import {
   updateRoundChildActivities,
 } from '../../store/actions';
 import { selectPersonsAssignedForRound, selectPersonsShouldBeInRound } from '../../store/selectors';
-import ConfigureAssignmentsDialog from '../Dialogs/ConfigureAssignmentsDialog';
 import ConfigureGroupCountsDialog from '../Dialogs/ConfigureGroupCountsDialog';
 import ConfigureStationNumbersDialog from '../Dialogs/ConfigureStationNumbersDialog';
 import GroupsGeneratorList from './GroupsGeneratorList';
@@ -29,7 +28,6 @@ export const RoundSummaryCard = ({ activityCode }) => {
   const dispatch = useDispatch();
   const confirm = useConfirm();
 
-  const [configureAssignmentsDialog, setConfigureAssignmentsDialog] = useState(false);
   const [configureGroupCountsDialog, setConfigureGroupCountsDialog] = useState(false);
   const [configureStationNumbersDialog, setConfigureStationNumbersDialog] = useState(false);
 
@@ -88,10 +86,6 @@ export const RoundSummaryCard = ({ activityCode }) => {
       });
   };
 
-  const onConfigureAssignments = () => {
-    setConfigureAssignmentsDialog(true);
-  };
-
   const onResetGroupNonScramblingActitivites = () => {
     confirm({
       description: 'Do you really want to reset all group activities in this round?',
@@ -133,7 +127,6 @@ export const RoundSummaryCard = ({ activityCode }) => {
     ) {
       return (
         <>
-          <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
           <Button onClick={onGenerateGroupActitivites}>
             Assign Competitor and Judging Assignments
           </Button>
@@ -146,7 +139,6 @@ export const RoundSummaryCard = ({ activityCode }) => {
     } else if (personsAssignedToCompete.length > 0) {
       return (
         <>
-          <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
           <Button onClick={() => setConfigureStationNumbersDialog(activityCode)}>
             Configure Station Numbers
           </Button>
@@ -181,14 +173,9 @@ export const RoundSummaryCard = ({ activityCode }) => {
         <StageList roundActivities={roundActivities} />
         <Divider />
         <PersonsTable activityCode={activityCode} />
-        <GroupsGeneratorList activityCode={activityCode} />
+        {groups.length ? <GroupsGeneratorList activityCode={activityCode} /> : null}
         <CardActions>{actionButtons()}</CardActions>
       </Card>
-      <ConfigureAssignmentsDialog
-        open={configureAssignmentsDialog}
-        onClose={() => setConfigureAssignmentsDialog(false)}
-        activityCode={activityCode}
-      />
       <ConfigureGroupCountsDialog
         open={configureGroupCountsDialog}
         onClose={() => setConfigureGroupCountsDialog(false)}

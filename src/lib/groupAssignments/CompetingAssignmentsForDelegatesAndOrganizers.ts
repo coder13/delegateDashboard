@@ -49,7 +49,7 @@ const CompetingAssignmentsForDelegatesAndOrganizers: GroupGenerator = {
       validate: () => {
         // The goal of this generator is to make sure there's at least 1 free delegate or organizer in each group (number).
 
-        return true;
+        return persons.length === 0;
       },
       reduce: () => {
         // eslint-disable-next-line

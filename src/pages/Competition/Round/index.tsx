@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
-import { AssignmentsTable } from '../../../components/AssignmentsTable';
+import { AssignmentsTableWithToolbar } from '../../../components/AssignmentsTable';
 import { RoundSummaryCard } from '../../../components/RoundSummaryCard/RoundSummaryCard';
 import { findRoundActivitiesById } from '../../../lib/activities';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
@@ -54,11 +54,7 @@ const RoundPage = () => {
       </Grid>
 
       <Grid item>
-        <AssignmentsTable
-          activityCode={activityCode}
-          competitorSort="speed"
-          showAllCompetitors={true}
-        />
+        <AssignmentsTableWithToolbar activityCode={activityCode} />
       </Grid>
     </Grid>
   );

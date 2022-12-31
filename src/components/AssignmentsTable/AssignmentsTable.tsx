@@ -1,7 +1,6 @@
 import { formatCentiseconds } from '@wca/helpers';
 import clsx from 'clsx';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useCallback, useMemo } from 'react';
 import CheckIcon from '@mui/icons-material/Check';
 import { Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { grey, red, yellow } from '@mui/material/colors';
@@ -22,13 +21,13 @@ import {
 import { flatten } from '../../lib/utils';
 import TableAssignmentCell from '../../pages/Competition/Round/TableAssignmentCell';
 import { useAppSelector } from '../../store';
-import { upsertPersonAssignments, removePersonAssignments } from '../../store/actions';
 import { selectWcifRooms } from '../../store/selectors';
 
 interface AssignmentsTableProps {
   activityCode: string;
   competitorSort: 'speed' | 'name';
   showAllCompetitors: boolean;
+  onAssignmentClick: (registrantId: number, groupActivityId: number) => void;
 }
 
 const useStyles = makeStyles(() => ({
@@ -53,29 +52,6 @@ const useStyles = makeStyles(() => ({
   hover: {},
 }));
 
-const Assignments = [
-  {
-    id: 'competitor',
-    name: 'Competitor',
-    key: 'c',
-  },
-  {
-    id: 'staff-scrambler',
-    name: 'Scrambler',
-    key: 's',
-  },
-  {
-    id: 'staff-runner',
-    name: 'Runner',
-    key: 'r',
-  },
-  {
-    id: 'staff-judge',
-    name: 'Judge',
-    key: 'j',
-  },
-];
-
 function calcRanking(person, lastPerson) {
   if (!lastPerson?.seedResult?.ranking) {
     return 1;
@@ -92,6 +68,7 @@ export function AssignmentsTable({
   activityCode,
   competitorSort,
   showAllCompetitors,
+  onAssignmentClick,
 }: AssignmentsTableProps) {
   const wcif = useAppSelector((state) => state.wcif);
   const { eventId, roundNumber } = parseActivityCode(activityCode);
@@ -101,11 +78,6 @@ export function AssignmentsTable({
   const wcifRooms = useAppSelector((state) => selectWcifRooms(state));
 
   const groups = findGroupActivitiesByRound(wcif, activityCode);
-
-  const dispatch = useDispatch();
-
-  const [paintingAssignmentCode, setPaintingAssignmentCode] = useState('staff-scrambler');
-  const [lastPaintingAssignmentCode, setLastPaintingAssignmentCode] = useState('staff-scrambler');
 
   const groupsRooms = useMemo(
     () =>
@@ -180,45 +152,6 @@ export function AssignmentsTable({
     },
     [personAssignments]
   );
-
-  const handleUpdateAssignmentForPerson = (registrantId, activityId) => () => {
-    if (getAssignmentCodeForPersonGroup(registrantId, activityId) === paintingAssignmentCode) {
-      dispatch(removePersonAssignments(registrantId, activityId));
-    } else {
-      dispatch(
-        upsertPersonAssignments(registrantId, [
-          {
-            activityId,
-            assignmentCode: paintingAssignmentCode,
-          },
-        ])
-      );
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.ctrlKey) {
-      return;
-    }
-
-    const assignment = Assignments.find((a) => a.key === e.key);
-    if (assignment) {
-      if (paintingAssignmentCode === assignment.id) {
-        setLastPaintingAssignmentCode(paintingAssignmentCode);
-        setPaintingAssignmentCode(lastPaintingAssignmentCode);
-      } else {
-        setLastPaintingAssignmentCode(paintingAssignmentCode);
-        setPaintingAssignmentCode(assignment.id);
-      }
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  });
 
   return (
     <Table stickyHeader size="small">
@@ -297,7 +230,7 @@ export function AssignmentsTable({
                   <TableAssignmentCell
                     key={groupActivity.id}
                     value={getAssignmentCodeForPersonGroup(person.registrantId, groupActivity.id)}
-                    onClick={handleUpdateAssignmentForPerson(person.registrantId, groupActivity.id)}
+                    onClick={() => onAssignmentClick(person.registrantId, groupActivity.id)}
                   />
                 ))
             )}
