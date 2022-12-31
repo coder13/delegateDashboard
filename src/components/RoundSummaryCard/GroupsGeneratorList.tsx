@@ -1,5 +1,6 @@
 import { Round } from '@wca/helpers';
 import { CheckOutlined } from '@mui/icons-material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Accordion,
   AccordionDetails,
@@ -55,8 +56,8 @@ export default function GroupsGeneratorList({ activityCode }: GroupGeneratorList
   console.log(20, configuredGenerators);
 
   return (
-    <Accordion disableGutters square>
-      <AccordionSummary>Group Generators</AccordionSummary>
+    <Accordion disableGutters square defaultExpanded>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>Group Generators</AccordionSummary>
       <AccordionDetails>
         <List dense>
           {configuredGenerators.map(({ id, enabled }) => {

@@ -7,10 +7,7 @@ import grey from '@mui/material/colors/grey';
 import { makeStyles } from '@mui/styles';
 import { WCA_ORIGIN } from '../lib/wca-env';
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    padding: theme.spacing(2),
-  },
+const useStyles = makeStyles({
   grow: {
     flexGrow: 1,
   },
@@ -23,7 +20,7 @@ const useStyles = makeStyles((theme) => ({
       opacity: 0.7,
     },
   },
-}));
+});
 
 const links = [
   { text: 'GitHub', url: 'https://github.com/coder13/delegateDashboard' },
@@ -37,7 +34,7 @@ const links = [
 const Footer = () => {
   const classes = useStyles();
   return (
-    <Grid container className={classes.root}>
+    <Grid container sx={{ p: 2 }}>
       <Grid item>
         <Typography variant="body2">
           Made by{' '}

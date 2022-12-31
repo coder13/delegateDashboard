@@ -53,11 +53,6 @@ const RoundPage = () => {
         <RoundSummaryCard activityCode={activityCode} />
       </Grid>
 
-      {/* <Grid item>
-        {sortedGroups.map((group) => (
-          <GroupCard key={group.id} groupActivity={group} />
-        ))}
-      </Grid> */}
       <Grid item>
         <AssignmentsTable
           activityCode={activityCode}

@@ -5,37 +5,13 @@ import { TransitionGroup } from 'react-transition-group';
 import { Collapse, Divider, FormControlLabel, Switch } from '@mui/material';
 import List from '@mui/material/List';
 import ListSubheader from '@mui/material/ListSubheader';
-import { makeStyles } from '@mui/styles';
 import { earliestStartTimeForRound, parseActivityCode } from '../../../lib/activities';
 import { eventNameById } from '../../../lib/events';
 import { useCommandPrompt } from '../../../providers/CommandPromptProvider';
 import RoundListItem from './RoundListItem';
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-    flexDirection: 'Column',
-    flex: 1,
-    width: '100%',
-    backgroundColor: theme.palette.background.paper,
-    marginTop: '1em',
-  },
-  paper: {
-    width: '100%',
-    padding: theme.spacing(2),
-  },
-  listSection: {
-    backgroundColor: 'inherit',
-  },
-  ul: {
-    backgroundColor: 'inherit',
-    padding: 0,
-  },
-}));
-
 const RoundSelector = ({ competitionId, onSelected }) => {
   const wcif = useSelector((state) => state.wcif);
-  const classes = useStyles();
   const { open: commandPromptOpen } = useCommandPrompt();
 
   const [showAllRounds, setShowAllRounds] = useState(false);
@@ -102,7 +78,7 @@ const RoundSelector = ({ competitionId, onSelected }) => {
         onChange={(event) => setShowAllRounds(event.target.checked)}
       />
       <Divider />
-      <List className={classes.root}>
+      <List sx={{ mt: 1 }}>
         {wcif.events.map((event) => {
           const roundsForEvent = rounds.filter((round) => round.id.split('-')[0] === event.id);
 

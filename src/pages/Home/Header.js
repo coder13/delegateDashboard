@@ -9,7 +9,7 @@ import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import { useAuth } from '../../providers/AuthProvider';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles({
   title: {
     flexGrow: 1,
   },
@@ -20,9 +20,8 @@ const useStyles = makeStyles((theme) => ({
   titleIcon: {
     fontSize: '1.5em',
     verticalAlign: 'middle',
-    marginRight: theme.spacing(1),
   },
-}));
+});
 
 const Header = () => {
   const classes = useStyles();
@@ -42,7 +41,7 @@ const Header = () => {
       <Toolbar>
         <Typography variant="h6" className={classes.title}>
           <Link to="/" className={classes.titleLink}>
-            <PeopleIcon className={classes.titleIcon} />
+            <PeopleIcon sx={{ mr: 1 }} />
             Delegate Dashboard
           </Link>
         </Typography>
