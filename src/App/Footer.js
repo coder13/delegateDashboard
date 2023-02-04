@@ -46,7 +46,7 @@ const Footer = () => {
             href="https://github.com/coder13"
             target="_blank"
             rel="noopener noreferrer">
-            Caleb Hoover
+            Cailyn Hoover
           </Link>
         </Typography>
       </Grid>
