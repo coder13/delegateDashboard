@@ -212,6 +212,7 @@ const ExportPage = () => {
           people.forEach((person) => {
             scorecards.push({
               id: person.registrantId,
+              wca_id: person.wcaId,
               competition_name: wcif.name,
               event_name: eventNameById(event.id),
               round_number: parseActivityCode(round.id)?.roundNumber,
@@ -236,6 +237,7 @@ const ExportPage = () => {
       filename: `${wcif.id}_scorecards`,
       headers: [
         'id',
+        'wca_id',
         'competition_name',
         'event_name',
         'round_number',
