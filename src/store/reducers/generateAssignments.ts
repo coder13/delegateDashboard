@@ -1,3 +1,4 @@
+import { GroupGenerator } from '../../lib/groupAssignments/GroupGenerator';
 import { AppState } from '../initialState';
 import { bulkAddPersonAssignments } from './competitorAssignments';
 
@@ -10,8 +11,15 @@ import { bulkAddPersonAssignments } from './competitorAssignments';
  *
  * 2. Then give out judging assignments to competitors without staff assignments
  */
-export function generateAssignments(state: AppState, action) {
-  const initializedGenerators = state.groupGenerators.map((generator) =>
+export function generateAssignments(
+  state: AppState,
+  action: {
+    roundId: string;
+    groupGenerators?: GroupGenerator[];
+  }
+) {
+  const groupGenerators = action.groupGenerators || state.groupGenerators;
+  const initializedGenerators = groupGenerators.map((generator) =>
     generator.initialize(state.wcif, action.roundId)
   );
 

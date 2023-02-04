@@ -41,10 +41,6 @@ const CompetingAssignmentsForDelegatesAndOrganizers: GroupGenerator = {
       .sort(byName)
       .sort(byPROrResult(event, roundNumber));
 
-    if (!persons.length) {
-      return;
-    }
-
     return {
       validate: () => {
         // The goal of this generator is to make sure there's at least 1 free delegate or organizer in each group (number).

@@ -16,6 +16,7 @@ export interface GroupGenerator {
 
   /**
    * Initializes a generator that can be used to generate groups or validate that groups have been generated.
+   * Returns undefined iff the generators is not applicable to the given round or if the round can't be found.
    */
   initialize: (wcif: Competition, roundActivityCode: string) => Generator | undefined;
 }

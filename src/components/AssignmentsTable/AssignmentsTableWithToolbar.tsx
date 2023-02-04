@@ -136,7 +136,7 @@ export function AssignmentsTableWithToolbar({ activityCode }: AssignmentsTableWi
   };
 
   const persons = useMemo(() => {
-    if (!roundNumber) {
+    if (!roundNumber || !event || !round) {
       return [];
     }
 
@@ -164,7 +164,7 @@ export function AssignmentsTableWithToolbar({ activityCode }: AssignmentsTableWi
         (p) =>
           showAllCompetitors ||
           isOrganizerOrDelegate(p) ||
-          p.roles.some((r) => r.indexOf('staff') > -1)
+          p?.roles?.some((r) => r.indexOf('staff') > -1)
       )
       .sort((a, b) => {
         if (competitorSort === 'speed') {
@@ -185,13 +185,13 @@ export function AssignmentsTableWithToolbar({ activityCode }: AssignmentsTableWi
   ]);
 
   const personAssignments = useCallback(
-    (registrantId) => persons.find((p) => p.registrantId === registrantId).assignments,
+    (registrantId) => persons?.find((p) => p.registrantId === registrantId)?.assignments,
     [persons]
   );
 
   const getAssignmentCodeForPersonGroup = useCallback(
     (registrantId, activityId) => {
-      return personAssignments(registrantId).find((a) => a.activityId === activityId)
+      return personAssignments(registrantId)?.find((a) => a.activityId === activityId)
         ?.assignmentCode;
     },
     [personAssignments]

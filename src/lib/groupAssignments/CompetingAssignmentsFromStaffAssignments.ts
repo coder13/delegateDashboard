@@ -30,15 +30,14 @@ const CompetingAssignmentsForStaffGenerator: GroupGenerator = {
       .filter(hasStaffAssignment({ groupIds }))
       .filter(missingCompetitorAssignments({ groupIds }));
 
-    if (!persons.length) {
-      return;
-    }
-
     // eslint-disable-next-line
     console.log(`Generating Competing assignments for ${persons.length} staff`, persons);
 
     return {
-      validate: () => true,
+      validate: () => {
+        console.log(42, persons);
+        return persons.length === 0;
+      },
       reduce: () =>
         persons
           .map((person) => {

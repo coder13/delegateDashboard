@@ -1,4 +1,5 @@
 import { Round } from '@wca/helpers';
+import { useDispatch } from 'react-redux';
 import { CheckOutlined } from '@mui/icons-material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
@@ -16,10 +17,12 @@ import {
 import { GroupGenerator } from '../../lib/groupAssignments/GroupGenerator';
 import { getExtensionData } from '../../lib/wcif-extensions';
 import { useAppSelector } from '../../store';
+import { generateAssignments } from '../../store/actions';
 
 interface GroupGeneratorProps extends GroupGenerator {
   enabled: boolean;
   validated: boolean;
+  handleRun: () => void;
 }
 
 const GroupGeneratorListItem = ({
@@ -28,9 +31,12 @@ const GroupGeneratorListItem = ({
   description,
   enabled,
   validated,
+  handleRun,
 }: GroupGeneratorProps) => {
   return (
-    <ListItem key={id} secondaryAction={!validated ? <Button>Run</Button> : <CheckOutlined />}>
+    <ListItem
+      key={id}
+      secondaryAction={!validated ? <Button onClick={handleRun}>Run</Button> : <CheckOutlined />}>
       <ListItemAvatar>
         <ListItemIcon>
           <Checkbox checked={enabled} />
@@ -46,6 +52,7 @@ interface GroupGeneratorListProps {
 }
 
 export default function GroupsGeneratorList({ activityCode }: GroupGeneratorListProps) {
+  const dispatch = useDispatch();
   const wcif = useAppSelector((state) => state.wcif);
   const event = wcif.events.find((e) => e.id === activityCode.split('-')[0]);
   const round = event?.rounds?.find((r) => r.id === activityCode) as Round;
@@ -54,6 +61,14 @@ export default function GroupsGeneratorList({ activityCode }: GroupGeneratorList
 
   const { generators: configuredGenerators } = getExtensionData('groupGenerators', round);
   console.log(20, configuredGenerators);
+
+  const handleRun = (generator: GroupGenerator) => {
+    dispatch(
+      generateAssignments(activityCode, {
+        groupGenerators: [generator],
+      })
+    );
+  };
 
   return (
     <Accordion disableGutters square defaultExpanded>
@@ -72,7 +87,8 @@ export default function GroupsGeneratorList({ activityCode }: GroupGeneratorList
                 key={id}
                 {...generator}
                 enabled={enabled}
-                validated={generator.initialize(wcif, activityCode)?.validate()}
+                validated={!!generator.initialize(wcif, activityCode)?.validate()}
+                handleRun={() => handleRun(generator)}
               />
             );
           })}
