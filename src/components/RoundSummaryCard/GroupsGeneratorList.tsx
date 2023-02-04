@@ -71,7 +71,7 @@ export default function GroupsGeneratorList({ activityCode }: GroupGeneratorList
   };
 
   return (
-    <Accordion disableGutters square defaultExpanded>
+    <Accordion disableGutters square>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>Group Generators</AccordionSummary>
       <AccordionDetails>
         <List dense>
