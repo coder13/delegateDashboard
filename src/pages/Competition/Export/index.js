@@ -261,13 +261,15 @@ const ExportPage = () => {
     const csvExporter = new ExportToCsv({
       ...csvOptions,
       filename: `${wcif.id}_registrations`,
-      headers: ['id', 'name', 'email'],
+      headers: ['id', 'name', 'email', 'wca_id', 'country_id'],
     });
 
     const registrations = acceptedRegistrations(wcif.persons).map((person) => ({
       id: person.registrantId,
       name: person.name,
       email: person.email,
+      wca_id: person.wcaId,
+      country_id: person.countryIso2,
     }));
 
     csvExporter.generateCsv(registrations);
