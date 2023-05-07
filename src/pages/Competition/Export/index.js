@@ -80,6 +80,7 @@ const ExportPage = () => {
   const onExportNametagsData = () => {
     const assignmentHeaders = flatten(wcif.events.map((e) => [e.id, e.id + '_staff']));
     const headers = [
+      'registrantId',
       'name',
       'wcaId',
       'role',
@@ -92,6 +93,7 @@ const ExportPage = () => {
       .sort((a, b) => a.name.localeCompare(b.name))
       .forEach((person) => {
         const assignmentData = [
+          person.registrantId,
           person.name,
           person.wcaId,
           person.roles.filter((role) => role.indexOf('staff') === -1).join(','),
