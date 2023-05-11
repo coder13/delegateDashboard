@@ -110,6 +110,14 @@ const staffAssignmentRegex = /^(?<assignment>[RSJ])(?<groupNumber>[1-9]\d*)$/i;
 const competitorAssignmentRegexWithoutStage = /^(?<groupNumber>[1-9]\d*)$/i;
 const competitorAssignmentRegexWithStage = /^(?<stage>[A-Z])(?:\s*)(?<groupNumber>[1-9]\d*)$/i;
 
+const generateActivityCode = (eventId, groupNumber) => {
+  if (eventId === '333mbf' || eventId === '333fm') {
+    return `${eventId}-r1-g${groupNumber}-a1`;
+  }
+
+  return `${eventId}-r1-g${groupNumber}`;
+};
+
 /**
  * Requires that the CSV row has a field that is exactly the eventId
  * @param {*} stages
@@ -138,9 +146,9 @@ export const findCompetingAssignment = (stages, row, person, eventId) => {
 
     return {
       registrantId: person.registrantId,
-      eventId: eventId,
+      eventId,
       groupNumber,
-      activityCode: `${eventId}-r1-g${groupNumber}`,
+      activityCode: generateActivityCode(eventId, groupNumber),
       assignmentCode: 'competitor',
       roomId: room.id,
     };
@@ -156,15 +164,15 @@ export const findCompetingAssignment = (stages, row, person, eventId) => {
     const groupNumber = parseInt(matchWithoutStage.groups.groupNumber, 10);
     return {
       registrantId: person.registrantId,
-      eventId: eventId,
+      eventId,
       groupNumber,
-      activityCode: `${eventId}-r1-g${groupNumber}`,
+      activityCode: generateActivityCode(eventId, groupNumber),
       assignmentCode: 'competitor',
       roomId: stages[0].id,
     };
   }
 
-  throw new Error(`Invalid competitor assignment data`, {
+  throw new Error(`Could not determine competitor assignment`, {
     data,
     person,
     eventId,
@@ -178,7 +186,6 @@ const StaffAssignmentMap = {
 };
 
 export const findStaffingAssignments = (stages, data, row, person, eventId) => {
-  console.log(stages, data, row, person, eventId);
   const field = data.meta.fields.find((field) => {
     const split = field.split('-');
     return split[0] === eventId && split[1] === 'staff';
@@ -221,7 +228,7 @@ export const findStaffingAssignments = (stages, data, row, person, eventId) => {
 
       return {
         ...baseAssignmentData,
-        activityCode: `${eventId}-r1-g${groupNumber}`,
+        activityCode: generateActivityCode(eventId, groupNumber),
         groupNumber,
         assignmentCode,
         roomId: stages.length === 1 ? stages[0].id : undefined,
@@ -359,16 +366,11 @@ export const determineStageForAssignments = (wcif, assignments) => {
       return assignment;
     }
 
-    const activitiesForCode = activities.filter(
-      (activity) => activity.activityCode === assignment.activityCode
+    const activitiesForCode = activities.filter((activity) =>
+      activity.activityCode.startsWith(assignment.activityCode)
     );
     const rooms = activitiesForCode.map((activity) => activity.parent.room);
 
-    console.log(
-      366,
-      assignment.activityCode,
-      stageCountsByActivityCode.has(assignment.activityCode)
-    );
     if (stageCountsByActivityCode.has(assignment.activityCode)) {
       const counts = stageCountsByActivityCode.get(assignment.activityCode);
 
@@ -384,7 +386,6 @@ export const determineStageForAssignments = (wcif, assignments) => {
         ...counts,
         [selectedRoomId]: counts[selectedRoomId] + 1,
       });
-      console.log(392, counts);
 
       return {
         ...assignment,
@@ -396,6 +397,10 @@ export const determineStageForAssignments = (wcif, assignments) => {
       rooms.forEach((room) => {
         counts[room.id] = 0;
       });
+
+      if (!rooms[0]) {
+        debugger;
+      }
 
       // Set count for current room to 1
       counts[rooms[0].id] = 1;
@@ -420,8 +425,8 @@ export const determineStageForAssignments = (wcif, assignments) => {
 export const generateMissingGroupActivities = (wcif, missingActivities) => {
   const schedule = wcif.schedule;
   const missingActivitiesByRoundId = groupBy(missingActivities, (activity) => {
-    const eventRound = activity.activityCode.split('-').slice(0, 2).join('-');
-    return eventRound;
+    const { eventId, roundNumber } = parseActivityCode(activity.activityCode); //.split('-').slice(0, 2).join('-');
+    return `${eventId}-r${roundNumber}`;
   });
 
   let startingActivityId = generateNextChildActivityId(wcif);
@@ -434,12 +439,13 @@ export const generateMissingGroupActivities = (wcif, missingActivities) => {
 
       const venue = schedule.venues.find((venue) => venue.rooms.some((room) => room.id === roomId));
       const room = venue.rooms.find((room) => room.id === roomId);
-      const roundActivity = room.activities.find(
-        (activity) => activity.activityCode === eventRound
+
+      const roundActivity = room.activities.find((activity) =>
+        activity.activityCode.startsWith(eventRound)
       );
 
       if (!roundActivity) {
-        throw new Error('');
+        throw new Error(`Could not find round activity ${eventRound} in room ${roomId}`);
       }
 
       roundActivity.childActivities.push(

@@ -34,6 +34,18 @@ export const parseActivityCode = (activityCode: string): ActivityCode => {
   return parsedActivityCode;
 };
 
+/**
+ * Creates an activity code from a parsed activity code
+ * @param parsedActivityCode
+ * @returns
+ */
+export const createActivityCode = (parsedActivityCode: ActivityCode) => {
+  const { eventId, roundNumber, groupNumber, attemptNumber } = parsedActivityCode;
+  return `${eventId}${roundNumber ? `-r${roundNumber}` : ''}${
+    groupNumber ? `-g${groupNumber}` : ''
+  }${attemptNumber ? `-a${attemptNumber}` : ''}`;
+};
+
 export const activityCodeToName = (activityCode: string) => {
   const { eventId, roundNumber, groupNumber, attemptNumber } = parseActivityCode(activityCode);
   return [
@@ -129,7 +141,7 @@ export const allChildActivities = (activity: Activity): ActivityWithParent[] => 
 export const findAllActivities = (wcif: Competition) => {
   // Rounds
   const activities = findAllRoundActivities(wcif);
-  return [activities, activities.map(allChildActivities)].flat(2);
+  return [...activities, ...activities.flatMap(allChildActivities)];
 };
 
 export interface ActivityWithRoom extends Activity {
@@ -140,9 +152,7 @@ export interface ActivityWithRoom extends Activity {
  * Creates a flat array of activities
  */
 export const findAllRoundActivities = (wcif: Competition): ActivityWithRoom[] => {
-  return findRooms(wcif)
-    .map((room) => room.activities.map((a) => ({ ...a, room })))
-    .flat();
+  return findRooms(wcif).flatMap((room) => room.activities.map((a) => ({ ...a, room })));
 };
 
 export const findAllActivitiesByRoom = (wcif: Competition, roomId) => {
@@ -157,7 +167,7 @@ export const findAllActivitiesByRoom = (wcif: Competition, roomId) => {
 };
 
 export const findRoundActivitiesById = (wcif: Competition, roundActivityCode: string) =>
-  findAllRoundActivities(wcif).filter((activity) => activity.activityCode === roundActivityCode);
+  findAllActivities(wcif).filter((activity) => activity.activityCode === roundActivityCode);
 
 export const findGroupActivitiesByRound = (wcif: Competition, roundId: string) =>
   findRoundActivitiesById(wcif, roundId)
@@ -228,7 +238,12 @@ export const createGroupActivity = (
   startTime: string,
   endTime: string
 ): Activity => {
-  const newActivityCode = `${roundActivity.activityCode}-g${groupNumber}`;
+  const parsedRoundActivityCode = parseActivityCode(roundActivity.activityCode);
+
+  const newActivityCode = createActivityCode({
+    ...parsedRoundActivityCode,
+    groupNumber,
+  });
 
   return {
     id: id,

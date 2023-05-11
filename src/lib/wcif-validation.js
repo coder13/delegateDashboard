@@ -3,7 +3,7 @@ import {
   activityCodeToName,
   findActivityById,
   findAllActivities,
-  findRoundActivitiesById,
+  findAllRoundActivities,
   roomByActivity,
 } from './activities';
 import { acceptedRegistrations } from './persons';
@@ -47,8 +47,9 @@ export const validateWcif = (wcif) => {
           ]
     );
 
-    const roundActivityErrors = flatMap(event.rounds, (round) =>
-      findRoundActivitiesById(wcif, round.id).length > 0
+    const roundActivityErrors = flatMap(event.rounds, (round) => {
+      return findAllRoundActivities(wcif).filter((a) => a.activityCode.startsWith(round.id))
+        .length > 0
         ? []
         : [
             {
@@ -60,8 +61,8 @@ export const validateWcif = (wcif) => {
                 activityCode: round.id,
               },
             },
-          ]
-    );
+          ];
+    });
     return [...advancementConditionErrors, ...roundActivityErrors];
   });
 
