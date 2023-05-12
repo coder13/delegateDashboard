@@ -172,11 +172,12 @@ export const findCompetingAssignment = (stages, row, person, eventId) => {
     };
   }
 
-  throw new Error(`Could not determine competitor assignment`, {
+  console.log(175, {
     data,
     person,
     eventId,
   });
+  throw new Error(`Could not determine competitor assignment`);
 };
 
 const StaffAssignmentMap = {
