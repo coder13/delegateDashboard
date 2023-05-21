@@ -5,10 +5,10 @@ import ReactLoading from 'react-loading';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import PublicIcon from '@mui/icons-material/Public';
+import { ListItemButton } from '@mui/material';
 import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
@@ -33,7 +33,7 @@ const formatDateRange = (startString, endString) => {
 const FlagIcon = FlagIconFactory(React, { useCssModules: false });
 
 const CompetitionLink = ({ comp }) => (
-  <ListItem button component={Link} to={`/competitions/${comp.id}`}>
+  <ListItemButton component={Link} to={`/competitions/${comp.id}`}>
     <ListItemIcon>
       {!comp.country_iso2 || RegExp('(x|X)', 'g').test(comp.country_iso2.toLowerCase()) ? (
         <PublicIcon />
@@ -42,7 +42,7 @@ const CompetitionLink = ({ comp }) => (
       )}
     </ListItemIcon>
     <ListItemText primary={comp.name} secondary={formatDateRange(comp.start_date, comp.end_date)} />
-  </ListItem>
+  </ListItemButton>
 );
 
 const CompetitionList = () => {
@@ -50,10 +50,10 @@ const CompetitionList = () => {
   const loadingComps = useSelector((state) => state.fetchingCompetitions);
   const error = useSelector((state) => state.fetchingCompetitionsError);
   const upcomingCompetitions = competitions.filter(
-    (comp) => new Date(comp.start_date).getTime() > Date.now()
+    (comp) => comp.end_date >= new Date().toISOString().split('T')[0]
   );
   const pastCompetitions = competitions.filter(
-    (comp) => new Date(comp.end_date).getTime() < Date.now()
+    (comp) => comp.end_date < new Date().toISOString().split('T')[0]
   );
 
   if (error) {
@@ -95,7 +95,7 @@ const CompetitionList = () => {
           Upcoming Competitions
         </ListSubheader>
 
-        {upcomingCompetitions.map((comp) => (
+        {upcomingCompetitions.reverse().map((comp) => (
           <CompetitionLink key={comp.id} comp={comp} />
         ))}
 
