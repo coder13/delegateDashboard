@@ -98,14 +98,13 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
                 </FormHelperText>
               </FormControl>
               <Typography>
-                There will be max group sizes of {Math.ceil(roundSize / (groupCount || 1))}
+                There will be max group sizes of {Math.ceil(roundSize / (groupCount || 1))} (
+                {multipleStages && (
+                  <>
+                    {Math.ceil(roundSize / roundActivities.length / (groupCount || 1))} per stage)
+                  </>
+                )}
               </Typography>
-              {multipleStages && (
-                <Typography>
-                  There will be max group sizes of {Math.ceil(roundSize / 2 / (groupCount || 1))}{' '}
-                  per stage
-                </Typography>
-              )}
               <Typography>
                 There will be an average group duration of{' '}
                 {Math.round(activityMinutes / (groupCount || 1))} Minutes
