@@ -70,7 +70,7 @@ export const DrawerLinks = () => {
           text: 'Home',
         },
         {
-          url: `/competitions/${competitionId}/roles`,
+          url: `/competitions/${competitionId}/staff`,
           icon: <PeopleIcon />,
           text: 'Configure Staff',
         },

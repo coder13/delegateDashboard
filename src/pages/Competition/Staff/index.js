@@ -28,12 +28,12 @@ const ROLES = [
   // },
   {
     id: 'staff-scrambler',
-    name: 'Scrambler',
+    name: 'Staff',
   },
-  {
-    id: 'staff-runner',
-    name: 'Runner',
-  },
+  // {
+  //   id: 'staff-runner',
+  //   name: 'Runner',
+  // },
 ];
 
 const useStyles = makeStyles((theme) => ({
@@ -71,7 +71,7 @@ const useStyles = makeStyles((theme) => ({
   hover: {},
 }));
 
-const Roles = () => {
+const Staff = () => {
   const wcif = useSelector((state) => state.wcif);
   const { competitionId } = useParams();
   const classes = useStyles();
@@ -81,13 +81,16 @@ const Roles = () => {
   useEffect(() => {
     setBreadcrumbs([
       {
-        text: 'Roles',
+        text: 'Staff',
       },
     ]);
   }, [setBreadcrumbs]);
 
   const [filterDeleted] = useState(true);
   const [filterPending] = useState(true);
+
+  const acceptedPersons = wcif.persons.filter(acceptedRegistration);
+
   const filteredPersons =
     filterDeleted || filterPending
       ? wcif.persons.filter((person) => {
@@ -193,42 +196,34 @@ const Roles = () => {
         <TableFooter>
           <TableRow>
             <TableCell className={classes.bold}>
-              {wcif.persons.reduce((acc, person) => acc + (person.roles.length > 0 ? 1 : 0), 0)}
+              {acceptedPersons.filter((person) => person.roles.length > 0).length}
               {' / '}
-              {wcif.persons.reduce(
-                (acc, person) => acc + (acceptedRegistration(person) ? 1 : 0),
-                0
-              )}
+              {wcif.persons.filter(acceptedRegistration).length}
               {' Staff'}
             </TableCell>
             <TableCell className={classes.bold}>
               {pluralize(
-                wcif.persons.reduce(
-                  (acc, person) => acc + (person.registration && !person.wcaId ? 1 : 0),
-                  0
-                ),
+                wcif.persons.filter(acceptedRegistration).filter((person) => !person.wcaId).length,
                 'First-Timer'
               )}
             </TableCell>
             <TableCell />
             <TableCell className={classes.bold}>
-              {wcif.persons.reduce(
-                (acc, person) => acc + (person.roles.indexOf('delegate') > -1 ? 1 : 0),
-                0
-              )}
+              {
+                acceptedPersons.filter((person) => person.roles.some((r) => r.includes('delegate')))
+                  .length
+              }
             </TableCell>
             <TableCell className={classes.bold}>
-              {wcif.persons.reduce(
-                (acc, person) => acc + (person.roles.indexOf('organizer') > -1 ? 1 : 0),
-                0
-              )}
+              {acceptedPersons.filter((person) => person.roles.includes('organizer')).length}
             </TableCell>
             {ROLES.map((role) => (
               <TableCell key={role.id} className={classes.bold}>
-                {wcif.persons.reduce(
-                  (acc, person) => acc + (person.roles.indexOf(role.id) > -1 ? 1 : 0),
-                  0
-                )}
+                {
+                  wcif.persons
+                    .filter(acceptedRegistration)
+                    .filter((person) => person.roles.includes(role.id)).length
+                }
               </TableCell>
             ))}
           </TableRow>
@@ -238,4 +233,4 @@ const Roles = () => {
   );
 };
 
-export default Roles;
+export default Staff;

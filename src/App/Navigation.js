@@ -3,7 +3,7 @@ import { Routes, Route, Outlet, Navigate, useNavigate, useParams } from 'react-r
 import {
   Layout as CompetitionLayout,
   Home as CompetitionHomePage,
-  Roles as RolesPage,
+  Staff as StaffPage,
   Rooms as RoomsPage,
   Round as RoundPage,
   Person as PersonPage,
@@ -48,7 +48,7 @@ const Navigation = () => {
         <Route path="/competitions/" element={<AuthenticatedRoute />}>
           <Route path=":competitionId" element={<CompetitionLayout />}>
             <Route index element={<CompetitionHomePage />} />
-            <Route path="roles" element={<RolesPage />} />
+            <Route path="staff" element={<StaffPage />} />
             <Route path="rooms" element={<RoomsPage />} />
             <Route path="events/:eventId-r:roundNumber" element={<RoundPage />} />
             <Route path="persons/:registrantId" element={<PersonPage />} />
