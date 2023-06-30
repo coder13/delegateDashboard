@@ -6,6 +6,7 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
 import HomeIcon from '@mui/icons-material/Home';
 import MenuIcon from '@mui/icons-material/Menu';
 import PeopleIcon from '@mui/icons-material/People';
+import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import SearchIcon from '@mui/icons-material/Search';
 import ViewListIcon from '@mui/icons-material/ViewList';
@@ -91,6 +92,14 @@ export const DrawerLinks = () => {
           url: `/competitions/${competitionId}/export`,
           icon: <FileDownloadIcon />,
           text: 'Export Data',
+        },
+        {
+          type: 'divider',
+        },
+        {
+          url: `/competitions/${competitionId}/checks/first-timers`,
+          icon: <PersonSearchIcon />,
+          text: 'Check First Timers',
         },
       ],
       debug: [

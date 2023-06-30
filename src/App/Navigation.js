@@ -12,6 +12,7 @@ import {
   Import as ImportPage,
   ScramblerSchedule as ScramblerSchedulePage,
 } from '../pages/Competition';
+import FirstTimers from '../pages/Competition/Checks/FirstTimers';
 import QueryPage from '../pages/Competition/Query';
 import HomePage from '../pages/Home';
 import { useAuth } from '../providers/AuthProvider';
@@ -57,6 +58,7 @@ const Navigation = () => {
             <Route path="import" element={<ImportPage />} />
             <Route path="scrambler-schedule" element={<ScramblerSchedulePage />} />
             <Route path="query" element={<QueryPage />} />
+            <Route path="checks/first-timers" element={<FirstTimers />} />
 
             <Route path="*" element={<Comp404 />} />
           </Route>

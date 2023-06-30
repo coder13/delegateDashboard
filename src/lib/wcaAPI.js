@@ -46,6 +46,10 @@ export const saveWcifChanges = (previousWcif, newWcif) => {
   return patchWcif(newWcif.id, pick(newWcif, keysDiff));
 };
 
+export const searchPersons = (query) => wcaApiFetch(`/persons?q=${query}`);
+
+export const getPerson = (personId) => wcaApiFetch(`/persons/${personId}`);
+
 export const wcaApiFetch = async (path, fetchOptions = {}) => {
   const baseApiUrl = `${WCA_ORIGIN}/api/v0`;
 
