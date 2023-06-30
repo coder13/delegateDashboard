@@ -90,7 +90,9 @@ export default function CheckFirstTimerDialog({ open, onClose, person }) {
                     {p.name} ({p.wca_id})
                   </>
                 }
-                secondary={`${p.country.name}  -  ${p.email}  -  ${p.gender} - ${competition_count} competitions`}
+                secondary={`${p?.country?.name || p?.country_iso2}  -  ${p.email}  -  ${
+                  p.gender
+                } - ${competition_count} competitions`}
               />
             </ListItemButton>
           ))}
