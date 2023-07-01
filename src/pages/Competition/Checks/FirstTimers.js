@@ -52,13 +52,16 @@ export default function FirstTimers() {
 
     searchPersons(firstTimer.name).then((personSearch) => {
       setPersonMatches((_personMatches) => {
-        const newMatches = [
-          ..._personMatches,
-          {
-            id: firstTimer.registrantId,
-            search: personSearch,
-          },
-        ];
+        console.log(
+          firstTimer.name,
+          personSearch.filter((p) => p.person.name === firstTimer.name)
+        );
+
+        const newMatches = [..._personMatches];
+        newMatches[i] = {
+          id: firstTimer.registrantId,
+          search: personSearch.filter((p) => p.person.name === firstTimer.name),
+        };
 
         setLocalStorage(`${competitionId}.personMatches`, JSON.stringify(newMatches));
         return newMatches;
@@ -66,7 +69,7 @@ export default function FirstTimers() {
     });
 
     console.log(i);
-    setTimeout(() => incrementIndex(i + 1), 1000);
+    setTimeout(() => incrementIndex(i + 1), 500);
   };
 
   const checkFirstTimer = () => {
