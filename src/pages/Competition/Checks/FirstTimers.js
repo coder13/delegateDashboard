@@ -52,11 +52,6 @@ export default function FirstTimers() {
 
     searchPersons(firstTimer.name).then((personSearch) => {
       setPersonMatches((_personMatches) => {
-        console.log(
-          firstTimer.name,
-          personSearch.filter((p) => p.person.name === firstTimer.name)
-        );
-
         const newMatches = [..._personMatches];
         newMatches[i] = {
           id: firstTimer.registrantId,
@@ -68,7 +63,6 @@ export default function FirstTimers() {
       });
     });
 
-    console.log(i);
     setTimeout(() => incrementIndex(i + 1), 500);
   };
 
