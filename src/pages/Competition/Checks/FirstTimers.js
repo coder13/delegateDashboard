@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Button,
   Divider,
   List,
   ListItem,
@@ -106,9 +106,13 @@ export default function FirstTimers() {
         </AccordionDetails>
       </Accordion>
       <Divider />
-      <LoadingButton loading={loading} loadingIndicator="Checking…" onClick={checkFirstTimer}>
-        {personMatches?.length ? 'Re-check All First-Timers' : 'Check All First-Timers'}
-      </LoadingButton>
+      <Button onClick={checkFirstTimer}>
+        {loading
+          ? 'Checking...'
+          : personMatches?.length
+          ? 'Re-check All First-Timers'
+          : 'Check All First-Timers'}
+      </Button>
       {loading && (
         <span>
           Checking {firstTimer?.name} | {index + 1} of {firstTimers.length}
