@@ -1,0 +1,19 @@
+{
+  "$id": "com.delegate-dashboard.groups",
+  "title": "Groups",
+  "description": "WCIF extension to configure groups for a round.",
+  "type": "object",
+  "properties": {
+    "groups": {
+      "description": "A number of groups",
+      "type": "number"
+    },
+    "spreadGroupsAcrossAllStages": {
+      "description": "Whether to spread groups across all stages.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "groups"
+  ]
+}

@@ -2,7 +2,7 @@ const extensionId = (extensionName) => `delegateDashboard.${extensionName}`;
 
 export const buildExtension = (extensionName, data) => ({
   id: extensionId(extensionName),
-  specUrl: `https://github.com/coder13/delegateDashboard/blob/master/public/${extensionName}.json`, // TODO: Change to production URL
+  specUrl: `https://github.com/coder13/delegateDashboard/blob/main/public/wcif-extensions/${extensionName}.json`,
   data,
 });
 
