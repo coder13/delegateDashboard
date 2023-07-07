@@ -28,10 +28,14 @@ import {
   Toolbar as MuiToolbar,
   Typography,
   useMediaQuery,
+  Select,
+  ListItemText,
+  FormHelperText,
 } from '@mui/material';
 import { grey, red, yellow } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 import { styled, useTheme } from '@mui/system';
+import Assignments from '../../../config/assignments';
 import { parseActivityCode, activityCodeToName } from '../../../lib/activities';
 import {
   acceptedRegistration,
@@ -79,29 +83,6 @@ const Toolbar = styled(MuiToolbar)(
 `
 );
 
-const Assignments = [
-  {
-    id: 'competitor',
-    name: 'Competitor',
-    key: 'c',
-  },
-  {
-    id: 'staff-scrambler',
-    name: 'Scrambler',
-    key: 's',
-  },
-  {
-    id: 'staff-runner',
-    name: 'Runner',
-    key: 'r',
-  },
-  {
-    id: 'staff-judge',
-    name: 'Judge',
-    key: 'j',
-  },
-];
-
 function calcRanking(person, lastPerson) {
   if (!lastPerson?.seedResult?.ranking) {
     return 1;
@@ -129,7 +110,6 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
 
   const [showAllCompetitors, setShowAllCompetitors] = useState(false);
   const [paintingAssignmentCode, setPaintingAssignmentCode] = useState('staff-scrambler');
-  const [lastPaintingAssignmentCode, setLastPaintingAssignmentCode] = useState('staff-scrambler');
   const [competitorSort, setCompetitorSort] = useState('speed');
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -256,13 +236,7 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
 
     const assignment = Assignments.find((a) => a.key === e.key);
     if (assignment) {
-      if (paintingAssignmentCode === assignment.id) {
-        setLastPaintingAssignmentCode(paintingAssignmentCode);
-        setPaintingAssignmentCode(lastPaintingAssignmentCode);
-      } else {
-        setLastPaintingAssignmentCode(paintingAssignmentCode);
-        setPaintingAssignmentCode(assignment.id);
-      }
+      setPaintingAssignmentCode(assignment.id);
     }
 
     if (e.key === 'a') {
@@ -288,22 +262,31 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
       </DialogTitle>
       <DialogContent style={{ padding: 0 }}>
         <Toolbar className="flex-row">
-          <div>
-            <FormControl margin="none">
+          <div
+            className="flex-grow"
+            style={{ display: 'flex', flexGrow: 1, alignItems: 'flex-start' }}>
+            <FormControl margin="none" fullWidth>
               <FormLabel>Assignment</FormLabel>
-              <RadioGroup
-                row
+              <Select
+                className="paintingAssignment"
                 value={paintingAssignmentCode}
-                onChange={(e) => setPaintingAssignmentCode(e.target.value)}>
+                onChange={(e) => setPaintingAssignmentCode(e.target.value)}
+                renderValue={(value) => {
+                  const assignment = Assignments.find((a) => a.id === value);
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <ListItemText>{assignment.name}</ListItemText>
+                    </div>
+                  );
+                }}>
                 {Assignments.map((assignment) => (
-                  <FormControlLabel
-                    key={assignment.id}
-                    value={assignment.id}
-                    control={<Radio />}
-                    label={assignment.name}
-                  />
+                  <MenuItem key={assignment.id} value={assignment.id}>
+                    <ListItemText>{assignment.name}</ListItemText>
+                    {assignment.key && <Typography>{assignment.key.toUpperCase()}</Typography>}
+                  </MenuItem>
                 ))}
-              </RadioGroup>
+              </Select>
+              <FormHelperText>Or press the respective key</FormHelperText>
             </FormControl>
           </div>
           <div style={{ display: 'flex', flexGrow: 1 }} />

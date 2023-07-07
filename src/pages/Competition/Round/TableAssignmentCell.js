@@ -1,30 +1,7 @@
 // Shows a Table Cell for configuring an assignment
 import { TableCell } from '@mui/material';
-import { yellow, blue, green, red, grey } from '@mui/material/colors';
 import { styled } from '@mui/system';
-
-const assignmentMap = {
-  competitor: {
-    letter: 'C',
-    color: green,
-  },
-  'staff-judge': {
-    letter: 'J',
-    color: blue,
-  },
-  'staff-scrambler': {
-    letter: 'S',
-    color: yellow,
-  },
-  'staff-runner': {
-    letter: 'R',
-    color: red,
-  },
-  'staff-other': {
-    letter: 'O',
-    color: grey,
-  },
-};
+import { AssignmentsMap } from '../../../config/assignments';
 
 const TableButton = styled(TableCell, { shouldForwardProp: (prop) => prop !== 'assignmentColor' })(
   ({ theme, assignmentColor }) => `
@@ -52,8 +29,8 @@ const TableButton = styled(TableCell, { shouldForwardProp: (prop) => prop !== 'a
 // for a person and a group.
 function TableAssignmentCell({ value, onClick }) {
   return (
-    <TableButton onClick={onClick} assignmentColor={value && assignmentMap[value]?.color}>
-      {value && assignmentMap[value]?.letter}
+    <TableButton onClick={onClick} assignmentColor={value && AssignmentsMap[value]?.color}>
+      {value && AssignmentsMap[value]?.letter}
     </TableButton>
   );
 }
