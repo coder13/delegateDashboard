@@ -32,12 +32,13 @@ export default function AuthProvider({ children }) {
 
   useEffect(() => {
     const hash = window.location.hash.replace(/^#/, '');
-    console.log(hash);
+    console.log({ hash });
     const hashParams = new URLSearchParams(hash);
 
     if (hashParams.has('access_token')) {
-      setAccessToken(hashParams.get('access_token'));
       setLocalStorage('accessToken', hashParams.get('access_token'));
+      console.log(40, getLocalStorage('accessToken'));
+      setAccessToken(hashParams.get('access_token'));
     }
 
     if (hashParams.has('expires_in')) {
@@ -77,17 +78,18 @@ export default function AuthProvider({ children }) {
   const signedIn = useCallback(() => !!accessToken, [accessToken]);
 
   useEffect(() => {
-    if (accessToken) {
-      getMe()
-        .then(({ me }) => {
-          setUser(me);
-        })
-        .catch((err) => {
-          console.error(err);
-          setUserFetchError(err);
-          signOut();
-        });
+    if (!accessToken) {
+      return;
     }
+
+    getMe()
+      .then(({ me }) => {
+        setUser(me);
+      })
+      .catch((err) => {
+        console.error(err);
+        setUserFetchError(err);
+      });
   }, [accessToken]);
 
   const signIn = () => {
