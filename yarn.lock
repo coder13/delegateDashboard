@@ -2678,10 +2678,10 @@
     "@typescript-eslint/types" "5.39.0"
     eslint-visitor-keys "^3.3.0"
 
-"@wca/helpers@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@wca/helpers/-/helpers-1.1.1.tgz#9cf9b46f5b6fb20d3cd153d03a7780c3f936d8bd"
-  integrity sha512-BeGfPfTmWVQ6/fPZP7eq6c0azceqodLQ/ipK1gzSBUvlg3ir1wa4C9BEe1DlGA+MtnXu6iEV02Z0O3qOLgEI2A==
+"@wca/helpers@^1.1.5":
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/@wca/helpers/-/helpers-1.1.5.tgz#cbf0c3da6ce9a15e6e69eaf413a0cf9cb4775db0"
+  integrity sha512-Sr/XxkEXctrRKFJuqyAy9KH7q//YevEo+zSCESpVQqieB4Y3KjHYOl54kPaocwAHkWniGMOwZWD6O1Q9MR1d3w==
 
 "@webassemblyjs/ast@1.11.1":
   version "1.11.1"
