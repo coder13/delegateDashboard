@@ -24,18 +24,18 @@ import { selectPersonsAssignedToActivitiyId } from '../../../store/selectors';
 import ConfigureGroupDialog from './ConfigureGroupDialog';
 
 const withAssignmentCode =
-  (activityId, assignmentCode) =>
-  ({ assignedActivity }) =>
-    assignedActivity.activityId === activityId &&
-    assignedActivity.assignmentCode.indexOf(assignmentCode) > -1;
+  (assignmentCode) =>
+  ({ assignedActivities }) =>
+    assignedActivities.some((assignment) => assignment.assignmentCode.includes(assignmentCode));
 
 const GroupCard = ({ groupActivity }) => {
   const wcif = useSelector((state) => state.wcif);
+
   const personsAssigned = useSelector((state) =>
     selectPersonsAssignedToActivitiyId(state, groupActivity.id)
   ).map((p) => ({
     ...p,
-    assignedActivity: p.assignments.find((a) => a.activityId === groupActivity.id),
+    assignedActivities: p.assignments.filter((a) => a.activityId === groupActivity.id),
   }));
 
   const [anchorEl, setAnchorEl] = useState(null);
@@ -51,26 +51,11 @@ const GroupCard = ({ groupActivity }) => {
 
   const { eventId } = parseActivityCode(groupActivity.activityCode);
 
-  const competitors = useMemo(
-    () => personsAssigned.filter(withAssignmentCode(groupActivity.id, 'competitor')),
-    [personsAssigned, groupActivity.id]
-  );
-  const staff = useMemo(
-    () => personsAssigned.filter(withAssignmentCode(groupActivity.id, 'staff-')),
-    [personsAssigned, groupActivity.id]
-  );
-  const judges = useMemo(
-    () => staff.filter(withAssignmentCode(groupActivity.id, 'staff-judge')),
-    [staff, groupActivity.id]
-  );
-  const scramblers = useMemo(
-    () => personsAssigned.filter(withAssignmentCode(groupActivity.id, 'staff-scrambler')),
-    [personsAssigned, groupActivity.id]
-  );
-  const runners = useMemo(
-    () => staff.filter(withAssignmentCode(groupActivity.id, 'staff-runner')),
-    [staff, groupActivity.id]
-  );
+  const competitors = personsAssigned.filter(withAssignmentCode('competitor'));
+  const staff = personsAssigned.filter(withAssignmentCode('staff-'));
+  const judges = staff.filter(withAssignmentCode('staff-judge'));
+  const scramblers = personsAssigned.filter(withAssignmentCode('staff-scrambler'));
+  const runners = staff.filter(withAssignmentCode('staff-runner'));
 
   const other = useMemo(
     () =>
