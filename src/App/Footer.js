@@ -29,8 +29,8 @@ const links = [
   { text: 'GitHub', url: 'https://github.com/coder13/delegateDashboard' },
   { text: 'Contact', url: 'mailto:choover11@gmail.com' },
   {
-    text: `v${process.env.REACT_APP_VERSION}`,
-    url: 'https://github.com/coder13/delegateDashboard',
+    text: `${process.env.REACT_APP_GIT_SHA}`,
+    url: `https://github.com/coder13/delegateDashboard/commit/${process.env.REACT_APP_GIT_SHA}`,
   },
 ];
 
@@ -47,6 +47,18 @@ const Footer = () => {
             target="_blank"
             rel="noopener noreferrer">
             Cailyn Hoover
+          </Link>
+        </Typography>
+      </Grid>
+      <Divider orientation="vertical" variant="middle" style={{ margin: '0 0.5em' }} />
+      <Grid item>
+        <Typography variant="body2">
+          <Link
+            className={classes.link}
+            href="https://cailynhoover.com/coder13"
+            target="_blank"
+            rel="noopener noreferrer">
+            Donate
           </Link>
         </Typography>
       </Grid>
