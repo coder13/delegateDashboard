@@ -37,7 +37,7 @@ const Assignments = [
     letter: 'D',
   },
   {
-    id: 'staff-stage-lead',
+    id: 'staff-stagelead',
     name: 'Stage Lead',
     color: deepPurple,
     key: 'l',
