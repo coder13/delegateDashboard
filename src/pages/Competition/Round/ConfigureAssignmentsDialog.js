@@ -364,56 +364,82 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
             </TableRow>
           </TableHead>
           <TableBody>
-            {persons.map((person) => (
-              <TableRow
-                hover
-                key={person.registrantId}
-                className={clsx({
-                  [classes.firstTimer]: acceptedRegistration(person) && !person.wcaId,
-                  [classes.delegateOrOrganizer]:
-                    acceptedRegistration(person) && isOrganizerOrDelegate(person),
-                  [classes.disabled]: !acceptedRegistration(person),
-                })}>
-                <TableCell>{person?.seedResult?.ranking}</TableCell>
-                <TableCell>{person.name}</TableCell>
-                <TableCell style={{ textAlign: 'center' }}>
-                  {!isNaN(person?.seedResult?.rankingResult) &&
-                    formatCentiseconds(person.seedResult.rankingResult)}
-                </TableCell>
-                <TableCell
-                  style={{
-                    paddingTop: 0,
-                    paddingBottom: 0,
-                    textAlign: 'center',
-                  }}>
-                  {person?.registration?.eventIds.indexOf(eventId) > -1 ? (
-                    <CheckIcon fontSize="small" />
-                  ) : (
-                    ''
+            {persons.map((person) => {
+              const rankingResult =
+                !isNaN(person?.seedResult?.rankingResult) &&
+                formatCentiseconds(person.seedResult.rankingResult);
+
+              const totalStaffAssignments = person.assignments
+                .filter((a) => a.assignmentCode.indexOf('staff-') > -1)
+                .reduce((acc, assignment) => {
+                  return {
+                    ...acc,
+                    [assignment.assignmentCode]: (acc[assignment.assignmentCode] || 0) + 1,
+                  };
+                }, {});
+
+              return (
+                <TableRow
+                  hover
+                  key={person.registrantId}
+                  className={clsx({
+                    [classes.firstTimer]: acceptedRegistration(person) && !person.wcaId,
+                    [classes.delegateOrOrganizer]:
+                      acceptedRegistration(person) && isOrganizerOrDelegate(person),
+                    [classes.disabled]: !acceptedRegistration(person),
+                  })}>
+                  <TableCell>{person?.seedResult?.ranking}</TableCell>
+                  <TableCell>{person.name}</TableCell>
+                  <TableCell style={{ textAlign: 'center' }}>{rankingResult}</TableCell>
+                  <TableCell
+                    style={{
+                      paddingTop: 0,
+                      paddingBottom: 0,
+                      textAlign: 'center',
+                    }}>
+                    {person?.registration?.eventIds.indexOf(eventId) > -1 ? (
+                      <CheckIcon fontSize="small" />
+                    ) : (
+                      ''
+                    )}
+                  </TableCell>
+                  {groupsRooms.map((room) =>
+                    groups
+                      .filter((group) => group.parent.room.name === room.name)
+                      .map((groupActivity) => (
+                        <TableAssignmentCell
+                          key={groupActivity.id}
+                          value={getAssignmentCodeForPersonGroup(
+                            person.registrantId,
+                            groupActivity.id
+                          )}
+                          onClick={handleUpdateAssignmentForPerson(
+                            person.registrantId,
+                            groupActivity.id
+                          )}
+                        />
+                      ))
                   )}
-                </TableCell>
-                {groupsRooms.map((room) =>
-                  groups
-                    .filter((group) => group.parent.room.name === room.name)
-                    .map((groupActivity) => (
-                      <TableAssignmentCell
-                        key={groupActivity.id}
-                        value={getAssignmentCodeForPersonGroup(
-                          person.registrantId,
-                          groupActivity.id
-                        )}
-                        onClick={handleUpdateAssignmentForPerson(
-                          person.registrantId,
-                          groupActivity.id
-                        )}
-                      />
-                    ))
-                )}
-                <TableCell>
-                  {person.assignments.filter((a) => a.assignmentCode.indexOf('staff-') > -1).length}
-                </TableCell>
-              </TableRow>
-            ))}
+                  <TableCell>
+                    {Object.keys(totalStaffAssignments)
+                      .filter((key) => Assignments.find((a) => a.id === key))
+                      .sort((a, b) => a.localeCompare(b))
+                      .map((key, index, arry) => {
+                        const assignment = Assignments.find((a) => a.id === key);
+                        if (!assignment) return '';
+
+                        return (
+                          <div style={{ marginRight: '0.25em', display: 'inline' }}>
+                            <b>{totalStaffAssignments[key]}</b>
+                            {assignment.letter}
+                            {index < arry.length - 1 ? ', ' : ''}
+                          </div>
+                        );
+                      })}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
           {/* <TableFooter>
             <TableRow>
