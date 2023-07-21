@@ -55,7 +55,7 @@ const Footer = () => {
         <Typography variant="body2">
           <Link
             className={classes.link}
-            href="https://cailynhoover.com/coder13"
+            href="https://cailynhoover.com/donate"
             target="_blank"
             rel="noopener noreferrer">
             Donate
