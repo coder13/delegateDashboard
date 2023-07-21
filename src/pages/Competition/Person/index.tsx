@@ -1,5 +1,5 @@
+import { Activity, Assignment } from '@wca/helpers';
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@mui/material';
 import Grid from '@mui/material/Grid';
@@ -11,32 +11,25 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/styles';
-import { findActivityById } from '../../lib/activities';
-import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-    flexDirection: 'Column',
-    flex: 1,
-    width: '100%',
-  },
-  paper: {
-    width: '100%',
-    padding: theme.spacing(2),
-  },
-}));
+import { findActivityById } from '../../../lib/activities';
+import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import { useAppSelector } from '../../../store';
 
 const PersonPage = () => {
-  const classes = useStyles();
-  const { registrantId } = useParams();
+  const { registrantId } = useParams<{ registrantId: string }>();
   const { setBreadcrumbs } = useBreadcrumbs();
 
-  const wcif = useSelector((state) => state.wcif);
-  const person = wcif.persons.find((i) => i.registrantId.toString() === registrantId.toString());
+  const wcif = useAppSelector((state) => state.wcif);
+  const person =
+    registrantId &&
+    wcif &&
+    wcif.persons.find((i) => i.registrantId.toString() === registrantId.toString());
 
-  const [assignments, setAssignments] = useState([]);
+  const [assignments, setAssignments] = useState<
+    (Assignment & {
+      activity: Activity;
+    })[]
+  >([]);
 
   useEffect(() => {
     if (!person) {
@@ -44,15 +37,15 @@ const PersonPage = () => {
     }
 
     setAssignments(
-      person.assignments
-        .map((assignment) => ({
+      person?.assignments
+        ?.map((assignment) => ({
           activity: findActivityById(wcif, assignment.activityId),
           ...assignment,
         }))
-        .sort(
+        ?.sort(
           (a, b) =>
             new Date(a.activity.startTime).getTime() - new Date(b.activity.startTime).getTime()
-        )
+        ) || []
     );
 
     setBreadcrumbs([
@@ -63,14 +56,22 @@ const PersonPage = () => {
   }, [wcif, person, setBreadcrumbs]);
 
   return (
-    <div className={classes.root}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+        width: '100%',
+      }}>
       <Grid container direction="column" spacing={2}>
-        <Card>
-          <CardHeader title={person.name} />
-          <CardContent>
-            <Typography>{person.wcaId ? `WCA ID: ${person.wcaId}` : 'First-Timer'}</Typography>
-          </CardContent>
-        </Card>
+        {person && (
+          <Card>
+            <CardHeader title={person.name} />
+            <CardContent>
+              <Typography>{person.wcaId ? `WCA ID: ${person.wcaId}` : 'First-Timer'}</Typography>
+            </CardContent>
+          </Card>
+        )}
         <br />
 
         <TableContainer component={Paper}>
@@ -83,7 +84,7 @@ const PersonPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {assignments.map((assignment) => (
+              {(assignments || []).map((assignment) => (
                 <TableRow key={assignment.activityId}>
                   <TableCell>{assignment.activity.activityCode}</TableCell>
                   <TableCell>{assignment.assignmentCode}</TableCell>
