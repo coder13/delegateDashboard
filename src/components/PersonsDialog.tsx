@@ -1,3 +1,4 @@
+import { Person } from '@wca/helpers';
 import {
   Button,
   Dialog,
@@ -8,7 +9,17 @@ import {
   ListItem,
 } from '@mui/material';
 
-const PersonsDialog = ({ open, onClose, persons, title }) => {
+const PersonsDialog = ({
+  open,
+  onClose,
+  persons,
+  title,
+}: {
+  open: boolean;
+  onClose: () => void;
+  persons: Person[];
+  title: string;
+}) => {
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{title}</DialogTitle>
