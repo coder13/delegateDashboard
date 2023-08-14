@@ -1,3 +1,4 @@
+// Don't edit this file.
 import { formatCentiseconds } from '@wca/helpers';
 import { useConfirm } from 'material-ui-confirm';
 import { useCallback, useEffect, useMemo, useState } from 'react';

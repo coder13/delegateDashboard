@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import { useConfirm } from 'material-ui-confirm';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { EmojiPeople } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import {
@@ -31,6 +32,7 @@ import {
   Select,
   ListItemText,
   FormHelperText,
+  Tooltip,
 } from '@mui/material';
 import { grey, red, yellow } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
@@ -411,7 +413,14 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
                     [classes.disabled]: !acceptedRegistration(person),
                   })}>
                   <TableCell>{person?.seedResult?.ranking}</TableCell>
-                  <TableCell>{person.name}</TableCell>
+                  <TableCell>
+                    {person.name}{' '}
+                    {!person.wcaId && (
+                      <Tooltip title="newcomer">
+                        <EmojiPeople />
+                      </Tooltip>
+                    )}
+                  </TableCell>
                   <TableCell style={{ textAlign: 'center' }}>{rankingResult}</TableCell>
                   <TableCell
                     style={{
