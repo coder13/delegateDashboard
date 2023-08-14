@@ -50,6 +50,7 @@ import {
   upsertPersonAssignments,
   removePersonAssignments,
   bulkRemovePersonAssignments,
+  generateAssignments,
 } from '../../../store/actions';
 import { selectWcifRooms } from '../../../store/selectors';
 import TableAssignmentCell from './TableAssignmentCell';
@@ -415,7 +416,13 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
         </Table>
       </DialogContent>
       <DialogContent>
-        <Button variant="contained">Asssign Competitor and Judge assignments</Button>
+        <Button
+          variant="contained"
+          onClick={() => {
+            dispatch(generateAssignments(round.id));
+          }}>
+          Asssign Competitor and Judge assignments
+        </Button>
       </DialogContent>
       <DialogActions>
         <div style={{ display: 'flex', flexDirction: 'row' }}>
