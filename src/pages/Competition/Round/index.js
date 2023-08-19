@@ -2,25 +2,31 @@ import { useConfirm } from 'material-ui-confirm';
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
+import { MoreVert } from '@mui/icons-material';
 import {
+  AppBar,
   Card,
   CardActions,
   CardHeader,
   Divider,
+  IconButton,
   List,
   ListItemButton,
   ListSubheader,
+  Paper,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
+  Toolbar,
   Typography,
 } from '@mui/material';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import PersonsAssignmentsDialog from '../../../components/PersonsAssignmentsDialog';
 import PersonsDialog from '../../../components/PersonsDialog';
+import { Recipes } from '../../../lib/Recipes';
 import {
   activityCodeToName,
   findAllActivities,
@@ -96,6 +102,26 @@ const RoundPage = () => {
     }));
 
   const groupsData = getExtensionData('groups', round);
+
+  const recipe = useMemo(() => getExtensionData('recipe', round), [round]);
+  // The data is either stored in the wcif or defaultss are used
+  const recipeData = useMemo(() => {
+    if (!recipe) {
+      return Recipes[0];
+    }
+
+    if (recipe.data) {
+      return recipe.data;
+    }
+
+    const recipeData = Recipes.find((r) => r.id === recipe.id);
+
+    return {
+      ...recipeData,
+      name: `${recipeData.name} (defaults)`,
+    };
+  }, [recipe]);
+  console.log(105, recipe, recipeData);
 
   const groups = findGroupActivitiesByRound(wcif, activityCode);
 
@@ -329,6 +355,20 @@ const RoundPage = () => {
       </Grid>
 
       <Grid item>
+        <AppBar position="sticky" color="secondary" sx={{ top: '480px' }}>
+          <Toolbar component={Paper}>
+            <Typography>Recipe: {recipeData.name}</Typography>
+            <div style={{ display: 'flex', flex: 1 }} />
+            <Button>Run Recipe</Button>
+            <IconButton edge="end">
+              <MoreVert />
+            </IconButton>
+          </Toolbar>
+        </AppBar>
+      </Grid>
+
+      <Grid item>
+        <Divider />
         {sortedGroups.map((group) => (
           <GroupCard key={group.id} groupActivity={group} />
         ))}
