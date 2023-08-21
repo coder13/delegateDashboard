@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, useCallback } from 'react';
+import { useState, useEffect, createContext, useContext, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getLocalStorage, localStorageKey, setLocalStorage } from '../lib/localStorage';
 import { WCA_ORIGIN, WCA_OAUTH_CLIENT_ID } from '../lib/wca-env';
@@ -20,6 +20,7 @@ export default function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useState(getLocalStorage('accessToken'));
   const [user, setUser] = useState(null);
   const [userFetchError, setUserFetchError] = useState(null);
+  const [now, setNow] = useState(new Date());
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -28,7 +29,18 @@ export default function AuthProvider({ children }) {
     if (token) {
       setAccessToken(token);
     }
+
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, []);
+
+  const expired = useMemo(() => {
+    const expirationTime = getLocalStorage('expirationTime');
+    return expirationTime && now >= new Date(expirationTime);
+  }, [now]);
 
   useEffect(() => {
     const hash = window.location.hash.replace(/^#/, '');
@@ -78,7 +90,7 @@ export default function AuthProvider({ children }) {
   const signedIn = useCallback(() => !!accessToken, [accessToken]);
 
   useEffect(() => {
-    if (!accessToken) {
+    if (!accessToken || !getLocalStorage('accessToken')) {
       return;
     }
 
@@ -107,6 +119,8 @@ export default function AuthProvider({ children }) {
     localStorage.removeItem(localStorageKey('accessToken'));
     setUser(null);
   };
+
+  console.log(now, expired);
 
   const value = { user, signIn, signOut, signedIn, userFetchError };
 
