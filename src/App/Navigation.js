@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, Outlet, Navigate, useNavigate, useParams } from 'react-router-dom';
+import usePageTracking from '../hooks/usePageTracking';
 import {
   Layout as CompetitionLayout,
   Home as CompetitionHomePage,
@@ -41,6 +42,8 @@ const Comp404 = () => {
 };
 
 const Navigation = () => {
+  usePageTracking(process.env.REACT_APP_GA_MEASUREMENT_ID);
+
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
