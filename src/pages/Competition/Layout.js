@@ -18,11 +18,11 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { Errors } from '../../components/Errors';
+import { DrawerHeader, DrawerLinks, drawerWidth, Header } from '../../components/Header';
 import MaterialLink from '../../components/MaterialLink';
 import { getLocalStorage, setLocalStorage } from '../../lib/localStorage';
 import BreadcrumbsProvider, { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
 import { fetchWCIF, uploadCurrentWCIFChanges } from '../../store/actions';
-import { DrawerHeader, DrawerLinks, drawerWidth, Header } from './Header';
 
 const BreadCrumbsGridItem = () => {
   const { breadcrumbs } = useBreadcrumbs();

@@ -1,4 +1,5 @@
-import { Button, Container, Divider, Typography } from '@mui/material';
+import { Alert, Button, Container, Divider, Typography } from '@mui/material';
+import mca_logo from '../../assets/mca_logo.png';
 import { useAuth } from '../../providers/AuthProvider';
 import CompetitionList from '../CompetitionList';
 import Header from './Header';
@@ -10,6 +11,35 @@ const Home = () => {
     <>
       <Header />
       <div style={{ overflowY: 'auto', paddingTop: '1em' }}>
+        <Container>
+          <Alert
+            severity="info"
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                href="https://cailynhoover.com/donate"
+                target="_blank"
+                rel="noreferrer">
+                Donate
+              </Button>
+            }>
+            <Typography variant="body2">
+              This tool is in an open beta. If you enjoy using this tool for your competitions,
+              please consider donating.
+            </Typography>
+          </Alert>
+          <br />
+          <div>
+            <Typography>
+              Delegate Dashboard is graciously supported by the following organizations:
+            </Typography>
+            <div>
+              <img src={mca_logo} alt="Midwest Cubing Association logo" height={120} />
+            </div>
+          </div>
+        </Container>
+        <br />
         {signedIn() ? (
           <CompetitionList />
         ) : (

@@ -12,7 +12,7 @@ export const createGroupAssignment = (
   registrantId: number,
   activityId: any,
   assignmentCode: string,
-  stationNumber: number | null
+  stationNumber: number | null = null
 ): InProgressAssignmment => ({
   registrantId: registrantId,
   assignment: {

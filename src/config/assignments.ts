@@ -1,4 +1,4 @@
-import { blue, green, grey, pink, purple, red, yellow } from '@mui/material/colors';
+import { blue, deepPurple, green, grey, pink, purple, red, yellow } from '@mui/material/colors';
 
 const Assignments = [
   {
@@ -37,6 +37,13 @@ const Assignments = [
     letter: 'D',
   },
   {
+    id: 'staff-stagelead',
+    name: 'Stage Lead',
+    color: deepPurple,
+    key: 'l',
+    letter: 'L',
+  },
+  {
     id: 'staff-announcer',
     name: 'Announcer',
     color: pink,
@@ -44,18 +51,18 @@ const Assignments = [
     letter: 'A',
   },
   {
-    id: 'staff-other',
-    name: 'Other',
-    color: grey,
-    key: 'o',
-    letter: 'O',
-  },
-  {
     id: 'staff-dataentry',
     name: 'Data Entry',
     color: grey,
     key: 'e',
     letter: 'DA',
+  },
+  {
+    id: 'staff-other',
+    name: 'Other',
+    color: grey,
+    key: 'o',
+    letter: 'O',
   },
 ];
 

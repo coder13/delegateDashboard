@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import { useConfirm } from 'material-ui-confirm';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { EmojiPeople } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import {
@@ -31,6 +32,7 @@ import {
   Select,
   ListItemText,
   FormHelperText,
+  Tooltip,
 } from '@mui/material';
 import { grey, red, yellow } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
@@ -112,6 +114,7 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
   const [showAllCompetitors, setShowAllCompetitors] = useState(false);
   const [paintingAssignmentCode, setPaintingAssignmentCode] = useState('staff-scrambler');
   const [competitorSort, setCompetitorSort] = useState('speed');
+  const [showCompetitorsNotInRound, setShowCompetitorsNotInRound] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleMenuOpen = (event) => {
@@ -137,7 +140,20 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
   const persons = useMemo(
     () =>
       wcif.persons
-        .filter((p) => acceptedRegistration(p) && isRegistered(p) && shouldBeInRound(round)(p))
+        .filter((p) => {
+          // if competitor does not have an accepted registration, do not show them
+          if (!acceptedRegistration(p)) {
+            return false;
+          }
+
+          // If we want to show every anyways, return true
+          if (showCompetitorsNotInRound) {
+            return true;
+          }
+
+          // Else make sure they are registered and should be in the round.
+          return isRegistered(p) && shouldBeInRound(round)(p);
+        })
         .map((person) => ({
           ...person,
           seedResult: getSeedResult(wcif, activityCode, person),
@@ -177,6 +193,7 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
       round,
       roundNumber,
       showAllCompetitors,
+      showCompetitorsNotInRound,
       wcif,
     ]
   );
@@ -288,7 +305,7 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
             </FormControl>
           </div>
           <div style={{ display: 'flex', flexGrow: 1 }} />
-          <div>
+          <div style={{ display: 'flex', flexGrow: 1, justifyContent: 'space-around' }}>
             <FormControl margin="none">
               <FormLabel>Sort</FormLabel>
               <RadioGroup
@@ -304,6 +321,13 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
               <Switch
                 checked={showAllCompetitors}
                 onChange={(e) => setShowAllCompetitors(e.target.checked)}
+              />
+            </FormControl>
+            <FormControl margin="none">
+              <FormLabel>Show Competitors Not In Round</FormLabel>
+              <Switch
+                checked={showCompetitorsNotInRound}
+                onChange={(e) => setShowCompetitorsNotInRound(e.target.checked)}
               />
             </FormControl>
           </div>
@@ -362,56 +386,89 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
             </TableRow>
           </TableHead>
           <TableBody>
-            {persons.map((person) => (
-              <TableRow
-                hover
-                key={person.registrantId}
-                className={clsx({
-                  [classes.firstTimer]: acceptedRegistration(person) && !person.wcaId,
-                  [classes.delegateOrOrganizer]:
-                    acceptedRegistration(person) && isOrganizerOrDelegate(person),
-                  [classes.disabled]: !acceptedRegistration(person),
-                })}>
-                <TableCell>{person?.seedResult?.ranking}</TableCell>
-                <TableCell>{person.name}</TableCell>
-                <TableCell style={{ textAlign: 'center' }}>
-                  {!isNaN(person?.seedResult?.rankingResult) &&
-                    formatCentiseconds(person.seedResult.rankingResult)}
-                </TableCell>
-                <TableCell
-                  style={{
-                    paddingTop: 0,
-                    paddingBottom: 0,
-                    textAlign: 'center',
-                  }}>
-                  {person?.registration?.eventIds.indexOf(eventId) > -1 ? (
-                    <CheckIcon fontSize="small" />
-                  ) : (
-                    ''
+            {persons.map((person) => {
+              const rankingResult =
+                !isNaN(person?.seedResult?.rankingResult) &&
+                formatCentiseconds(person.seedResult.rankingResult);
+
+              const totalStaffAssignments = person.assignments
+                .filter((a) => a.assignmentCode.indexOf('staff-') > -1)
+                .reduce((acc, assignment) => {
+                  return {
+                    ...acc,
+                    [assignment.assignmentCode]: (acc[assignment.assignmentCode] || 0) + 1,
+                  };
+                }, {});
+
+              return (
+                <TableRow
+                  hover
+                  key={person.registrantId}
+                  className={clsx({
+                    [classes.firstTimer]: acceptedRegistration(person) && !person.wcaId,
+                    [classes.delegateOrOrganizer]:
+                      acceptedRegistration(person) && isOrganizerOrDelegate(person),
+                    [classes.disabled]: !acceptedRegistration(person),
+                  })}>
+                  <TableCell>{person?.seedResult?.ranking}</TableCell>
+                  <TableCell>
+                    {person.name}{' '}
+                    {!person.wcaId && (
+                      <Tooltip title="newcomer">
+                        <EmojiPeople />
+                      </Tooltip>
+                    )}
+                  </TableCell>
+                  <TableCell style={{ textAlign: 'center' }}>{rankingResult}</TableCell>
+                  <TableCell
+                    style={{
+                      paddingTop: 0,
+                      paddingBottom: 0,
+                      textAlign: 'center',
+                    }}>
+                    {person?.registration?.eventIds.indexOf(eventId) > -1 ? (
+                      <CheckIcon fontSize="small" />
+                    ) : (
+                      ''
+                    )}
+                  </TableCell>
+                  {groupsRooms.map((room) =>
+                    groups
+                      .filter((group) => group.parent.room.name === room.name)
+                      .map((groupActivity) => (
+                        <TableAssignmentCell
+                          key={groupActivity.id}
+                          value={getAssignmentCodeForPersonGroup(
+                            person.registrantId,
+                            groupActivity.id
+                          )}
+                          onClick={handleUpdateAssignmentForPerson(
+                            person.registrantId,
+                            groupActivity.id
+                          )}
+                        />
+                      ))
                   )}
-                </TableCell>
-                {groupsRooms.map((room) =>
-                  groups
-                    .filter((group) => group.parent.room.name === room.name)
-                    .map((groupActivity) => (
-                      <TableAssignmentCell
-                        key={groupActivity.id}
-                        value={getAssignmentCodeForPersonGroup(
-                          person.registrantId,
-                          groupActivity.id
-                        )}
-                        onClick={handleUpdateAssignmentForPerson(
-                          person.registrantId,
-                          groupActivity.id
-                        )}
-                      />
-                    ))
-                )}
-                <TableCell>
-                  {person.assignments.filter((a) => a.assignmentCode.indexOf('staff-') > -1).length}
-                </TableCell>
-              </TableRow>
-            ))}
+                  <TableCell>
+                    {Object.keys(totalStaffAssignments)
+                      .filter((key) => Assignments.find((a) => a.id === key))
+                      .sort((a, b) => a.localeCompare(b))
+                      .map((key, index, arry) => {
+                        const assignment = Assignments.find((a) => a.id === key);
+                        if (!assignment) return '';
+
+                        return (
+                          <div style={{ marginRight: '0.25em', display: 'inline' }}>
+                            <b>{totalStaffAssignments[key]}</b>
+                            {assignment.letter}
+                            {index < arry.length - 1 ? ', ' : ''}
+                          </div>
+                        );
+                      })}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </DialogContent>

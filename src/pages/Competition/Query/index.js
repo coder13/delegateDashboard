@@ -21,8 +21,8 @@ import {
 } from '@mui/material';
 import { blue, green, red, yellow } from '@mui/material/colors';
 import { Box } from '@mui/system';
-import useDebounce from '../../hooks/useDebounce';
-import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
+import useDebounce from '../../../hooks/useDebounce';
+import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 
 function useQuery() {
   const { search } = useLocation();
