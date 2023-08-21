@@ -1,16 +1,25 @@
-interface Step {
+import { Competition, Round } from '@wca/helpers';
+import { findAllActivities } from 'wca-group-generators';
+import { activityCodeIsChild } from './activities';
+import { acceptedRegistrations, personsShouldBeInRound } from './persons';
+
+export interface StepDefinition {
   id: string;
   name: string;
   description: string;
-  defaults: {
-    cluster: string;
-    activities: string;
-    options: any;
-    constraints: any[];
-  };
+  defaults: Omit<Step, 'id'>;
 }
 
-const StepLibrary: Record<string, Step> = {
+export interface Step {
+  id: string;
+  cluster: string;
+  activities: string;
+  options: any;
+  constraints: any[];
+  generator: string;
+}
+
+export const StepLibrary: Record<string, StepDefinition> = {
   GenerateCompetitorAssignmentsForStaff: {
     id: 'GenerateCompetitorAssignmentsForStaff',
     name: 'Generate Competitor Assignments For Staff',
@@ -24,6 +33,7 @@ const StepLibrary: Record<string, Step> = {
           hasStaffAssignment: true,
         },
       },
+      generator: 'assignEveryone',
       constraints: [
         {
           constraint: 'uniqueAssignment',
@@ -64,13 +74,14 @@ const StepLibrary: Record<string, Step> = {
           firstTimer: true,
         },
       },
+      generator: 'assignEveryone',
       constraints: [
         {
           constraint: 'uniqueAssignment',
           weight: 1,
         },
         {
-          constraint: 'mustNotHaveOtherAssignmentsConstraint',
+          constraint: 'mustNotHaveOtherAssignments',
           weight: 1,
         },
         {
@@ -95,7 +106,7 @@ const StepLibrary: Record<string, Step> = {
   GenerateCompetitorAssignments: {
     id: 'GenerateCompetitorAssignments',
     name: 'Generate Competitor Assignments',
-    description: 'Generates competitor assignments for competitors',
+    description: 'Generates competitor assignments for everyone else',
     defaults: {
       cluster: 'personsInRound',
       activities: 'all',
@@ -104,13 +115,14 @@ const StepLibrary: Record<string, Step> = {
           hasCompetitorAssignment: true,
         },
       },
+      generator: 'assignEveryone',
       constraints: [
         {
           constraint: 'uniqueAssignment',
           weight: 1,
         },
         {
-          constraint: 'mustNotHaveOtherAssignmentsConstraint',
+          constraint: 'mustNotHaveOtherAssignments',
           weight: 1,
         },
         {
@@ -137,13 +149,14 @@ const StepLibrary: Record<string, Step> = {
           hasCompetitorAssignment: true,
         },
       },
+      generator: 'assignEveryone',
       constraints: [
         {
           constraint: 'uniqueAssignment',
           weight: 1,
         },
         {
-          constraint: 'mustNotHaveOtherAssignmentsConstraint',
+          constraint: 'mustNotHaveOtherAssignments',
           weight: 1,
         },
         {
@@ -164,36 +177,83 @@ const StepLibrary: Record<string, Step> = {
 };
 
 export const Steps = Object.keys(StepLibrary).reduce((acc, key) => {
-  acc[key] = key;
-  return acc;
-}, {});
+  return [...acc, StepLibrary[key]];
+}, []);
 
-export const fromDefaults = (step: Step) => ({
+export const fromDefaults = (step: StepDefinition) => ({
   id: step.id,
   ...step.defaults,
 });
 
-export interface Recipe {
+export interface RecipeDefinition {
   id: string;
   name: string;
   description: string;
-  defaultSteps: Array<
-    {
-      id: string;
-    } & Step['defaults']
-  >;
+  defaultSteps: Array<StepDefinition>;
 }
 
-export const Recipes: Recipe[] = [
+export interface RecipeConfig {
+  id: string;
+  name: string;
+  description: string;
+  steps: Array<Step>;
+}
+
+export const Recipes: RecipeDefinition[] = [
   {
     id: 'pnw',
     name: 'PNW',
     description: 'PNW',
     defaultSteps: [
-      fromDefaults(StepLibrary.GenerateCompetitorAssignmentsForStaff),
-      fromDefaults(StepLibrary.GenerateCompetitorAssignmentsForFirstTimers),
-      fromDefaults(StepLibrary.GenerateCompetitorAssignments),
-      fromDefaults(StepLibrary.GenerateJudgeAssignmentsForCompetitors),
+      StepLibrary.GenerateCompetitorAssignmentsForStaff,
+      StepLibrary.GenerateCompetitorAssignmentsForFirstTimers,
+      StepLibrary.GenerateCompetitorAssignments,
+      StepLibrary.GenerateJudgeAssignmentsForCompetitors,
     ],
   },
 ];
+
+export const fromRecipeDefinition = (recipe: RecipeDefinition): RecipeConfig => ({
+  id: recipe.id,
+  name: recipe.name,
+  description: recipe.description,
+  steps: recipe.defaultSteps.map(fromDefaults),
+});
+
+const getCluster = (wcif: Competition, cluster: string, roundId: string) => {
+  switch (cluster) {
+    case 'personsInRound':
+      const round = wcif.events.flatMap((e) => e.rounds).find((r) => r.id === roundId) as Round;
+      return personsShouldBeInRound(round)(acceptedRegistrations(wcif.persons));
+    default:
+      return wcif.persons;
+  }
+};
+
+const getActivities = (wcif: Competition, activities: string, roundId: string) => {
+  const allActivities = findAllActivities(wcif);
+  const activitiesForRound = allActivities
+    .filter(
+      (activity) =>
+        activityCodeIsChild(roundId, activity.activityCode) && roundId !== activity.activityCode
+    )
+    .sort((a, b) => a.activityCode.localeCompare(b.activityCode));
+  const lastActivityCode = activitiesForRound[activitiesForRound.length - 1].activityCode;
+
+  switch (activities) {
+    case 'all':
+      return activitiesForRound;
+    case 'allButLastGroup':
+      return activitiesForRound.filter((a) => a.activityCode !== lastActivityCode);
+    default:
+      return activitiesForRound;
+  }
+};
+
+export const hydrateStep = (wcif: Competition, roundId: string) => (step: Step) => {
+  return {
+    ...step,
+    cluster: getCluster(wcif, step.cluster, roundId),
+    activities: getActivities(wcif, step.activities, roundId),
+  };
+};

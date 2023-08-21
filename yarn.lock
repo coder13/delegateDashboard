@@ -2678,7 +2678,7 @@
     "@typescript-eslint/types" "5.39.0"
     eslint-visitor-keys "^3.3.0"
 
-"@wca/helpers@^1.1.4", "@wca/helpers@^1.1.5":
+"@wca/helpers@^1.1.5":
   version "1.1.5"
   resolved "https://registry.npmjs.org/@wca/helpers/-/helpers-1.1.5.tgz"
   integrity sha512-Sr/XxkEXctrRKFJuqyAy9KH7q//YevEo+zSCESpVQqieB4Y3KjHYOl54kPaocwAHkWniGMOwZWD6O1Q9MR1d3w==
@@ -9400,7 +9400,7 @@ wbuf@^1.1.0, wbuf@^1.7.3:
 "wca-group-generators@file:../wca-group-generators":
   version "0.0.8"
   dependencies:
-    "@wca/helpers" "^1.1.4"
+    "@wca/helpers" "^1.1.5"
     tsc "^2.0.4"
     typescript "^5.0.4"
 

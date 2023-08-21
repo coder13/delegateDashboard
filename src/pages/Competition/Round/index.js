@@ -26,7 +26,7 @@ import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import PersonsAssignmentsDialog from '../../../components/PersonsAssignmentsDialog';
 import PersonsDialog from '../../../components/PersonsDialog';
-import { Recipes } from '../../../lib/Recipes';
+import { EditRecipeDialog } from '../../../components/RecipeEditor';
 import {
   activityCodeToName,
   findAllActivities,
@@ -34,6 +34,7 @@ import {
   findGroupActivitiesByRound,
   roomByActivity,
 } from '../../../lib/activities';
+import { Recipes, fromRecipeDefinition, hydrateStep } from '../../../lib/recipes';
 import { byName } from '../../../lib/utils';
 import { getExtensionData } from '../../../lib/wcif-extensions';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
@@ -69,6 +70,7 @@ const RoundPage = () => {
   const { setBreadcrumbs } = useBreadcrumbs();
   const { eventId, roundNumber } = useParams();
   const activityCode = `${eventId}-r${roundNumber}`;
+  const [configureRecipeDialog, setConfigureRecipeDialog] = useState(false);
   const [configureAssignmentsDialog, setConfigureAssignmentsDialog] = useState(false);
   const [configureGroupCountsDialog, setConfigureGroupCountsDialog] = useState(false);
   const [configureStationNumbersDialog, setConfigureStationNumbersDialog] = useState(false);
@@ -105,7 +107,7 @@ const RoundPage = () => {
 
   const recipe = useMemo(() => getExtensionData('recipe', round), [round]);
   // The data is either stored in the wcif or defaultss are used
-  const recipeData = useMemo(() => {
+  const recipeConfig = useMemo(() => {
     if (!recipe) {
       return Recipes[0];
     }
@@ -115,12 +117,27 @@ const RoundPage = () => {
     }
 
     const recipeData = Recipes.find((r) => r.id === recipe.id);
+    if (!recipeData) {
+      throw Error`Recipe ${recipe.id} not found`;
+    }
 
     return {
-      ...recipeData,
+      ...fromRecipeDefinition(recipeData),
       name: `${recipeData.name} (defaults)`,
     };
   }, [recipe]);
+
+  const _hydrateStep = useMemo((wcif, roundId) => wcif && hydrateStep(wcif, round.id), [round.id]);
+  const recipeData = useMemo(() => {
+    if (!_hydrateStep) {
+      return recipeConfig;
+    }
+
+    return {
+      ...recipeConfig,
+      defaultSteps: recipeConfig.defaultSteps.map(_hydrateStep),
+    };
+  }, [recipeConfig, _hydrateStep]);
   console.log(105, recipe, recipeData);
 
   const groups = findGroupActivitiesByRound(wcif, activityCode);
@@ -360,7 +377,7 @@ const RoundPage = () => {
             <Typography>Recipe: {recipeData.name}</Typography>
             <div style={{ display: 'flex', flex: 1 }} />
             <Button>Run Recipe</Button>
-            <IconButton edge="end">
+            <IconButton edge="end" onClick={() => setConfigureRecipeDialog(true)}>
               <MoreVert />
             </IconButton>
           </Toolbar>
@@ -392,6 +409,14 @@ const RoundPage = () => {
           open={Boolean(configureStationNumbersDialog)}
           onClose={() => setConfigureStationNumbersDialog(false)}
           activityCode={configureStationNumbersDialog}
+        />
+      )}
+      {configureRecipeDialog && (
+        <EditRecipeDialog
+          open={configureRecipeDialog}
+          onClose={() => setConfigureRecipeDialog(false)}
+          recipeConfig={recipeConfig}
+          round={round}
         />
       )}
       <PersonsDialog
