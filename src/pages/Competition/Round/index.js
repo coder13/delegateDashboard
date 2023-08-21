@@ -65,11 +65,11 @@ import GroupCard from './GroupCard';
  * Handles multiple activities across multiple rooms under 1 round activity code
  */
 const RoundPage = () => {
+  console.log(68);
   const dispatch = useDispatch();
   const confirm = useConfirm();
   const { setBreadcrumbs } = useBreadcrumbs();
-  const { eventId, roundNumber } = useParams();
-  const activityCode = `${eventId}-r${roundNumber}`;
+  const { roundId: activityCode } = useParams();
   const [configureRecipeDialog, setConfigureRecipeDialog] = useState(false);
   const [configureAssignmentsDialog, setConfigureAssignmentsDialog] = useState(false);
   const [configureGroupCountsDialog, setConfigureGroupCountsDialog] = useState(false);
