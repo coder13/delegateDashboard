@@ -1,4 +1,5 @@
 import { Alert, Button, Container, Divider, Typography } from '@mui/material';
+import mca_logo from '../../assets/mca_logo.png';
 import { useAuth } from '../../providers/AuthProvider';
 import CompetitionList from '../CompetitionList';
 import Header from './Header';
@@ -28,6 +29,15 @@ const Home = () => {
               please consider donating.
             </Typography>
           </Alert>
+          <br />
+          <div>
+            <Typography>
+              Delegate Dashboard is graciously supported by the following organizations:
+            </Typography>
+            <div>
+              <img src={mca_logo} alt="Midwest Cubing Association logo" height={120} />
+            </div>
+          </div>
         </Container>
         <br />
         {signedIn() ? (
