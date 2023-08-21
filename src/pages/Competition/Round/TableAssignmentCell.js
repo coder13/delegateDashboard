@@ -29,7 +29,22 @@ const TableButton = styled(TableCell, { shouldForwardProp: (prop) => prop !== 'a
 // for a person and a group.
 function TableAssignmentCell({ value, onClick }) {
   return (
-    <TableButton onClick={onClick} assignmentColor={value && AssignmentsMap[value]?.color}>
+    <TableButton
+      onMouseEnter={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.bubbles = false;
+        if (e.buttons === 1) {
+          onClick();
+        }
+      }}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.bubbles = false;
+        onClick();
+      }}
+      assignmentColor={value && AssignmentsMap[value]?.color}>
       {value && AssignmentsMap[value]?.letter}
     </TableButton>
   );
