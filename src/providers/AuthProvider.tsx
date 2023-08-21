@@ -14,11 +14,31 @@ const oauthRedirectUri = () => {
   return stagingParam ? `${appUri}?staging=true` : appUri;
 };
 
-const AuthContext = createContext(null);
+type User = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+interface IAuthContext {
+  user: User | null;
+  signIn: () => void;
+  signOut: () => void;
+  signedIn: () => boolean;
+  userFetchError?: any;
+}
+
+const AuthContext = createContext<IAuthContext>({
+  user: null,
+  signIn: () => {},
+  signOut: () => {},
+  signedIn: () => false,
+  userFetchError: undefined,
+});
 
 export default function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useState(getLocalStorage('accessToken'));
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [userFetchError, setUserFetchError] = useState(null);
   const [now, setNow] = useState(new Date());
   const location = useLocation();
@@ -56,7 +76,7 @@ export default function AuthProvider({ children }) {
     if (hashParams.has('expires_in')) {
       /* Expire the token 15 minutes before it actually does,
          this way it doesn't expire right after the user enters the page. */
-      const expiresInSeconds = hashParams.get('expires_in') - 15 * 60;
+      const expiresInSeconds = Number.parseInt(hashParams.get('expires_in') ?? '0', 10) - 15 * 60;
       const expirationTime = new Date(new Date().getTime() + expiresInSeconds * 1000);
       setLocalStorage('expirationTime', expirationTime.toISOString());
     }
@@ -71,11 +91,8 @@ export default function AuthProvider({ children }) {
     if (hashParams.has('access_token')) {
       // history.replace({ ...history.location, hash: null });
       navigate({
-        to: {
-          replace: '/',
-          hash: null,
-          state: location.state,
-        },
+        pathname: '/',
+        hash: '',
       });
     }
 
@@ -111,7 +128,8 @@ export default function AuthProvider({ children }) {
       redirect_uri: oauthRedirectUri(),
       scope: 'public manage_competitions email',
     });
-    window.location = `${WCA_ORIGIN}/oauth/authorize?${params.toString()}`;
+
+    window.location.href = `${WCA_ORIGIN}/oauth/authorize?${params.toString()}`;
   };
 
   const signOut = () => {
