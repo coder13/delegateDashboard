@@ -171,7 +171,7 @@ const RoundPage = () => {
    * 2. Then give out judging assignments to competitors without staff assignments
    */
   const onGenerateGroupActitivites = () => {
-    dispatch(generateAssignments(round.id));
+    dispatch(generateAssignments(round.id, recipeData));
   };
 
   const onResetGroupActitivites = () => {
@@ -376,7 +376,7 @@ const RoundPage = () => {
           <Toolbar component={Paper}>
             <Typography>Recipe: {recipeData.name}</Typography>
             <div style={{ display: 'flex', flex: 1 }} />
-            <Button>Run Recipe</Button>
+            <Button onClick={onGenerateGroupActitivites}>Run Recipe</Button>
             <IconButton edge="end" onClick={() => setConfigureRecipeDialog(true)}>
               <MoreVert />
             </IconButton>

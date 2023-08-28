@@ -1,4 +1,5 @@
 import { Competition } from '@wca/helpers';
+import { applySteps, Generators } from 'wca-group-generators';
 
 /**
  * Fills in assignment gaps. Everyone should end up having a competitor assignment and staff assignment
@@ -9,7 +10,8 @@ import { Competition } from '@wca/helpers';
  *
  * 2. Then give out judging assignments to competitors without staff assignments
  */
-export function generateAssignments(state: { wcif: Competition }) {
+export function generateAssignments(state: { wcif: Competition }, action) {
+  console.log(13, action);
   // Validate scramblers
 
   // validate runners
@@ -50,7 +52,20 @@ export function generateAssignments(state: { wcif: Competition }) {
   //   ],
   // });
 
+  const generators = action.recipe.steps.map((step) => {
+    console.log(58, step);
+    return {
+      generator: Generators[step.generator],
+      props: {},
+    };
+  });
+  const wcif = applySteps({
+    wcif: state.wcif,
+    generators,
+  });
+
   return {
     ...state,
+    wcif,
   };
 }

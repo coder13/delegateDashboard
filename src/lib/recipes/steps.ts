@@ -1,23 +1,7 @@
-import { Competition, Round } from '@wca/helpers';
-import { findAllActivities } from 'wca-group-generators';
-import { activityCodeIsChild } from './activities';
-import { acceptedRegistrations, personsShouldBeInRound } from './persons';
-
-export interface StepDefinition {
-  id: string;
-  name: string;
-  description: string;
-  defaults: Omit<Step, 'id'>;
-}
-
-export interface Step {
-  id: string;
-  cluster: string;
-  activities: string;
-  options: any;
-  constraints: any[];
-  generator: string;
-}
+import { Competition } from '@wca/helpers';
+import { getActivities } from './activities';
+import { getCluster } from './clusters';
+import { Step, StepDefinition } from './types';
 
 export const StepLibrary: Record<string, StepDefinition> = {
   GenerateCompetitorAssignmentsForStaff: {
@@ -26,13 +10,18 @@ export const StepLibrary: Record<string, StepDefinition> = {
     description:
       'Generates competitor assignments for staff members based on their staff assignments',
     defaults: {
-      cluster: 'personsInRound',
-      activities: 'all',
-      options: {
-        clusterOptions: {
-          hasStaffAssignment: true,
-        },
+      cluster: {
+        base: 'personsInRound',
+        filters: [
+          {
+            key: 'hasAssignmentInRound',
+            value: 'staff-*',
+          },
+        ],
       },
+      assignmentCode: 'competitor',
+      activities: { base: 'all' },
+      options: {},
       generator: 'assignEveryone',
       constraints: [
         {
@@ -40,7 +29,7 @@ export const StepLibrary: Record<string, StepDefinition> = {
           weight: 1,
         },
         {
-          constraint: 'mustNotHaveOtherAssignmentsConstraint',
+          constraint: 'mustNotHaveOtherAssignments',
           weight: 1,
         },
         {
@@ -67,14 +56,18 @@ export const StepLibrary: Record<string, StepDefinition> = {
     name: 'Generate Competitor Assignments For First Timers',
     description: 'Generates competitor assignments for first timers',
     defaults: {
-      cluster: 'personsInRound',
-      activities: 'allButLastGroup',
-      options: {
-        clusterOptions: {
-          firstTimer: true,
-        },
+      cluster: {
+        base: 'personsInRound',
+        filters: [
+          {
+            key: 'isFirstTimer',
+            value: true,
+          },
+        ],
       },
       generator: 'assignEveryone',
+      assignmentCode: 'competitor',
+      activities: { base: 'all', options: { tail: -1 } },
       constraints: [
         {
           constraint: 'uniqueAssignment',
@@ -108,14 +101,18 @@ export const StepLibrary: Record<string, StepDefinition> = {
     name: 'Generate Competitor Assignments',
     description: 'Generates competitor assignments for everyone else',
     defaults: {
-      cluster: 'personsInRound',
-      activities: 'all',
-      options: {
-        clusterOptions: {
-          hasCompetitorAssignment: true,
-        },
+      cluster: {
+        base: 'personsInRound',
+        filters: [
+          {
+            key: 'hasCompetitorAssignment',
+            value: false,
+          },
+        ],
       },
       generator: 'assignEveryone',
+      assignmentCode: 'competitor',
+      activities: { base: 'all' },
       constraints: [
         {
           constraint: 'uniqueAssignment',
@@ -142,14 +139,18 @@ export const StepLibrary: Record<string, StepDefinition> = {
     description:
       'Creates judge assignments for competitors based on their competitor assignments. Judge assignments are generally assigned for the group directly following the competitor assignment.',
     defaults: {
-      cluster: 'personsInRound',
-      activities: 'all',
-      options: {
-        clusterOptions: {
-          hasCompetitorAssignment: true,
-        },
-      },
       generator: 'assignEveryone',
+      assignmentCode: 'staff-judge',
+      cluster: {
+        base: 'personsInRound',
+        filters: [
+          {
+            key: 'hasCompetitorAssignment',
+            value: true,
+          },
+        ],
+      },
+      activities: { base: 'all' },
       constraints: [
         {
           constraint: 'uniqueAssignment',
@@ -184,71 +185,6 @@ export const fromDefaults = (step: StepDefinition) => ({
   id: step.id,
   ...step.defaults,
 });
-
-export interface RecipeDefinition {
-  id: string;
-  name: string;
-  description: string;
-  defaultSteps: Array<StepDefinition>;
-}
-
-export interface RecipeConfig {
-  id: string;
-  name: string;
-  description: string;
-  steps: Array<Step>;
-}
-
-export const Recipes: RecipeDefinition[] = [
-  {
-    id: 'pnw',
-    name: 'PNW',
-    description: 'PNW',
-    defaultSteps: [
-      StepLibrary.GenerateCompetitorAssignmentsForStaff,
-      StepLibrary.GenerateCompetitorAssignmentsForFirstTimers,
-      StepLibrary.GenerateCompetitorAssignments,
-      StepLibrary.GenerateJudgeAssignmentsForCompetitors,
-    ],
-  },
-];
-
-export const fromRecipeDefinition = (recipe: RecipeDefinition): RecipeConfig => ({
-  id: recipe.id,
-  name: recipe.name,
-  description: recipe.description,
-  steps: recipe.defaultSteps.map(fromDefaults),
-});
-
-const getCluster = (wcif: Competition, cluster: string, roundId: string) => {
-  switch (cluster) {
-    case 'personsInRound':
-      const round = wcif.events.flatMap((e) => e.rounds).find((r) => r.id === roundId) as Round;
-      return personsShouldBeInRound(round)(acceptedRegistrations(wcif.persons));
-    default:
-      return wcif.persons;
-  }
-};
-
-const getActivities = (wcif: Competition, activities: string, roundId: string) => {
-  const allActivities = findAllActivities(wcif);
-  const activitiesForRound = allActivities
-    .filter(
-      (activity) =>
-        activityCodeIsChild(roundId, activity.activityCode) && roundId !== activity.activityCode
-    )
-    .sort((a, b) => a.activityCode.localeCompare(b.activityCode));
-  const lastActivityCode = activitiesForRound[activitiesForRound.length - 1].activityCode;
-
-  switch (activities) {
-    case 'all':
-      return activitiesForRound;
-    case 'allButLastGroup':
-      return activitiesForRound.filter((a) => a.activityCode !== lastActivityCode);
-    default:
-      return activitiesForRound;
-  }
-};
 
 export const hydrateStep = (wcif: Competition, roundId: string) => (step: Step) => {
   return {
