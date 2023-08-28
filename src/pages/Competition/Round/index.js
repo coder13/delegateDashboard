@@ -43,7 +43,7 @@ import {
 } from '../../../store/selectors';
 import ConfigureAssignmentsDialog from './ConfigureAssignmentsDialog';
 import ConfigureGroupCountsDialog from './ConfigureGroupCountsDialog';
-import ConfigureStationNumbersDialog from './ConfigureStationNumbersDialog';
+import ConfigureStationNumbersDialog from './ConfigureStationNumbersDialog.js';
 import GroupCard from './GroupCard';
 
 /**
@@ -61,8 +61,7 @@ const RoundPage = () => {
   const dispatch = useDispatch();
   const confirm = useConfirm();
   const { setBreadcrumbs } = useBreadcrumbs();
-  const { eventId, roundNumber } = useParams();
-  const activityCode = `${eventId}-r${roundNumber}`;
+  const { roundId: activityCode } = useParams();
   const [configureAssignmentsDialog, setConfigureAssignmentsDialog] = useState(false);
   const [configureGroupCountsDialog, setConfigureGroupCountsDialog] = useState(false);
   const [configureStationNumbersDialog, setConfigureStationNumbersDialog] = useState(false);

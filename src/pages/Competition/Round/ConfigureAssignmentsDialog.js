@@ -160,7 +160,7 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
         .sort((a, b) => byPROrResult(event, roundNumber)(a, b))
         .reduce((persons, person) => {
           const lastPerson = persons[persons.length - 1];
-          console.log(lastPerson, person);
+
           return [
             ...persons,
             {

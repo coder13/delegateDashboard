@@ -54,7 +54,7 @@ const Navigation = () => {
             <Route index element={<CompetitionHomePage />} />
             <Route path="staff" element={<StaffPage />} />
             <Route path="rooms" element={<RoomsPage />} />
-            <Route path="events/:eventId-r:roundNumber" element={<RoundPage />} />
+            <Route path="events/:roundId" element={<RoundPage />} />
             <Route path="persons/:registrantId" element={<PersonPage />} />
             <Route path="assignments" element={<AssignmentsPage />} />
             <Route path="export" element={<ExportPage />} />
