@@ -6,17 +6,19 @@ import { Collapse } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
-import { findGroupActivitiesByRound, parseActivityCode } from '../../lib/activities';
+import {
+  cumulativeGroupCount,
+  findGroupActivitiesByRound,
+  parseActivityCode,
+} from '../../lib/activities';
 import { eventNameById } from '../../lib/events';
 import { pluralize } from '../../lib/utils';
-import { getExtensionData } from '../../lib/wcif-extensions';
 import { selectPersonsAssignedForRound, selectPersonsShouldBeInRound } from '../../store/selectors';
 
 function RoundListItem({ round, selected, ...props }) {
   const ref = useRef();
   const wcif = useSelector((state) => state.wcif);
   const realGroups = findGroupActivitiesByRound(wcif, round.id);
-  const groupsData = getExtensionData('groups', round);
 
   const { eventId, roundNumber } = parseActivityCode(round.id);
 
@@ -28,11 +30,14 @@ function RoundListItem({ round, selected, ...props }) {
     (state) => selectPersonsAssignedForRound(state, round.id).length
   );
 
+  const _cumulativeGroupCount = cumulativeGroupCount(round);
+
   const realGroupsGeneratedText =
     realGroups?.length && `${pluralize(realGroups.length, 'group', 'groups')} generated`;
-  const configuredGroupsText = groupsData?.groups
-    ? `${pluralize(groupsData?.groups, 'group', 'groups')} configured`
-    : 'No Groups Configured';
+  const configuredGroupsText =
+    _cumulativeGroupCount > 0
+      ? `${pluralize(_cumulativeGroupCount, 'group', 'groups')} configured`
+      : 'No Groups Configured';
 
   const textToShow = [
     realGroups?.length ? realGroupsGeneratedText : configuredGroupsText,

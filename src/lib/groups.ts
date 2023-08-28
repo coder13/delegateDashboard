@@ -5,6 +5,7 @@ import {
   parseActivityCode,
   findGroupActivitiesByRound,
   ActivityWithParent,
+  findRooms,
 } from './activities';
 import { InProgressAssignmment } from './assignments';
 
@@ -16,36 +17,84 @@ import { InProgressAssignmment } from './assignments';
 export const createGroupsAcrossStages = (
   wcif: Competition,
   roundActivities: Activity[],
-  groupCount: number
+  groupsData: {
+    spreadGroupsAcrossStages: boolean;
+    groups: number | Record<number, number>;
+  }
 ) => {
   let startActivityId = generateNextChildActivityId(wcif);
+  console.log(58, groupsData);
 
-  return roundActivities.map((roundActivity) => {
-    const startDate = new Date(roundActivity.startTime);
-    const endDate = new Date(roundActivity.endTime);
-    const dateDiff = endDate.getTime() - startDate.getTime();
-    const timePerGroup = dateDiff / groupCount;
+  if (groupsData.spreadGroupsAcrossStages) {
+    const groupCount = groupsData.groups as number;
 
-    const childActivities: Activity[] = [];
-    for (let i = 0; i < groupCount; i++) {
-      childActivities.push(
-        createGroupActivity(
-          startActivityId,
-          roundActivity,
-          i + 1,
-          new Date(startDate.getTime() + timePerGroup * i).toISOString(),
-          new Date(startDate.getTime() + timePerGroup * (i + 1)).toISOString()
-        )
-      );
+    return roundActivities.map((roundActivity) => {
+      const startDate = new Date(roundActivity.startTime);
+      const endDate = new Date(roundActivity.endTime);
+      const dateDiff = endDate.getTime() - startDate.getTime();
+      const timePerGroup = dateDiff / groupCount;
 
-      startActivityId++;
-    }
+      const childActivities: Activity[] = [];
+      for (let i = 0; i < groupCount; i++) {
+        childActivities.push(
+          createGroupActivity(
+            startActivityId,
+            roundActivity,
+            i + 1,
+            new Date(startDate.getTime() + timePerGroup * i).toISOString(),
+            new Date(startDate.getTime() + timePerGroup * (i + 1)).toISOString()
+          )
+        );
 
-    return {
-      ...roundActivity,
-      childActivities,
-    };
-  });
+        startActivityId++;
+      }
+
+      return {
+        ...roundActivity,
+        childActivities,
+      };
+    });
+  } else {
+    const rooms = findRooms(wcif);
+    return roundActivities.map((roundActivity) => {
+      const room = rooms.find((room) => room.activities.find((ra) => ra.id === roundActivity.id));
+      if (!room) {
+        throw new Error('No room found for activity ' + roundActivity.name);
+      }
+
+      const groupCount = groupsData.groups[room.id] as number;
+
+      if (!groupCount) {
+        throw new Error('No group count found for room ' + room.name);
+      }
+
+      console.log(72, roundActivity, groupCount);
+      const startDate = new Date(roundActivity.startTime);
+      const endDate = new Date(roundActivity.endTime);
+      const dateDiff = endDate.getTime() - startDate.getTime();
+      const timePerGroup = dateDiff / groupCount;
+
+      const childActivities: Activity[] = [];
+      for (let i = 0; i < groupCount; i++) {
+        childActivities.push(
+          createGroupActivity(
+            startActivityId,
+            roundActivity,
+            i + 1,
+            new Date(startDate.getTime() + timePerGroup * i).toISOString(),
+            new Date(startDate.getTime() + timePerGroup * (i + 1)).toISOString()
+          )
+        );
+
+        startActivityId++;
+      }
+
+      return {
+        ...roundActivity,
+        childActivities,
+      };
+    });
+  }
 };
 
 /**

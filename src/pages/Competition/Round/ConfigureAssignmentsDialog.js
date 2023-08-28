@@ -198,8 +198,6 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
     ]
   );
 
-  console.log(177, persons);
-
   // const personsForActivityId = useCallback(
   //   (activityId, role) =>
   //     persons.filter((p) => p.assignments.some((a) => a.assignmentCode === role)),
@@ -364,7 +362,10 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
                 <TableCell
                   key={room.id}
                   style={{ textAlign: 'center' }}
-                  colSpan={groups.length / groupsRooms.length}>
+                  colSpan={
+                    room.activities.find((ra) => ra.activityCode === activityCode)?.childActivities
+                      ?.length ?? 1
+                  }>
                   {room.name}
                 </TableCell>
               ))}

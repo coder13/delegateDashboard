@@ -27,9 +27,9 @@ import {
   byGroupNumber,
   findGroupActivitiesByRound,
   roomByActivity,
+  cumulativeGroupCount,
 } from '../../../lib/activities';
 import { byName } from '../../../lib/utils';
-import { getExtensionData } from '../../../lib/wcif-extensions';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import {
   bulkRemovePersonAssignments,
@@ -93,8 +93,6 @@ const RoundPage = () => {
       ...activity,
       room: roomByActivity(wcif, activity.id),
     }));
-
-  const groupsData = getExtensionData('groups', round);
 
   const groups = findGroupActivitiesByRound(wcif, activityCode);
 
@@ -319,7 +317,7 @@ const RoundPage = () => {
                   onClick={() => setShowPersonsAssignmentsDialog(true)}>
                   {personsAssigned.length}
                 </TableCell>
-                <TableCell sx={{ textAlign: 'center' }}>{groupsData.groups}</TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>{cumulativeGroupCount(round)}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
