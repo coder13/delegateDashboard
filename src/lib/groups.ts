@@ -18,14 +18,14 @@ export const createGroupsAcrossStages = (
   wcif: Competition,
   roundActivities: Activity[],
   groupsData: {
-    spreadGroupsAcrossStages: boolean;
+    spreadGroupsAcrossAllStages: boolean;
     groups: number | Record<number, number>;
   }
 ) => {
   let startActivityId = generateNextChildActivityId(wcif);
   console.log(58, groupsData);
 
-  if (groupsData.spreadGroupsAcrossStages) {
+  if (groupsData.spreadGroupsAcrossAllStages) {
     const groupCount = groupsData.groups as number;
 
     return roundActivities.map((roundActivity) => {
