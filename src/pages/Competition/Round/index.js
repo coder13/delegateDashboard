@@ -33,6 +33,7 @@ import {
   byGroupNumber,
   findGroupActivitiesByRound,
   roomByActivity,
+  cumulativeGroupCount,
 } from '../../../lib/activities';
 import { Recipes, fromRecipeDefinition, hydrateStep } from '../../../lib/recipes';
 import { byName } from '../../../lib/utils';
@@ -50,7 +51,7 @@ import {
 } from '../../../store/selectors';
 import ConfigureAssignmentsDialog from './ConfigureAssignmentsDialog';
 import ConfigureGroupCountsDialog from './ConfigureGroupCountsDialog';
-import ConfigureStationNumbersDialog from './ConfigureStationNumbersDialog';
+import ConfigureStationNumbersDialog from './ConfigureStationNumbersDialog.js';
 import GroupCard from './GroupCard';
 
 /**
@@ -102,8 +103,6 @@ const RoundPage = () => {
       ...activity,
       room: roomByActivity(wcif, activity.id),
     }));
-
-  const groupsData = getExtensionData('groups', round);
 
   const recipe = useMemo(() => getExtensionData('recipe', round), [round]);
   // The data is either stored in the wcif or defaultss are used
@@ -363,7 +362,7 @@ const RoundPage = () => {
                   onClick={() => setShowPersonsAssignmentsDialog(true)}>
                   {personsAssigned.length}
                 </TableCell>
-                <TableCell sx={{ textAlign: 'center' }}>{groupsData.groups}</TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>{cumulativeGroupCount(round)}</TableCell>
               </TableRow>
             </TableBody>
           </Table>

@@ -161,6 +161,7 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
         .sort((a, b) => byPROrResult(event, roundNumber)(a, b))
         .reduce((persons, person) => {
           const lastPerson = persons[persons.length - 1];
+
           return [
             ...persons,
             {
@@ -362,7 +363,10 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
                 <TableCell
                   key={room.id}
                   style={{ textAlign: 'center' }}
-                  colSpan={groups.length / groupsRooms.length}>
+                  colSpan={
+                    room.activities.find((ra) => ra.activityCode === activityCode)?.childActivities
+                      ?.length ?? 1
+                  }>
                   {room.name}
                 </TableCell>
               ))}

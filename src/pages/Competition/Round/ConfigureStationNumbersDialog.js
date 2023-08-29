@@ -35,6 +35,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
       personsAssigned
         .map((p) => ({
           ...p,
+          seedResult: getSeedResult(wcif, activityCode, p),
           assignment: p.assignments
             .map((a) => {
               const activity = getActivityFromId(a.activityId);
@@ -58,13 +59,23 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
         }))
         .filter((p) => Boolean(p.assignment)),
     [activityCode, getActivityFromId, personsAssigned, wcif]
-  );
+  ).sort((a, b) => {
+    if (a.seedResult && b.seedResult) {
+      return a.seedResult.ranking - b.seedResult.ranking;
+    } else if (!a.seedResult) {
+      return 1;
+    } else if (!b.seedResult) {
+      return -1;
+    }
 
-  const rows = personsAssignedToCompete.map(({ assignment, ...person }) => ({
+    return 0;
+  });
+
+  const rows = personsAssignedToCompete.map(({ assignment, seedResult, ...person }) => ({
     id: person.registrantId,
     assignment: assignment,
     name: person.name,
-    seedResult: getSeedResult(wcif, activityCode, person),
+    seedResult,
     roomName: assignment.room.name,
     groupNumber: assignment.groupNumber,
     stationNumber: assignment.stationNumber,
@@ -150,7 +161,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
   const Toolbar = () => (
     <GridToolbarContainer>
       <Button sx={{ m: 1 }} variant="contained" onClick={arbitrarilyAssignStationNumbers}>
-        Arbitrarily Assign Station Numbers
+        Assign Station Numbers in order of Seed Ranking
       </Button>
       <div style={{ display: 'flex', flexGrow: 1 }} />
       <Button sx={{ m: 1 }} variant="contained" color="error" onClick={resetStationNumbers}>
