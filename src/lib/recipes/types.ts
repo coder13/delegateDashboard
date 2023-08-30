@@ -7,7 +7,7 @@ export interface StepDefinition {
 
 export interface ClusterFilter {
   key: string;
-  value: string | number | boolean;
+  value: string | string[] | number | boolean;
 }
 
 export interface ClusterDefinition {
@@ -18,15 +18,17 @@ export interface ClusterDefinition {
 export interface Step {
   id: string;
   generator: string;
-  assignmentCode: string;
-  cluster: ClusterDefinition;
-  activities: {
-    base: 'all' | 'even' | 'odd';
+  props: {
+    assignmentCode: string;
+    cluster: ClusterDefinition;
+    activities: {
+      base: 'all' | 'even' | 'odd';
+      options?: any;
+      activityIds?: number[];
+    };
+    constraints: any[];
     options?: any;
-    activityIds?: number[];
   };
-  constraints: any[];
-  options?: any;
 }
 
 export interface RecipeDefinition {

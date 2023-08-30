@@ -66,7 +66,6 @@ import GroupCard from './GroupCard';
  * Handles multiple activities across multiple rooms under 1 round activity code
  */
 const RoundPage = () => {
-  console.log(68);
   const dispatch = useDispatch();
   const confirm = useConfirm();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -126,18 +125,7 @@ const RoundPage = () => {
     };
   }, [recipe]);
 
-  const _hydrateStep = useMemo((wcif, roundId) => wcif && hydrateStep(wcif, round.id), [round.id]);
-  const recipeData = useMemo(() => {
-    if (!_hydrateStep) {
-      return recipeConfig;
-    }
-
-    return {
-      ...recipeConfig,
-      defaultSteps: recipeConfig.defaultSteps.map(_hydrateStep),
-    };
-  }, [recipeConfig, _hydrateStep]);
-  console.log(105, recipe, recipeData);
+  console.log(105, recipe, recipeConfig);
 
   const groups = findGroupActivitiesByRound(wcif, activityCode);
 
@@ -170,7 +158,12 @@ const RoundPage = () => {
    * 2. Then give out judging assignments to competitors without staff assignments
    */
   const onGenerateGroupActitivites = () => {
-    dispatch(generateAssignments(round.id, recipeData));
+    if (!recipeConfig) {
+      console.error('No recipe config found');
+      return;
+    }
+
+    dispatch(generateAssignments(round.id, recipeConfig));
   };
 
   const onResetGroupActitivites = () => {
@@ -373,7 +366,7 @@ const RoundPage = () => {
       <Grid item>
         <AppBar position="sticky" color="secondary" sx={{ top: '480px' }}>
           <Toolbar component={Paper}>
-            <Typography>Recipe: {recipeData.name}</Typography>
+            <Typography>Recipe: {recipeConfig.name}</Typography>
             <div style={{ display: 'flex', flex: 1 }} />
             <Button onClick={onGenerateGroupActitivites}>Run Recipe</Button>
             <IconButton edge="end" onClick={() => setConfigureRecipeDialog(true)}>

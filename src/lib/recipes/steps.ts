@@ -10,45 +10,49 @@ export const StepLibrary: Record<string, StepDefinition> = {
     description:
       'Generates competitor assignments for staff members based on their staff assignments',
     defaults: {
-      cluster: {
-        base: 'personsInRound',
-        filters: [
+      generator: 'assignEveryone',
+      props: {
+        cluster: {
+          base: 'personsInRound',
+          filters: [
+            {
+              key: 'hasAssignmentInRound',
+              value: 'staff-*',
+            },
+          ],
+        },
+        assignmentCode: 'competitor',
+        activities: { base: 'all' },
+        options: {
+          mode: 'symmetric',
+        },
+        constraints: [
           {
-            key: 'hasAssignmentInRound',
-            value: 'staff-*',
+            constraint: 'uniqueAssignment',
+            weight: 1,
+          },
+          {
+            constraint: 'mustNotHaveOtherAssignments',
+            weight: 1,
+          },
+          {
+            constraint: 'sameStageAsOtherAssignments',
+            weight: 1,
+          },
+          {
+            constraint: 'maximizeBreaks',
+            weight: 10,
+          },
+          {
+            constraint: 'assignmentsNextToEachother',
+            weight: 2,
+          },
+          {
+            constraint: 'avoidConflictingNames',
+            weight: 1,
           },
         ],
       },
-      assignmentCode: 'competitor',
-      activities: { base: 'all' },
-      options: {},
-      generator: 'assignEveryone',
-      constraints: [
-        {
-          constraint: 'uniqueAssignment',
-          weight: 1,
-        },
-        {
-          constraint: 'mustNotHaveOtherAssignments',
-          weight: 1,
-        },
-        {
-          constraint: 'sameStageAsOtherAssignments',
-          weight: 1,
-        },
-        {
-          constraint: 'maximizeBreaks',
-          weight: 10,
-        },
-        {
-          constraint: 'assignmentsNextToEachother',
-          weight: 2,
-        },
-        {
-          constraint: 'avoidConflictingNames',
-          weight: 1,
-        },
-      ],
     },
   },
   GenerateCompetitorAssignmentsForFirstTimers: {
@@ -56,44 +60,41 @@ export const StepLibrary: Record<string, StepDefinition> = {
     name: 'Generate Competitor Assignments For First Timers',
     description: 'Generates competitor assignments for first timers',
     defaults: {
-      cluster: {
-        base: 'personsInRound',
-        filters: [
+      generator: 'assignEveryone',
+      props: {
+        cluster: {
+          base: 'personsInRound',
+          filters: [
+            {
+              key: 'isFirstTimer',
+              value: true,
+            },
+          ],
+        },
+        assignmentCode: 'competitor',
+        activities: { base: 'all', options: { tail: -1 } },
+        options: {
+          mode: 'symmetric',
+        },
+        constraints: [
           {
-            key: 'isFirstTimer',
-            value: true,
+            constraint: 'uniqueAssignment',
+            weight: 1,
+          },
+          {
+            constraint: 'mustNotHaveOtherAssignments',
+            weight: 1,
+          },
+          {
+            constraint: 'avoidConflictingNames',
+            weight: 1,
+          },
+          {
+            constraint: 'balancedGroupSize',
+            weight: 1,
           },
         ],
       },
-      generator: 'assignEveryone',
-      assignmentCode: 'competitor',
-      activities: { base: 'all', options: { tail: -1 } },
-      constraints: [
-        {
-          constraint: 'uniqueAssignment',
-          weight: 1,
-        },
-        {
-          constraint: 'mustNotHaveOtherAssignments',
-          weight: 1,
-        },
-        {
-          constraint: 'sameStageAsOtherAssignments',
-          weight: 1,
-        },
-        {
-          constraint: 'maximizeBreaks',
-          weight: 10,
-        },
-        {
-          constraint: 'assignmentsNextToEachother',
-          weight: 2,
-        },
-        {
-          constraint: 'avoidConflictingNames',
-          weight: 1,
-        },
-      ],
     },
   },
   GenerateCompetitorAssignments: {
@@ -101,36 +102,41 @@ export const StepLibrary: Record<string, StepDefinition> = {
     name: 'Generate Competitor Assignments',
     description: 'Generates competitor assignments for everyone else',
     defaults: {
-      cluster: {
-        base: 'personsInRound',
-        filters: [
+      generator: 'assignEveryone',
+      props: {
+        cluster: {
+          base: 'personsInRound',
+          filters: [
+            {
+              key: 'doesNotHaveAssignmentInRound',
+              value: 'competitor',
+            },
+          ],
+        },
+        assignmentCode: 'competitor',
+        activities: { base: 'all' },
+        options: {
+          mode: 'symmetric',
+        },
+        constraints: [
           {
-            key: 'hasCompetitorAssignment',
-            value: false,
+            constraint: 'uniqueAssignment',
+            weight: 1,
+          },
+          {
+            constraint: 'mustNotHaveOtherAssignments',
+            weight: 1,
+          },
+          {
+            constraint: 'avoidConflictingNames',
+            weight: 50,
+          },
+          {
+            constraint: 'balancedGroupSize',
+            weight: 1,
           },
         ],
       },
-      generator: 'assignEveryone',
-      assignmentCode: 'competitor',
-      activities: { base: 'all' },
-      constraints: [
-        {
-          constraint: 'uniqueAssignment',
-          weight: 1,
-        },
-        {
-          constraint: 'mustNotHaveOtherAssignments',
-          weight: 1,
-        },
-        {
-          constraint: 'avoidConflictingNames',
-          weight: 50,
-        },
-        {
-          constraint: 'balancedGroupSize',
-          weight: 1,
-        },
-      ],
     },
   },
   GenerateJudgeAssignmentsForCompetitors: {
@@ -140,39 +146,44 @@ export const StepLibrary: Record<string, StepDefinition> = {
       'Creates judge assignments for competitors based on their competitor assignments. Judge assignments are generally assigned for the group directly following the competitor assignment.',
     defaults: {
       generator: 'assignEveryone',
-      assignmentCode: 'staff-judge',
-      cluster: {
-        base: 'personsInRound',
-        filters: [
+      props: {
+        assignmentCode: 'staff-judge',
+        cluster: {
+          base: 'personsInRound',
+          filters: [
+            {
+              key: 'hasAssignmentInRound',
+              value: 'competitor',
+            },
+          ],
+        },
+        activities: { base: 'all' },
+        options: {
+          mode: 'symmetric',
+        },
+        constraints: [
           {
-            key: 'hasCompetitorAssignment',
-            value: true,
+            constraint: 'uniqueAssignment',
+            weight: 1,
+          },
+          {
+            constraint: 'mustNotHaveOtherAssignments',
+            weight: 1,
+          },
+          {
+            constraint: 'balancedGroupSize',
+            weight: 1,
+          },
+          {
+            constraint: 'sameStageAsOtherAssignments',
+            weight: 5,
+          },
+          {
+            constraint: 'shouldFollowCompetitorAssignment',
+            weight: 1,
           },
         ],
       },
-      activities: { base: 'all' },
-      constraints: [
-        {
-          constraint: 'uniqueAssignment',
-          weight: 1,
-        },
-        {
-          constraint: 'mustNotHaveOtherAssignments',
-          weight: 1,
-        },
-        {
-          constraint: 'balancedGroupSize',
-          weight: 1,
-        },
-        {
-          constraint: 'sameStageAsOtherAssignments',
-          weight: 5,
-        },
-        {
-          constraint: 'shouldFollowCompetitorAssignment',
-          weight: 1,
-        },
-      ],
     },
   },
 };
@@ -186,10 +197,13 @@ export const fromDefaults = (step: StepDefinition) => ({
   ...step.defaults,
 });
 
-export const hydrateStep = (wcif: Competition, roundId: string) => (step: Step) => {
+export const hydrateStep = (wcif: Competition, roundId: string, step: Step) => {
   return {
     ...step,
-    cluster: getCluster(wcif, step.cluster, roundId),
-    activities: getActivities(wcif, step.activities, roundId),
+    props: {
+      ...step.props,
+      cluster: getCluster(wcif, step.props.cluster, roundId),
+      activities: getActivities(wcif, step.props.activities, roundId),
+    },
   };
 };

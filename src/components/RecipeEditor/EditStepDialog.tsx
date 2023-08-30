@@ -74,8 +74,8 @@ interface EditStepDialogProps {
 }
 
 export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) => {
-  const [assignmentCode, setAssignmentCode] = useState<Step['assignmentCode'] | undefined>(
-    step?.assignmentCode
+  const [assignmentCode, setAssignmentCode] = useState<Step['props']['assignmentCode'] | undefined>(
+    step?.props?.assignmentCode
   );
   const [selectedGenerator, setSelectedGenerator] = useState<Step['generator'] | undefined>(
     step?.generator
@@ -84,7 +84,7 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
 
   useEffect(() => {
     setSelectedGenerator(step?.generator);
-    setAssignmentCode(step?.assignmentCode);
+    setAssignmentCode(step?.props?.assignmentCode);
   }, [step]);
 
   const rooms = wcif?.schedule?.venues
@@ -145,12 +145,12 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
                   labelId="cluster-label"
                   id="cluster-base-input"
                   label="Cluster"
-                  value={step?.cluster?.base}>
+                  value={step?.props?.cluster?.base}>
                   <MenuItem value="personsInRound">Everyone In Round</MenuItem>
                 </Select>
               </FormControl>
               <Divider />
-              {step?.cluster?.filters.map((filter, index) => (
+              {step?.props?.cluster?.filters.map((filter, index) => (
                 <Stack direction="row" spacing={1} key={filter.key} sx={{ py: 1 }}>
                   <FormControl size="small" variant="outlined" sx={{ flex: 0.5 }}>
                     <InputLabel id={`filter-${index}-label`}>Filter</InputLabel>
@@ -222,7 +222,7 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
                   labelId="activities-base-label"
                   id="activities-base-input"
                   label="Base"
-                  value={step?.activities?.base}>
+                  value={step?.props?.activities?.base}>
                   <MenuItem value="all">All</MenuItem>
                   <MenuItem value="odd">Odd</MenuItem>
                   <MenuItem value="even">Even</MenuItem>
@@ -271,7 +271,7 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {step?.constraints.map(({ constraint, weight }) => {
+                {step?.props?.constraints.map(({ constraint, weight }) => {
                   const constraintDef = Constraints[constraint];
                   console.log(constraintDef);
                   return (

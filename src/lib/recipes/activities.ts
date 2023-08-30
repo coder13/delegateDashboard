@@ -5,7 +5,7 @@ import { Step } from './types';
 
 const getBaseActivities = (
   wcif: Competition,
-  base: Step['activities']['base'],
+  base: Step['props']['activities']['base'],
   roundId: string
 ) => {
   const allActivities = findAllActivities(wcif);
@@ -34,7 +34,7 @@ const getBaseActivities = (
 
 export const getActivities = (
   wcif: Competition,
-  { base, options }: Step['activities'],
+  { base, options = {} }: Step['props']['activities'],
   roundId: string
 ) => {
   const baseActivities = getBaseActivities(wcif, base, roundId);
