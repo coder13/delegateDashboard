@@ -52,6 +52,7 @@ import {
   upsertPersonAssignments,
   removePersonAssignments,
   bulkRemovePersonAssignments,
+  generateAssignments,
 } from '../../../store/actions';
 import { selectWcifRooms } from '../../../store/selectors';
 import TableAssignmentCell from './TableAssignmentCell';
@@ -270,7 +271,7 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth fullScreen={fullScreen}>
+    <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth fullScreen={fullScreen}>
       <DialogTitle sx={{ paddingTop: '0.25em', paddingBottom: '0.25em' }}>
         Configuring Assignments For {activityCodeToName(activityCode)}
       </DialogTitle>
@@ -472,61 +473,16 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
               );
             })}
           </TableBody>
-          {/* <TableFooter>
-            <TableRow>
-              <TableCell colSpan={3}>{'Total Competitors'}</TableCell>
-              {groupsRooms.map((room) =>
-                groups
-                  .filter((group) => group.parent.room.name === room.name)
-                  .map((groupActivity) => (
-                    <TableCell>
-                      {personsForActivityId(groupActivity.id, 'competitor').length}
-                    </TableCell>
-                  ))
-              )}
-              <TableCell></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell colSpan={3}>{'Total Judges'}</TableCell>
-              {groupsRooms.map((room) =>
-                groups
-                  .filter((group) => group.parent.room.name === room.name)
-                  .map((groupActivity) => (
-                    <TableCell>
-                      {personsForActivityId(groupActivity.id, 'staff-judge').length}
-                    </TableCell>
-                  ))
-              )}
-              <TableCell></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell colSpan={3}>{'Total Scramblers'}</TableCell>
-              {groupsRooms.map((room) =>
-                groups
-                  .filter((group) => group.parent.room.name === room.name)
-                  .map((groupActivity) => (
-                    <TableCell>
-                      {personsForActivityId(groupActivity.id, 'staff-scrambler').length}
-                    </TableCell>
-                  ))
-              )}
-              <TableCell></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell colSpan={3}>{'Total Runners'}</TableCell>
-              {groupsRooms.map((room) =>
-                groups
-                  .filter((group) => group.parent.room.name === room.name)
-                  .map((groupActivity) => (
-                    <TableCell>
-                      {personsForActivityId(groupActivity.id, 'staff-runner').length}
-                    </TableCell>
-                  ))
-              )}
-              <TableCell></TableCell>
-            </TableRow>
-          </TableFooter> */}
         </Table>
+      </DialogContent>
+      <DialogContent>
+        <Button
+          variant="contained"
+          onClick={() => {
+            dispatch(generateAssignments(round.id));
+          }}>
+          Asssign Competitor and Judge assignments
+        </Button>
       </DialogContent>
       <DialogActions>
         <div style={{ display: 'flex', flexDirction: 'row' }}>

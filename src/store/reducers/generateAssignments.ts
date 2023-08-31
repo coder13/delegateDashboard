@@ -1,44 +1,38 @@
 import { Competition } from '@wca/helpers';
-import { InProgressAssignmment } from '../../lib/assignments';
-import { generateCompetingAssignmentsForStaff } from '../../lib/groupAssignments/generateCompetingAssignmentsForStaff';
-import { generateCompetingGroupActitivitesForEveryone } from '../../lib/groupAssignments/generateCompetingGroupActitivitesForEveryone';
-import { generateGroupAssignmentsForDelegatesAndOrganizers } from '../../lib/groupAssignments/generateGroupAssignmentsForDelegatesAndOrganizers';
-import { generateJudgeAssignmentsFromCompetingAssignments } from '../../lib/groupAssignments/generateJudgeAssignmentsFromCompetingAssignments';
-import { bulkAddPersonAssignments } from './competitorAssignments';
+import { Generators, Generator, Constraints } from 'wca-group-generators';
+import { hydrateStep } from '../../lib/recipes';
 
-/**
- * Fills in assignment gaps. Everyone should end up having a competitor assignment and staff assignment
- * 1. Start with giving out competitor assignments.
- *   1a Start with assigning competitor assignments to people who are already assigned to staff
- *   1b Assign organizers and delegates their competing assignments, don't assign  staff assignments
- *   1c Then hand out competitor assignments to people who are not assigned to staff
- *
- * 2. Then give out judging assignments to competitors without staff assignments
- */
-export function generateAssignments(
-  state: {
-    wcif: Competition;
-  },
-  action
-) {
-  const initializedGenerators = [
-    generateCompetingAssignmentsForStaff,
-    generateGroupAssignmentsForDelegatesAndOrganizers,
-    generateCompetingGroupActitivitesForEveryone,
-    generateJudgeAssignmentsFromCompetingAssignments,
-  ]
-    .map((generator) => generator(state.wcif, action.roundId))
-    .filter(Boolean) as ((a: InProgressAssignmment[]) => InProgressAssignmment[])[];
+export function generateAssignments(state: { wcif: Competition }, action) {
+  const wcif = action.recipe.steps.reduce((wcif, step) => {
+    const hydratedStep = hydrateStep(wcif, action.roundId, step);
 
-  const newAssignments = initializedGenerators.reduce((accumulatingAssignments, generateFn) => {
-    const generatedAssignments = generateFn(accumulatingAssignments);
-    console.log('generatedAssignments', generatedAssignments);
-    return [...accumulatingAssignments, ...generatedAssignments];
-  }, [] as InProgressAssignmment[]);
+    const generator = Generators[step.generator] as Generator;
 
-  console.log('Generating new assignmments', newAssignments);
+    if (!generator) {
+      throw new Error(`Generator ${step.generator} not found`);
+    }
 
-  return bulkAddPersonAssignments(state, {
-    assignments: newAssignments,
-  });
+    const constraints =
+      hydratedStep.props.constraints.map((c) => {
+        if (!Constraints[c.constraint]) {
+          throw new Error(`Constraint ${c.constraint} not found`);
+        }
+
+        return {
+          constraint: Constraints[c.constraint],
+          weight: c.weight,
+        };
+      }) || [];
+
+    return generator.execute({
+      wcif,
+      ...hydratedStep.props,
+      constraints,
+    });
+  }, state.wcif);
+
+  return {
+    ...state,
+    wcif,
+  };
 }

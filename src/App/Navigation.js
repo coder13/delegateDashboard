@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
-import { Routes, Route, Outlet, Navigate, useNavigate, useParams } from 'react-router-dom';
-import usePageTracking from '../hooks/usePageTracking';
+import React from 'react';
+import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import {
   Layout as CompetitionLayout,
   Home as CompetitionHomePage,
@@ -31,18 +30,18 @@ const AuthenticatedRoute = () => {
 };
 
 const Comp404 = () => {
-  const navigate = useNavigate();
-  const { competitionId } = useParams();
+  // const navigate = useNavigate();
+  // const { competitionId } = useParams();
 
-  useEffect(() => {
-    navigate(`/competitions/${competitionId}`, { replace: true });
-  }, [competitionId, navigate]);
+  // useEffect(() => {
+  //   navigate(`/competitions/${competitionId}`, { replace: true });
+  // }, [competitionId, navigate]);
 
   return null;
 };
 
 const Navigation = () => {
-  usePageTracking(process.env.REACT_APP_GA_MEASUREMENT_ID);
+  // usePageTracking(process.env.REACT_APP_GA_MEASUREMENT_ID);
 
   return (
     <Routes>

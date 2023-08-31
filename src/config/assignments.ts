@@ -1,6 +1,6 @@
 import { blue, deepPurple, green, grey, pink, purple, red, yellow } from '@mui/material/colors';
 
-const Assignments = [
+export const Assignments = [
   {
     id: 'competitor',
     name: 'Competitor',

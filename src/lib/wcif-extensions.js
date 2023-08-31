@@ -24,6 +24,9 @@ const defaultExtensionData = {
     spreadGroupsAcrossAllStages: true,
     groups: 1,
   },
+  recipe: {
+    id: 'pnw',
+  },
 };
 
 export const getExtensionData = (extensionName, wcifEntity) => {

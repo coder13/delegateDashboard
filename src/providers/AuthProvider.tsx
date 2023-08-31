@@ -64,6 +64,10 @@ export default function AuthProvider({ children }) {
 
   useEffect(() => {
     const hash = window.location.hash.replace(/^#/, '');
+    if (!hash) {
+      return;
+    }
+
     console.log({ hash });
     const hashParams = new URLSearchParams(hash);
 
@@ -90,6 +94,7 @@ export default function AuthProvider({ children }) {
     /* Clear the hash if there is a token. */
     if (hashParams.has('access_token')) {
       // history.replace({ ...history.location, hash: null });
+      console.log(93);
       navigate({
         pathname: '/',
         hash: '',

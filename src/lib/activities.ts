@@ -103,7 +103,7 @@ export const activitiesIntersection = (first: Activity, second: Activity) => {
 export const findRooms = (wcif: Competition) =>
   wcif.schedule.venues?.map((venue) => venue.rooms).flat() || [];
 
-const findId = (activites, activityId) =>
+const findId = (activites, activityId: number) =>
   activites.some(
     ({ id, activities, childActivities }) =>
       id === activityId ||
@@ -111,7 +111,7 @@ const findId = (activites, activityId) =>
       (childActivities ? findId(childActivities, activityId) : false)
   );
 
-export const roomByActivity = (wcif: Competition, activityId: string) =>
+export const roomByActivity = (wcif: Competition, activityId: number) =>
   findRooms(wcif)?.find((room) => findId(room.activities, activityId));
 
 export interface ActivityWithParent extends Activity {

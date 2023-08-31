@@ -3,25 +3,31 @@ import { useConfirm } from 'material-ui-confirm';
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
+import { MoreVert } from '@mui/icons-material';
 import {
+  AppBar,
   Card,
   CardActions,
   CardHeader,
   Divider,
+  IconButton,
   List,
   ListItemButton,
   ListSubheader,
+  Paper,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
+  Toolbar,
   Typography,
 } from '@mui/material';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import PersonsAssignmentsDialog from '../../../components/PersonsAssignmentsDialog';
 import PersonsDialog from '../../../components/PersonsDialog';
+import { EditRecipeDialog } from '../../../components/RecipeEditor';
 import {
   activityCodeToName,
   findAllActivities,
@@ -30,7 +36,9 @@ import {
   cumulativeGroupCount,
   allChildActivities,
 } from '../../../lib/activities';
+import { Recipes, fromRecipeDefinition, hydrateStep } from '../../../lib/recipes';
 import { byName } from '../../../lib/utils';
+import { getExtensionData } from '../../../lib/wcif-extensions';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import {
   bulkRemovePersonAssignments,
@@ -63,6 +71,7 @@ const RoundPage = () => {
   const confirm = useConfirm();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { roundId: activityCode } = useParams();
+  const [configureRecipeDialog, setConfigureRecipeDialog] = useState(false);
   const { eventId, roundNumber } = parseActivityCode(activityCode);
   const roundId = `${eventId}-r${roundNumber}`;
   const [configureAssignmentsDialog, setConfigureAssignmentsDialog] = useState(false);
@@ -96,6 +105,25 @@ const RoundPage = () => {
       room: roomByActivity(wcif, activity.id),
     }));
 
+  const recipeExtensionData = useMemo(() => getExtensionData('recipe', round), [round]);
+  // The data is either stored in the wcif or defaults are used
+  const recipeConfig = useMemo(() => {
+    if (!recipeExtensionData?.id) {
+      return;
+    }
+
+    if (!Recipes.find((r) => r.id === recipeExtensionData.id)) {
+      throw Error`Recipe ${recipeExtensionData.id} not found`;
+    }
+    const defaultRecipeData = Recipes.find((r) => r.id === recipeExtensionData.id);
+
+    return {
+      ...fromRecipeDefinition(defaultRecipeData),
+      name: `${defaultRecipeData.name} (defaults)`,
+      ...recipeExtensionData,
+    };
+  }, [recipeExtensionData]);
+
   const groups = roundActivities.flatMap((roundActivity) => allChildActivities(roundActivity));
 
   const sortedGroups = useMemo(
@@ -127,7 +155,12 @@ const RoundPage = () => {
    * 2. Then give out judging assignments to competitors without staff assignments
    */
   const onGenerateGroupActitivites = () => {
-    dispatch(generateAssignments(round.id));
+    if (!recipeConfig) {
+      console.error('No recipe config found');
+      return;
+    }
+
+    dispatch(generateAssignments(round.id, recipeConfig));
   };
 
   const onResetGroupActitivites = () => {
@@ -210,9 +243,6 @@ const RoundPage = () => {
       return (
         <>
           <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
-          <Button onClick={onGenerateGroupActitivites}>
-            Assign Competitor and Judging Assignments
-          </Button>
           <div style={{ display: 'flex', flex: 1 }} />
           <Button color="error" onClick={onResetGroupActitivites}>
             Reset Group Activities
@@ -328,6 +358,20 @@ const RoundPage = () => {
       </Grid>
 
       <Grid item>
+        <AppBar position="sticky" color="secondary" sx={{ top: '480px' }}>
+          <Toolbar component={Paper}>
+            <Typography>Recipe: {recipeConfig.name}</Typography>
+            <div style={{ display: 'flex', flex: 1 }} />
+            <Button onClick={onGenerateGroupActitivites}>Run Recipe</Button>
+            <IconButton edge="end" onClick={() => setConfigureRecipeDialog(true)}>
+              <MoreVert />
+            </IconButton>
+          </Toolbar>
+        </AppBar>
+      </Grid>
+
+      <Grid item>
+        <Divider />
         {sortedGroups.map((group) => (
           <GroupCard key={group.id} groupActivity={group} />
         ))}
@@ -351,6 +395,14 @@ const RoundPage = () => {
           open={Boolean(configureStationNumbersDialog)}
           onClose={() => setConfigureStationNumbersDialog(false)}
           activityCode={configureStationNumbersDialog}
+        />
+      )}
+      {configureRecipeDialog && (
+        <EditRecipeDialog
+          open={configureRecipeDialog}
+          onClose={() => setConfigureRecipeDialog(false)}
+          recipeConfig={recipeConfig}
+          round={round}
         />
       )}
       <PersonsDialog

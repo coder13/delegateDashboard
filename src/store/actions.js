@@ -27,6 +27,7 @@ export const PARTIAL_UPDATE_WCIF = 'partial_update_wcif';
 export const RESET_ALL_GROUP_ASSIGNMENTS = 'reset_all_group_assignments';
 export const GENERATE_ASSIGNMENTS = 'generate_assignments';
 export const EDIT_ACTIVITY = 'edit_activity';
+export const UPDATE_STEP = 'update_step';
 
 const fetchingCompetitions = () => ({
   type: FETCHING_COMPETITIONS,
@@ -233,13 +234,10 @@ export const resetAllGroupAssignments = () => ({
  * @param {ActivityCode} roundId
  * @returns
  */
-export const generateAssignments = (roundId, options) => ({
+export const generateAssignments = (roundId, recipe) => ({
   type: GENERATE_ASSIGNMENTS,
   roundId,
-  options: {
-    sortOrganizationStaffInLastGroups: true,
-    ...options,
-  },
+  recipe,
 });
 
 /**
@@ -252,4 +250,11 @@ export const editActivity = (where, what) => ({
   type: EDIT_ACTIVITY,
   where,
   what,
+});
+
+export const updateStep = (round, stepId, step) => ({
+  type: UPDATE_STEP,
+  round,
+  stepId,
+  step,
 });
