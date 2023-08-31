@@ -97,11 +97,10 @@ function calcRanking(person, lastPerson) {
   return lastPerson.seedResult.ranking + 1;
 }
 
-const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => {
+const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups }) => {
   const wcif = useSelector((state) => state.wcif);
   const { eventId, roundNumber } = parseActivityCode(activityCode);
   const event = wcif.events.find((e) => e.id === eventId);
-  const round = event?.rounds?.find((r) => r.id === activityCode);
   const classes = useStyles();
   const wcifRooms = useSelector((state) => selectWcifRooms(state));
 
@@ -151,7 +150,7 @@ const ConfigureAssignmentsDialog = ({ open, onClose, activityCode, groups }) => 
           }
 
           // Else make sure they are registered and should be in the round.
-          return isRegistered(p) && shouldBeInRound(round)(p);
+          return isRegistered(p) && round && shouldBeInRound(round)(p);
         })
         .map((person) => ({
           ...person,

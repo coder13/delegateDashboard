@@ -1,3 +1,4 @@
+import { parseActivityCode } from '@wca/helpers';
 import { useConfirm } from 'material-ui-confirm';
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -25,9 +26,9 @@ import {
   activityCodeToName,
   findAllActivities,
   byGroupNumber,
-  findGroupActivitiesByRound,
   roomByActivity,
   cumulativeGroupCount,
+  allChildActivities,
 } from '../../../lib/activities';
 import { byName } from '../../../lib/utils';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
@@ -62,6 +63,8 @@ const RoundPage = () => {
   const confirm = useConfirm();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { roundId: activityCode } = useParams();
+  const { eventId, roundNumber } = parseActivityCode(activityCode);
+  const roundId = `${eventId}-r${roundNumber}`;
   const [configureAssignmentsDialog, setConfigureAssignmentsDialog] = useState(false);
   const [configureGroupCountsDialog, setConfigureGroupCountsDialog] = useState(false);
   const [configureStationNumbersDialog, setConfigureStationNumbersDialog] = useState(false);
@@ -73,28 +76,27 @@ const RoundPage = () => {
   const [showPersonsAssignmentsDialog, setShowPersonsAssignmentsDialog] = useState(false);
 
   const wcif = useSelector((state) => state.wcif);
-  const round = useSelector((state) => selectRoundById(state)(activityCode));
+
+  const round = useSelector((state) => selectRoundById(state)(roundId));
   const personsShouldBeInRound = useSelector((state) => selectPersonsShouldBeInRound(state)(round));
 
   useEffect(() => {
     setBreadcrumbs([
       {
-        text: round.id,
+        text: activityCode,
       },
     ]);
-  }, [setBreadcrumbs, round.id]);
-
-  const _allActivities = findAllActivities(wcif);
+  }, [setBreadcrumbs, activityCode]);
 
   // list of each stage's round activity
-  const roundActivities = _allActivities
+  const roundActivities = findAllActivities(wcif)
     .filter((activity) => activity.activityCode === activityCode)
     .map((activity) => ({
       ...activity,
       room: roomByActivity(wcif, activity.id),
     }));
 
-  const groups = findGroupActivitiesByRound(wcif, activityCode);
+  const groups = roundActivities.flatMap((roundActivity) => allChildActivities(roundActivity));
 
   const sortedGroups = useMemo(
     () =>
@@ -309,7 +311,7 @@ const RoundPage = () => {
                       title: 'People in the round according to wca-live',
                     })
                   }>
-                  {round.results.length}
+                  {round?.results?.length}
                 </TableCell>
                 <TableCell
                   className="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1rmkli1-MuiButtonBase-root-MuiButton-root-MuiTableCell-root"
