@@ -6,7 +6,11 @@ import { Collapse, Divider, FormControlLabel, Switch } from '@mui/material';
 import List from '@mui/material/List';
 import ListSubheader from '@mui/material/ListSubheader';
 import { makeStyles } from '@mui/styles';
-import { earliestStartTimeForRound, parseActivityCode } from '../../lib/activities';
+import {
+  earliestStartTimeForRound,
+  hasDistributedAttempts,
+  parseActivityCode,
+} from '../../lib/activities';
 import { eventNameById } from '../../lib/events';
 import { useCommandPrompt } from '../../providers/CommandPromptProvider';
 import RoundListItem from './RoundListItem';
@@ -64,7 +68,13 @@ const RoundSelector = ({ competitionId, onSelected }) => {
     .flat()
     .filter(shouldShowRound);
 
-  const roundIds = rounds.map((r) => r.id);
+  const roundIds = rounds.flatMap((r) =>
+    hasDistributedAttempts(r.id)
+      ? new Array(r.format === 'm' ? 3 : +r.format)
+          .fill(0)
+          .map((_, index) => `${r.id}-a${index + 1}`)
+      : r.id
+  );
 
   const handleKeyDown = (e) => {
     if (commandPromptOpen) {
@@ -112,14 +122,34 @@ const RoundSelector = ({ competitionId, onSelected }) => {
                 <ListSubheader>{eventNameById(event.id)}</ListSubheader>
               </Collapse>
               <TransitionGroup>
-                {roundsForEvent.map((round) => (
-                  <RoundListItem
-                    key={round.id}
-                    round={round}
-                    selected={round.id === selectedId}
-                    in={true}
-                  />
-                ))}
+                {!hasDistributedAttempts(event.id)
+                  ? roundsForEvent.map((round) => (
+                      <RoundListItem
+                        key={round.id}
+                        activityCode={round.id}
+                        round={round}
+                        selected={round.id === selectedId}
+                        in
+                      />
+                    ))
+                  : roundsForEvent.flatMap((round) => {
+                      const attempts = new Array(round.format === 'm' ? 3 : +round.format) // TODO: create helper function to calculate attempts
+                        .fill(0);
+
+                      return attempts.map((_, index) => {
+                        const attemptActivityCode = `${round.id}-a${index + 1}`;
+
+                        return (
+                          <RoundListItem
+                            key={attemptActivityCode}
+                            activityCode={attemptActivityCode}
+                            round={round}
+                            selected={attemptActivityCode === selectedId}
+                            in
+                          />
+                        );
+                      });
+                    })}
               </TransitionGroup>
             </React.Fragment>
           );

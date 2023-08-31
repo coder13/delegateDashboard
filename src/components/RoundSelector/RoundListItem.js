@@ -1,26 +1,23 @@
 import '@cubing/icons';
+import { activityCodeToName } from '@wca/helpers';
 import React, { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { Link as RouterLink } from 'react-router-dom';
-import { Collapse } from '@mui/material';
-import ListItem from '@mui/material/ListItem';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import ListItemText from '@mui/material/ListItemText';
+import { Collapse, ListItemAvatar, ListItemButton, ListItemText } from '@mui/material';
 import {
   cumulativeGroupCount,
   findGroupActivitiesByRound,
   parseActivityCode,
 } from '../../lib/activities';
-import { eventNameById } from '../../lib/events';
 import { pluralize } from '../../lib/utils';
 import { selectPersonsAssignedForRound, selectPersonsShouldBeInRound } from '../../store/selectors';
 
-function RoundListItem({ round, selected, ...props }) {
+function RoundListItem({ activityCode, round, selected, ...props }) {
   const ref = useRef();
   const wcif = useSelector((state) => state.wcif);
-  const realGroups = findGroupActivitiesByRound(wcif, round.id);
+  const realGroups = findGroupActivitiesByRound(wcif, activityCode);
 
-  const { eventId, roundNumber } = parseActivityCode(round.id);
+  const { eventId } = parseActivityCode(activityCode);
 
   const personsShouldBeInRoundCount = useSelector(
     (state) => selectPersonsShouldBeInRound(state)(round).length
@@ -54,20 +51,19 @@ function RoundListItem({ round, selected, ...props }) {
 
   return (
     <Collapse in={props.in}>
-      <ListItem
-        button
+      <ListItemButton
         component={RouterLink}
-        to={`/competitions/${wcif.id}/events/${round.id}`}
+        to={`/competitions/${wcif.id}/events/${activityCode}`}
         selected={selected}
         ref={ref}>
         <ListItemAvatar>
           <span className={`cubing-icon event-${eventId}`} />
         </ListItemAvatar>
         <ListItemText
-          primary={`${eventNameById(eventId)} Round ${roundNumber}`}
+          primary={activityCodeToName(activityCode)}
           secondary={textToShow.join(' | ')}
         />
-      </ListItem>
+      </ListItemButton>
     </Collapse>
   );
 }
