@@ -103,29 +103,24 @@ const RoundPage = () => {
       room: roomByActivity(wcif, activity.id),
     }));
 
-  const recipe = useMemo(() => getExtensionData('recipe', round), [round]);
-  // The data is either stored in the wcif or defaultss are used
+  const recipeExtensionData = useMemo(() => getExtensionData('recipe', round), [round]);
+  // The data is either stored in the wcif or defaults are used
   const recipeConfig = useMemo(() => {
-    if (!recipe) {
-      return Recipes[0];
+    if (!recipeExtensionData?.id) {
+      return;
     }
 
-    if (recipe.data) {
-      return recipe.data;
+    if (!Recipes.find((r) => r.id === recipeExtensionData.id)) {
+      throw Error`Recipe ${recipeExtensionData.id} not found`;
     }
-
-    const recipeData = Recipes.find((r) => r.id === recipe.id);
-    if (!recipeData) {
-      throw Error`Recipe ${recipe.id} not found`;
-    }
+    const defaultRecipeData = Recipes.find((r) => r.id === recipeExtensionData.id);
 
     return {
-      ...fromRecipeDefinition(recipeData),
-      name: `${recipeData.name} (defaults)`,
+      ...fromRecipeDefinition(defaultRecipeData),
+      name: `${defaultRecipeData.name} (defaults)`,
+      ...recipeExtensionData,
     };
-  }, [recipe]);
-
-  console.log(105, recipe, recipeConfig);
+  }, [recipeExtensionData]);
 
   const groups = findGroupActivitiesByRound(wcif, activityCode);
 
@@ -246,9 +241,6 @@ const RoundPage = () => {
       return (
         <>
           <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
-          <Button onClick={onGenerateGroupActitivites}>
-            Assign Competitor and Judging Assignments
-          </Button>
           <div style={{ display: 'flex', flex: 1 }} />
           <Button color="error" onClick={onResetGroupActitivites}>
             Reset Group Activities

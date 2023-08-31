@@ -3,11 +3,8 @@ import { Generators, Generator, Constraints } from 'wca-group-generators';
 import { hydrateStep } from '../../lib/recipes';
 
 export function generateAssignments(state: { wcif: Competition }, action) {
-  console.log(13, action);
-
   const wcif = action.recipe.steps.reduce((wcif, step) => {
     const hydratedStep = hydrateStep(wcif, action.roundId, step);
-    console.log(58, hydratedStep);
 
     const generator = Generators[step.generator] as Generator;
 

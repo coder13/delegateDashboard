@@ -37,7 +37,7 @@ export const StepLibrary: Record<string, StepDefinition> = {
           },
           {
             constraint: 'sameStageAsOtherAssignments',
-            weight: 1,
+            weight: 5,
           },
           {
             constraint: 'maximizeBreaks',
@@ -154,6 +154,10 @@ export const StepLibrary: Record<string, StepDefinition> = {
             {
               key: 'hasAssignmentInRound',
               value: 'competitor',
+            },
+            {
+              key: 'doesNotHaveAssignmentInRound',
+              value: 'staff-*',
             },
           ],
         },

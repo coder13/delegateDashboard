@@ -1,7 +1,8 @@
 import { styled } from '@material-ui/core';
 import { Round } from '@wca/helpers';
-import { useEffect, useState } from 'react';
-import { Constraints } from 'wca-group-generators';
+import { useEffect, useMemo, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { Constraints, Generators } from 'wca-group-generators';
 import { ArrowForwardIosSharp, CheckBox, Delete, ExpandMore } from '@mui/icons-material';
 import {
   Accordion as MuiAccordion,
@@ -30,10 +31,12 @@ import {
   Typography,
   Divider,
   IconButton,
+  FormHelperText,
 } from '@mui/material';
 import Assignments from '../../config/assignments';
 import { Filters, Step, StepLibrary } from '../../lib/recipes';
 import { useAppSelector } from '../../store';
+import { updateStep } from '../../store/actions';
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -74,17 +77,56 @@ interface EditStepDialogProps {
 }
 
 export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) => {
+  const dispatch = useDispatch();
+
   const [assignmentCode, setAssignmentCode] = useState<Step['props']['assignmentCode'] | undefined>(
     step?.props?.assignmentCode
   );
   const [selectedGenerator, setSelectedGenerator] = useState<Step['generator'] | undefined>(
     step?.generator
   );
+  const [generatorOptions, setGeneratorOptions] = useState<Step['props']['options']>(
+    step?.props?.options ?? {}
+  );
+  const [editingCluster, setEditingCluster] = useState<Step['props']['cluster']>(
+    step?.props?.cluster || {
+      base: 'personsInRound',
+      filters: [],
+    }
+  );
+
+  const dirty = useMemo(() => {
+    return (
+      step?.props?.assignmentCode !== assignmentCode ||
+      step?.generator !== selectedGenerator ||
+      JSON.stringify(step?.props?.options) !== JSON.stringify(generatorOptions) ||
+      step?.props?.cluster.base !== editingCluster.base ||
+      step?.props?.cluster.filters.some(
+        (f, i) =>
+          f.key !== editingCluster.filters?.[i]?.key &&
+          f.value !== editingCluster.filters?.[i]?.value
+      )
+    );
+  }, [
+    assignmentCode,
+    editingCluster.base,
+    editingCluster.filters,
+    generatorOptions,
+    selectedGenerator,
+    step?.generator,
+    step?.props?.assignmentCode,
+    step?.props?.cluster.base,
+    step?.props?.cluster.filters,
+    step?.props?.options,
+  ]);
+
   const wcif = useAppSelector((state) => state.wcif);
 
   useEffect(() => {
     setSelectedGenerator(step?.generator);
     setAssignmentCode(step?.props?.assignmentCode);
+    setEditingCluster(step?.props?.cluster ?? { base: 'personsInRound', filters: [] });
+    setGeneratorOptions(step?.props?.options ?? {});
   }, [step]);
 
   const rooms = wcif?.schedule?.venues
@@ -101,8 +143,26 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
     ),
   ];
 
+  const onSave = () => {
+    dispatch(
+      updateStep(round, step?.id, {
+        ...step,
+        generator: selectedGenerator,
+        props: {
+          ...step?.props,
+          assignmentCode,
+          cluster: editingCluster,
+          options: generatorOptions,
+        },
+      })
+    );
+    onClose();
+  };
+
+  const generatorDef = selectedGenerator && Generators[selectedGenerator];
+
   const stepDefinition = step && StepLibrary[step?.id];
-  console.log(24, step);
+
   return (
     <Dialog open={!!step} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>
@@ -117,22 +177,68 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
           <Autocomplete
             freeSolo
             value={assignmentCode}
+            onChange={(_, value) => setAssignmentCode(value ?? undefined)}
             options={Assignments.map((assignment) => assignment.id)}
             renderInput={(params) => <TextField {...params} label="Assignment" />}
           />
 
-          <FormControl variant="outlined" fullWidth sx={{ m: 1 }}>
-            <InputLabel id="generator-label">Generator</InputLabel>
-            <Select
-              labelId="generator-label"
-              id="generator-input"
-              label="Generator"
-              value={selectedGenerator}
-              onChange={(e) => setSelectedGenerator(e.target.value)}>
-              <MenuItem value="assignEveryone">Assign Everyone</MenuItem>
-              <MenuItem value="assignXPerActivity">Assign X per Group</MenuItem>
-            </Select>
-          </FormControl>
+          <Stack direction="row" spacing={1} sx={{ py: 1 }}>
+            <FormControl variant="outlined" sx={{ m: 1, flex: 1 }}>
+              <InputLabel id="generator-label">Generator</InputLabel>
+              <Select
+                labelId="generator-label"
+                id="generator-input"
+                label="Generator"
+                value={selectedGenerator}
+                onChange={(e) => {
+                  setSelectedGenerator(e.target.value);
+                  setGeneratorOptions((prev) => ({
+                    ...prev,
+                    ...Generators[e.target.value]?.defaultOptions,
+                  }));
+                }}>
+                <MenuItem value="assignEveryone">Assign Everyone</MenuItem>
+                <MenuItem value="assignXPerActivity">Assign X per Group</MenuItem>
+              </Select>
+              <FormHelperText>{generatorDef?.description ?? ''}</FormHelperText>
+            </FormControl>
+            {Object.keys(generatorDef?.optionsDef ?? {}).map((optionKey) => (
+              <FormControl variant="outlined" sx={{ m: 1, flex: 1 }}>
+                <InputLabel id={`generator-${optionKey}-label`}>{optionKey}</InputLabel>
+                {generatorDef.optionsDef[optionKey].type === 'select' && (
+                  <Select
+                    labelId={`generator-${optionKey}-label`}
+                    id={`generator-${optionKey}-input`}
+                    label={optionKey}
+                    value={generatorOptions[optionKey]}
+                    onChange={(e) =>
+                      setGeneratorOptions((prev) => ({
+                        ...prev,
+                        [optionKey]: e.target.value,
+                      }))
+                    }>
+                    {generatorDef.optionsDef[optionKey].values.map((option) => (
+                      <MenuItem value={option}>{option}</MenuItem>
+                    ))}
+                  </Select>
+                )}
+                {generatorDef.optionsDef[optionKey].type === 'number' && (
+                  <TextField
+                    label={optionKey}
+                    type="number"
+                    value={generatorOptions[optionKey]}
+                    onChange={(e) =>
+                      setGeneratorOptions((prev) => ({
+                        ...prev,
+                        [optionKey]: e.target.value,
+                      }))
+                    }
+                  />
+                )}
+                <FormHelperText>{generatorDef.optionsDef[optionKey].description}</FormHelperText>
+              </FormControl>
+            ))}
+          </Stack>
         </Stack>
 
         <Accordion expanded sx={{ mt: 1 }}>
@@ -145,19 +251,33 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
                   labelId="cluster-label"
                   id="cluster-base-input"
                   label="Cluster"
-                  value={step?.props?.cluster?.base}>
+                  onChange={(e) => {
+                    setEditingCluster((prev) => ({
+                      ...prev,
+                      base: e.target.value as Step['props']['cluster']['base'],
+                    }));
+                  }}
+                  value={editingCluster?.base}>
                   <MenuItem value="personsInRound">Everyone In Round</MenuItem>
                 </Select>
               </FormControl>
               <Divider />
-              {step?.props?.cluster?.filters.map((filter, index) => (
-                <Stack direction="row" spacing={1} key={filter.key} sx={{ py: 1 }}>
+              {editingCluster?.filters.map((filter, index) => (
+                <Stack direction="row" spacing={1} key={filter.key + filter.value} sx={{ py: 1 }}>
                   <FormControl size="small" variant="outlined" sx={{ flex: 0.5 }}>
-                    <InputLabel id={`filter-${index}-label`}>Filter</InputLabel>
+                    <InputLabel id={`cluster-filter-name-${index}-label`}>Filter</InputLabel>
                     <Select
-                      labelId={`filter-${index}-label`}
-                      id={`filter-${index}-input`}
+                      labelId={`cluster-filter-name-${index}-label`}
+                      id={`cluster-filter-name-${index}-input`}
                       label="Filter"
+                      onChange={(e) =>
+                        setEditingCluster((prev) => ({
+                          ...prev,
+                          filters: prev.filters.map((f, i) =>
+                            i === index ? { ...f, key: e.target.value } : f
+                          ),
+                        }))
+                      }
                       value={filter.key}>
                       {Filters.map((filterDef) => (
                         <MenuItem key={filterDef.key} value={filterDef.key}>
@@ -167,48 +287,48 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
                     </Select>
                   </FormControl>
                   <FormControl size="small" variant="outlined" sx={{ flex: 1 }}>
-                    <InputLabel id={`filter-${index}-label`}>Filter</InputLabel>
+                    <InputLabel id={`cluster-filter-value-${index}-label`}>Filter Value</InputLabel>
                     <Select
-                      labelId={`filter-${index}-label`}
-                      id={`filter-${index}-input`}
-                      label="Filter"
-                      value={filter.key}
-                    />
+                      labelId={`cluster-filter-value-${index}-label`}
+                      id={`cluster-filter-value-${index}-input`}
+                      label="Filte Valuer"
+                      onChange={(e) =>
+                        setEditingCluster((prev) => ({
+                          ...prev,
+                          filters: prev.filters.map((f, i) =>
+                            i === index ? { ...f, value: e.target.value } : f
+                          ),
+                        }))
+                      }
+                      value={filter.value}>
+                      {Filters.find((f) => f.key === filter.key)?.options?.map((option) => (
+                        <MenuItem key={option.id} value={option.id}>
+                          {option.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
                   </FormControl>
-                  <IconButton>
+                  <IconButton
+                    onClick={() => {
+                      setEditingCluster((prev) => ({
+                        ...prev,
+                        filters: prev.filters.filter((_, i) => i !== index),
+                      }));
+                    }}>
                     <Delete color="error" />
                   </IconButton>
                 </Stack>
               ))}
 
-              <Button>Add Filter</Button>
-
-              {/* <FormControl size="small" variant="outlined" sx={{ flex: 1 }}>
-                <InputLabel id="firstTimer-label">First Timer</InputLabel>
-                <Select
-                  labelId="firstTimer-label"
-                  label="First Timer"
-                  id="cluster-first-timer-input"
-                  value={step?.options?.clusterOptions?.firstTimer ?? 'ignore'}>
-                  <MenuItem value="ignore">Ignore</MenuItem>
-                  <MenuItem value="isFirstTimer">Is First Timer</MenuItem>
-                  <MenuItem value="isNotFirstTimer">Is Not First Timer</MenuItem>
-                </Select>
-              </FormControl>
-              <FormControl size="small" variant="outlined" sx={{ flex: 2, width: 400 }}>
-                <InputLabel id="roles-label">Roles</InputLabel>
-                <Select
-                  labelId="roles-label"
-                  label="Roles"
-                  id="cluster-roles-input"
-                  multiple
-                  value={step?.options?.clusterOptions?.roles ?? ['staff-all']}>
-                  <MenuItem value="staff-all">Staff</MenuItem>
-                  <MenuItem value="staff-delegate">Delegate</MenuItem>
-                  <MenuItem value="staff-trainee-delegate">Trainee Delegate</MenuItem>
-                  <MenuItem value="staff-organizer">Organizer</MenuItem>
-                </Select>
-              </FormControl> */}
+              <Button
+                onClick={() => {
+                  setEditingCluster((prev) => ({
+                    ...prev,
+                    filters: [...prev.filters, { key: '', value: '' }],
+                  }));
+                }}>
+                Add Filter
+              </Button>
             </Stack>
           </AccordionDetails>
         </Accordion>
@@ -273,7 +393,6 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
               <TableBody>
                 {step?.props?.constraints.map(({ constraint, weight }) => {
                   const constraintDef = Constraints[constraint];
-                  console.log(constraintDef);
                   return (
                     <TableRow key={constraint}>
                       <TableCell>{constraintDef?.name}</TableCell>
@@ -289,7 +408,9 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Close</Button>
-        <Button onClick={onClose}>Save</Button>
+        <Button onClick={onSave} disabled={!dirty}>
+          Save
+        </Button>
       </DialogActions>
     </Dialog>
   );

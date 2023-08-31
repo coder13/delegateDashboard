@@ -1,5 +1,6 @@
+import { Recipes, fromRecipeDefinition } from '../lib/recipes';
 import { mapIn } from '../lib/utils';
-import { setExtensionData } from '../lib/wcif-extensions';
+import { getExtensionData, setExtensionData } from '../lib/wcif-extensions';
 import {
   SET_COMPETITIONS,
   TOGGLE_PERSON_ROLE,
@@ -23,6 +24,7 @@ import {
   RESET_ALL_GROUP_ASSIGNMENTS,
   GENERATE_ASSIGNMENTS,
   EDIT_ACTIVITY,
+  UPDATE_STEP,
 } from './actions';
 import INITIAL_STATE from './initialState';
 import * as Reducers from './reducers';
@@ -198,6 +200,46 @@ const reducers = {
             }
 
             return assignment;
+          }),
+        })),
+      },
+    };
+  },
+  [UPDATE_STEP]: (state, { round, stepId, step }) => {
+    return {
+      ...state,
+      needToSave: true,
+      changedKeys: new Set([...state.changedKeys, 'events']),
+      wcif: {
+        ...state.wcif,
+        events: state.wcif.events.map((event) => ({
+          ...event,
+          rounds: event.rounds.map((r) => {
+            if (r.id === round.id) {
+              const recipeExtensionData = getExtensionData('recipe', r);
+              const defaultRecipeData = fromRecipeDefinition(
+                Recipes.find((r) => r.id === recipeExtensionData.id)
+              );
+              const recipeData = {
+                ...defaultRecipeData,
+                name: `${defaultRecipeData.name} (custom)`,
+                ...recipeExtensionData,
+              };
+
+              return setExtensionData('recipe', r, {
+                ...recipeData,
+
+                steps: recipeData.steps.map((s) => {
+                  if (s.id === stepId) {
+                    return step;
+                  }
+
+                  return s;
+                }),
+              });
+            }
+
+            return r;
           }),
         })),
       },

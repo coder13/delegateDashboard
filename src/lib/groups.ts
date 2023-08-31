@@ -23,7 +23,6 @@ export const createGroupsAcrossStages = (
   }
 ) => {
   let startActivityId = generateNextChildActivityId(wcif);
-  console.log(58, groupsData);
 
   if (groupsData.spreadGroupsAcrossAllStages) {
     const groupCount = groupsData.groups as number;
@@ -68,7 +67,6 @@ export const createGroupsAcrossStages = (
         throw new Error('No group count found for room ' + room.name);
       }
 
-      console.log(72, roundActivity, groupCount);
       const startDate = new Date(roundActivity.startTime);
       const endDate = new Date(roundActivity.endTime);
       const dateDiff = endDate.getTime() - startDate.getTime();
