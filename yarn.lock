@@ -9974,8 +9974,10 @@ wbuf@^1.1.0, wbuf@^1.7.3:
   dependencies:
     minimalistic-assert "^1.0.0"
 
-"wca-group-generators@file:../wca-group-generators":
-  version "0.0.8"
+wca-group-generators@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/wca-group-generators/-/wca-group-generators-0.1.0.tgz#1c97a2ee0785e89657a977d6ec2bd23648bedf21"
+  integrity sha512-Mk0MKjjblcnX8q3c8oTibAxkcuv7zX5i3aSwnTqeP8pxHt9pU3RyP9QgnAmiPXUBrjmzEQU4Pm3LUe24fqFnCA==
   dependencies:
     "@wca/helpers" "^1.1.5"
     tsc "^2.0.4"
