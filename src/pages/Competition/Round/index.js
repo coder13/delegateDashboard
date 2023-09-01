@@ -36,7 +36,7 @@ import {
   cumulativeGroupCount,
   allChildActivities,
 } from '../../../lib/activities';
-import { Recipes, fromRecipeDefinition, hydrateStep } from '../../../lib/recipes';
+import { Recipes, fromRecipeDefinition } from '../../../lib/recipes';
 import { byName } from '../../../lib/utils';
 import { getExtensionData } from '../../../lib/wcif-extensions';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
