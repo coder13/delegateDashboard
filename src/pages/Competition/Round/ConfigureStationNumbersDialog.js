@@ -182,6 +182,8 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
           ref={dataGridRef}
           experimentalFeatures={{ newEditingApi: true }}
           onCellEditStop={handleCellEditStop}
+          autoHeight={false}
+          hideFooter
         />
       </DialogContent>
       <DialogActions style={{ display: 'flex' }}>

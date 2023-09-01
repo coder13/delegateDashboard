@@ -15,6 +15,12 @@ export interface ClusterDefinition {
   filters: ClusterFilter[];
 }
 
+export interface ConstraintProps {
+  constraint: string;
+  weight: number;
+  options?: any;
+}
+
 export interface Step {
   id: string;
   generator: string;
@@ -26,7 +32,7 @@ export interface Step {
       options?: any;
       activityIds?: number[];
     };
-    constraints: any[];
+    constraints: ConstraintProps[];
     options?: any;
   };
 }
