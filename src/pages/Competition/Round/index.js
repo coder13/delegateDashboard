@@ -52,6 +52,7 @@ import {
 } from '../../../store/selectors';
 import ConfigureAssignmentsDialog from './ConfigureAssignmentsDialog';
 import ConfigureGroupCountsDialog from './ConfigureGroupCountsDialog';
+import { ConfigureGroupsDialog } from './ConfigureGroupsDialog';
 import ConfigureStationNumbersDialog from './ConfigureStationNumbersDialog.js';
 import GroupCard from './GroupCard';
 
@@ -76,6 +77,7 @@ const RoundPage = () => {
   const roundId = `${eventId}-r${roundNumber}`;
   const [configureAssignmentsDialog, setConfigureAssignmentsDialog] = useState(false);
   const [configureGroupCountsDialog, setConfigureGroupCountsDialog] = useState(false);
+  const [configureGroupsDialog, setConfigureGroupsDialog] = useState(false);
   const [configureStationNumbersDialog, setConfigureStationNumbersDialog] = useState(false);
   const [showPersonsDialog, setShowPersonsDialog] = useState({
     open: false,
@@ -244,6 +246,7 @@ const RoundPage = () => {
         <>
           <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
           <div style={{ display: 'flex', flex: 1 }} />
+          <Button onClick={() => setConfigureGroupsDialog(true)}>Configure Groups</Button>
           <Button color="error" onClick={onResetGroupActitivites}>
             Reset Group Activities
           </Button>
@@ -422,6 +425,11 @@ const RoundPage = () => {
         persons={personsShouldBeInRound}
         roundId={round.id}
         onClose={() => setShowPersonsAssignmentsDialog(false)}
+      />
+      <ConfigureGroupsDialog
+        open={configureGroupsDialog}
+        onClose={() => setConfigureGroupsDialog(false)}
+        activityCode={activityCode}
       />
     </Grid>
   );
