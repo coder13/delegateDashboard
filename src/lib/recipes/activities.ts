@@ -43,9 +43,21 @@ export const getActivities = (
     return baseActivities.filter((activity) => options.activityIds?.includes(activity.id));
   }
 
+  let baseActivityCodes = [...new Set(baseActivities.map((activity) => activity.activityCode))];
+  let filteredBaseActivities = baseActivities;
+
   if (options.tail) {
-    return baseActivities.slice(options.tail);
-  } else if (options.head) {
-    return baseActivities.slice(0, options.head);
-  } else return baseActivities;
+    console.log(46, options, baseActivityCodes.slice(0, -1));
+    baseActivityCodes = baseActivityCodes.slice(0, -1);
+  }
+
+  if (options.head) {
+    baseActivityCodes = baseActivityCodes.slice(0, options.head);
+  }
+
+  filteredBaseActivities = filteredBaseActivities.filter((activity) =>
+    baseActivityCodes.includes(activity.activityCode)
+  );
+
+  return filteredBaseActivities;
 };

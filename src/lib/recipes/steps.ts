@@ -72,7 +72,7 @@ export const StepLibrary: Record<string, StepDefinition> = {
           ],
         },
         assignmentCode: 'competitor',
-        activities: { base: 'all', options: { tail: -1 } },
+        activities: { base: 'all', options: { tail: 1 } },
         options: {
           mode: 'symmetric',
         },
@@ -129,11 +129,15 @@ export const StepLibrary: Record<string, StepDefinition> = {
           },
           {
             constraint: 'avoidConflictingNames',
-            weight: 50,
+            weight: 10,
           },
           {
             constraint: 'balancedGroupSize',
-            weight: 1,
+            weight: 5,
+          },
+          {
+            constraint: 'balancedSpeed',
+            weight: 10,
           },
         ],
       },
