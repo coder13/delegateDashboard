@@ -1,3 +1,5 @@
+import { AttemptResult, EventId, RankingType, formatCentiseconds } from '@wca/helpers';
+
 /**
  * Returns a copy of the object with the value at the specified path transformed by the update function.
  *
@@ -203,3 +205,19 @@ export const sum = (arr: number[]) => arr.reduce((x, y) => x + y, 0);
 // Sorting utils
 
 export const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name);
+
+export const renderResultByEventId = (
+  eventId: EventId,
+  rankingType: RankingType,
+  result: AttemptResult
+) => {
+  if (eventId === '333fm') {
+    return rankingType === 'average' ? ((result as number) / 100).toFixed(2).toString() : result;
+  }
+
+  // if (eventId === '333mbf') {
+  //   return formatMultiResult(decodeMultiResult('0' + (result as number).toString()));
+  // }
+
+  return formatCentiseconds(result as number);
+};

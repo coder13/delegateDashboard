@@ -1,9 +1,10 @@
-import { parseActivityCode } from '@wca/helpers';
+import { formatCentiseconds, parseActivityCode } from '@wca/helpers';
 import { useConfirm } from 'material-ui-confirm';
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import {
+  Box,
   Card,
   CardActions,
   CardHeader,
@@ -16,6 +17,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import Button from '@mui/material/Button';
@@ -30,7 +32,8 @@ import {
   cumulativeGroupCount,
   allChildActivities,
 } from '../../../lib/activities';
-import { byName } from '../../../lib/utils';
+import { mayMakeCutoff, mayMakeTimeLimit } from '../../../lib/persons';
+import { byName, renderResultByEventId } from '../../../lib/utils';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import {
   bulkRemovePersonAssignments,
@@ -268,6 +271,7 @@ const RoundPage = () => {
               </ListItemButton>
             ))}
           </List>
+
           <Divider />
           <Table>
             <TableHead>
@@ -326,6 +330,42 @@ const RoundPage = () => {
               </TableRow>
             </TableBody>
           </Table>
+          <Box sx={{ display: 'flex' }}>
+            {round.timeLimit && (
+              <Tooltip title="Defined by the number of people who have a PR single under the timelimit">
+                <Box sx={{ px: 3, py: 1 }}>
+                  <Typography>
+                    Time Limit: {formatCentiseconds(round.timeLimit.centiseconds)}
+                  </Typography>
+                  {personsShouldBeInRound.length > 0 && (
+                    <Typography>
+                      May make TimeLimit:{' '}
+                      {mayMakeTimeLimit(eventId, round, personsShouldBeInRound)?.length}
+                    </Typography>
+                  )}
+                </Box>
+              </Tooltip>
+            )}
+            <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+            {round.cutoff && (
+              <Tooltip title="Defined by the number of people who have a PR average under the cutoff">
+                <Box sx={{ px: 3, py: 1 }}>
+                  <Typography>
+                    Cutoff: {round.cutoff.numberOfAttempts} attempts to get {'< '}
+                    {renderResultByEventId(eventId, 'average', round.cutoff.attemptResult)}
+                  </Typography>
+                  {personsShouldBeInRound.length > 0 && (
+                    <Typography>
+                      May make cutoff:{' '}
+                      {mayMakeCutoff(eventId, round, personsShouldBeInRound)?.length}
+                    </Typography>
+                  )}
+                </Box>
+              </Tooltip>
+            )}
+          </Box>
+          <Divider />
+
           <CardActions>{actionButtons()}</CardActions>
         </Card>
       </Grid>
