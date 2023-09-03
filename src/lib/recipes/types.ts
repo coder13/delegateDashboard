@@ -1,10 +1,3 @@
-export interface StepDefinition {
-  id: string;
-  name: string;
-  description: string;
-  defaults: Omit<Step, 'id'>;
-}
-
 export interface ClusterFilter {
   key: string;
   value: string | string[] | number | boolean;
@@ -21,10 +14,11 @@ export interface ConstraintProps {
   options?: any;
 }
 
-export interface Step {
+export interface AssignmentStep {
   id: string;
-  generator: string;
+  type: 'assignments';
   props: {
+    generator: string;
     assignmentCode: string;
     cluster: ClusterDefinition;
     activities: {
@@ -35,6 +29,23 @@ export interface Step {
     constraints: ConstraintProps[];
     options?: any;
   };
+}
+
+export interface GroupStep {
+  id: string;
+  type: 'groups';
+  props: {
+    count: number;
+  };
+}
+
+export type Step = GroupStep | AssignmentStep;
+
+export interface StepDefinition {
+  id: string;
+  name: string;
+  description: string;
+  defaults: Omit<Step, 'id'>;
 }
 
 export interface RecipeDefinition {

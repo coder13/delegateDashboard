@@ -56,7 +56,7 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
       return;
     }
 
-    dispatch(updateRoundExtensionData(round.id, groupsData));
+    dispatch(updateRoundExtensionData(round.id, 'groups', groupsData));
 
     const newRoundActivities = createGroupsAcrossStages(wcif, roundActivities, groupsData);
     console.log(newRoundActivities);

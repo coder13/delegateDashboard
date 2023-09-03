@@ -1,7 +1,7 @@
 import { Competition } from '@wca/helpers';
 import { getActivities } from './activities';
 import { getCluster } from './clusters';
-import { Step, StepDefinition } from './types';
+import { AssignmentStep, StepDefinition } from './types';
 
 export const StepLibrary: Record<string, StepDefinition> = {
   GenerateCompetitorAssignmentsForStaff: {
@@ -10,8 +10,9 @@ export const StepLibrary: Record<string, StepDefinition> = {
     description:
       'Generates competitor assignments for staff members based on their staff assignments',
     defaults: {
-      generator: 'assignEveryone',
+      type: 'assignments',
       props: {
+        generator: 'assignEveryone',
         cluster: {
           base: 'personsInRound',
           filters: [
@@ -60,8 +61,9 @@ export const StepLibrary: Record<string, StepDefinition> = {
     name: 'Generate Competitor Assignments For First Timers',
     description: 'Generates competitor assignments for first timers',
     defaults: {
-      generator: 'assignEveryone',
+      type: 'assignments',
       props: {
+        generator: 'assignEveryone',
         cluster: {
           base: 'personsInRound',
           filters: [
@@ -102,8 +104,9 @@ export const StepLibrary: Record<string, StepDefinition> = {
     name: 'Generate Competitor Assignments',
     description: 'Generates competitor assignments for everyone else',
     defaults: {
-      generator: 'assignEveryone',
+      type: 'assignments',
       props: {
+        generator: 'assignEveryone',
         cluster: {
           base: 'personsInRound',
           filters: [
@@ -149,8 +152,9 @@ export const StepLibrary: Record<string, StepDefinition> = {
     description:
       'Creates judge assignments for competitors based on their competitor assignments. Judge assignments are generally assigned for the group directly following the competitor assignment.',
     defaults: {
-      generator: 'assignEveryone',
+      type: 'assignments',
       props: {
+        generator: 'assignEveryone',
         assignmentCode: 'staff-judge',
         cluster: {
           base: 'personsInRound',
@@ -194,6 +198,17 @@ export const StepLibrary: Record<string, StepDefinition> = {
       },
     },
   },
+  GenerateSingleGroup: {
+    id: 'GenerateSingleGroup',
+    name: 'Generate Single Group',
+    description: 'Generates a single group of competitors',
+    defaults: {
+      type: 'groups',
+      props: {
+        count: 1,
+      },
+    },
+  },
 };
 
 export const Steps = Object.keys(StepLibrary).reduce((acc, key) => {
@@ -205,7 +220,7 @@ export const fromDefaults = (step: StepDefinition) => ({
   ...step.defaults,
 });
 
-export const hydrateStep = (wcif: Competition, roundId: string, step: Step) => {
+export const hydrateStep = (wcif: Competition, roundId: string, step: AssignmentStep) => {
   return {
     ...step,
     props: {

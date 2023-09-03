@@ -15,7 +15,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@mui/material';
-import { RecipeConfig, Step, StepLibrary } from '../../lib/recipes';
+import { AssignmentStep, RecipeConfig, Step, StepLibrary } from '../../lib/recipes';
 import { EditStepDialog } from './EditStepDialog';
 
 interface EditRecipeDialogProps {
@@ -68,7 +68,7 @@ export const EditRecipeDialog = ({ open, onClose, recipeConfig, round }: EditRec
         </DialogContent>
       </Dialog>
       <EditStepDialog
-        step={selectedStep}
+        step={selectedStep as AssignmentStep}
         onClose={() => setSelectedStep(undefined)}
         round={round}
       />

@@ -2,7 +2,7 @@ import { Competition, Person, Round } from '@wca/helpers';
 import { Assignments } from '../../config/assignments';
 import { findGroupActivitiesByRound } from '../activities';
 import { acceptedRegistrations, personsShouldBeInRound } from '../persons';
-import { Step } from './types';
+import { ClusterDefinition } from './types';
 
 export const Filters = [
   {
@@ -89,7 +89,7 @@ export const Filters = [
 
 export const getBaseCluster = (
   wcif: Competition,
-  base: Step['props']['cluster']['base'],
+  base: ClusterDefinition['base'],
   roundId: string
 ) => {
   switch (base) {
@@ -101,11 +101,7 @@ export const getBaseCluster = (
   }
 };
 
-export const getCluster = (
-  wcif: Competition,
-  cluster: Step['props']['cluster'],
-  roundId: string
-) => {
+export const getCluster = (wcif: Competition, cluster: ClusterDefinition, roundId: string) => {
   const activityIds = findGroupActivitiesByRound(wcif, roundId).map((a) => a.id);
 
   const baseCluster = getBaseCluster(wcif, cluster.base, roundId);

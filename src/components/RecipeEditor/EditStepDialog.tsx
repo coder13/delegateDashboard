@@ -55,7 +55,7 @@ import {
   GridRowModesModel,
 } from '@mui/x-data-grid';
 import Assignments from '../../config/assignments';
-import { ConstraintProps, Filters, Step, StepLibrary } from '../../lib/recipes';
+import { AssignmentStep, ConstraintProps, Filters, StepLibrary } from '../../lib/recipes';
 import { useAppSelector } from '../../store';
 import { updateStep } from '../../store/actions';
 
@@ -93,7 +93,7 @@ const AccordionDetails = styled(MuiAccordionDetails)(() => ({
 
 interface EditStepDialogProps {
   onClose: () => void;
-  step?: Step;
+  step?: AssignmentStep;
   round: Round;
 }
 
@@ -102,30 +102,30 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
   const dataGridRef = useRef(null);
   const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
 
-  const [assignmentCode, setAssignmentCode] = useState<Step['props']['assignmentCode'] | undefined>(
-    step?.props?.assignmentCode
-  );
-  const [selectedGenerator, setSelectedGenerator] = useState<Step['generator'] | undefined>(
-    step?.generator
-  );
-  const [generatorOptions, setGeneratorOptions] = useState<Step['props']['options']>(
+  const [assignmentCode, setAssignmentCode] = useState<
+    AssignmentStep['props']['assignmentCode'] | undefined
+  >(step?.props?.assignmentCode);
+  const [selectedGenerator, setSelectedGenerator] = useState<
+    AssignmentStep['props']['generator'] | undefined
+  >(step?.props?.generator);
+  const [generatorOptions, setGeneratorOptions] = useState<AssignmentStep['props']['options']>(
     step?.props?.options ?? {}
   );
-  const [editingCluster, setEditingCluster] = useState<Step['props']['cluster']>(
+  const [editingCluster, setEditingCluster] = useState<AssignmentStep['props']['cluster']>(
     step?.props?.cluster || {
       base: 'personsInRound',
       filters: [],
     }
   );
 
-  const [constraints, setConstraints] = useState<Step['props']['constraints']>(
+  const [constraints, setConstraints] = useState<AssignmentStep['props']['constraints']>(
     step?.props?.constraints ?? []
   );
 
   const dirty = useMemo(() => {
     return (
       step?.props?.assignmentCode !== assignmentCode ||
-      step?.generator !== selectedGenerator ||
+      step?.props?.generator !== selectedGenerator ||
       JSON.stringify(step?.props?.options) !== JSON.stringify(generatorOptions) ||
       step?.props?.cluster.base !== editingCluster.base ||
       step?.props?.cluster.filters.some(
@@ -140,7 +140,7 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
     editingCluster.filters,
     generatorOptions,
     selectedGenerator,
-    step?.generator,
+    step?.props?.generator,
     step?.props?.assignmentCode,
     step?.props?.cluster.base,
     step?.props?.cluster.filters,
@@ -150,7 +150,7 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
   const wcif = useAppSelector((state) => state.wcif);
 
   useEffect(() => {
-    setSelectedGenerator(step?.generator);
+    setSelectedGenerator(step?.props?.generator);
     setAssignmentCode(step?.props?.assignmentCode);
     setEditingCluster(step?.props?.cluster ?? { base: 'personsInRound', filters: [] });
     setGeneratorOptions(step?.props?.options ?? {});
@@ -393,7 +393,7 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
                     onChange={(e) => {
                       setEditingCluster((prev) => ({
                         ...prev,
-                        base: e.target.value as Step['props']['cluster']['base'],
+                        base: e.target.value as AssignmentStep['props']['cluster']['base'],
                       }));
                     }}
                     value={editingCluster?.base}>

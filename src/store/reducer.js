@@ -149,14 +149,14 @@ const reducers = {
       ...action.wcif,
     },
   }),
-  [UPDATE_ROUND_EXTENSION_DATA]: (state, action) => ({
+  [UPDATE_ROUND_EXTENSION_DATA]: (state, { roundId, id, data }) => ({
     ...state,
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'events']),
     wcif: mapIn(state.wcif, ['events'], (event) =>
       mapIn(event, ['rounds'], (round) => {
-        if (round.id === action.activityCode) {
-          return setExtensionData('groups', round, action.extensionData);
+        if (round.id === roundId) {
+          return setExtensionData(id, round, data);
         }
 
         return round;

@@ -1,11 +1,11 @@
 import { Competition, parseActivityCode } from '@wca/helpers';
 import { findAllActivities } from 'wca-group-generators';
 import { activityCodeIsChild } from '../activities';
-import { Step } from './types';
+import { AssignmentStep } from './types';
 
 const getBaseActivities = (
   wcif: Competition,
-  base: Step['props']['activities']['base'],
+  base: AssignmentStep['props']['activities']['base'],
   roundId: string
 ) => {
   const allActivities = findAllActivities(wcif);
@@ -34,7 +34,7 @@ const getBaseActivities = (
 
 export const getActivities = (
   wcif: Competition,
-  { base, options = {} }: Step['props']['activities'],
+  { base, options = {} }: AssignmentStep['props']['activities'],
   roundId: string
 ) => {
   const baseActivities = getBaseActivities(wcif, base, roundId);

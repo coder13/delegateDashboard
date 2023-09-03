@@ -209,10 +209,11 @@ export const updateRoundChildActivities = (activityId, childActivities) => ({
   childActivities,
 });
 
-export const updateRoundExtensionData = (activityCode, extensionData) => ({
+export const updateRoundExtensionData = (roundId, id, data) => ({
   type: UPDATE_ROUND_EXTENSION_DATA,
-  activityCode,
-  extensionData,
+  roundId,
+  id,
+  data,
 });
 
 export const partialUpdateWCIF = (wcif) => ({

@@ -11,11 +11,15 @@ import {
   CardActions,
   CardHeader,
   Divider,
+  FormControl,
   IconButton,
+  InputLabel,
   List,
   ListItemButton,
   ListSubheader,
+  MenuItem,
   Paper,
+  Select,
   Table,
   TableBody,
   TableCell,
@@ -48,6 +52,7 @@ import {
   bulkRemovePersonAssignments,
   generateAssignments,
   updateRoundChildActivities,
+  updateRoundExtensionData,
 } from '../../../store/actions';
 import {
   selectPersonsAssignedForRound,
@@ -167,6 +172,10 @@ const RoundPage = () => {
     }
 
     dispatch(generateAssignments(round.id, recipeConfig));
+  };
+
+  const onSwitchRecipes = (id) => {
+    dispatch(updateRoundExtensionData(round.id, 'recipe', { id }));
   };
 
   const onResetGroupActitivites = () => {
@@ -401,8 +410,27 @@ const RoundPage = () => {
 
       <Grid item>
         <AppBar position="sticky" color="secondary" sx={{ top: '480px' }}>
-          <Toolbar component={Paper}>
-            <Typography>Recipe: {recipeConfig.name}</Typography>
+          <Toolbar component={Paper} sx={{ p: 1 }}>
+            <FormControl>
+              <InputLabel id="recipe-select-label">Recipe</InputLabel>
+              <Select
+                label="Recipe"
+                labelId="recipe-select-label"
+                variant="outlined"
+                value={recipeConfig.id}
+                onChange={(e) => onSwitchRecipes(e.target.value)}
+                autoWidth
+                sx={{
+                  minWidth: 200,
+                }}
+                renderValue={(value) => recipeConfig.name}>
+                {Recipes.map((recipe) => (
+                  <MenuItem key={recipe.id} value={recipe.id}>
+                    {recipe.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <div style={{ display: 'flex', flex: 1 }} />
             <Button onClick={onGenerateGroupActitivites}>Run Recipe</Button>
             <IconButton edge="end" onClick={() => setConfigureRecipeDialog(true)}>
