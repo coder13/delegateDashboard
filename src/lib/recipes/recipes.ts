@@ -1,3 +1,4 @@
+import { Competition, Event, EventId, Round, parseActivityCode } from '@wca/helpers';
 import { StepLibrary, fromDefaults } from './steps';
 import { RecipeConfig, RecipeDefinition, Step } from './types';
 
@@ -27,3 +28,18 @@ export const fromRecipeDefinition = (recipe: RecipeDefinition): RecipeConfig => 
   description: recipe.description,
   steps: recipe.defaultSteps.map(fromDefaults) as Step[],
 });
+
+export const getPreferredDefaultRecipe = (wcif: Competition, round: Round) => {
+  const { eventId } = parseActivityCode(round.id) as { eventId: EventId; roundNumber: number };
+
+  const event = wcif.events.find((event) => event.id === eventId) as Event;
+
+  const rounds = event.rounds.map((round) => round.id).sort();
+
+  // Is last round?
+  if (rounds[rounds.length - 1] === round.id) {
+    return 'pnw-1-group-finals';
+  }
+
+  return 'pnw';
+};

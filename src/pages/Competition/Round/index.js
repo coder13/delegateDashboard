@@ -43,7 +43,7 @@ import {
   allChildActivities,
 } from '../../../lib/activities';
 import { mayMakeCutoff, mayMakeTimeLimit } from '../../../lib/persons';
-import { Recipes, fromRecipeDefinition } from '../../../lib/recipes';
+import { Recipes, fromRecipeDefinition, getPreferredDefaultRecipe } from '../../../lib/recipes';
 import { formatTimeRange } from '../../../lib/time';
 import { byName, renderResultByEventId } from '../../../lib/utils';
 import { getExtensionData } from '../../../lib/wcif-extensions';
@@ -116,7 +116,14 @@ const RoundPage = () => {
       room: roomByActivity(wcif, activity.id),
     }));
 
-  const recipeExtensionData = useMemo(() => getExtensionData('recipe', round), [round]);
+  const recipeExtensionData = useMemo(() => {
+    const configuredRecipeData = getExtensionData('recipe', round);
+    if (!configuredRecipeData.data) {
+      return { id: getPreferredDefaultRecipe(wcif, round) };
+    }
+
+    return configuredRecipeData;
+  }, [round, wcif]);
   // The data is either stored in the wcif or defaults are used
   const recipeConfig = useMemo(() => {
     if (!recipeExtensionData?.id) {
