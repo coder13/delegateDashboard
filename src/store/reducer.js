@@ -23,6 +23,7 @@ import {
   RESET_ALL_GROUP_ASSIGNMENTS,
   GENERATE_ASSIGNMENTS,
   EDIT_ACTIVITY,
+  UPDATE_GLOBAL_EXTENSION,
 } from './actions';
 import INITIAL_STATE from './initialState';
 import * as Reducers from './reducers';
@@ -200,6 +201,17 @@ const reducers = {
             return assignment;
           }),
         })),
+      },
+    };
+  },
+  [UPDATE_GLOBAL_EXTENSION]: (state, { extensionData }) => {
+    return {
+      ...state,
+      needToSave: true,
+      changedKeys: new Set([...state.changedKeys, 'extensions']),
+      wcif: {
+        ...state.wcif,
+        extensions: [...state.wcif.extensions.filter((e) => e.id === extensionData), extensionData],
       },
     };
   },

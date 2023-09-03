@@ -26,6 +26,7 @@ export const PARTIAL_UPDATE_WCIF = 'partial_update_wcif';
 export const RESET_ALL_GROUP_ASSIGNMENTS = 'reset_all_group_assignments';
 export const GENERATE_ASSIGNMENTS = 'generate_assignments';
 export const EDIT_ACTIVITY = 'edit_activity';
+export const UPDATE_GLOBAL_EXTENSION = 'update_global_extension';
 
 const fetchingCompetitions = () => ({
   type: FETCHING_COMPETITIONS,
@@ -246,4 +247,9 @@ export const editActivity = (where, what) => ({
   type: EDIT_ACTIVITY,
   where,
   what,
+});
+
+export const updateGlobalExtension = (extensionData) => ({
+  type: UPDATE_GLOBAL_EXTENSION,
+  extensionData,
 });
