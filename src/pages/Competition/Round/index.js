@@ -33,6 +33,7 @@ import {
   allChildActivities,
 } from '../../../lib/activities';
 import { mayMakeCutoff, mayMakeTimeLimit } from '../../../lib/persons';
+import { formatTimeRange } from '../../../lib/time';
 import { byName, renderResultByEventId } from '../../../lib/utils';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import {
@@ -194,7 +195,6 @@ const RoundPage = () => {
     return (
       <div>
         No Group Activities found. <br />
-        If you're viewing 3x3 fewest moves, there's likely not much to do here yet.
       </div>
     );
   }
@@ -265,8 +265,7 @@ const RoundPage = () => {
             {roundActivities.map(({ id, startTime, endTime, room }) => (
               <ListItemButton key={id}>
                 {room.name}: {new Date(startTime).toLocaleDateString()}{' '}
-                {new Date(startTime).toLocaleTimeString()} -{' '}
-                {new Date(endTime).toLocaleTimeString()} (
+                {formatTimeRange(startTime, endTime)} (
                 {(new Date(endTime) - new Date(startTime)) / 1000 / 60} Minutes)
               </ListItemButton>
             ))}
