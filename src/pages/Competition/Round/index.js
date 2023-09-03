@@ -1,4 +1,4 @@
-import { parseActivityCode } from '@wca/helpers';
+import { formatCentiseconds, parseActivityCode } from '@wca/helpers';
 import { useConfirm } from 'material-ui-confirm';
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom';
 import { MoreVert } from '@mui/icons-material';
 import {
   AppBar,
+  Box,
   Card,
   CardActions,
   CardHeader,
@@ -21,6 +22,7 @@ import {
   TableHead,
   TableRow,
   Toolbar,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import Button from '@mui/material/Button';
@@ -36,8 +38,10 @@ import {
   cumulativeGroupCount,
   allChildActivities,
 } from '../../../lib/activities';
+import { mayMakeCutoff, mayMakeTimeLimit } from '../../../lib/persons';
 import { Recipes, fromRecipeDefinition } from '../../../lib/recipes';
-import { byName } from '../../../lib/utils';
+import { formatTimeRange } from '../../../lib/time';
+import { byName, renderResultByEventId } from '../../../lib/utils';
 import { getExtensionData } from '../../../lib/wcif-extensions';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import {
@@ -224,7 +228,6 @@ const RoundPage = () => {
     return (
       <div>
         No Group Activities found. <br />
-        If you're viewing 3x3 fewest moves, there's likely not much to do here yet.
       </div>
     );
   }
@@ -292,12 +295,12 @@ const RoundPage = () => {
             {roundActivities.map(({ id, startTime, endTime, room }) => (
               <ListItemButton key={id}>
                 {room.name}: {new Date(startTime).toLocaleDateString()}{' '}
-                {new Date(startTime).toLocaleTimeString()} -{' '}
-                {new Date(endTime).toLocaleTimeString()} (
+                {formatTimeRange(startTime, endTime)} (
                 {(new Date(endTime) - new Date(startTime)) / 1000 / 60} Minutes)
               </ListItemButton>
             ))}
           </List>
+
           <Divider />
           <Table>
             <TableHead>
@@ -356,6 +359,42 @@ const RoundPage = () => {
               </TableRow>
             </TableBody>
           </Table>
+          <Box sx={{ display: 'flex' }}>
+            {round.timeLimit && (
+              <Tooltip title="Defined by the number of people who have a PR single under the timelimit">
+                <Box sx={{ px: 3, py: 1 }}>
+                  <Typography>
+                    Time Limit: {formatCentiseconds(round.timeLimit.centiseconds)}
+                  </Typography>
+                  {personsShouldBeInRound.length > 0 && (
+                    <Typography>
+                      May make TimeLimit:{' '}
+                      {mayMakeTimeLimit(eventId, round, personsShouldBeInRound)?.length}
+                    </Typography>
+                  )}
+                </Box>
+              </Tooltip>
+            )}
+            <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+            {round.cutoff && (
+              <Tooltip title="Defined by the number of people who have a PR average under the cutoff">
+                <Box sx={{ px: 3, py: 1 }}>
+                  <Typography>
+                    Cutoff: {round.cutoff.numberOfAttempts} attempts to get {'< '}
+                    {renderResultByEventId(eventId, 'average', round.cutoff.attemptResult)}
+                  </Typography>
+                  {personsShouldBeInRound.length > 0 && (
+                    <Typography>
+                      May make cutoff:{' '}
+                      {mayMakeCutoff(eventId, round, personsShouldBeInRound)?.length}
+                    </Typography>
+                  )}
+                </Box>
+              </Tooltip>
+            )}
+          </Box>
+          <Divider />
+
           <CardActions>{actionButtons()}</CardActions>
         </Card>
       </Grid>

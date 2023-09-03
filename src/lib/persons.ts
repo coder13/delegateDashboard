@@ -278,3 +278,39 @@ export const upsertAssignmentsOnPerson = (person: Person, assignments: Assignmen
     ],
   };
 };
+
+export const mayMakeTimeLimit = (eventId: EventId, round?: Round, persons?: Person[]): Person[] => {
+  const timeLimit = round?.timeLimit;
+  if (!timeLimit) {
+    return [];
+  }
+
+  return (
+    persons?.filter((person) => {
+      const PR = findPR(person.personalBests || [], eventId, 'single');
+      if (!PR) {
+        return false;
+      }
+
+      return PR.best <= timeLimit.centiseconds;
+    }) || []
+  );
+};
+
+export const mayMakeCutoff = (eventId: EventId, round?: Round, persons?: Person[]): Person[] => {
+  const cutoff = round?.cutoff;
+  if (!cutoff) {
+    return [];
+  }
+
+  return (
+    persons?.filter((person) => {
+      const PR = findPR(person.personalBests || [], eventId, 'average');
+      if (!PR) {
+        return false;
+      }
+
+      return PR.best <= cutoff.attemptResult;
+    }) || []
+  );
+};

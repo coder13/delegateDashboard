@@ -20,6 +20,7 @@ import {
   activityDurationString,
   parseActivityCode,
 } from '../../../lib/activities';
+import { mayMakeCutoff, mayMakeTimeLimit } from '../../../lib/persons';
 import { selectPersonsAssignedToActivitiyId } from '../../../store/selectors';
 import ConfigureGroupDialog from './ConfigureGroupDialog';
 
@@ -49,7 +50,10 @@ const GroupCard = ({ groupActivity }) => {
     setAnchorEl(null);
   };
 
-  const { eventId } = parseActivityCode(groupActivity.activityCode);
+  const { eventId, roundNumber } = parseActivityCode(groupActivity.activityCode);
+  const round = wcif?.events
+    ?.find((e) => e.id === eventId)
+    ?.rounds?.find((r) => r.id === `${eventId}-r${roundNumber}`);
 
   const competitors = personsAssigned.filter(withAssignmentCode('competitor'));
   const staff = personsAssigned.filter(withAssignmentCode('staff-'));
@@ -126,12 +130,24 @@ const GroupCard = ({ groupActivity }) => {
 
   const firstTimers = competitors.filter((person) => !person.wcaId);
 
+  const mightMakeTimeLimit = useMemo(
+    () => mayMakeTimeLimit(eventId, round, competitors) || [],
+    [competitors, eventId, round]
+  );
+
+  const mightMakeCutoff = useMemo(
+    () => mayMakeCutoff(eventId, round, competitors) || [],
+    [competitors, eventId, round]
+  );
+
   const minutes = activityDuration(groupActivity) / 60000;
   const subheader = [
     `Time: ${activityDurationString(groupActivity)} (${minutes.toFixed(2)} Minutes)`,
     `Group Size: ${personsAssigned.length}`,
     `Average PR: ${averageSpeed ? formatCentiseconds(averageSpeed) : '???'}`,
     `First Timers: ${firstTimers.length}`,
+    `Under TimeLimit: ${mightMakeTimeLimit.length}`,
+    `Under Cutoff: ${mightMakeCutoff.length}`,
   ].join(' | ');
 
   return (

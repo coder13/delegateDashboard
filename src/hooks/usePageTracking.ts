@@ -12,11 +12,12 @@ const usePageTracking = (trackingCode) => {
     ReactGA.initialize(trackingCode, {
       debug: window.location.href.includes('localhost'),
       gaOptions: {
+        name: user?.name,
         ...(user?.id ? { userId: user?.id?.toString() } : {}),
       },
     });
     setInitialized(true);
-  }, [user?.id, trackingCode]);
+  }, [user?.id, trackingCode, user?.name]);
 
   useEffect(() => {
     if (initialized) {
