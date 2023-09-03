@@ -13,6 +13,7 @@ import {
   ScramblerSchedule as ScramblerSchedulePage,
 } from '../pages/Competition';
 import FirstTimers from '../pages/Competition/Checks/FirstTimers';
+import { GroupifierPrintingConfig } from '../pages/Competition/External/GroupifierPrinting';
 import QueryPage from '../pages/Competition/Query';
 import HomePage from '../pages/Home';
 import { useAuth } from '../providers/AuthProvider';
@@ -61,6 +62,7 @@ const Navigation = () => {
             <Route path="scrambler-schedule" element={<ScramblerSchedulePage />} />
             <Route path="query" element={<QueryPage />} />
             <Route path="checks/first-timers" element={<FirstTimers />} />
+            <Route path="external/groupifier-printing" element={<GroupifierPrintingConfig />} />
 
             <Route path="*" element={<Comp404 />} />
           </Route>

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { Tune } from '@mui/icons-material';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import HomeIcon from '@mui/icons-material/Home';
@@ -100,6 +101,11 @@ export const DrawerLinks = () => {
           url: `/competitions/${competitionId}/checks/first-timers`,
           icon: <PersonSearchIcon />,
           text: 'Check First Timers',
+        },
+        {
+          url: `/competitions/${competitionId}/external/groupifier-printing`,
+          icon: <Tune />,
+          text: 'Groupifier Printing Config',
         },
       ],
       debug: [
