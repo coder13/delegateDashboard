@@ -1,9 +1,8 @@
-import React from 'react';
-import FlagIconFactory from 'react-flag-icon-css';
-import { ListItemIcon, ListItemText } from '@mui/material';
 import PublicIcon from '@mui/icons-material/Public';
+// import FlagIconFactory from 'react-flag-icon-css';
+import { ListItemIcon, ListItemText } from '@mui/material';
 
-const FlagIcon = FlagIconFactory(React, { useCssModules: false });
+// const FlagIcon = FlagIconFactory(React, { useCssModules: false });
 
 function CompetitionListItem({ name, start_date, country_iso2 }) {
   return (
@@ -12,7 +11,8 @@ function CompetitionListItem({ name, start_date, country_iso2 }) {
         {!country_iso2 || RegExp('(x|X)', 'g').test(country_iso2.toLowerCase()) ? (
           <PublicIcon />
         ) : (
-          <FlagIcon code={country_iso2.toLowerCase()} size="lg" />
+          <div />
+          // <FlagIcon code={country_iso2.toLowerCase()} size="lg" />
         )}
       </ListItemIcon>
       <ListItemText

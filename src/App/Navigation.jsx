@@ -43,7 +43,7 @@ const Comp404 = () => {
 };
 
 const Navigation = () => {
-  usePageTracking(process.env.REACT_APP_GA_MEASUREMENT_ID);
+  usePageTracking(import.meta.env.VITE_GA_MEASUREMENT_ID);
 
   return (
     <Routes>

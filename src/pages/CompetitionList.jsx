@@ -1,6 +1,4 @@
 import { format, parseISO } from 'date-fns';
-import React from 'react';
-import FlagIconFactory from 'react-flag-icon-css';
 import ReactLoading from 'react-loading';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -30,7 +28,7 @@ const formatDateRange = (startString, endString) => {
   return `${startMonth} ${startDay}, ${startYear} - ${endMonth} ${endDay}, ${endYear}`;
 };
 
-const FlagIcon = FlagIconFactory(React, { useCssModules: false });
+// const FlagIcon = FlagIconFactory(React, { useCssModules: false });
 
 const CompetitionLink = ({ comp }) => (
   <ListItemButton component={Link} to={`/competitions/${comp.id}`}>
@@ -38,7 +36,8 @@ const CompetitionLink = ({ comp }) => (
       {!comp.country_iso2 || RegExp('(x|X)', 'g').test(comp.country_iso2.toLowerCase()) ? (
         <PublicIcon />
       ) : (
-        <FlagIcon code={comp.country_iso2.toLowerCase()} size="lg" />
+        <div />
+        // <FlagIcon code={comp.country_iso2.toLowerCase()} size="lg" />
       )}
     </ListItemIcon>
     <ListItemText primary={comp.name} secondary={formatDateRange(comp.start_date, comp.end_date)} />

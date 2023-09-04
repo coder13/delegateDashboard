@@ -49,7 +49,7 @@ import {
 import ConfigureAssignmentsDialog from './ConfigureAssignmentsDialog';
 import ConfigureGroupCountsDialog from './ConfigureGroupCountsDialog';
 import { ConfigureGroupsDialog } from './ConfigureGroupsDialog';
-import ConfigureStationNumbersDialog from './ConfigureStationNumbersDialog.js';
+import ConfigureStationNumbersDialog from './ConfigureStationNumbersDialog';
 import GroupCard from './GroupCard';
 
 /**

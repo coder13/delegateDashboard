@@ -29,8 +29,8 @@ const links = [
   { text: 'GitHub', url: 'https://github.com/coder13/delegateDashboard' },
   { text: 'Contact', url: 'mailto:choover11@gmail.com' },
   {
-    text: `${process.env.REACT_APP_GIT_SHA}`,
-    url: `https://github.com/coder13/delegateDashboard/commit/${process.env.REACT_APP_GIT_SHA}`,
+    text: `${import.meta.env.VITE_GIT_SHA}`,
+    url: `https://github.com/coder13/delegateDashboard/commit/${import.meta.env.VITE_GIT_SHA}`,
   },
 ];
 
