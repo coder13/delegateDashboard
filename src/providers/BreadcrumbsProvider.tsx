@@ -1,9 +1,20 @@
 import { createContext, useContext, useState } from 'react';
 
-const BreadcrumbsContext = createContext();
+export interface Breadcrumb {
+  to: string;
+  text: string;
+}
+
+const BreadcrumbsContext = createContext<{
+  breadcrumbs: Breadcrumb[];
+  setBreadcrumbs: (breadcrumbs: Breadcrumb[]) => void;
+}>({
+  breadcrumbs: [],
+  setBreadcrumbs: () => {},
+});
 
 export default function BreadcrumbsProvider({ children }) {
-  const [breadcrumbs, setBreadcrumbs] = useState([]);
+  const [breadcrumbs, setBreadcrumbs] = useState<Breadcrumb[]>([]);
 
   return (
     <BreadcrumbsContext.Provider value={{ breadcrumbs, setBreadcrumbs }}>

@@ -3,10 +3,10 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { Router } from 'react-router-dom';
 import { preserveQueryParams, createLocationObject } from '../lib/history';
 
-function QueryParamPreservingRouter({ basename, children, window }) {
+function QueryParamPreservingRouter({ basename = '', children }) {
   let historyRef = useRef();
   if (historyRef.current == null) {
-    historyRef.current = createBrowserHistory({ window });
+    historyRef.current = createBrowserHistory();
     const originalPush = historyRef.current.push;
     historyRef.current.push = (path, state) => {
       return originalPush.apply(historyRef.current, [
