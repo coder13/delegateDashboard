@@ -1,8 +1,8 @@
 import { createContext, useContext, useState } from 'react';
 
 export interface Breadcrumb {
-  to: string;
   text: string;
+  to?: string;
 }
 
 const BreadcrumbsContext = createContext<{
