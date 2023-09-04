@@ -1,21 +1,27 @@
 import { Competition } from '@wca/helpers';
-import { intlFormat } from 'date-fns';
+import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Card, CardContent, Typography } from '@mui/material';
 import { shortEventNameById } from '../lib/events';
 import { acceptedRegistrations } from '../lib/persons';
-import { pluralize } from '../lib/utils';
 
 export default function CompetitionSummary() {
   const wcif = useSelector((state: { wcif: Competition }) => state.wcif);
   const approvedRegistrations = acceptedRegistrations(wcif.persons);
 
-  const formattedDate = intlFormat(new Date(wcif.schedule.startDate), {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  const startDate = useMemo(() => {
+    const start = new Date(wcif.schedule.startDate);
+    start.setHours(start.getHours() + new Date().getTimezoneOffset() / 60);
+    return start;
+  }, [wcif]);
+
+  const endDate = useMemo(() => {
+    if (wcif.schedule.numberOfDays <= 1) return undefined;
+
+    const end = new Date(wcif.schedule.startDate);
+    end.setDate(startDate.getDate() + wcif.schedule.numberOfDays);
+    return end;
+  }, [startDate, wcif.schedule.numberOfDays, wcif.schedule.startDate]);
 
   return (
     <Card>
@@ -25,7 +31,8 @@ export default function CompetitionSummary() {
         </Typography>
         <Typography>
           <b>Date: </b>
-          {formattedDate} ({pluralize(wcif.schedule.numberOfDays, 'day', 'days')})
+          {startDate.toLocaleDateString()}
+          {endDate ? ` - ${endDate.toLocaleDateString()}` : ''}
         </Typography>
         <Typography>
           <b>Competitors: </b>
@@ -33,7 +40,8 @@ export default function CompetitionSummary() {
         </Typography>
         <Typography>
           <b>Events: </b>
-          {wcif.events.map((event) => shortEventNameById(event.id)).join(', ')}
+          {wcif.events.map((event) => shortEventNameById(event.id)).join(', ')} (
+          {wcif.events.length})
         </Typography>
       </CardContent>
     </Card>
