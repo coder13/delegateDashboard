@@ -1,4 +1,3 @@
-import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Alert, AlertTitle } from '@mui/material';
 import { styled } from '@mui/system';

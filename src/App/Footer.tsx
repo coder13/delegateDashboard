@@ -1,10 +1,9 @@
-import React from 'react';
+import { makeStyles } from '@material-ui/core';
 import { Divider } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import grey from '@mui/material/colors/grey';
-import { makeStyles } from '@mui/styles';
 import { WCA_ORIGIN } from '../lib/wca-env';
 
 const useStyles = makeStyles((theme) => ({
@@ -29,8 +28,8 @@ const links = [
   { text: 'GitHub', url: 'https://github.com/coder13/delegateDashboard' },
   { text: 'Contact', url: 'mailto:choover11@gmail.com' },
   {
-    text: `${process.env.REACT_APP_GIT_SHA}`,
-    url: `https://github.com/coder13/delegateDashboard/commit/${process.env.REACT_APP_GIT_SHA}`,
+    text: `${import.meta.env.VITE_GIT_SHA}`,
+    url: `https://github.com/coder13/delegateDashboard/commit/${import.meta.env.VITE_GIT_SHA}`,
   },
 ];
 

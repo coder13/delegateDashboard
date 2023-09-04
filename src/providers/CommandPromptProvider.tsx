@@ -2,8 +2,14 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import CommandPromptDialog from '../components/CommandPromptDialog';
 import { useAuth } from './AuthProvider';
 
-const CommandPromptContext = createContext({
+interface CommandPromptContextProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}
+
+const CommandPromptContext = createContext<CommandPromptContextProps>({
   open: false,
+  setOpen: () => {},
 });
 
 export default function CommandPromptProvider({ children }) {
@@ -16,7 +22,7 @@ export default function CommandPromptProvider({ children }) {
         return;
       }
 
-      if (e.ctrlKey & (e.key === 'p')) {
+      if (e.ctrlKey && e.key === 'p') {
         e.preventDefault();
         setOpen(true);
       } else if (e.key === 'Escape') {
