@@ -1,10 +1,9 @@
-import React from 'react';
+import { makeStyles } from '@material-ui/core';
 import { Divider } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import grey from '@mui/material/colors/grey';
-import { makeStyles } from '@mui/styles';
 import { WCA_ORIGIN } from '../lib/wca-env';
 
 const useStyles = makeStyles((theme) => ({

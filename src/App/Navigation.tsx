@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Routes, Route, Outlet, Navigate, useNavigate, useParams } from 'react-router-dom';
 import usePageTracking from '../hooks/usePageTracking';
 import {
