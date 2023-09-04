@@ -1,7 +1,7 @@
 import { createContext, useContext, useState } from 'react';
 
 export interface Breadcrumb {
-  to: string;
+  to?: string;
   text: string;
 }
 
