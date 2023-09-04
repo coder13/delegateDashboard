@@ -1,5 +1,5 @@
 import { useSnackbar } from 'notistack';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, Outlet } from 'react-router-dom';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -101,6 +101,13 @@ const CompetitionLayout = () => {
   useEffect(() => {
     setLocalStorage('drawer-open', drawerOpen);
   }, [drawerOpen]);
+
+  useEffect(() => {
+    console.log(106, wcif);
+    if (wcif) {
+      document.title = 'Delegate Dashboard - ' + wcif.name;
+    }
+  }, [wcif]);
 
   const handleKeyDown = useCallback(
     (event) => {

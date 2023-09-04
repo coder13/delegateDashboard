@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import PeopleIcon from '@mui/icons-material/People';
 import { Avatar, Box, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
@@ -36,6 +36,10 @@ const Header = () => {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
+
+  useEffect(() => {
+    document.title = 'Delegate Dashboard';
+  }, wcif);
 
   return (
     <AppBar position="static" color="primary">
