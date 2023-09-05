@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import {
+  Alert,
   Box,
   Card,
   CardActions,
@@ -200,6 +201,7 @@ const RoundPage = () => {
   }
 
   const actionButtons = () => {
+    console.log(203, groups);
     if (groups.length === 0) {
       return (
         <>
@@ -208,23 +210,29 @@ const RoundPage = () => {
           </Button>
         </>
       );
-    } else if (
-      groups.length > 0 &&
-      personsAssignedToCompete.length < personsShouldBeInRound.length
-    ) {
-      return (
-        <>
-          <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
-          <Button onClick={onGenerateGroupActitivites}>
-            Assign Competitor and Judging Assignments
-          </Button>
-          <div style={{ display: 'flex', flex: 1 }} />
-          <Button onClick={() => setConfigureGroupsDialog(true)}>Configure Groups</Button>
-          <Button color="error" onClick={onResetGroupActitivites}>
-            Reset Group Activities
-          </Button>
-        </>
-      );
+    } else if (groups.length > 0) {
+      if (personsAssignedToCompete.length < personsShouldBeInRound.length) {
+        return (
+          <>
+            <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
+            <Button onClick={onGenerateGroupActitivites}>
+              Assign Competitor and Judging Assignments
+            </Button>
+            <div style={{ display: 'flex', flex: 1 }} />
+            <Button onClick={() => setConfigureGroupsDialog(true)}>Configure Groups</Button>
+            <Button color="error" onClick={onResetGroupActitivites}>
+              Reset Group Activities
+            </Button>
+          </>
+        );
+      } else {
+        return (
+          <>
+            <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
+            <Button onClick={() => setConfigureGroupsDialog(true)}>Configure Groups</Button>
+          </>
+        );
+      }
     } else if (personsAssignedToCompete.length > 0) {
       return (
         <>
@@ -368,6 +376,17 @@ const RoundPage = () => {
           <CardActions>{actionButtons()}</CardActions>
         </Card>
       </Grid>
+
+      {selectPersonsShouldBeInRound.length === 0 && (
+        <Grid item>
+          <Alert severity="warning">
+            <Typography>
+              No one in round to automatically assign. Make sure the next round is opened on
+              WCA-Live to generate assignments
+            </Typography>
+          </Alert>
+        </Grid>
+      )}
 
       <Grid item>
         {sortedGroups.map((group) => (
