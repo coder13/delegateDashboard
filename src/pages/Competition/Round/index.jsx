@@ -229,7 +229,11 @@ const RoundPage = () => {
         return (
           <>
             <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
+            <div style={{ display: 'flex', flex: 1 }} />
             <Button onClick={() => setConfigureGroupsDialog(true)}>Configure Groups</Button>
+            <Button color="error" onClick={onResetGroupActitivites}>
+              Reset Group Activities
+            </Button>
           </>
         );
       }
