@@ -201,7 +201,6 @@ const RoundPage = () => {
   }
 
   const actionButtons = () => {
-    console.log(203, groups);
     if (groups.length === 0) {
       return (
         <>
@@ -210,33 +209,34 @@ const RoundPage = () => {
           </Button>
         </>
       );
-    } else if (groups.length > 0) {
-      if (personsAssignedToCompete.length < personsShouldBeInRound.length) {
-        return (
-          <>
-            <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
-            <Button onClick={onGenerateGroupActitivites}>
-              Assign Competitor and Judging Assignments
-            </Button>
-            <div style={{ display: 'flex', flex: 1 }} />
-            <Button onClick={() => setConfigureGroupsDialog(true)}>Configure Groups</Button>
-            <Button color="error" onClick={onResetGroupActitivites}>
-              Reset Group Activities
-            </Button>
-          </>
-        );
-      } else {
-        return (
-          <>
-            <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
-            <div style={{ display: 'flex', flex: 1 }} />
-            <Button onClick={() => setConfigureGroupsDialog(true)}>Configure Groups</Button>
-            <Button color="error" onClick={onResetGroupActitivites}>
-              Reset Group Activities
-            </Button>
-          </>
-        );
-      }
+    } else if (
+      groups.length > 0 &&
+      personsAssignedToCompete.length < personsShouldBeInRound.length
+    ) {
+      return (
+        <>
+          <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
+          <Button onClick={onGenerateGroupActitivites}>
+            Assign Competitor and Judging Assignments
+          </Button>
+          <div style={{ display: 'flex', flex: 1 }} />
+          <Button onClick={() => setConfigureGroupsDialog(true)}>Configure Groups</Button>
+          <Button color="error" onClick={onResetGroupActitivites}>
+            Reset Group Activities
+          </Button>
+        </>
+      );
+    } else if (groups.length > 0 && personsShouldBeInRound.length === 0) {
+      return (
+        <>
+          <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
+          <div style={{ display: 'flex', flex: 1 }} />
+          <Button onClick={() => setConfigureGroupsDialog(true)}>Configure Groups</Button>
+          <Button color="error" onClick={onResetGroupActitivites}>
+            Reset Group Activities
+          </Button>
+        </>
+      );
     } else if (personsAssignedToCompete.length > 0) {
       return (
         <>
@@ -250,22 +250,13 @@ const RoundPage = () => {
           </Button>
         </>
       );
-    } else {
-      console.log({
-        groupCount: groups,
-        personsAssignedToCompete: personsAssignedToCompete,
-        personsShouldBeInRound: personsShouldBeInRound,
-      });
-
-      return (
-        <>
-          <Button onClick={() => setConfigureGroupCountsDialog(true)}>
-            Configure Group Counts
-          </Button>
-          <Typography>No one in round to assign! Double check registrations.</Typography>
-        </>
-      );
     }
+
+    return (
+      <>
+        <Button onClick={() => setConfigureGroupCountsDialog(true)}>Configure Group Counts</Button>
+      </>
+    );
   };
 
   return (
@@ -381,7 +372,7 @@ const RoundPage = () => {
         </Card>
       </Grid>
 
-      {selectPersonsShouldBeInRound.length === 0 && (
+      {personsShouldBeInRound.length === 0 && (
         <Grid item>
           <Alert severity="warning">
             <Typography>
