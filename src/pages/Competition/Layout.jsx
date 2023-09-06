@@ -95,6 +95,12 @@ const CompetitionLayout = () => {
   }, [dispatch, enqueueSnackbar]);
 
   useEffect(() => {
+    if (wcif) {
+      document.title = 'Delegate Dashboard - ' + wcif.name;
+    }
+  }, [wcif]);
+
+  useEffect(() => {
     dispatch(fetchWCIF(competitionId));
   }, [dispatch, competitionId]);
 

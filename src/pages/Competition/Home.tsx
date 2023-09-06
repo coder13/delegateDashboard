@@ -18,6 +18,10 @@ const CompetitionHome = () => {
     navigate(`/competitions/${competitionId}/events/${roundId}`);
   };
 
+  useEffect(() => {
+    document.title = 'Delegate Dashboard';
+  }, []);
+
   return (
     <Grid container direction="column" spacing={1}>
       <Grid item>
