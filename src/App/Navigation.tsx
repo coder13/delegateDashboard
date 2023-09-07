@@ -26,7 +26,7 @@ const AuthenticatedRoute = () => {
 
   if (!signedIn()) {
     signIn();
-    return;
+    return <div />;
   }
 
   return <Outlet />;
