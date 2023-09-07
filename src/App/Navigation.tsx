@@ -15,6 +15,7 @@ import {
 } from '../pages/Competition';
 import FirstTimers from '../pages/Competition/Checks/FirstTimers';
 import { GroupifierPrintingConfig } from '../pages/Competition/External/GroupifierPrinting';
+import GanttChart from '../pages/Competition/GanttChart';
 import QueryPage from '../pages/Competition/Query';
 import HomePage from '../pages/Home';
 import { useAuth } from '../providers/AuthProvider';
@@ -64,6 +65,7 @@ const Navigation = () => {
             <Route path="query" element={<QueryPage />} />
             <Route path="checks/first-timers" element={<FirstTimers />} />
             <Route path="external/groupifier-printing" element={<GroupifierPrintingConfig />} />
+            <Route path="gantt-chart" element={<GanttChart />} />
 
             <Route path="*" element={<Comp404 />} />
           </Route>
