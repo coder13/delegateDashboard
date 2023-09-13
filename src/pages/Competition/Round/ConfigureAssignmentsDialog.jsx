@@ -2,6 +2,7 @@ import { formatCentiseconds } from '@wca/helpers';
 import clsx from 'clsx';
 import { useConfirm } from 'material-ui-confirm';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { usePapaParse } from 'react-papaparse';
 import { useDispatch, useSelector } from 'react-redux';
 import { EmojiPeople } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
@@ -52,6 +53,7 @@ import {
   upsertPersonAssignments,
   removePersonAssignments,
   bulkRemovePersonAssignments,
+  bulkAddPersonAssignments,
 } from '../../../store/actions';
 import { selectWcifRooms } from '../../../store/selectors';
 import TableAssignmentCell from './TableAssignmentCell';
@@ -90,18 +92,27 @@ function calcRanking(person, lastPerson) {
     return 1;
   }
 
-  if (person?.seedResult?.rankingResult === lastPerson?.seedResult?.rankingResult) {
+  if (
+    person?.seedResult?.rankingResult === lastPerson?.seedResult?.rankingResult
+  ) {
     return lastPerson.seedResult.ranking;
   }
 
   return lastPerson.seedResult.ranking + 1;
 }
 
-const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups }) => {
+const ConfigureAssignmentsDialog = ({
+  open,
+  onClose,
+  round,
+  activityCode,
+  groups,
+}) => {
   const wcif = useSelector((state) => state.wcif);
   const { eventId, roundNumber } = parseActivityCode(activityCode);
   const event = wcif.events.find((e) => e.id === eventId);
   const classes = useStyles();
+  const { readString } = usePapaParse();
   const wcifRooms = useSelector((state) => selectWcifRooms(state));
 
   const dispatch = useDispatch();
@@ -110,9 +121,11 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
   const confirm = useConfirm();
 
   const [showAllCompetitors, setShowAllCompetitors] = useState(false);
-  const [paintingAssignmentCode, setPaintingAssignmentCode] = useState('staff-scrambler');
+  const [paintingAssignmentCode, setPaintingAssignmentCode] =
+    useState('staff-scrambler');
   const [competitorSort, setCompetitorSort] = useState('speed');
-  const [showCompetitorsNotInRound, setShowCompetitorsNotInRound] = useState(false);
+  const [showCompetitorsNotInRound, setShowCompetitorsNotInRound] =
+    useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleMenuOpen = (event) => {
@@ -126,9 +139,9 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
   const groupsRooms = useMemo(
     () =>
       wcifRooms.filter((room) =>
-        flatten(room.activities.map((activity) => activity.childActivities)).some((activity) =>
-          groups.find((g) => g.id === activity.id)
-        )
+        flatten(
+          room.activities.map((activity) => activity.childActivities)
+        ).some((activity) => groups.find((g) => g.id === activity.id))
       ),
     [groups, wcifRooms]
   );
@@ -204,20 +217,25 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
   // );
 
   const personAssignments = useCallback(
-    (registrantId) => persons.find((p) => p.registrantId === registrantId).assignments,
+    (registrantId) =>
+      persons.find((p) => p.registrantId === registrantId).assignments,
     [persons]
   );
 
   const getAssignmentCodeForPersonGroup = useCallback(
     (registrantId, activityId) => {
-      return personAssignments(registrantId).find((a) => a.activityId === activityId)
-        ?.assignmentCode;
+      return personAssignments(registrantId).find(
+        (a) => a.activityId === activityId
+      )?.assignmentCode;
     },
     [personAssignments]
   );
 
   const handleUpdateAssignmentForPerson = (registrantId, activityId) => () => {
-    if (getAssignmentCodeForPersonGroup(registrantId, activityId) === paintingAssignmentCode) {
+    if (
+      getAssignmentCodeForPersonGroup(registrantId, activityId) ===
+      paintingAssignmentCode
+    ) {
       dispatch(removePersonAssignments(registrantId, activityId));
     } else {
       dispatch(
@@ -232,7 +250,9 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
   };
 
   const handleResetAssignments = () => {
-    confirm('Are you sure you want to reset all assignments and start over').then(() => {
+    confirm(
+      'Are you sure you want to reset all assignments and start over'
+    ).then(() => {
       dispatch(
         bulkRemovePersonAssignments(
           groups.map((groupActivity) => ({
@@ -258,19 +278,148 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
     }
   };
 
+  const onPaste = useCallback((e) => {
+    e.preventDefault();
+    const clipboardData = e.clipboardData;
+    if (!clipboardData) {
+      return;
+    }
+    const data = clipboardData.getData('text');
+    if (!data) {
+      return;
+    }
+
+    const parsedData = readString(data, {
+      worker: false,
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (header) => header.trim().toLowerCase(),
+    });
+
+    if (!parsedData?.data) {
+      return;
+    }
+
+    confirm({
+      title: 'Are you sure',
+      description: 'Are you sure you want to overwrite existing data?',
+    }).then(() => {
+      const competitorGroupSizes = {};
+      const staffGroupSizes = {};
+
+      const assignments = parsedData.data
+        .filter((p) => {
+          return !!p.id;
+        })
+        .flatMap((p) => {
+          const a = [];
+          const competitorGroupNumber = p.g || p.group;
+          const competitorGroupActivities = groups
+            .filter((g) => {
+              const parsedActivityCode = parseActivityCode(g.activityCode);
+              return (
+                parsedActivityCode.groupNumber?.toString() ===
+                competitorGroupNumber
+              );
+            })
+            .map((g) => ({
+              g,
+              score: competitorGroupSizes[g.id] || 0,
+            }))
+            .sort((a, b) => a.score - b.score);
+
+          const competitorGroupActivity = competitorGroupActivities[0].g;
+
+          competitorGroupSizes[competitorGroupActivity.id] =
+            (competitorGroupSizes[competitorGroupActivity.id] || 0) + 1;
+
+          a.push({
+            activityId: competitorGroupActivity.id,
+            registrantId: +p.id,
+            assignment: {
+              assignmentCode: 'competitor',
+              stationNumber: undefined,
+              activityId: competitorGroupActivity.id,
+            },
+          });
+
+          const helpingGroup = p.h || p.helping || p.staff;
+          if (helpingGroup) {
+            const assignmentLetter = helpingGroup[0].toLowerCase();
+            const staffGroupNumber = helpingGroup[1];
+            const assignmentCode = Assignments.find(
+              (assignment) => assignment.key.toLowerCase() === assignmentLetter
+            ).id;
+
+            const staffGroupActivities = groups
+              .filter((g) => {
+                const parsedActivityCode = parseActivityCode(g.activityCode);
+                return (
+                  parsedActivityCode.groupNumber?.toString() ===
+                  staffGroupNumber
+                );
+              })
+              .map((g) => ({
+                g,
+                score: staffGroupSizes?.[assignmentCode]?.[g.id] || 0,
+              }))
+              .sort((a, b) => a.score - b.score);
+
+            const staffGroupActivity = staffGroupActivities[0].g;
+
+            if (!staffGroupSizes[assignmentCode]) {
+              staffGroupSizes[assignmentCode] = {};
+            }
+
+            staffGroupSizes[assignmentCode][staffGroupActivity.id] =
+              (staffGroupSizes?.[assignmentCode]?.[staffGroupActivity.id] ||
+                0) + 1;
+
+            a.push({
+              activityId: staffGroupActivity.id,
+              registrantId: +p.id,
+              assignment: {
+                assignmentCode,
+                stationNumber: undefined,
+                activityId: staffGroupActivity.id,
+              },
+            });
+            console.log(a[1]);
+          }
+
+          return a;
+        });
+      dispatch(
+        bulkRemovePersonAssignments(
+          assignments.map((i) => ({ registrantId: i.registrantId }))
+        )
+      );
+      dispatch(bulkAddPersonAssignments(assignments));
+    });
+  });
+
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
+
+    window.addEventListener('paste', onPaste);
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('paste', onPaste);
     };
-  });
+  }, [onPaste]);
 
   if (!open) {
     return null;
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth fullScreen={fullScreen}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="lg"
+      fullWidth
+      fullScreen={fullScreen}>
       <DialogTitle sx={{ paddingTop: '0.25em', paddingBottom: '0.25em' }}>
         Configuring Assignments For {activityCodeToName(activityCode)}
       </DialogTitle>
@@ -296,7 +445,9 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
                 {Assignments.map((assignment) => (
                   <MenuItem key={assignment.id} value={assignment.id}>
                     <ListItemText>{assignment.name}</ListItemText>
-                    {assignment.key && <Typography>{assignment.key.toUpperCase()}</Typography>}
+                    {assignment.key && (
+                      <Typography>{assignment.key.toUpperCase()}</Typography>
+                    )}
                   </MenuItem>
                 ))}
               </Select>
@@ -304,15 +455,28 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
             </FormControl>
           </div>
           <div style={{ display: 'flex', flexGrow: 1 }} />
-          <div style={{ display: 'flex', flexGrow: 1, justifyContent: 'space-around' }}>
+          <div
+            style={{
+              display: 'flex',
+              flexGrow: 1,
+              justifyContent: 'space-around',
+            }}>
             <FormControl margin="none">
               <FormLabel>Sort</FormLabel>
               <RadioGroup
                 row
                 value={competitorSort}
                 onChange={(e) => setCompetitorSort(e.target.value)}>
-                <FormControlLabel value="speed" control={<Radio />} label="Speed" />
-                <FormControlLabel value="name" control={<Radio />} label="Name" />
+                <FormControlLabel
+                  value="speed"
+                  control={<Radio />}
+                  label="Speed"
+                />
+                <FormControlLabel
+                  value="name"
+                  control={<Radio />}
+                  label="Name"
+                />
               </RadioGroup>
             </FormControl>
             <FormControl margin="none">
@@ -346,7 +510,9 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
               vertical: 'top',
               horizontal: 'left',
             }}>
-            <MenuItem onClick={handleResetAssignments}>Reset Assignments</MenuItem>
+            <MenuItem onClick={handleResetAssignments}>
+              Reset Assignments
+            </MenuItem>
           </Menu>
         </Toolbar>
 
@@ -362,8 +528,9 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
                   key={room.id}
                   style={{ textAlign: 'center' }}
                   colSpan={
-                    room.activities.find((ra) => ra.activityCode === activityCode)?.childActivities
-                      ?.length ?? 1
+                    room.activities.find(
+                      (ra) => ra.activityCode === activityCode
+                    )?.childActivities?.length ?? 1
                   }>
                   {room.name}
                 </TableCell>
@@ -373,18 +540,26 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
             <TableRow>
               <TableCell style={{ width: '1em' }}>#</TableCell>
               <TableCell style={{ width: '20%' }}>Name</TableCell>
-              <TableCell style={{ width: '1em', textAlign: 'center' }}>Seed Result</TableCell>
-              <TableCell style={{ width: '1em', textAlign: 'center' }}>Registered</TableCell>
+              <TableCell style={{ width: '1em', textAlign: 'center' }}>
+                Seed Result
+              </TableCell>
+              <TableCell style={{ width: '1em', textAlign: 'center' }}>
+                Registered
+              </TableCell>
               {groupsRooms.map((room) =>
                 groups
                   .filter((group) => group.parent.room.name === room.name)
                   .map((group) => (
-                    <TableCell key={group.id} style={{ textAlign: 'center', width: '1em' }}>
+                    <TableCell
+                      key={group.id}
+                      style={{ textAlign: 'center', width: '1em' }}>
                       g{parseActivityCode(group.activityCode).groupNumber}
                     </TableCell>
                   ))
               )}
-              <TableCell style={{ width: '1em' }}>Total Staff Assignments</TableCell>
+              <TableCell style={{ width: '1em' }}>
+                Total Staff Assignments
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -398,7 +573,8 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
                 .reduce((acc, assignment) => {
                   return {
                     ...acc,
-                    [assignment.assignmentCode]: (acc[assignment.assignmentCode] || 0) + 1,
+                    [assignment.assignmentCode]:
+                      (acc[assignment.assignmentCode] || 0) + 1,
                   };
                 }, {});
 
@@ -407,9 +583,11 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
                   hover
                   key={person.registrantId}
                   className={clsx({
-                    [classes.firstTimer]: acceptedRegistration(person) && !person.wcaId,
+                    [classes.firstTimer]:
+                      acceptedRegistration(person) && !person.wcaId,
                     [classes.delegateOrOrganizer]:
-                      acceptedRegistration(person) && isOrganizerOrDelegate(person),
+                      acceptedRegistration(person) &&
+                      isOrganizerOrDelegate(person),
                     [classes.disabled]: !acceptedRegistration(person),
                   })}>
                   <TableCell>{person?.seedResult?.ranking}</TableCell>
@@ -421,7 +599,9 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
                       </Tooltip>
                     )}
                   </TableCell>
-                  <TableCell style={{ textAlign: 'center' }}>{rankingResult}</TableCell>
+                  <TableCell style={{ textAlign: 'center' }}>
+                    {rankingResult}
+                  </TableCell>
                   <TableCell
                     style={{
                       paddingTop: 0,
@@ -456,11 +636,17 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
                       .filter((key) => Assignments.find((a) => a.id === key))
                       .sort((a, b) => a.localeCompare(b))
                       .map((key, index, arry) => {
-                        const assignment = Assignments.find((a) => a.id === key);
+                        const assignment = Assignments.find(
+                          (a) => a.id === key
+                        );
                         if (!assignment) return '';
 
                         return (
-                          <div style={{ marginRight: '0.25em', display: 'inline' }}>
+                          <div
+                            style={{
+                              marginRight: '0.25em',
+                              display: 'inline',
+                            }}>
                             <b>{totalStaffAssignments[key]}</b>
                             {assignment.letter}
                             {index < arry.length - 1 ? ', ' : ''}
@@ -532,7 +718,9 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
         <div style={{ display: 'flex', flexDirction: 'row' }}>
           <Typography>
             <span>Assigning: </span>
-            <b>{Assignments.find((a) => a.id === paintingAssignmentCode)?.name}</b>
+            <b>
+              {Assignments.find((a) => a.id === paintingAssignmentCode)?.name}
+            </b>
             {' | '}
             <span>Showing: </span>
             <b>{showAllCompetitors ? 'All Competitors' : 'staff'}</b>
