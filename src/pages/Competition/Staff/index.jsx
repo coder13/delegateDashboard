@@ -1,8 +1,21 @@
-import clsx from 'clsx';
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
-import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from '@mui/material';
+import Link from '../../../components/MaterialLink';
+import {
+  acceptedRegistration,
+  isOrganizerOrDelegate,
+} from '../../../lib/persons';
+import { pluralize } from '../../../lib/utils';
+import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import { togglePersonRole } from '../../../store/actions';
+import AddNonCompetingStaffDialog from './AddNonCompetingStaffDialog';
+import {
+  Box,
+  Button,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Radio,
+  RadioGroup,
+} from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
@@ -16,11 +29,10 @@ import grey from '@mui/material/colors/grey';
 import red from '@mui/material/colors/red';
 import yellow from '@mui/material/colors/yellow';
 import { makeStyles } from '@mui/styles';
-import Link from '../../../components/MaterialLink';
-import { acceptedRegistration, isOrganizerOrDelegate } from '../../../lib/persons';
-import { pluralize } from '../../../lib/utils';
-import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
-import { togglePersonRole } from '../../../store/actions';
+import clsx from 'clsx';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 
 const ROLES = [
   // {
@@ -79,6 +91,8 @@ const Staff = () => {
   const dispatch = useDispatch();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [competitorSort, setCompetitorSort] = useState('name');
+  const [nonCompetingStaffDialogOpen, setNonCompetingStaffDialogOpen] =
+    useState(false);
 
   useEffect(() => {
     setBreadcrumbs([
@@ -117,7 +131,7 @@ const Staff = () => {
 
   return (
     <>
-      <div>
+      <Box sx={{ display: 'flex' }}>
         <FormControl margin="none">
           <FormLabel>Sort</FormLabel>
           <RadioGroup
@@ -125,11 +139,19 @@ const Staff = () => {
             value={competitorSort}
             onChange={(e) => setCompetitorSort(e.target.value)}>
             <FormControlLabel value="name" control={<Radio />} label="Name" />
-            <FormControlLabel value="wcaId" control={<Radio />} label="Wca ID" />
+            <FormControlLabel
+              value="wcaId"
+              control={<Radio />}
+              label="Wca ID"
+            />
             <FormControlLabel value="dob" control={<Radio />} label="Age" />
           </RadioGroup>
         </FormControl>
-      </div>
+        <Box sx={{ display: 'flex', flex: 1 }} />
+        <Button onClick={() => setNonCompetingStaffDialogOpen(true)}>
+          Add Non-Competing Staff
+        </Button>
+      </Box>
       <TableContainer component={Paper}>
         <Table size="small">
           <TableHead>
@@ -178,19 +200,22 @@ const Staff = () => {
               })
               .map((person) => (
                 <TableRow
-                  key={person.registrantId}
+                  key={person.wcaUserId}
                   hover
                   className={clsx({
-                    [classes.firstTimer]: acceptedRegistration(person) && !person.wcaId,
+                    [classes.firstTimer]:
+                      acceptedRegistration(person) && !person.wcaId,
                     [classes.delegateOrOrganizer]:
-                      acceptedRegistration(person) && isOrganizerOrDelegate(person),
+                      acceptedRegistration(person) &&
+                      isOrganizerOrDelegate(person),
                     [classes.disabled]: !acceptedRegistration(person),
                   })}
                   classes={{
                     hover: classes.hover,
                   }}>
                   <TableCell>
-                    <Link to={`/competitions/${competitionId}/persons/${person.registrantId}`}>
+                    <Link
+                      to={`/competitions/${competitionId}/persons/${person.registrantId}`}>
                       {person.name}
                     </Link>
                   </TableCell>
@@ -200,14 +225,14 @@ const Staff = () => {
                     <Checkbox
                       color="primary"
                       disabled
-                      checked={person.roles.indexOf('delegate') > -1}
+                      checked={person.roles?.indexOf('delegate') > -1}
                     />
                   </TableCell>
                   <TableCell padding="checkbox">
                     <Checkbox
                       color="primary"
                       disabled
-                      checked={person.roles.indexOf('organizer') > -1}
+                      checked={person.roles?.indexOf('organizer') > -1}
                     />
                   </TableCell>
                   {ROLES.map((role) => (
@@ -215,8 +240,10 @@ const Staff = () => {
                       <Checkbox
                         disabled={!acceptedRegistration(person)}
                         color="primary"
-                        checked={person.roles.indexOf(role.id) > -1}
-                        onChange={(e) => handleChange(e, person.registrantId, role.id)}
+                        checked={person.roles?.indexOf(role.id) > -1}
+                        onChange={(e) =>
+                          handleChange(e, person.registrantId, role.id)
+                        }
                       />
                     </TableCell>
                   ))}
@@ -226,15 +253,19 @@ const Staff = () => {
           <TableFooter>
             <TableRow>
               <TableCell className={classes.bold}>
-                {acceptedPersons.filter((person) => person.roles.length > 0).length}
+                {
+                  acceptedPersons.filter((person) => person.roles.length > 0)
+                    .length
+                }
                 {' / '}
                 {wcif.persons.filter(acceptedRegistration).length}
                 {' Staff'}
               </TableCell>
               <TableCell className={classes.bold}>
                 {pluralize(
-                  wcif.persons.filter(acceptedRegistration).filter((person) => !person.wcaId)
-                    .length,
+                  wcif.persons
+                    .filter(acceptedRegistration)
+                    .filter((person) => !person.wcaId).length,
                   'First-Timer'
                 )}
               </TableCell>
@@ -247,7 +278,11 @@ const Staff = () => {
                 }
               </TableCell>
               <TableCell className={classes.bold}>
-                {acceptedPersons.filter((person) => person.roles.includes('organizer')).length}
+                {
+                  acceptedPersons.filter((person) =>
+                    person.roles.includes('organizer')
+                  ).length
+                }
               </TableCell>
               {ROLES.map((role) => (
                 <TableCell key={role.id} className={classes.bold}>
@@ -262,6 +297,10 @@ const Staff = () => {
           </TableFooter>
         </Table>
       </TableContainer>
+      <AddNonCompetingStaffDialog
+        open={nonCompetingStaffDialogOpen}
+        onClose={() => setNonCompetingStaffDialogOpen(false)}
+      />
     </>
   );
 };

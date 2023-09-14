@@ -27,6 +27,7 @@ export const RESET_ALL_GROUP_ASSIGNMENTS = 'reset_all_group_assignments';
 export const GENERATE_ASSIGNMENTS = 'generate_assignments';
 export const EDIT_ACTIVITY = 'edit_activity';
 export const UPDATE_GLOBAL_EXTENSION = 'update_global_extension';
+export const ADD_PERSON = 'add_person';
 
 const fetchingCompetitions = () => ({
   type: FETCHING_COMPETITIONS,
@@ -253,3 +254,8 @@ export const updateGlobalExtension = (extensionData) => ({
   type: UPDATE_GLOBAL_EXTENSION,
   extensionData,
 });
+
+export const addPerson = (person) => ({
+  type: ADD_PERSON,
+  person,
+})

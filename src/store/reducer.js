@@ -24,6 +24,7 @@ import {
   GENERATE_ASSIGNMENTS,
   EDIT_ACTIVITY,
   UPDATE_GLOBAL_EXTENSION,
+  ADD_PERSON,
 } from './actions';
 import INITIAL_STATE from './initialState';
 import * as Reducers from './reducers';
@@ -215,6 +216,21 @@ const reducers = {
       },
     };
   },
+  [ADD_PERSON]: (state, {person}) => {
+    // if (state.wcif.persons.some((p) => p.registrantId === person.registrantId || p.wcaUserId === person.wcaUserId)) {
+    //   throw new Error('duplicate person', person);
+    // }
+
+    return {
+      ...state,
+      needToSave: true,
+      changedKeys: new Set([...state.changedKeys, 'persons']),
+      wcif: {
+        ...state.wcif,
+        persons: [...state.wcif.persons.filter((i) => i.wcaUserId !== person.wcaUserId), person]
+      },
+    }
+  }
 };
 
 function deepUpdate(where, what) {
