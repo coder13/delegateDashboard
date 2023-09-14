@@ -175,7 +175,7 @@ export const chunk = (arr, size) =>
 
 export const times = (n, fn) => Array.from({ length: n }, (_, index) => fn(index));
 
-export const uniq = (arr) => [...new Set(arr)];
+export const uniq = <T>(arr: T[]): T[] => [...new Set(arr)];
 
 export const pick = (obj, keys) =>
   keys.reduce((newObj, key) => ({ ...newObj, [key]: obj[key] }), {});

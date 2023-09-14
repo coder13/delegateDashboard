@@ -2,6 +2,7 @@ import { formatCentiseconds } from '@wca/helpers';
 import clsx from 'clsx';
 import { useConfirm } from 'material-ui-confirm';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { usePapaParse } from 'react-papaparse';
 import { useDispatch, useSelector } from 'react-redux';
 import { EmojiPeople } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
@@ -52,6 +53,7 @@ import {
   upsertPersonAssignments,
   removePersonAssignments,
   bulkRemovePersonAssignments,
+  bulkAddPersonAssignments,
   generateAssignments,
 } from '../../../store/actions';
 import { selectWcifRooms } from '../../../store/selectors';
@@ -103,6 +105,7 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
   const { eventId, roundNumber } = parseActivityCode(activityCode);
   const event = wcif.events.find((e) => e.id === eventId);
   const classes = useStyles();
+  const { readString } = usePapaParse();
   const wcifRooms = useSelector((state) => selectWcifRooms(state));
 
   const dispatch = useDispatch();
@@ -259,19 +262,134 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
     }
   };
 
+  const onPaste = useCallback((e) => {
+    e.preventDefault();
+    const clipboardData = e.clipboardData;
+    if (!clipboardData) {
+      return;
+    }
+    const data = clipboardData.getData('text');
+    if (!data) {
+      return;
+    }
+
+    const parsedData = readString(data, {
+      worker: false,
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (header) => header.trim().toLowerCase(),
+    });
+
+    if (!parsedData?.data) {
+      return;
+    }
+
+    confirm({
+      title: 'Are you sure',
+      description: 'Are you sure you want to overwrite existing data?',
+    }).then(() => {
+      const competitorGroupSizes = {};
+      const staffGroupSizes = {};
+
+      const assignments = parsedData.data
+        .filter((p) => {
+          return !!p.id;
+        })
+        .flatMap((p) => {
+          const a = [];
+          const competitorGroupNumber = p.g || p.group;
+          const competitorGroupActivities = groups
+            .filter((g) => {
+              const parsedActivityCode = parseActivityCode(g.activityCode);
+              return parsedActivityCode.groupNumber?.toString() === competitorGroupNumber;
+            })
+            .map((g) => ({
+              g,
+              score: competitorGroupSizes[g.id] || 0,
+            }))
+            .sort((a, b) => a.score - b.score);
+
+          const competitorGroupActivity = competitorGroupActivities[0].g;
+
+          competitorGroupSizes[competitorGroupActivity.id] =
+            (competitorGroupSizes[competitorGroupActivity.id] || 0) + 1;
+
+          a.push({
+            activityId: competitorGroupActivity.id,
+            registrantId: +p.id,
+            assignment: {
+              assignmentCode: 'competitor',
+              stationNumber: undefined,
+              activityId: competitorGroupActivity.id,
+            },
+          });
+
+          const helpingGroup = p.h || p.helping || p.staff;
+          if (helpingGroup) {
+            const assignmentLetter = helpingGroup[0].toLowerCase();
+            const staffGroupNumber = helpingGroup[1];
+            const assignmentCode = Assignments.find(
+              (assignment) => assignment.key.toLowerCase() === assignmentLetter
+            ).id;
+
+            const staffGroupActivities = groups
+              .filter((g) => {
+                const parsedActivityCode = parseActivityCode(g.activityCode);
+                return parsedActivityCode.groupNumber?.toString() === staffGroupNumber;
+              })
+              .map((g) => ({
+                g,
+                score: staffGroupSizes?.[assignmentCode]?.[g.id] || 0,
+              }))
+              .sort((a, b) => a.score - b.score);
+
+            const staffGroupActivity = staffGroupActivities[0].g;
+
+            if (!staffGroupSizes[assignmentCode]) {
+              staffGroupSizes[assignmentCode] = {};
+            }
+
+            staffGroupSizes[assignmentCode][staffGroupActivity.id] =
+              (staffGroupSizes?.[assignmentCode]?.[staffGroupActivity.id] || 0) + 1;
+
+            a.push({
+              activityId: staffGroupActivity.id,
+              registrantId: +p.id,
+              assignment: {
+                assignmentCode,
+                stationNumber: undefined,
+                activityId: staffGroupActivity.id,
+              },
+            });
+            console.log(a[1]);
+          }
+
+          return a;
+        });
+      dispatch(
+        bulkRemovePersonAssignments(assignments.map((i) => ({ registrantId: i.registrantId })))
+      );
+      dispatch(bulkAddPersonAssignments(assignments));
+    });
+  });
+
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
+
+    window.addEventListener('paste', onPaste);
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('paste', onPaste);
     };
-  });
+  }, [onPaste]);
 
   if (!open) {
     return null;
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth fullScreen={fullScreen}>
+    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth fullScreen={fullScreen}>
       <DialogTitle sx={{ paddingTop: '0.25em', paddingBottom: '0.25em' }}>
         Configuring Assignments For {activityCodeToName(activityCode)}
       </DialogTitle>
@@ -305,7 +423,12 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
             </FormControl>
           </div>
           <div style={{ display: 'flex', flexGrow: 1 }} />
-          <div style={{ display: 'flex', flexGrow: 1, justifyContent: 'space-around' }}>
+          <div
+            style={{
+              display: 'flex',
+              flexGrow: 1,
+              justifyContent: 'space-around',
+            }}>
             <FormControl margin="none">
               <FormLabel>Sort</FormLabel>
               <RadioGroup
@@ -461,7 +584,11 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
                         if (!assignment) return '';
 
                         return (
-                          <div style={{ marginRight: '0.25em', display: 'inline' }}>
+                          <div
+                            style={{
+                              marginRight: '0.25em',
+                              display: 'inline',
+                            }}>
                             <b>{totalStaffAssignments[key]}</b>
                             {assignment.letter}
                             {index < arry.length - 1 ? ', ' : ''}
