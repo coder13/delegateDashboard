@@ -1,21 +1,19 @@
 import { Outlet } from 'react-router-dom';
-import { Alert, AlertTitle } from '@mui/material';
-import { styled } from '@mui/system';
+import { Alert, AlertTitle, Box } from '@mui/material';
 import { useAuth } from '../providers/AuthProvider';
 import Footer from './Footer';
-
-const RootDiv = styled('div')({
-  display: 'flex',
-  height: '100vh',
-  flexDirection: 'column',
-  flexGrow: 1,
-});
 
 const App = () => {
   const { userFetchError } = useAuth();
 
   return (
-    <RootDiv>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        flexGrow: 1,
+        height: '100vh',
+      }}>
       <div
         style={{
           display: 'flex',
@@ -34,7 +32,7 @@ const App = () => {
         <Outlet />
       </div>
       <Footer />
-    </RootDiv>
+    </Box>
   );
 };
 

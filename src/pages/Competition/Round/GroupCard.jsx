@@ -83,7 +83,9 @@ const GroupCard = ({ groupActivity }) => {
               const assignment = assignments.find((a) => a.activityId === groupActivity.id);
 
               return (
-                <MaterialLink to={`/competitions/${wcif.id}/persons/${registrantId}`}>
+                <MaterialLink
+                  key={registrantId}
+                  to={`/competitions/${wcif.id}/persons/${registrantId}`}>
                   {`${name}${assignment?.stationNumber ? ` (${assignment.stationNumber})` : ''}`}
                 </MaterialLink>
               );

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import PeopleIcon from '@mui/icons-material/People';
 import { Avatar, Box, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
@@ -25,6 +26,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Header = () => {
+  const wcif = useSelector((state) => state.wcif);
   const classes = useStyles();
   const { user, signIn, signOut } = useAuth();
   const [anchorElUser, setAnchorElUser] = useState(null);
@@ -39,7 +41,7 @@ const Header = () => {
 
   useEffect(() => {
     document.title = 'Delegate Dashboard';
-  }, wcif);
+  }, [wcif]);
 
   return (
     <AppBar position="static" color="primary">

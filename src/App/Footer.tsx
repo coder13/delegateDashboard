@@ -1,4 +1,3 @@
-import { makeStyles } from '@material-ui/core';
 import { Divider } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import Link from '@mui/material/Link';
@@ -6,23 +5,15 @@ import Typography from '@mui/material/Typography';
 import grey from '@mui/material/colors/grey';
 import { WCA_ORIGIN } from '../lib/wca-env';
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    padding: theme.spacing(2),
+const linkStyle = {
+  verticalAlign: 'middle',
+  fontWeight: 500,
+  color: grey['900'],
+  '&:hover': {
+    textDecoration: 'none',
+    opacity: 0.7,
   },
-  grow: {
-    flexGrow: 1,
-  },
-  link: {
-    verticalAlign: 'middle',
-    fontWeight: 500,
-    color: grey['900'],
-    '&:hover': {
-      textDecoration: 'none',
-      opacity: 0.7,
-    },
-  },
-}));
+};
 
 const links = [
   { text: 'GitHub', url: 'https://github.com/coder13/delegateDashboard' },
@@ -34,14 +25,13 @@ const links = [
 ];
 
 const Footer = () => {
-  const classes = useStyles();
   return (
-    <Grid container className={classes.root}>
+    <Grid container sx={{ p: 2 }}>
       <Grid item>
         <Typography variant="body2">
           Made by{' '}
           <Link
-            className={classes.link}
+            sx={linkStyle}
             href="https://github.com/coder13"
             target="_blank"
             rel="noopener noreferrer">
@@ -53,7 +43,7 @@ const Footer = () => {
       <Grid item>
         <Typography variant="body2">
           <Link
-            className={classes.link}
+            sx={linkStyle}
             href="https://cailynhoover.com/donate"
             target="_blank"
             rel="noopener noreferrer">
@@ -65,22 +55,26 @@ const Footer = () => {
       <Grid item>
         <Typography variant="body2">
           {'Using data from '}
-          <Link
-            className={classes.link}
-            href={WCA_ORIGIN}
-            target="_blank"
-            rel="noopener noreferrer">
+          <Link sx={linkStyle} href={WCA_ORIGIN} target="_blank" rel="noopener noreferrer">
             {WCA_ORIGIN}
           </Link>
         </Typography>
       </Grid>
-      <Grid item className={classes.grow} />
+      <Grid item sx={{ flexGrow: 1 }} />
       <Grid item>
         <Grid container spacing={1}>
           {links.map(({ text, url }) => (
             <Grid item key={text}>
               <Link
-                className={classes.link}
+                sx={{
+                  verticalAlign: 'middle',
+                  fontWeight: 500,
+                  color: grey['900'],
+                  '&:hover': {
+                    textDecoration: 'none',
+                    opacity: 0.7,
+                  },
+                }}
                 variant="body2"
                 href={url}
                 target="_blank"

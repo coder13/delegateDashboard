@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Grid } from '@mui/material';
 import CompetitionSummary from '../../components/CompetitionSummaryCard';
@@ -17,6 +17,10 @@ const CompetitionHome = () => {
   const handleSelected = (roundId) => {
     navigate(`/competitions/${competitionId}/events/${roundId}`);
   };
+
+  useEffect(() => {
+    document.title = 'Delegate Dashboard';
+  }, []);
 
   return (
     <Grid container direction="column" spacing={1}>

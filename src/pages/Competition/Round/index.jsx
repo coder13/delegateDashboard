@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom';
 import { MoreVert } from '@mui/icons-material';
 import {
   AppBar,
+  Alert,
   Box,
   Card,
   CardActions,
@@ -271,6 +272,28 @@ const RoundPage = () => {
           </Button>
         </>
       );
+    } else if (groups.length > 0 && personsShouldBeInRound.length === 0) {
+      return (
+        <>
+          <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
+          <div style={{ display: 'flex', flex: 1 }} />
+          <Button onClick={() => setConfigureGroupsDialog(true)}>Configure Groups</Button>
+          <Button color="error" onClick={onResetGroupActitivites}>
+            Reset Group Activities
+          </Button>
+        </>
+      );
+    } else if (groups.length > 0 && personsShouldBeInRound.length === 0) {
+      return (
+        <>
+          <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
+          <div style={{ display: 'flex', flex: 1 }} />
+          <Button onClick={() => setConfigureGroupsDialog(true)}>Configure Groups</Button>
+          <Button color="error" onClick={onResetGroupActitivites}>
+            Reset Group Activities
+          </Button>
+        </>
+      );
     } else if (personsAssignedToCompete.length > 0) {
       return (
         <>
@@ -284,22 +307,13 @@ const RoundPage = () => {
           </Button>
         </>
       );
-    } else {
-      console.log({
-        groupCount: groups,
-        personsAssignedToCompete: personsAssignedToCompete,
-        personsShouldBeInRound: personsShouldBeInRound,
-      });
-
-      return (
-        <>
-          <Button onClick={() => setConfigureGroupCountsDialog(true)}>
-            Configure Group Counts
-          </Button>
-          <Typography>No one in round to assign! Double check registrations.</Typography>
-        </>
-      );
     }
+
+    return (
+      <>
+        <Button onClick={() => setConfigureGroupCountsDialog(true)}>Configure Group Counts</Button>
+      </>
+    );
   };
 
   return (
@@ -414,6 +428,17 @@ const RoundPage = () => {
           <CardActions>{actionButtons()}</CardActions>
         </Card>
       </Grid>
+
+      {personsShouldBeInRound.length === 0 && (
+        <Grid item>
+          <Alert severity="warning">
+            <Typography>
+              No one in round to automatically assign. Make sure the next round is opened on
+              WCA-Live to generate assignments
+            </Typography>
+          </Alert>
+        </Grid>
+      )}
 
       <Grid item>
         <AppBar position="sticky" color="secondary" sx={{ top: '480px' }}>
