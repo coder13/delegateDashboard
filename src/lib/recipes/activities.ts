@@ -34,13 +34,14 @@ const getBaseActivities = (
 
 export const getActivities = (
   wcif: Competition,
-  { base, options = {} }: AssignmentStep['props']['activities'],
+  { base, activityIds, options = {} }: AssignmentStep['props']['activities'],
   roundId: string
 ) => {
   const baseActivities = getBaseActivities(wcif, base, roundId);
 
-  if (options.activityIds) {
-    return baseActivities.filter((activity) => options.activityIds?.includes(activity.id));
+  console.log(45, baseActivities, activityIds);
+  if (activityIds) {
+    return baseActivities.filter((activity) => activityIds?.includes(activity.id));
   }
 
   let baseActivityCodes = [...new Set(baseActivities.map((activity) => activity.activityCode))];
