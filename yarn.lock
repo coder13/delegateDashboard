@@ -5243,10 +5243,10 @@ vite@^4.4.9:
   optionalDependencies:
     fsevents "~2.3.2"
 
-wca-group-generators@^0.1.2:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/wca-group-generators/-/wca-group-generators-0.1.2.tgz#6f02f3f9843f1adaf5cb725bef2008c6a62bff65"
-  integrity sha512-fTLp4i5rklR5FmcIcOsTOUMIu0OGnz+YUCdg9ogrtDxSeE2EDZq4DjLwePTdHqsO0a5yw8+vv31wEUSwnfGoaQ==
+wca-group-generators@^0.1.4:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/wca-group-generators/-/wca-group-generators-0.1.4.tgz#fb4de14629981ba603f8b088c46e5fadaec4a039"
+  integrity sha512-3dUMCsoEqifsj0OFxZHY7/pYyVXxnRg2bI/dJzEyEAYS7r4VymOJ9KkX9vxwRx8/UNN1Tt/1/a709DQeAaiURg==
   dependencies:
     "@wca/helpers" "^1.1.5"
     tsc "^2.0.4"
