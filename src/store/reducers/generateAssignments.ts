@@ -14,6 +14,7 @@ export function generateAssignments(state: { wcif: Competition }, action) {
         throw new Error(`Generator ${step.props.generator} not found`);
       }
       const hydratedStep = hydrateStep(wcif, action.roundId, step);
+      console.log(17, step, hydratedStep);
       const constraints =
         hydratedStep.props.constraints.map((c) => {
           if (!Constraints[c.constraint]) {
@@ -23,13 +24,17 @@ export function generateAssignments(state: { wcif: Competition }, action) {
           return {
             constraint: Constraints[c.constraint],
             weight: c.weight,
+            options: c.options,
           };
         }) || [];
+
+      console.log(31, step.id, hydratedStep.props.cluster);
 
       return generator.execute({
         wcif,
         ...hydratedStep.props,
         constraints,
+        roundId: action.roundId,
       });
     } else if (step.type === 'groups') {
       const roundActivities = findRoundActivitiesById(wcif, action.roundId);

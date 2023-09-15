@@ -137,7 +137,7 @@ const RoundPage = () => {
     const defaultRecipeData = Recipes.find((r) => r.id === recipeExtensionData.id);
 
     return {
-      ...fromRecipeDefinition(defaultRecipeData),
+      ...fromRecipeDefinition(defaultRecipeData, { wcif, activityCode }),
       name: `${defaultRecipeData.name} (defaults)`,
       ...recipeExtensionData,
     };
