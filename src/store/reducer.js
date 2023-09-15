@@ -156,6 +156,7 @@ const reducers = {
     wcif: mapIn(state.wcif, ['events'], (event) =>
       mapIn(event, ['rounds'], (round) => {
         if (round.id === roundId) {
+          console.log(159, round.id, data);
           return setExtensionData(id, round, data);
         }
 

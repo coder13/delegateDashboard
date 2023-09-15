@@ -14,7 +14,7 @@ export function generateAssignments(state: { wcif: Competition }, action) {
         throw new Error(`Generator ${step.props.generator} not found`);
       }
       const hydratedStep = hydrateStep(wcif, action.roundId, step);
-      console.log(17, step, hydratedStep);
+
       const constraints =
         hydratedStep.props.constraints.map((c) => {
           if (!Constraints[c.constraint]) {

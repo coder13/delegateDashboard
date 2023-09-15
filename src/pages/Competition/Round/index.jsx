@@ -119,7 +119,8 @@ const RoundPage = () => {
 
   const recipeExtensionData = useMemo(() => {
     const configuredRecipeData = getExtensionData('recipe', round);
-    if (!configuredRecipeData.data) {
+
+    if (!configuredRecipeData.id) {
       return { id: getPreferredDefaultRecipe(wcif, round) };
     }
 
@@ -183,6 +184,7 @@ const RoundPage = () => {
   };
 
   const onSwitchRecipes = (id) => {
+    console.log(186, id);
     dispatch(updateRoundExtensionData(round.id, 'recipe', { id }));
   };
 
