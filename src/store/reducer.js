@@ -1,3 +1,4 @@
+import { findAndReplaceActivity } from '../lib/activities';
 import { mapIn } from '../lib/utils';
 import { setExtensionData } from '../lib/wcif-extensions';
 import {

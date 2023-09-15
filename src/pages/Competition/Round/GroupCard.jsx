@@ -26,9 +26,9 @@ import ConfigureGroupDialog from './ConfigureGroupDialog';
 
 const withAssignmentCode =
   (activityId, assignmentCode) =>
-  ({ assignedActivity }) =>
-    assignedActivity.activityId === activityId &&
-    assignedActivity.assignmentCode.indexOf(assignmentCode) > -1;
+    ({ assignedActivity }) =>
+      assignedActivity.activityId === activityId &&
+      assignedActivity.assignmentCode.indexOf(assignmentCode) > -1;
 
 const GroupCard = ({ groupActivity }) => {
   const wcif = useSelector((state) => state.wcif);
@@ -93,21 +93,21 @@ const GroupCard = ({ groupActivity }) => {
     (array) =>
       array.length
         ? array
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .map(({ registrantId, name, assignments }) => {
-              const assignment = assignments.find((a) => a.activityId === groupActivity.id);
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map(({ registrantId, name, assignments }) => {
+            const assignment = assignments.find((a) => a.activityId === groupActivity.id);
 
-              return (
-                <MaterialLink to={`/competitions/${wcif.id}/persons/${registrantId}`}>
-                  {`${name}${assignment?.stationNumber ? ` (${assignment.stationNumber})` : ''}`}
-                </MaterialLink>
-              );
-            })
-            .reduce((a, b) => (
-              <>
-                {a}, {b}
-              </>
-            ))
+            return (
+              <MaterialLink key={registrantId || name} to={`/competitions/${wcif.id}/persons/${registrantId}`}>
+                {`${name}${assignment?.stationNumber ? ` (${assignment.stationNumber})` : ''}`}
+              </MaterialLink>
+            );
+          })
+          .reduce((a, b) => (
+            <>
+              {a}, {b}
+            </>
+          ))
         : null,
     [groupActivity.id, wcif.id]
   );

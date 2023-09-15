@@ -64,8 +64,8 @@ export const ConfigurableGroupList = ({
               </IconButton>
             }>
             <ListItemText
-              primary={activityCodeToName(activity.activityCode)}
-              secondary={`${formatTimeRange(
+              primary={activity.name}
+              secondary={`${activity.activityCode} | ${formatTimeRange(
                 activity.startTime,
                 activity.endTime
               )} (${formatDuration({ minutes })})`}

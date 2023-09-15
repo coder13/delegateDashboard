@@ -299,7 +299,7 @@ export const findAndReplaceActivity = (where: Partial<Activity>, what: Partial<A
 
     return {
       ...activity,
-      childActivities: activity.childActivities.map(findAndReplaceActivity(where, what)),
+      childActivities: activity.childActivities.map(findAndReplaceActivity(where, what)),       
     } as Activity;
   };
 }
