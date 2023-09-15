@@ -284,3 +284,22 @@ export const cumulativeGroupCount = (round) => {
     );
   }
 };
+
+/**
+ * Searches for an activity recursively and returns a new version of the activity 
+ */
+export const findAndReplaceActivity = (where: Partial<Activity>, what: Partial<Activity>) => {
+  return (activity: Activity): Activity => {
+    if (Object.keys(where).every((key) => activity[key] === where[key])) {
+      return {
+        ...activity,
+        ...what,
+      } as Activity;
+    }
+
+    return {
+      ...activity,
+      childActivities: activity.childActivities.map(findAndReplaceActivity(where, what)),
+    } as Activity;
+  };
+}
