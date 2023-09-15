@@ -9,11 +9,13 @@ import { AssignmentStep, StepDefinition } from './types';
 export const StepLibrary: Record<string, StepDefinition> = {
   GenerateSingleGroup: core.GenerateSingleGroup,
   SpreadDelegates: core.SpreadDelegates,
+  BalancedCompetitorAssignmentsForEveryone: core.BalancedCompetitorAssignmentsForEveryone,
   GenerateCompetitorAssignmentsForStaff: pnw.GenerateCompetitorAssignmentsForStaff,
   GenerateCompetitorAssignmentsForFirstTimers: pnw.GenerateCompetitorAssignmentsForFirstTimers,
   GenerateCompetitorAssignments: pnw.GenerateCompetitorAssignments,
   GenerateJudgeAssignmentsForCompetitors: pnw.GenerateJudgeAssignmentsForCompetitors,
   GenerateFirstTimersInSameGroup: mca.GenerateFirstTimersInSameGroup,
+  SpreadStaffAcrossGroups: mca.SpreadStaffAcrossGroups,
 };
 
 export const Steps = Object.keys(StepLibrary).reduce((acc, key) => {

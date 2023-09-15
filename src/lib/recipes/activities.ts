@@ -39,7 +39,6 @@ export const getActivities = (
 ) => {
   const baseActivities = getBaseActivities(wcif, base, roundId);
 
-  console.log(45, baseActivities, activityIds);
   if (activityIds) {
     return baseActivities.filter((activity) => activityIds?.includes(activity.id));
   }
@@ -48,7 +47,6 @@ export const getActivities = (
   let filteredBaseActivities = baseActivities;
 
   if (options.tail) {
-    console.log(46, options, baseActivityCodes.slice(0, -1));
     baseActivityCodes = baseActivityCodes.slice(0, -1);
   }
 

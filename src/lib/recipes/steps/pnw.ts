@@ -182,16 +182,12 @@ export const GenerateJudgeAssignmentsForCompetitors: StepDefinition = {
           weight: 1,
         },
         {
-          constraint: 'balancedGroupSize',
-          weight: 1,
-        },
-        {
           constraint: 'sameStageAsOtherAssignments',
           weight: 5,
         },
         {
           constraint: 'shouldFollowCompetitorAssignment',
-          weight: 1,
+          weight: 10,
         },
       ],
     },

@@ -71,12 +71,12 @@ export const Filters = [
         name: 'Organizer',
       },
       {
-        id: 'staff',
+        id: 'staff-.*',
         name: 'Staff',
       },
     ],
     filter: (roles: string[]) => (person: Person) =>
-      roles.some((role) => person.roles?.includes(role)),
+      roles.some((role) => person.roles?.some((r) => new RegExp(role).test(r))),
   },
   {
     key: 'isFirstTimer',

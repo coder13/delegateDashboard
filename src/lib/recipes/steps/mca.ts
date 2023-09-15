@@ -56,3 +56,44 @@ export const GenerateFirstTimersInSameGroup: StepDefinition = {
     };
   },
 };
+
+export const SpreadStaffAcrossGroups: StepDefinition = {
+  id: 'SpreadStaffAcrossGroups',
+  name: 'Spread Staff Across Groups',
+  description: 'Spreads staff across groups',
+  defaults: () => ({
+    type: 'assignments',
+    props: {
+      generator: 'assignEveryone',
+      cluster: {
+        base: 'personsInRound',
+        filters: [
+          {
+            key: 'hasRole',
+            value: ['staff-.*'],
+          },
+        ],
+      },
+      assignmentCode: 'competitor',
+      activities: { base: 'all' },
+      options: {
+        mode: 'balanced1',
+      },
+      constraints: [
+        {
+          constraint: 'uniqueAssignment',
+          weight: 1,
+        },
+        {
+          constraint: 'mustNotHaveOtherAssignments',
+          weight: 1,
+        },
+        {
+          constraint: 'balancedGroupSize',
+          weight: 1,
+          options: 'cluster',
+        },
+      ],
+    },
+  }),
+};

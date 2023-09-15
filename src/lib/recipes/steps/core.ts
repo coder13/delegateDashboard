@@ -45,11 +45,60 @@ export const SpreadDelegates: StepDefinition = {
         },
         {
           constraint: 'balancedGroupNumberSize',
+          weight: 2,
+          options: {
+            persons: 'cluster',
+          },
+        },
+        {
+          constraint: 'balancedGroupSize',
           weight: 1,
           options: {
             persons: 'cluster',
           },
         },
+      ],
+    },
+  }),
+};
+
+export const BalancedCompetitorAssignmentsForEveryone: StepDefinition = {
+  id: 'BalancedCompetitorAssignmentsForEveryone',
+  name: 'Balanced Competitor Assignments For Everyone',
+  description:
+    'Splits up the remaining people without competitor assignments and assigns groups by speed',
+  defaults: () => ({
+    type: 'assignments',
+    props: {
+      generator: 'assignEveryone',
+      cluster: {
+        base: 'personsInRound',
+        filters: [
+          {
+            key: 'doesNotHaveAssignmentInRound',
+            value: 'competitor',
+          },
+        ],
+      },
+      assignmentCode: 'competitor',
+      activities: { base: 'all' },
+      options: {
+        mode: 'balanced2',
+      },
+      constraints: [
+        // {
+        //   constraint: 'uniqueAssignment',
+        //   weight: 1,
+        // },
+        // {
+        //   constraint: 'mustNotHaveOtherAssignments',
+        //   weight: 1,
+        // },
+        // {
+        //   constraint: 'balancedGroupSize',
+        //   weight: 1,
+        //   options: 'cluster',
+        // },
       ],
     },
   }),

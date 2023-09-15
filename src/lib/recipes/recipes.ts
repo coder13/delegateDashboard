@@ -24,7 +24,13 @@ export const Recipes: RecipeDefinition[] = [
     id: 'mca-test',
     name: 'MCA Test',
     description: 'MCA Test',
-    defaultSteps: [StepLibrary.GenerateFirstTimersInSameGroup, StepLibrary.SpreadDelegates],
+    defaultSteps: [
+      StepLibrary.GenerateFirstTimersInSameGroup,
+      StepLibrary.SpreadDelegates,
+      StepLibrary.SpreadStaffAcrossGroups,
+      StepLibrary.BalancedCompetitorAssignmentsForEveryone,
+      StepLibrary.GenerateJudgeAssignmentsForCompetitors,
+    ],
   },
 ];
 
