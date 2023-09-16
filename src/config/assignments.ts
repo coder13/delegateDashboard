@@ -1,6 +1,13 @@
+import { Color } from '@mui/material';
 import { blue, deepPurple, green, grey, pink, purple, red, yellow } from '@mui/material/colors';
 
-const Assignments = [
+const Assignments: Array<{
+  id: string;
+  name: string;
+  color: Color;
+  key: string;
+  letter: string;
+}> = [
   {
     id: 'competitor',
     name: 'Competitor',
