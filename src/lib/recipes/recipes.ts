@@ -4,6 +4,16 @@ import { RecipeConfig, RecipeDefinition, Step } from './types';
 
 export const Recipes: RecipeDefinition[] = [
   {
+    id: 'balanced',
+    name: 'Balanced',
+    description: 'Balanced',
+    defaultSteps: [
+      StepLibrary.SpreadDelegates,
+      StepLibrary.BalancedCompetitorAssignmentsForEveryone,
+      StepLibrary.GenerateJudgeAssignmentsForCompetitors,
+    ],
+  },
+  {
     id: 'pnw',
     name: 'PNW',
     description: 'PNW',
