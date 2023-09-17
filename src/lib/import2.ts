@@ -14,7 +14,6 @@ export const parseCompetitorAssignment = (raw: string) => {
   }
 
   const data = raw.trim();
-
   const matchWithStage = data.match(competitorAssignmentRegexWithStage);
   if (matchWithStage) {
     return parseCompetitorAssignmentWithStage(matchWithStage);

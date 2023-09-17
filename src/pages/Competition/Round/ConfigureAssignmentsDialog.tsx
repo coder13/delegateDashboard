@@ -45,22 +45,20 @@ import {
   Toolbar as MuiToolbar,
   Typography,
   useMediaQuery,
-  Select,
-  ListItemText,
-  FormHelperText,
   Tooltip,
   Box,
+  Toolbar,
 } from '@mui/material';
 import { grey, red, yellow } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
-import { styled, useTheme } from '@mui/system';
+import { useTheme } from '@mui/system';
 import { Assignment, EventId, formatCentiseconds } from '@wca/helpers';
 import clsx from 'clsx';
 import { useConfirm } from 'material-ui-confirm';
-import PapaParse, { ParseResult } from 'papaparse';
+import PapaParse from 'papaparse';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { usePapaParse } from 'react-papaparse';
 import { useDispatch } from 'react-redux';
+import AssignmentPicker from '../../../components/AssignmentPicker';
 
 const useStyles = makeStyles(() => ({
   firstTimer: {
@@ -84,12 +82,12 @@ const useStyles = makeStyles(() => ({
   hover: {},
 }));
 
-const Toolbar = styled(MuiToolbar)(
-  ({ theme }) => `
-  padding: 0 ${theme.spacing(2)};
-  justify-content: space-between;
-`
-);
+// const Toolbar = styled(MuiToolbar)(
+//   ({ theme }) => `
+//   padding: 0 ${theme.spacing(2)};
+//   justify-content: space-between;
+// `
+// );
 
 function calcRanking(person, lastPerson) {
   if (!lastPerson?.seedResult?.ranking) {
@@ -111,7 +109,6 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
   };
   const event = wcif?.events?.find((e) => e.id === eventId);
   const classes = useStyles();
-  const { readString } = usePapaParse();
   const wcifRooms = useAppSelector((state) => selectWcifRooms(state));
 
   const dispatch = useDispatch();
@@ -207,12 +204,6 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
       wcif,
     ]
   );
-
-  // const personsForActivityId = useCallback(
-  //   (activityId, role) =>
-  //     persons.filter((p) => p.assignments.some((a) => a.assignmentCode === role)),
-  //   [persons]
-  // );
 
   const personAssignments = useCallback(
     (registrantId) => persons?.find((p) => p.registrantId === registrantId)?.assignments,
@@ -432,33 +423,14 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
         Configuring Assignments For {activityCodeToName(activityCode)}
       </DialogTitle>
       <DialogContent style={{ padding: 0 }}>
-        <Toolbar className="flex-row">
+        <Toolbar className="flex-row" sx={(theme) => ({
+          padding: theme.spacing(2),
+          justifyContent: 'space-between',
+        })}>
           <div
             className="flex-grow"
             style={{ display: 'flex', flexGrow: 1, alignItems: 'flex-start' }}>
-            <FormControl margin="none" fullWidth>
-              <FormLabel>Assignment</FormLabel>
-              <Select
-                className="paintingAssignment"
-                value={paintingAssignmentCode}
-                onChange={(e) => setPaintingAssignmentCode(e.target.value)}
-                renderValue={(value) => {
-                  const assignment = Assignments.find((a) => a.id === value);
-                  return (
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <ListItemText>{assignment?.name}</ListItemText>
-                    </div>
-                  );
-                }}>
-                {Assignments.map((assignment) => (
-                  <MenuItem key={assignment.id} value={assignment.id}>
-                    <ListItemText>{assignment.name}</ListItemText>
-                    {assignment.key && <Typography>{assignment.key.toUpperCase()}</Typography>}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FormHelperText>Or press the respective key</FormHelperText>
-            </FormControl>
+            <AssignmentPicker value={paintingAssignmentCode} setValue={setPaintingAssignmentCode} />
           </div>
           <div style={{ display: 'flex', flexGrow: 1 }} />
           <div
@@ -496,7 +468,7 @@ const ConfigureAssignmentsDialog = ({ open, onClose, round, activityCode, groups
             <MoreVertIcon />
           </IconButton>
           <Menu
-            id="Configure-scramblers-menu"
+            id="Configure-assignments-menu"
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
