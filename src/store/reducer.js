@@ -1,3 +1,4 @@
+import { findAndReplaceActivity } from '../lib/activities';
 import { Recipes, fromRecipeDefinition } from '../lib/recipes';
 import { mapIn } from '../lib/utils';
 import { getExtensionData, setExtensionData } from '../lib/wcif-extensions';
@@ -26,11 +27,13 @@ import {
   EDIT_ACTIVITY,
   UPDATE_GLOBAL_EXTENSION,
   UPDATE_STEP,
+  ADD_PERSON,
 } from './actions';
 import INITIAL_STATE from './initialState';
 import * as Reducers from './reducers';
 
 const reducers = {
+  // Fetching and updating wcif
   [FETCHING_COMPETITIONS]: (state) => ({
     ...state,
     fetchingCompetitions: true,
@@ -66,6 +69,16 @@ const reducers = {
     needToSave: action.uploading,
     changedKeys: action.uploading ? state.changedKeys : new Set(),
   }),
+  [PARTIAL_UPDATE_WCIF]: (state, action) => ({
+    ...state,
+    needToSave: true,
+    changedKeys: new Set([...state.changedKeys, ...Object.keys(action.wcif)]),
+    wcif: {
+      ...state.wcif,
+      ...action.wcif,
+    },
+  }),
+  // Editing person data
   [TOGGLE_PERSON_ROLE]: (state, action) => ({
     ...state,
     needToSave: true,
@@ -85,12 +98,29 @@ const reducers = {
       ),
     },
   }),
+  [ADD_PERSON]: (state, { person }) => {
+    // if (state.wcif.persons.some((p) => p.registrantId === person.registrantId || p.wcaUserId === person.wcaUserId)) {
+    //   throw new Error('duplicate person', person);
+    // }
+
+    return {
+      ...state,
+      needToSave: true,
+      changedKeys: new Set([...state.changedKeys, 'persons']),
+      wcif: {
+        ...state.wcif,
+        persons: [...state.wcif.persons.filter((i) => i.wcaUserId !== person.wcaUserId), person],
+      },
+    };
+  },
+  // Editing assignments
   [ADD_PERSON_ASSIGNMENTS]: Reducers.addPersonAssignments,
   [REMOVE_PERSON_ASSIGNMENTS]: Reducers.removePersonAssignments,
   [UPSERT_PERSON_ASSIGNMENTS]: Reducers.upsertPersonAssignments,
   [BULK_ADD_PERSON_ASSIGNMENTS]: Reducers.bulkAddPersonAssignments,
   [BULK_REMOVE_PERSON_ASSIGNMENTS]: Reducers.bulkRemovePersonAssignments,
   [BULK_UPSERT_PERSON_ASSIGNMENTS]: Reducers.bulkUpsertPersonAssignments,
+  // Editing group information
   [UPDATE_GROUP_COUNT]: (state, action) => ({
     ...state,
     needToSave: true,
@@ -140,13 +170,44 @@ const reducers = {
       )
     ),
   }),
-  [PARTIAL_UPDATE_WCIF]: (state, action) => ({
+  [RESET_ALL_GROUP_ASSIGNMENTS]: (state) => ({
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, ...Object.keys(action.wcif)]),
+    changedKeys: new Set([...state.changedKeys, 'persons']),
+    wcif: mapIn(state.wcif, ['persons'], (person) => ({
+      ...person,
+      assignments: [],
+    })),
+  }),
+  [GENERATE_ASSIGNMENTS]: Reducers.generateAssignments,
+  [EDIT_ACTIVITY]: (state, { where, what }) => ({
+    ...state,
+    needToSave: true,
+    changedKeys: new Set([...state.changedKeys, 'persons', 'schedule']),
     wcif: {
       ...state.wcif,
-      ...action.wcif,
+      schedule: mapIn(state.wcif.schedule, ['venues'], (venue) =>
+        mapIn(venue, ['rooms'], (room) => ({
+          ...room,
+          activities: room.activities.map(findAndReplaceActivity(where, what)),
+        }))
+      ),
+      persons:
+        what.id !== where.id
+          ? state.wcif.persons.map((person) => ({
+              ...person,
+              assignments: person.assignments.map((assignment) => {
+                if (assignment.activityId === where.id) {
+                  return {
+                    ...assignment,
+                    activityId: what.id,
+                  };
+                }
+
+                return assignment;
+              }),
+            }))
+          : what,
     },
   }),
   [UPDATE_ROUND_EXTENSION_DATA]: (state, { roundId, id, data }) => ({
@@ -164,49 +225,6 @@ const reducers = {
       })
     ),
   }),
-  [RESET_ALL_GROUP_ASSIGNMENTS]: (state) => ({
-    ...state,
-    needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'persons']),
-    wcif: mapIn(state.wcif, ['persons'], (person) => ({
-      ...person,
-      assignments: [],
-    })),
-  }),
-  [GENERATE_ASSIGNMENTS]: Reducers.generateAssignments,
-  [EDIT_ACTIVITY]: (state, { where, what }) => {
-    return {
-      ...state,
-      needToSave: true,
-      changedKeys: new Set([...state.changedKeys, 'persons', 'schedule']),
-      wcif: {
-        ...state.wcif,
-        schedule: {
-          ...state.wcif.schedule,
-          venues: state.wcif.schedule.venues.map((venue) => ({
-            ...venue,
-            rooms: venue.rooms.map((room) => ({
-              ...room,
-              activities: room.activities.map(deepUpdate(where, what)),
-            })),
-          })),
-        },
-        persons: state.wcif.persons.map((person) => ({
-          ...person,
-          assignments: person.assignments.map((assignment) => {
-            if (assignment.activityId === where.id) {
-              return {
-                ...assignment,
-                activityId: what.id,
-              };
-            }
-
-            return assignment;
-          }),
-        })),
-      },
-    };
-  },
   [UPDATE_GLOBAL_EXTENSION]: (state, { extensionData }) => {
     return {
       ...state,
@@ -259,22 +277,6 @@ const reducers = {
     };
   },
 };
-
-function deepUpdate(where, what) {
-  return (activity) => {
-    if (Object.keys(where).every((key) => activity[key] === where[key])) {
-      return {
-        ...activity,
-        ...what,
-      };
-    }
-
-    return {
-      ...activity,
-      childActivities: activity.childActivities.map(deepUpdate(where, what)),
-    };
-  };
-}
 
 function reducer(state = INITIAL_STATE, action) {
   if (reducers[action.type]) {

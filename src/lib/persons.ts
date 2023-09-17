@@ -1,3 +1,5 @@
+import { parseActivityCode } from './activities';
+import { roundFormatById } from './events';
 import {
   Activity,
   Assignment,
@@ -10,8 +12,6 @@ import {
   Result,
   Round,
 } from '@wca/helpers';
-import { parseActivityCode } from './activities';
-import { roundFormatById } from './events';
 
 /**
  * @param {Person} person

@@ -104,11 +104,12 @@ export const validate = (wcif) => (data) => {
   return checks;
 };
 
-const numberRegex = /^([1-9]\d*)$/i;
-const staffAssignmentRegex = /^(?<assignment>[RSJ])(?<groupNumber>[1-9]\d*)$/i;
+export const numberRegex = /^([1-9]\d*)$/i;
+export const staffAssignmentRegex = /^(?<assignment>[RSJ])(?<groupNumber>[1-9]\d*)$/i;
 
-const competitorAssignmentRegexWithoutStage = /^(?<groupNumber>[1-9]\d*)$/i;
-const competitorAssignmentRegexWithStage = /^(?<stage>[A-Z])(?:\s*)(?<groupNumber>[1-9]\d*)$/i;
+export const competitorAssignmentRegexWithoutStage = /^(?<groupNumber>[1-9]\d*)$/i;
+export const competitorAssignmentRegexWithStage =
+  /^(?<stage>([A-Za-z])+)(?:\s*)(?<groupNumber>[1-9]\d*)$/i;
 
 const generateActivityCode = (eventId, groupNumber) => {
   if (eventId === '333mbf' || eventId === '333fm') {

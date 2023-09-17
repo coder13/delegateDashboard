@@ -1,6 +1,12 @@
-import { formatCentiseconds } from '@wca/helpers';
-import React, { useCallback, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+import MaterialLink from '../../../components/MaterialLink';
+import {
+  activityDuration,
+  activityDurationString,
+  parseActivityCode,
+} from '../../../lib/activities';
+import { mayMakeCutoff, mayMakeTimeLimit } from '../../../lib/persons';
+import { selectPersonsAssignedToActivitiyId } from '../../../store/selectors';
+import ConfigureGroupDialog from './ConfigureGroupDialog';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import {
   Card,
@@ -14,15 +20,9 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import MaterialLink from '../../../components/MaterialLink';
-import {
-  activityDuration,
-  activityDurationString,
-  parseActivityCode,
-} from '../../../lib/activities';
-import { mayMakeCutoff, mayMakeTimeLimit } from '../../../lib/persons';
-import { selectPersonsAssignedToActivitiyId } from '../../../store/selectors';
-import ConfigureGroupDialog from './ConfigureGroupDialog';
+import { formatCentiseconds } from '@wca/helpers';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 const withAssignmentCode =
   (assignmentCode) =>
@@ -84,7 +84,7 @@ const GroupCard = ({ groupActivity }) => {
 
               return (
                 <MaterialLink
-                  key={registrantId}
+                  key={registrantId || name}
                   to={`/competitions/${wcif.id}/persons/${registrantId}`}>
                   {`${name}${assignment?.stationNumber ? ` (${assignment.stationNumber})` : ''}`}
                 </MaterialLink>
