@@ -1,37 +1,3 @@
-import { formatCentiseconds, parseActivityCode } from '@wca/helpers';
-import { useConfirm } from 'material-ui-confirm';
-import { useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
-import { MoreVert } from '@mui/icons-material';
-import {
-  AppBar,
-  Alert,
-  Box,
-  Card,
-  CardActions,
-  CardHeader,
-  Divider,
-  FormControl,
-  IconButton,
-  InputLabel,
-  List,
-  ListItemButton,
-  ListSubheader,
-  MenuItem,
-  Paper,
-  Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Toolbar,
-  Tooltip,
-  Typography,
-} from '@mui/material';
-import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
 import PersonsAssignmentsDialog from '../../../components/PersonsAssignmentsDialog';
 import PersonsDialog from '../../../components/PersonsDialog';
 import { EditRecipeDialog } from '../../../components/RecipeEditor';
@@ -65,6 +31,40 @@ import ConfigureGroupCountsDialog from './ConfigureGroupCountsDialog';
 import { ConfigureGroupsDialog } from './ConfigureGroupsDialog';
 import ConfigureStationNumbersDialog from './ConfigureStationNumbersDialog';
 import GroupCard from './GroupCard';
+import { MoreVert } from '@mui/icons-material';
+import {
+  AppBar,
+  Alert,
+  Box,
+  Card,
+  CardActions,
+  CardHeader,
+  Divider,
+  FormControl,
+  IconButton,
+  InputLabel,
+  List,
+  ListItemButton,
+  ListSubheader,
+  MenuItem,
+  Paper,
+  Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Toolbar,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import { formatCentiseconds, parseActivityCode } from '@wca/helpers';
+import { useConfirm } from 'material-ui-confirm';
+import { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 
 /**
  * I want some visualization of who's competing / staffing what for this particular round
@@ -120,7 +120,7 @@ const RoundPage = () => {
   const recipeExtensionData = useMemo(() => {
     const configuredRecipeData = getExtensionData('recipe', round);
 
-    if (!configuredRecipeData.id) {
+    if (!configuredRecipeData.id || !Recipes.find((r) => r.id === configuredRecipeData.id)) {
       return { id: getPreferredDefaultRecipe(wcif, round) };
     }
 
@@ -133,7 +133,7 @@ const RoundPage = () => {
     }
 
     if (!Recipes.find((r) => r.id === recipeExtensionData.id)) {
-      throw Error`Recipe ${recipeExtensionData.id} not found`;
+      throw Error`Recipe ${recipeExtensionData.name} not found`;
     }
     const defaultRecipeData = Recipes.find((r) => r.id === recipeExtensionData.id);
 
@@ -142,7 +142,7 @@ const RoundPage = () => {
       name: `${defaultRecipeData.name} (defaults)`,
       ...recipeExtensionData,
     };
-  }, [recipeExtensionData]);
+  }, [activityCode, recipeExtensionData, wcif]);
 
   const groups = roundActivities.flatMap((roundActivity) => allChildActivities(roundActivity));
 

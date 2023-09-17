@@ -25,15 +25,15 @@ export const Recipes: RecipeDefinition[] = [
     ],
   },
   {
-    id: 'pnw-1-group-finals',
-    name: 'PNW 1 group final',
+    id: '1-group-finals',
+    name: '1 group final',
     description: 'Makes a single group of competitors for finals',
     defaultSteps: [StepLibrary.GenerateSingleGroup, StepLibrary.GenerateCompetitorAssignments],
   },
   {
-    id: 'mca-test',
-    name: 'MCA Test',
-    description: 'MCA Test',
+    id: 'mca',
+    name: 'MCA',
+    description: 'MCA',
     defaultSteps: [
       StepLibrary.GenerateFirstTimersInSameGroup,
       StepLibrary.SpreadDelegates,

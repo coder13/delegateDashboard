@@ -1,8 +1,9 @@
-import { Competition, Person, Round } from '@wca/helpers';
+import { Competition, Event, Person, Round, parseActivityCode } from '@wca/helpers';
 import { Assignments } from '../../config/assignments';
 import { findGroupActivitiesByRound } from '../activities';
 import { acceptedRegistrations, personsShouldBeInRound } from '../persons';
 import { ClusterDefinition } from './types';
+import { byPROrResult } from 'wca-group-generators';
 
 export const Filters = [
   {
@@ -102,6 +103,12 @@ export const getBaseCluster = (
 };
 
 export const getCluster = (wcif: Competition, cluster: ClusterDefinition, roundId: string) => {
+  const { eventId, roundNumber } = parseActivityCode(roundId) as {
+    eventId: string;
+    roundNumber: number;
+  };
+  const event = wcif.events.find((e) => e.id === eventId) as Event;
+
   const activityIds = findGroupActivitiesByRound(wcif, roundId).map((a) => a.id);
 
   const baseCluster = getBaseCluster(wcif, cluster.base, roundId);
@@ -110,7 +117,7 @@ export const getCluster = (wcif: Competition, cluster: ClusterDefinition, roundI
     return baseCluster;
   }
 
-  return cluster.filters.reduce((acc, { key, value }) => {
+  const filteredCluster = cluster.filters.reduce((acc, { key, value }) => {
     const filter = Filters.find((f) => f.key === key)?.filter;
     if (!filter) {
       throw new Error(`Filter ${key} not found`);
@@ -119,4 +126,6 @@ export const getCluster = (wcif: Competition, cluster: ClusterDefinition, roundI
     // @ts-ignore
     return acc.filter(filter(value, activityIds));
   }, baseCluster);
+
+  return filteredCluster.sort(byPROrResult(event, roundNumber));
 };

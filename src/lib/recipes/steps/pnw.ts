@@ -46,7 +46,7 @@ export const GenerateCompetitorAssignmentsForStaff: StepDefinition = {
         },
         {
           constraint: 'avoidConflictingNames',
-          weight: 1,
+          weight: 10,
         },
       ],
     },
@@ -138,7 +138,7 @@ export const GenerateCompetitorAssignments: StepDefinition = {
         },
         {
           constraint: 'balancedSpeed',
-          weight: 10,
+          weight: 5,
         },
       ],
     },
