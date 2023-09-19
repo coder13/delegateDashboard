@@ -64,12 +64,12 @@ export default function AuthProvider({ children }) {
 
   useEffect(() => {
     const hash = window.location.hash.replace(/^#/, '');
-    console.log({ hash });
+
     const hashParams = new URLSearchParams(hash);
 
     if (hashParams.has('access_token')) {
       setLocalStorage('accessToken', hashParams.get('access_token'));
-      console.log(40, getLocalStorage('accessToken'));
+
       setAccessToken(hashParams.get('access_token'));
     }
 
@@ -107,7 +107,7 @@ export default function AuthProvider({ children }) {
   const signedIn = useCallback(() => !!accessToken, [accessToken]);
 
   useEffect(() => {
-    if (!accessToken || !getLocalStorage('accessToken')) {
+    if (!accessToken || !getLocalStorage('accessToken') || expired) {
       return;
     }
 
@@ -137,8 +137,6 @@ export default function AuthProvider({ children }) {
     localStorage.removeItem(localStorageKey('accessToken'));
     setUser(null);
   };
-
-  console.log(now, expired);
 
   const value = { user, signIn, signOut, signedIn, userFetchError };
 
