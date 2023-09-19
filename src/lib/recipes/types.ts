@@ -8,6 +8,10 @@ export interface ClusterFilter {
 export interface ClusterDefinition {
   base: string;
   filters: ClusterFilter[];
+  sort?: {
+    by: 'speed';
+    direction: 'asc' | 'desc';
+  }
 }
 
 export interface ActivitiesDefinition {

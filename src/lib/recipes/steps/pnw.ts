@@ -17,6 +17,10 @@ export const GenerateCompetitorAssignmentsForStaff: StepDefinition = {
             value: 'staff-*',
           },
         ],
+        sort: {
+          by: 'speed',
+          direction: 'asc',
+        },
       },
       assignmentCode: 'competitor',
       activities: { base: 'all' },
@@ -69,6 +73,10 @@ export const GenerateCompetitorAssignmentsForFirstTimers: StepDefinition = {
             value: true,
           },
         ],
+        sort: {
+          by: 'speed',
+          direction: 'asc',
+        },
       },
       assignmentCode: 'competitor',
       activities: { base: 'all', options: { tail: 1 } },
@@ -113,6 +121,10 @@ export const GenerateCompetitorAssignments: StepDefinition = {
             value: 'competitor',
           },
         ],
+        sort: {
+          by: 'speed',
+          direction: 'asc',
+        },
       },
       assignmentCode: 'competitor',
       activities: { base: 'all' },
@@ -167,6 +179,10 @@ export const GenerateJudgeAssignmentsForCompetitors: StepDefinition = {
             value: 'staff-*',
           },
         ],
+        sort: {
+          by: 'speed',
+          direction: 'asc',
+        },
       },
       activities: { base: 'all' },
       options: {

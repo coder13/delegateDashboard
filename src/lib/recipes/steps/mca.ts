@@ -29,14 +29,15 @@ export const GenerateFirstTimersInSameGroup: StepDefinition = {
               value: true,
             },
           ],
+          sort: {
+            by: 'speed',
+            direction: 'asc',
+          },
         },
         assignmentCode: 'competitor',
         activities: {
           base: 'all',
           activityIds,
-        },
-        options: {
-          mode: 'symmetric',
         },
         constraints: [
           {
@@ -73,12 +74,13 @@ export const SpreadStaffAcrossGroups: StepDefinition = {
             value: ['staff-.*'],
           },
         ],
+        sort: {
+          by: 'speed',
+          direction: 'desc',
+        },
       },
       assignmentCode: 'competitor',
       activities: { base: 'all' },
-      options: {
-        mode: 'balanced1',
-      },
       constraints: [
         {
           constraint: 'uniqueAssignment',
@@ -87,6 +89,21 @@ export const SpreadStaffAcrossGroups: StepDefinition = {
         {
           constraint: 'mustNotHaveOtherAssignments',
           weight: 1,
+        },
+        {
+          constraint: 'mustNotHaveConflictingAssignments',
+          weight: 1,
+        },
+        {
+          constraint: 'restrictActivitySize',
+          weight: 1,
+          options: {
+            maxClusterSize: 'average',
+          }
+        },
+        {
+          constraint: 'groupBySpeed',
+          weight: 20,
         },
         {
           constraint: 'balancedGroupSize',

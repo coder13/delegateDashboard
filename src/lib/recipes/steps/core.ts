@@ -28,6 +28,10 @@ export const SpreadDelegates: StepDefinition = {
             value: ['delegate', 'trainee-delegate'],
           },
         ],
+        sort: {
+          by: 'speed',
+          direction: 'asc',
+        }
       },
       assignmentCode: 'competitor',
       activities: { base: 'all' },
@@ -79,26 +83,87 @@ export const BalancedCompetitorAssignmentsForEveryone: StepDefinition = {
             value: 'competitor',
           },
         ],
+        sort: {
+          by: 'speed',
+          direction: 'desc',
+        }
       },
       assignmentCode: 'competitor',
       activities: { base: 'all' },
-      options: {
-        mode: 'balanced2',
-      },
       constraints: [
-        // {
-        //   constraint: 'uniqueAssignment',
-        //   weight: 1,
-        // },
-        // {
-        //   constraint: 'mustNotHaveOtherAssignments',
-        //   weight: 1,
-        // },
-        // {
-        //   constraint: 'balancedGroupSize',
-        //   weight: 1,
-        //   options: 'cluster',
-        // },
+        {
+          constraint: 'uniqueAssignment',
+          weight: 1,
+        },
+        {
+          constraint: 'mustNotHaveOtherAssignments',
+          weight: 1,
+        },
+        {
+          constraint: 'mustNotHaveConflictingAssignments',
+          weight: 1,
+        },
+        {
+          constraint: 'groupBySpeed',
+          weight: 20,
+        },
+        {
+          constraint: 'restrictActivitySize',
+          weight: 1,
+          options: {
+            maxSize: 'average',
+          },
+        },
+        {
+          constraint: 'balancedGroupSize',
+          weight: 1,
+        },
+      ],
+    },
+  }),
+};
+
+export const NoCompetitorAssignmentLeftBehind: StepDefinition = {
+  id: 'NoCompetitorAssignmentLeftBehind',
+  name: 'No Competitor Assignment Left Behind',
+  description:
+    'Assigns the remaining people without competitor assignments to a group',
+  defaults: () => ({
+    type: 'assignments',
+    props: {
+      generator: 'assignEveryone',
+      cluster: {
+        base: 'personsInRound',
+        filters: [
+          {
+            key: 'doesNotHaveAssignmentInRound',
+            value: 'competitor',
+          },
+        ],
+        sort: {
+          by: 'speed',
+          direction: 'desc',
+        }
+      },
+      assignmentCode: 'competitor',
+      activities: { base: 'all' },
+      constraints: [
+        {
+          constraint: 'uniqueAssignment',
+          weight: 1,
+        },
+        {
+          constraint: 'mustNotHaveOtherAssignments',
+          weight: 1,
+        },
+        {
+          constraint: 'mustNotHaveConflictingAssignments',
+          weight: 1,
+        },
+        {
+          constraint: 'balancedGroupSize',
+          weight: 1,
+        },
       ],
     },
   }),

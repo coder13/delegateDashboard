@@ -10,6 +10,7 @@ export const Recipes: RecipeDefinition[] = [
     defaultSteps: [
       StepLibrary.SpreadDelegates,
       StepLibrary.BalancedCompetitorAssignmentsForEveryone,
+      StepLibrary.NoCompetitorAssignmentLeftBehind,
       StepLibrary.GenerateJudgeAssignmentsForCompetitors,
     ],
   },

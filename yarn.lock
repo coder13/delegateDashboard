@@ -5279,10 +5279,10 @@ vite@^4.4.9:
   optionalDependencies:
     fsevents "~2.3.2"
 
-wca-group-generators@^0.1.7:
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/wca-group-generators/-/wca-group-generators-0.1.7.tgz#0b714bedbe9cbaef00f37bdf7e52458bfa6f623a"
-  integrity sha512-Eam5SwD74nejxc87xngSNP7nMa+aw0TwXrWKBxrekduOyBmwa9yxY8OU2yIBct/8vvVIqI/fn8JjN6DxD0kVIg==
+wca-group-generators@^0.1.8:
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/wca-group-generators/-/wca-group-generators-0.1.8.tgz#a23ab29a5b5d62a6d5d0f538e301d65d56be79ee"
+  integrity sha512-ZRIepwTKg6Egsoqq9EK1FTqpJ6x2NlCigsK7YUL1kbQbG1ry0AmmxxQ0fPJYYE4pWqjj23vstBHRuf3W6z7h8A==
   dependencies:
     "@wca/helpers" "^1.1.5"
     tsc "^2.0.4"

@@ -102,13 +102,26 @@ export const getBaseCluster = (
   }
 };
 
-export const getCluster = (wcif: Competition, cluster: ClusterDefinition, roundId: string) => {
-  const { eventId, roundNumber } = parseActivityCode(roundId) as {
-    eventId: string;
-    roundNumber: number;
-  };
-  const event = wcif.events.find((e) => e.id === eventId) as Event;
+export const sortCluster = (wcif: Competition, cluster: ClusterDefinition, persons: Person[], roundId: string) => {
+  if (!cluster.sort) {
+    return persons;
+  }
 
+  if (cluster.sort.by === 'speed') {
+    const { eventId, roundNumber } = parseActivityCode(roundId) as {
+      eventId: string;
+      roundNumber: number;
+    };
+    const event = wcif.events.find((e) => e.id === eventId) as Event;
+    const sortedPersons = persons.sort(byPROrResult(event, roundNumber));
+    return cluster.sort.direction === 'asc' ? sortedPersons : sortedPersons.reverse();
+  }
+
+  return persons;
+}
+
+
+export const getCluster = (wcif: Competition, cluster: ClusterDefinition, roundId: string) => {
   const activityIds = findGroupActivitiesByRound(wcif, roundId).map((a) => a.id);
 
   const baseCluster = getBaseCluster(wcif, cluster.base, roundId);
@@ -127,5 +140,5 @@ export const getCluster = (wcif: Competition, cluster: ClusterDefinition, roundI
     return acc.filter(filter(value, activityIds));
   }, baseCluster);
 
-  return filteredCluster.sort(byPROrResult(event, roundNumber));
+  return sortCluster(wcif, cluster, filteredCluster, roundId);
 };

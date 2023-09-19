@@ -10,6 +10,7 @@ export const StepLibrary: Record<string, StepDefinition> = {
   GenerateSingleGroup: core.GenerateSingleGroup,
   SpreadDelegates: core.SpreadDelegates,
   BalancedCompetitorAssignmentsForEveryone: core.BalancedCompetitorAssignmentsForEveryone,
+  NoCompetitorAssignmentLeftBehind: core.NoCompetitorAssignmentLeftBehind,
   GenerateCompetitorAssignmentsForStaff: pnw.GenerateCompetitorAssignmentsForStaff,
   GenerateCompetitorAssignmentsForFirstTimers: pnw.GenerateCompetitorAssignmentsForFirstTimers,
   GenerateCompetitorAssignments: pnw.GenerateCompetitorAssignments,
