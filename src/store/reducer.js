@@ -26,6 +26,7 @@ import {
   EDIT_ACTIVITY,
   UPDATE_GLOBAL_EXTENSION,
   ADD_PERSON,
+  UPDATE_ROUND,
 } from './actions';
 import INITIAL_STATE from './initialState';
 import * as Reducers from './reducers';
@@ -59,7 +60,9 @@ const reducers = {
   }),
   [UPDATE_WCIF_ERRORS]: (state, action) => ({
     ...state,
-    errors: action.replace ? action.errors : [...state.errors, ...action.errors],
+    errors: action.replace
+      ? action.errors
+      : [...state.errors, ...action.errors],
   }),
   [UPLOADING_WCIF]: (state, action) => ({
     ...state,
@@ -86,12 +89,12 @@ const reducers = {
       persons: state.wcif.persons.map((person) =>
         person.registrantId === action.registrantId
           ? {
-            ...person,
-            roles:
-              person.roles.indexOf(action.roleId) > -1
-                ? person.roles.filter((role) => role !== action.roleId)
-                : person.roles.concat(action.roleId),
-          }
+              ...person,
+              roles:
+                person.roles.indexOf(action.roleId) > -1
+                  ? person.roles.filter((role) => role !== action.roleId)
+                  : person.roles.concat(action.roleId),
+            }
           : person
       ),
     },
@@ -107,9 +110,12 @@ const reducers = {
       changedKeys: new Set([...state.changedKeys, 'persons']),
       wcif: {
         ...state.wcif,
-        persons: [...state.wcif.persons.filter((i) => i.wcaUserId !== person.wcaUserId), person]
+        persons: [
+          ...state.wcif.persons.filter((i) => i.wcaUserId !== person.wcaUserId),
+          person,
+        ],
       },
-    }
+    };
   },
   // Editing assignments
   [ADD_PERSON_ASSIGNMENTS]: Reducers.addPersonAssignments,
@@ -146,9 +152,9 @@ const reducers = {
         mapIn(room, ['activities'], (activity) =>
           activity.id === action.activityId
             ? {
-              ...activity,
-              childActivities: action.childActivities,
-            }
+                ...activity,
+                childActivities: action.childActivities,
+              }
             : activity
         )
       )
@@ -163,8 +169,19 @@ const reducers = {
         mapIn(
           room,
           ['activities'],
-          (activity) => action.activities.find((a) => a.id === activity.id) || activity
+          (activity) =>
+            action.activities.find((a) => a.id === activity.id) || activity
         )
+      )
+    ),
+  }),
+  [UPDATE_ROUND]: (state, action) => ({
+    ...state,
+    needToSave: true,
+    changedKeys: new Set([...state.changedKeys, 'events']),
+    wcif: mapIn(state.wcif, ['events'], (event) =>
+      mapIn(event, ['rounds'], (round) =>
+        round.id === action.roundId ? action.roundData : round
       )
     ),
   }),
@@ -184,23 +201,28 @@ const reducers = {
     changedKeys: new Set([...state.changedKeys, 'persons', 'schedule']),
     wcif: {
       ...state.wcif,
-      schedule: mapIn(state.wcif.schedule, ['venues'], (venue) => mapIn(venue, ['rooms'], (room) => ({
-        ...room,
-        activities: room.activities.map(findAndReplaceActivity(where, what)),
-      }))),
-      persons: what.id !== where.id ? state.wcif.persons.map((person) => ({
-        ...person,
-        assignments: person.assignments.map((assignment) => {
-          if (assignment.activityId === where.id) {
-            return {
-              ...assignment,
-              activityId: what.id,
-            };
-          }
+      schedule: mapIn(state.wcif.schedule, ['venues'], (venue) =>
+        mapIn(venue, ['rooms'], (room) => ({
+          ...room,
+          activities: room.activities.map(findAndReplaceActivity(where, what)),
+        }))
+      ),
+      persons:
+        what.id !== where.id
+          ? state.wcif.persons.map((person) => ({
+              ...person,
+              assignments: person.assignments.map((assignment) => {
+                if (assignment.activityId === where.id) {
+                  return {
+                    ...assignment,
+                    activityId: what.id,
+                  };
+                }
 
-          return assignment;
-        }),
-      })) : what,
+                return assignment;
+              }),
+            }))
+          : what,
     },
   }),
   [UPDATE_ROUND_EXTENSION_DATA]: (state, action) => ({
@@ -224,11 +246,13 @@ const reducers = {
       changedKeys: new Set([...state.changedKeys, 'extensions']),
       wcif: {
         ...state.wcif,
-        extensions: [...state.wcif.extensions.filter((e) => e.id === extensionData), extensionData],
+        extensions: [
+          ...state.wcif.extensions.filter((e) => e.id === extensionData),
+          extensionData,
+        ],
       },
     };
   },
-
 };
 
 function reducer(state = INITIAL_STATE, action) {
