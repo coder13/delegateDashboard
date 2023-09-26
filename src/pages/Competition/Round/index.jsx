@@ -52,6 +52,9 @@ import ConfigureGroupCountsDialog from './ConfigureGroupCountsDialog';
 import { ConfigureGroupsDialog } from './ConfigureGroupsDialog';
 import ConfigureStationNumbersDialog from './ConfigureStationNumbersDialog';
 import GroupCard from './GroupCard';
+import ActionMenu from '../../../components/ActionMenu';
+import { RawRoundDataDialog } from './RawRoundDataDialog';
+import { RawRoundActivitiesDataDialog } from './RawRoundActivitiesDataDialog';
 
 /**
  * I want some visualization of who's competing / staffing what for this particular round
@@ -75,6 +78,8 @@ const RoundPage = () => {
   const [configureGroupCountsDialog, setConfigureGroupCountsDialog] = useState(false);
   const [configureGroupsDialog, setConfigureGroupsDialog] = useState(false);
   const [configureStationNumbersDialog, setConfigureStationNumbersDialog] = useState(false);
+  const [rawRoundDataDialogOpen, setRawRoundDataDialogOpen] = useState(false);
+  const [rawRoundActivitiesDataDialogOpen, setRawRoundActivitiesDataDialogOpen] = useState(false);
   const [showPersonsDialog, setShowPersonsDialog] = useState({
     open: false,
     title: undefined,
@@ -263,7 +268,16 @@ const RoundPage = () => {
     <Grid container direction="column" spacing={2}>
       <Grid item>
         <Card>
-          <CardHeader title={activityCodeToName(activityCode)} />
+          <CardHeader title={activityCodeToName(activityCode)} action={
+            <ActionMenu items={[{
+              label: 'Dangerously Edit Raw Round Data',
+              onClick: () => setRawRoundDataDialogOpen(true)
+            }, {
+              label: 'Dangerously Edit Raw Round Activities Data',
+              onClick: () => setRawRoundActivitiesDataDialogOpen(true)
+            }]} />
+
+          } />
           <List dense subheader={<ListSubheader id="stages">Stages</ListSubheader>}>
             {roundActivities.map(({ id, startTime, endTime, room }) => (
               <ListItemButton key={id}>
@@ -430,6 +444,16 @@ const RoundPage = () => {
       <ConfigureGroupsDialog
         open={configureGroupsDialog}
         onClose={() => setConfigureGroupsDialog(false)}
+        activityCode={activityCode}
+      />
+      <RawRoundDataDialog
+        open={rawRoundDataDialogOpen}
+        onClose={() => setRawRoundDataDialogOpen(false)}
+        roundId={roundId}
+      />
+      <RawRoundActivitiesDataDialog
+        open={rawRoundActivitiesDataDialogOpen}
+        onClose={() => setRawRoundActivitiesDataDialogOpen(false)}
         activityCode={activityCode}
       />
     </Grid>

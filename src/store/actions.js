@@ -22,6 +22,7 @@ export const UPDATE_GROUP_COUNT = 'update_group_count';
 export const UPDATE_ROUND_ACTIVITIES = 'update_round_activities';
 export const UPDATE_ROUND_CHILD_ACTIVITIES = 'update_round_child_activities';
 export const UPDATE_ROUND_EXTENSION_DATA = 'update_round_extension_data';
+export const UPDATE_ROUND = 'update_round';
 export const PARTIAL_UPDATE_WCIF = 'partial_update_wcif';
 export const RESET_ALL_GROUP_ASSIGNMENTS = 'reset_all_group_assignments';
 export const GENERATE_ASSIGNMENTS = 'generate_assignments';
@@ -258,4 +259,10 @@ export const updateGlobalExtension = (extensionData) => ({
 export const addPerson = (person) => ({
   type: ADD_PERSON,
   person,
+})
+
+export const updateRound = (roundId, roundData) => ({
+  type: UPDATE_ROUND,
+  roundId,
+  roundData
 })

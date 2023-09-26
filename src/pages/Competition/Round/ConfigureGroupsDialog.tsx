@@ -2,8 +2,9 @@ import { Activity, activityCodeToName, parseActivityCode } from '@wca/helpers';
 import { formatDuration } from 'date-fns';
 import { Fragment, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { Delete } from '@mui/icons-material';
+import { Delete, MoreVert } from '@mui/icons-material';
 import {
+  Box,
   Button,
   Dialog,
   DialogContent,
@@ -123,7 +124,7 @@ export const ConfigureGroupsDialog = ({ open, onClose, activityCode }) => {
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>
+      <DialogTitle sx={{display: 'flex'}}>
         <span>Configuring groups for {activityCodeToName(activityCode)}</span>
       </DialogTitle>
       <DialogContent>
