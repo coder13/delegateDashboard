@@ -566,6 +566,7 @@ const ConfigureAssignmentsDialog = ({
               <TableCell></TableCell>
               <TableCell></TableCell>
               <TableCell></TableCell>
+              <TableCell></TableCell>
               {groupsRooms.map((room) => (
                 <TableCell
                   key={room.id}
@@ -583,6 +584,7 @@ const ConfigureAssignmentsDialog = ({
             <TableRow>
               <TableCell style={{ width: '1em' }}>#</TableCell>
               <TableCell style={{ width: '20%' }}>Name</TableCell>
+              <TableCell style={{ width: '1em' }}>Age</TableCell>
               <TableCell style={{ width: '1em', textAlign: 'center' }}>
                 Seed Result
               </TableCell>
@@ -628,6 +630,17 @@ const ConfigureAssignmentsDialog = ({
                     };
                   }, {}) || {};
 
+              const age =
+                person.birthdate &&
+                (
+                  (Date.now() - new Date(person.birthdate).getTime()) /
+                  1000 /
+                  60 /
+                  60 /
+                  24 /
+                  365.25
+                ).toFixed(0);
+
               return (
                 <TableRow
                   hover
@@ -649,6 +662,7 @@ const ConfigureAssignmentsDialog = ({
                       </Tooltip>
                     )}
                   </TableCell>
+                  <TableCell>{age}</TableCell>
                   <TableCell style={{ textAlign: 'center' }}>
                     {formattedRankingResult}
                   </TableCell>
