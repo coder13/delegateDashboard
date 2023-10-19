@@ -632,14 +632,14 @@ const ConfigureAssignmentsDialog = ({
 
               const age =
                 person.birthdate &&
-                (
+                Math.floor(
                   (Date.now() - new Date(person.birthdate).getTime()) /
-                  1000 /
-                  60 /
-                  60 /
-                  24 /
-                  365.25
-                ).toFixed(0);
+                    1000 /
+                    60 /
+                    60 /
+                    24 /
+                    365.25
+                );
 
               return (
                 <TableRow
