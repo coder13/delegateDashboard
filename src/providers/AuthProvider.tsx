@@ -1,8 +1,19 @@
-import { useState, useEffect, createContext, useContext, useCallback, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { getLocalStorage, localStorageKey, setLocalStorage } from '../lib/localStorage';
+import {
+  getLocalStorage,
+  localStorageKey,
+  setLocalStorage,
+} from '../lib/localStorage';
 import { WCA_ORIGIN, WCA_OAUTH_CLIENT_ID } from '../lib/wca-env';
 import { getMe } from '../lib/wcaAPI';
+import {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  useCallback,
+  useMemo,
+} from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 /**
  * Allows for use of staging api in production
@@ -37,7 +48,9 @@ const AuthContext = createContext<IAuthContext>({
 });
 
 export default function AuthProvider({ children }) {
-  const [accessToken, setAccessToken] = useState(getLocalStorage('accessToken'));
+  const [accessToken, setAccessToken] = useState(
+    getLocalStorage('accessToken')
+  );
   const [user, setUser] = useState<User | null>(null);
   const [userFetchError, setUserFetchError] = useState(null);
   const [now, setNow] = useState(new Date());
@@ -76,8 +89,11 @@ export default function AuthProvider({ children }) {
     if (hashParams.has('expires_in')) {
       /* Expire the token 15 minutes before it actually does,
          this way it doesn't expire right after the user enters the page. */
-      const expiresInSeconds = Number.parseInt(hashParams.get('expires_in') ?? '0', 10) - 15 * 60;
-      const expirationTime = new Date(new Date().getTime() + expiresInSeconds * 1000);
+      const expiresInSeconds =
+        Number.parseInt(hashParams.get('expires_in') ?? '0', 10) - 15 * 60;
+      const expirationTime = new Date(
+        new Date().getTime() + expiresInSeconds * 1000
+      );
       setLocalStorage('expirationTime', expirationTime.toISOString());
     }
 
