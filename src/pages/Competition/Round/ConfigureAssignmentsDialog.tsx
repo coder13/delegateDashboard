@@ -593,7 +593,10 @@ const ConfigureAssignmentsDialog = ({
               </TableCell>
               {groupsRooms.map((room) =>
                 groups
-                  .filter((group) => group.parent.room.name === room.name)
+                  .filter(
+                    (group) =>
+                      (group.parent as ActivityWithRoom).room.name === room.name
+                  )
                   .map((group) => (
                     <TableCell
                       key={group.id}
@@ -678,7 +681,11 @@ const ConfigureAssignmentsDialog = ({
                   </TableCell>
                   {groupsRooms.map((room) =>
                     groups
-                      .filter((group) => group.parent.room.name === room.name)
+                      .filter(
+                        (group) =>
+                          (group.parent as ActivityWithRoom).room.name ===
+                          room.name
+                      )
                       .map((groupActivity) => (
                         <TableAssignmentCell
                           key={groupActivity.id}
