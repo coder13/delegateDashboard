@@ -12,9 +12,9 @@ export const updateIn = (object, [property, ...properyChain]: string[], updater)
   properyChain.length === 0
     ? { ...object, [property]: updater(object[property]) }
     : {
-        ...object,
-        [property]: updateIn(object[property], properyChain, updater),
-      };
+      ...object,
+      [property]: updateIn(object[property], properyChain, updater),
+    };
 
 /**
  * Returns a copy of the object with the value at the specified path set to the given one.
@@ -179,6 +179,12 @@ export const uniq = <T>(arr: T[]): T[] => [...new Set(arr)];
 
 export const pick = (obj, keys) =>
   keys.reduce((newObj, key) => ({ ...newObj, [key]: obj[key] }), {});
+
+export const omit = <T extends object, K extends keyof T>(obj: T, ...keys: K[]): Omit<T, K> => {
+  const _ = { ...obj }
+  keys.forEach((key) => delete _[key])
+  return _
+}
 
 // Date utils
 
