@@ -1,28 +1,4 @@
-import { formatCentiseconds, parseActivityCode } from '@wca/helpers';
-import { useConfirm } from 'material-ui-confirm';
-import { useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
-import {
-  Alert,
-  Box,
-  Card,
-  CardActions,
-  CardHeader,
-  Divider,
-  List,
-  ListItemButton,
-  ListSubheader,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Tooltip,
-  Typography,
-} from '@mui/material';
-import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
+import ActionMenu from '../../../components/ActionMenu';
 import PersonsAssignmentsDialog from '../../../components/PersonsAssignmentsDialog';
 import PersonsDialog from '../../../components/PersonsDialog';
 import {
@@ -44,6 +20,7 @@ import {
 } from '../../../store/actions';
 import {
   selectPersonsAssignedForRound,
+  selectPersonsHavingCompetitorAssignmentsForRound,
   selectPersonsShouldBeInRound,
   selectRoundById,
 } from '../../../store/selectors';
@@ -52,9 +29,33 @@ import ConfigureGroupCountsDialog from './ConfigureGroupCountsDialog';
 import { ConfigureGroupsDialog } from './ConfigureGroupsDialog';
 import ConfigureStationNumbersDialog from './ConfigureStationNumbersDialog';
 import GroupCard from './GroupCard';
-import ActionMenu from '../../../components/ActionMenu';
-import { RawRoundDataDialog } from './RawRoundDataDialog';
 import { RawRoundActivitiesDataDialog } from './RawRoundActivitiesDataDialog';
+import { RawRoundDataDialog } from './RawRoundDataDialog';
+import {
+  Alert,
+  Box,
+  Card,
+  CardActions,
+  CardHeader,
+  Divider,
+  List,
+  ListItemButton,
+  ListSubheader,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import { formatCentiseconds, parseActivityCode } from '@wca/helpers';
+import { useConfirm } from 'material-ui-confirm';
+import { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 
 /**
  * I want some visualization of who's competing / staffing what for this particular round
@@ -127,6 +128,10 @@ const RoundPage = () => {
     () =>
       personsAssigned.filter((p) => p.assignments.some((a) => a.assignmentCode === 'competitor')),
     [personsAssigned]
+  );
+
+  const personsAssignedWithCompetitorAssignmentCount = useSelector(
+    (state) => selectPersonsHavingCompetitorAssignmentsForRound(state, round.id).length
   );
 
   /**
@@ -268,16 +273,23 @@ const RoundPage = () => {
     <Grid container direction="column" spacing={2}>
       <Grid item>
         <Card>
-          <CardHeader title={activityCodeToName(activityCode)} action={
-            <ActionMenu items={[{
-              label: 'Dangerously Edit Raw Round Data',
-              onClick: () => setRawRoundDataDialogOpen(true)
-            }, {
-              label: 'Dangerously Edit Raw Round Activities Data',
-              onClick: () => setRawRoundActivitiesDataDialogOpen(true)
-            }]} />
-
-          } />
+          <CardHeader
+            title={activityCodeToName(activityCode)}
+            action={
+              <ActionMenu
+                items={[
+                  {
+                    label: 'Dangerously Edit Raw Round Data',
+                    onClick: () => setRawRoundDataDialogOpen(true),
+                  },
+                  {
+                    label: 'Dangerously Edit Raw Round Activities Data',
+                    onClick: () => setRawRoundActivitiesDataDialogOpen(true),
+                  },
+                ]}
+              />
+            }
+          />
           <List dense subheader={<ListSubheader id="stages">Stages</ListSubheader>}>
             {roundActivities.map(({ id, startTime, endTime, room }) => (
               <ListItemButton key={id}>
@@ -298,7 +310,8 @@ const RoundPage = () => {
                   <br />
                   <Typography variant="caption">Based on WCA-Live data</Typography>
                 </TableCell>
-                <TableCell sx={{ textAlign: 'center' }}>Assigned Persons</TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>Competitors assigned</TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>Persons with any assignment</TableCell>
                 <TableCell sx={{ textAlign: 'center' }}>
                   Groups Configured <br />
                   (per stage)
@@ -335,6 +348,11 @@ const RoundPage = () => {
                     })
                   }>
                   {round?.results?.length}
+                </TableCell>
+                <TableCell
+                  className="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1rmkli1-MuiButtonBase-root-MuiButton-root-MuiTableCell-root"
+                  sx={{ textAlign: 'center' }}>
+                  {personsAssignedWithCompetitorAssignmentCount}
                 </TableCell>
                 <TableCell
                   className="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1rmkli1-MuiButtonBase-root-MuiButton-root-MuiTableCell-root"

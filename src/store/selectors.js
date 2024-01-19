@@ -1,4 +1,3 @@
-import { createSelector } from 'reselect';
 import {
   findActivityById,
   activityCodeIsChild,
@@ -6,6 +5,7 @@ import {
   findRooms,
 } from '../lib/activities';
 import { acceptedRegistrations, personsShouldBeInRound } from '../lib/persons';
+import { createSelector } from 'reselect';
 
 const selectWcif = (state) => state.wcif;
 
@@ -69,6 +69,26 @@ export const selectPersonsAssignedForRound = createSelector(
         }
 
         return activityCodeIsChild(roundId, activity.activityCode);
+      })
+    );
+  }
+);
+
+export const selectPersonsHavingCompetitorAssignmentsForRound = createSelector(
+  [selectAcceptedPersons, selectActivityById, (_, roundId) => roundId],
+  (acceptedPersons, _selectActivityById, roundId) => {
+    return acceptedPersons.filter((p) =>
+      p.assignments.find((a) => {
+        const activity = _selectActivityById(a.activityId);
+
+        if (!activity) {
+          console.error(`Can't find activity for activityId ${a.activityId}`);
+          return false;
+        }
+
+        return (
+          a.assignmentCode === 'competitor' && activityCodeIsChild(roundId, activity.activityCode)
+        );
       })
     );
   }
