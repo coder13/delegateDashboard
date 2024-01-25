@@ -1,6 +1,6 @@
 import { sortWcifEvents } from '../lib/events';
 import { updateIn, pick } from '../lib/utils';
-import { getManageableCompetitions, getWcif, patchWcif } from '../lib/wcaAPI';
+import { getUpcomingManageableCompetitions, getWcif, patchWcif } from '../lib/wcaAPI';
 import { validateWcif } from '../lib/wcif-validation';
 
 export const FETCHING_COMPETITIONS = 'fetching_competitions';
@@ -68,7 +68,7 @@ const setCompetitions = (competitions) => ({
 
 export const fetchCompetitions = () => (dispatch) => {
   dispatch(fetchingCompetitions());
-  getManageableCompetitions()
+  getUpcomingManageableCompetitions()
     .then((comps) => {
       dispatch(setCompetitions(comps));
     })
@@ -259,10 +259,10 @@ export const updateGlobalExtension = (extensionData) => ({
 export const addPerson = (person) => ({
   type: ADD_PERSON,
   person,
-})
+});
 
 export const updateRound = (roundId, roundData) => ({
   type: UPDATE_ROUND,
   roundId,
-  roundData
-})
+  roundData,
+});

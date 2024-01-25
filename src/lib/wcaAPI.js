@@ -17,7 +17,7 @@ export const getManageableCompetitions = () => {
 };
 
 export const getUpcomingManageableCompetitions = () => {
-  const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const oneWeekAgo = new Date(Date.now() - 2 * 7 * 24 * 60 * 60 * 1000);
   const params = new URLSearchParams({
     managed_by_me: true,
     start: oneWeekAgo.toISOString(),
