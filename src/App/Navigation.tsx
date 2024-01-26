@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-import { Routes, Route, Outlet, Navigate, useNavigate, useParams } from 'react-router-dom';
 import usePageTracking from '../hooks/usePageTracking';
 import {
   Layout as CompetitionLayout,
@@ -14,12 +12,15 @@ import {
   ScramblerSchedule as ScramblerSchedulePage,
 } from '../pages/Competition';
 import FirstTimers from '../pages/Competition/Checks/FirstTimers';
+import DangerEditPage from '../pages/Competition/DangerEdit/DangerEdit';
 import { GroupifierPrintingConfig } from '../pages/Competition/External/GroupifierPrinting';
 import GanttChart from '../pages/Competition/GanttChart';
 import QueryPage from '../pages/Competition/Query';
 import HomePage from '../pages/Home';
 import { useAuth } from '../providers/AuthProvider';
 import Layout from './Layout';
+import { useEffect } from 'react';
+import { Routes, Route, Outlet, Navigate, useNavigate, useParams } from 'react-router-dom';
 
 const AuthenticatedRoute = () => {
   const { signIn, signedIn } = useAuth();
@@ -66,6 +67,7 @@ const Navigation = () => {
             <Route path="checks/first-timers" element={<FirstTimers />} />
             <Route path="external/groupifier-printing" element={<GroupifierPrintingConfig />} />
             <Route path="gantt-chart" element={<GanttChart />} />
+            <Route path="danger-edit" element={<DangerEditPage />} />
 
             <Route path="*" element={<Comp404 />} />
           </Route>

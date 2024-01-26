@@ -29,6 +29,7 @@ export const GENERATE_ASSIGNMENTS = 'generate_assignments';
 export const EDIT_ACTIVITY = 'edit_activity';
 export const UPDATE_GLOBAL_EXTENSION = 'update_global_extension';
 export const ADD_PERSON = 'add_person';
+export const UPDATE_RAW_OBJ = 'update_raw_obj';
 
 const fetchingCompetitions = () => ({
   type: FETCHING_COMPETITIONS,
@@ -265,4 +266,10 @@ export const updateRound = (roundId, roundData) => ({
   type: UPDATE_ROUND,
   roundId,
   roundData,
+});
+
+export const updateRawObj = (key, value) => ({
+  type: UPDATE_RAW_OBJ,
+  key,
+  value,
 });

@@ -99,9 +99,7 @@ function calcRanking(person, lastPerson) {
     return 1;
   }
 
-  if (
-    person?.seedResult?.rankingResult === lastPerson?.seedResult?.rankingResult
-  ) {
+  if (person?.seedResult?.rankingResult === lastPerson?.seedResult?.rankingResult) {
     return lastPerson.seedResult.ranking;
   }
 
@@ -136,11 +134,9 @@ const ConfigureAssignmentsDialog = ({
   const confirm = useConfirm();
 
   const [showAllCompetitors, setShowAllCompetitors] = useState(false);
-  const [paintingAssignmentCode, setPaintingAssignmentCode] =
-    useState('staff-scrambler');
+  const [paintingAssignmentCode, setPaintingAssignmentCode] = useState('staff-scrambler');
   const [competitorSort, setCompetitorSort] = useState('speed');
-  const [showCompetitorsNotInRound, setShowCompetitorsNotInRound] =
-    useState(false);
+  const [showCompetitorsNotInRound, setShowCompetitorsNotInRound] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleMenuOpen = (e) => {
@@ -154,9 +150,9 @@ const ConfigureAssignmentsDialog = ({
   const groupsRooms = useMemo(
     () =>
       wcifRooms.filter((room) =>
-        flatten(
-          room.activities.map((activity) => activity.childActivities)
-        ).some((activity) => groups.find((g) => g.id === activity.id))
+        flatten(room.activities.map((activity) => activity.childActivities)).some((activity) =>
+          groups.find((g) => g.id === activity.id)
+        )
       ),
     [groups, wcifRooms]
   );
@@ -227,25 +223,20 @@ const ConfigureAssignmentsDialog = ({
   );
 
   const personAssignments = useCallback(
-    (registrantId) =>
-      persons?.find((p) => p.registrantId === registrantId)?.assignments,
+    (registrantId) => persons?.find((p) => p.registrantId === registrantId)?.assignments,
     [persons]
   );
 
   const getAssignmentCodeForPersonGroup = useCallback(
     (registrantId, activityId) => {
-      return personAssignments(registrantId)?.find(
-        (a) => a.activityId === activityId
-      )?.assignmentCode;
+      return personAssignments(registrantId)?.find((a) => a.activityId === activityId)
+        ?.assignmentCode;
     },
     [personAssignments]
   );
 
   const handleUpdateAssignmentForPerson = (registrantId, activityId) => () => {
-    if (
-      getAssignmentCodeForPersonGroup(registrantId, activityId) ===
-      paintingAssignmentCode
-    ) {
+    if (getAssignmentCodeForPersonGroup(registrantId, activityId) === paintingAssignmentCode) {
       dispatch(removePersonAssignments(registrantId, activityId));
     } else {
       dispatch(
@@ -349,20 +340,15 @@ const ConfigureAssignmentsDialog = ({
 
             const room = parsed.stage
               ? groupsRooms.find(
-                  (r) =>
-                    r.name[0].toLowerCase() ===
-                    (parsed.stage as string).toLowerCase()
+                  (r) => r.name[0].toLowerCase() === (parsed.stage as string).toLowerCase()
                 )
               : undefined;
 
             const competitorGroupActivities = groups
               .filter(
                 (g) =>
-                  parseActivityCode(g.activityCode).groupNumber ===
-                    parsed.groupNumber &&
-                  (room
-                    ? (g.parent as ActivityWithRoom).room.id === room.id
-                    : true)
+                  parseActivityCode(g.activityCode).groupNumber === parsed.groupNumber &&
+                  (room ? (g.parent as ActivityWithRoom).room.id === room.id : true)
               )
               .map((activity) => ({
                 g: activity,
@@ -390,8 +376,7 @@ const ConfigureAssignmentsDialog = ({
               const assignmentLetter = helpingGroup[0].toLowerCase();
               const staffGroupNumber = helpingGroup[1];
               const assignmentCode = Assignments.find(
-                (assignment) =>
-                  assignment.key.toLowerCase() === assignmentLetter
+                (assignment) => assignment.key.toLowerCase() === assignmentLetter
               )?.id;
 
               if (!assignmentCode) {
@@ -401,10 +386,7 @@ const ConfigureAssignmentsDialog = ({
               const staffGroupActivities = groups
                 .filter((g) => {
                   const parsedActivityCode = parseActivityCode(g.activityCode);
-                  return (
-                    parsedActivityCode.groupNumber?.toString() ===
-                    staffGroupNumber
-                  );
+                  return parsedActivityCode.groupNumber?.toString() === staffGroupNumber;
                 })
                 .map((g) => ({
                   g,
@@ -419,8 +401,7 @@ const ConfigureAssignmentsDialog = ({
               }
 
               staffGroupSizes[assignmentCode][staffGroupActivity.id] =
-                (staffGroupSizes?.[assignmentCode]?.[staffGroupActivity.id] ||
-                  0) + 1;
+                (staffGroupSizes?.[assignmentCode]?.[staffGroupActivity.id] || 0) + 1;
 
               a.push({
                 activityId: staffGroupActivity.id,
@@ -446,9 +427,7 @@ const ConfigureAssignmentsDialog = ({
         }
 
         dispatch(
-          bulkRemovePersonAssignments(
-            assignments.map((i) => ({ registrantId: i.registrantId }))
-          )
+          bulkRemovePersonAssignments(assignments.map((i) => ({ registrantId: i.registrantId })))
         );
         dispatch(bulkAddPersonAssignments(assignments));
       })
@@ -458,9 +437,14 @@ const ConfigureAssignmentsDialog = ({
   }, []);
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
+    if (open) {
+      window.addEventListener('keydown', handleKeyDown);
 
-    window.addEventListener('paste', onPaste);
+      window.addEventListener('paste', onPaste);
+    } else {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('paste', onPaste);
+    }
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
@@ -473,12 +457,7 @@ const ConfigureAssignmentsDialog = ({
   }
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="lg"
-      fullWidth
-      fullScreen={fullScreen}>
+    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth fullScreen={fullScreen}>
       <DialogTitle sx={{ paddingTop: '0.25em', paddingBottom: '0.25em' }}>
         Configuring Assignments For {activityCodeToName(activityCode)}
       </DialogTitle>
@@ -492,10 +471,7 @@ const ConfigureAssignmentsDialog = ({
           <div
             className="flex-grow"
             style={{ display: 'flex', flexGrow: 1, alignItems: 'flex-start' }}>
-            <AssignmentPicker
-              value={paintingAssignmentCode}
-              setValue={setPaintingAssignmentCode}
-            />
+            <AssignmentPicker value={paintingAssignmentCode} setValue={setPaintingAssignmentCode} />
           </div>
           <div style={{ display: 'flex', flexGrow: 1 }} />
           <div
@@ -510,16 +486,8 @@ const ConfigureAssignmentsDialog = ({
                 row
                 value={competitorSort}
                 onChange={(e) => setCompetitorSort(e.target.value)}>
-                <FormControlLabel
-                  value="speed"
-                  control={<Radio />}
-                  label="Speed"
-                />
-                <FormControlLabel
-                  value="name"
-                  control={<Radio />}
-                  label="Name"
-                />
+                <FormControlLabel value="speed" control={<Radio />} label="Speed" />
+                <FormControlLabel value="name" control={<Radio />} label="Name" />
               </RadioGroup>
             </FormControl>
             <FormControl margin="none">
@@ -553,9 +521,7 @@ const ConfigureAssignmentsDialog = ({
               vertical: 'top',
               horizontal: 'left',
             }}>
-            <MenuItem onClick={handleResetAssignments}>
-              Reset Assignments
-            </MenuItem>
+            <MenuItem onClick={handleResetAssignments}>Reset Assignments</MenuItem>
           </Menu>
         </Toolbar>
 
@@ -572,9 +538,8 @@ const ConfigureAssignmentsDialog = ({
                   key={room.id}
                   style={{ textAlign: 'center' }}
                   colSpan={
-                    room.activities.find(
-                      (ra) => ra.activityCode === activityCode
-                    )?.childActivities?.length ?? 1
+                    room.activities.find((ra) => ra.activityCode === activityCode)?.childActivities
+                      ?.length ?? 1
                   }>
                   {room.name}
                 </TableCell>
@@ -585,29 +550,18 @@ const ConfigureAssignmentsDialog = ({
               <TableCell style={{ width: '1em' }}>#</TableCell>
               <TableCell style={{ width: '20%' }}>Name</TableCell>
               <TableCell style={{ width: '1em' }}>Age</TableCell>
-              <TableCell style={{ width: '1em', textAlign: 'center' }}>
-                Seed Result
-              </TableCell>
-              <TableCell style={{ width: '1em', textAlign: 'center' }}>
-                Registered
-              </TableCell>
+              <TableCell style={{ width: '1em', textAlign: 'center' }}>Seed Result</TableCell>
+              <TableCell style={{ width: '1em', textAlign: 'center' }}>Registered</TableCell>
               {groupsRooms.map((room) =>
                 groups
-                  .filter(
-                    (group) =>
-                      (group.parent as ActivityWithRoom).room.name === room.name
-                  )
+                  .filter((group) => (group.parent as ActivityWithRoom).room.name === room.name)
                   .map((group) => (
-                    <TableCell
-                      key={group.id}
-                      style={{ textAlign: 'center', width: '1em' }}>
+                    <TableCell key={group.id} style={{ textAlign: 'center', width: '1em' }}>
                       g{parseActivityCode(group.activityCode).groupNumber}
                     </TableCell>
                   ))
               )}
-              <TableCell style={{ width: '1em' }}>
-                Total Staff Assignments
-              </TableCell>
+              <TableCell style={{ width: '1em' }}>Total Staff Assignments</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -618,9 +572,7 @@ const ConfigureAssignmentsDialog = ({
                   : undefined;
 
               const formattedRankingResult =
-                rankingResult &&
-                !isNaN(rankingResult) &&
-                formatCentiseconds(rankingResult);
+                rankingResult && !isNaN(rankingResult) && formatCentiseconds(rankingResult);
 
               const totalStaffAssignments =
                 person?.assignments
@@ -628,20 +580,14 @@ const ConfigureAssignmentsDialog = ({
                   ?.reduce((acc, assignment) => {
                     return {
                       ...acc,
-                      [assignment.assignmentCode]:
-                        (acc[assignment.assignmentCode] || 0) + 1,
+                      [assignment.assignmentCode]: (acc[assignment.assignmentCode] || 0) + 1,
                     };
                   }, {}) || {};
 
               const age =
                 person.birthdate &&
                 Math.floor(
-                  (Date.now() - new Date(person.birthdate).getTime()) /
-                    1000 /
-                    60 /
-                    60 /
-                    24 /
-                    365.25
+                  (Date.now() - new Date(person.birthdate).getTime()) / 1000 / 60 / 60 / 24 / 365.25
                 );
 
               return (
@@ -649,11 +595,9 @@ const ConfigureAssignmentsDialog = ({
                   hover
                   key={person.registrantId}
                   className={clsx({
-                    [classes.firstTimer]:
-                      acceptedRegistration(person) && !person.wcaId,
+                    [classes.firstTimer]: acceptedRegistration(person) && !person.wcaId,
                     [classes.delegateOrOrganizer]:
-                      acceptedRegistration(person) &&
-                      isOrganizerOrDelegate(person),
+                      acceptedRegistration(person) && isOrganizerOrDelegate(person),
                     [classes.disabled]: !acceptedRegistration(person),
                   })}>
                   <TableCell>{person?.seedResult?.ranking}</TableCell>
@@ -666,9 +610,7 @@ const ConfigureAssignmentsDialog = ({
                     )}
                   </TableCell>
                   <TableCell>{age}</TableCell>
-                  <TableCell style={{ textAlign: 'center' }}>
-                    {formattedRankingResult}
-                  </TableCell>
+                  <TableCell style={{ textAlign: 'center' }}>{formattedRankingResult}</TableCell>
                   <TableCell
                     style={{
                       paddingTop: 0,
@@ -681,11 +623,7 @@ const ConfigureAssignmentsDialog = ({
                   </TableCell>
                   {groupsRooms.map((room) =>
                     groups
-                      .filter(
-                        (group) =>
-                          (group.parent as ActivityWithRoom).room.name ===
-                          room.name
-                      )
+                      .filter((group) => (group.parent as ActivityWithRoom).room.name === room.name)
                       .map((groupActivity) => (
                         <TableAssignmentCell
                           key={groupActivity.id}
@@ -705,9 +643,7 @@ const ConfigureAssignmentsDialog = ({
                       .filter((key) => Assignments.find((a) => a.id === key))
                       .sort((a, b) => a.localeCompare(b))
                       .map((key, index, arry) => {
-                        const assignment = Assignments.find(
-                          (a) => a.id === key
-                        );
+                        const assignment = Assignments.find((a) => a.id === key);
                         if (!assignment) return '';
 
                         return (
@@ -733,9 +669,7 @@ const ConfigureAssignmentsDialog = ({
         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
           <Typography>
             <span>Assigning: </span>
-            <b>
-              {Assignments.find((a) => a.id === paintingAssignmentCode)?.name}
-            </b>
+            <b>{Assignments.find((a) => a.id === paintingAssignmentCode)?.name}</b>
             {' | '}
             <span>Showing: </span>
             <b>{showAllCompetitors ? 'All Competitors' : 'staff'}</b>
