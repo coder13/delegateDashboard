@@ -27,6 +27,7 @@ import {
   UPDATE_GLOBAL_EXTENSION,
   ADD_PERSON,
   UPDATE_ROUND,
+  UPDATE_RAW_OBJ,
 } from './actions';
 import INITIAL_STATE from './initialState';
 import * as Reducers from './reducers';
@@ -60,9 +61,7 @@ const reducers = {
   }),
   [UPDATE_WCIF_ERRORS]: (state, action) => ({
     ...state,
-    errors: action.replace
-      ? action.errors
-      : [...state.errors, ...action.errors],
+    errors: action.replace ? action.errors : [...state.errors, ...action.errors],
   }),
   [UPLOADING_WCIF]: (state, action) => ({
     ...state,
@@ -110,10 +109,7 @@ const reducers = {
       changedKeys: new Set([...state.changedKeys, 'persons']),
       wcif: {
         ...state.wcif,
-        persons: [
-          ...state.wcif.persons.filter((i) => i.wcaUserId !== person.wcaUserId),
-          person,
-        ],
+        persons: [...state.wcif.persons.filter((i) => i.wcaUserId !== person.wcaUserId), person],
       },
     };
   },
@@ -169,8 +165,7 @@ const reducers = {
         mapIn(
           room,
           ['activities'],
-          (activity) =>
-            action.activities.find((a) => a.id === activity.id) || activity
+          (activity) => action.activities.find((a) => a.id === activity.id) || activity
         )
       )
     ),
@@ -180,9 +175,7 @@ const reducers = {
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'events']),
     wcif: mapIn(state.wcif, ['events'], (event) =>
-      mapIn(event, ['rounds'], (round) =>
-        round.id === action.roundId ? action.roundData : round
-      )
+      mapIn(event, ['rounds'], (round) => (round.id === action.roundId ? action.roundData : round))
     ),
   }),
   [RESET_ALL_GROUP_ASSIGNMENTS]: (state) => ({
@@ -246,10 +239,18 @@ const reducers = {
       changedKeys: new Set([...state.changedKeys, 'extensions']),
       wcif: {
         ...state.wcif,
-        extensions: [
-          ...state.wcif.extensions.filter((e) => e.id === extensionData),
-          extensionData,
-        ],
+        extensions: [...state.wcif.extensions.filter((e) => e.id === extensionData), extensionData],
+      },
+    };
+  },
+  [UPDATE_RAW_OBJ]: (state, { key, value }) => {
+    return {
+      ...state,
+      needToSave: true,
+      changedKeys: new Set([...state.changedKeys, key]),
+      wcif: {
+        ...state.wcif,
+        [key]: value,
       },
     };
   },
