@@ -1,12 +1,12 @@
-import { formatCentiseconds } from '@wca/helpers';
-import { ExportToCsv } from 'export-to-csv';
-import { useCallback } from 'react';
-import { useSelector } from 'react-redux';
-import { Button, Grid, Typography } from '@mui/material';
 import { findGroupActivitiesByRound, parseActivityCode } from '../../../lib/activities';
 import { eventNameById, roundFormatById } from '../../../lib/events';
 import { acceptedRegistrations } from '../../../lib/persons';
 import { flatten } from '../../../lib/utils';
+import { Button, Grid, Typography } from '@mui/material';
+import { formatCentiseconds } from '@wca/helpers';
+import { ExportToCsv } from 'export-to-csv';
+import { useCallback } from 'react';
+import { useSelector } from 'react-redux';
 
 const advancementConditionToText = ({ type, level }) => {
   switch (type) {
@@ -71,6 +71,12 @@ const ExportPage = () => {
       obj[event.id.toString()] = competingAssignment
         ? competingAssignmentToText(competingAssignment.activity)
         : '-';
+
+      obj[event.id.toString() + '_station_number'] =
+        competingAssignment && competingAssignment.stationNumber
+          ? competingAssignment.stationNumber
+          : '';
+
       obj[event.id.toString() + '_staff'] =
         staffingAssignments.map(staffingAssignmentToText).join(',') || '-';
     });
@@ -78,15 +84,10 @@ const ExportPage = () => {
   };
 
   const onExportNametagsData = () => {
-    const assignmentHeaders = flatten(wcif.events.map((e) => [e.id, e.id + '_staff']));
-    const headers = [
-      'registrantId',
-      'name',
-      'wcaId',
-      'role',
-      'country_iso',
-      ...flatten(wcif.events.map((e) => [e.id, e.id + '_staff'])),
-    ];
+    const assignmentHeaders = flatten(
+      wcif.events.map((e) => [e.id, e.id + '_station_number', e.id + '_staff'])
+    );
+    const headers = ['registrantId', 'name', 'wcaId', 'role', 'country_iso', ...assignmentHeaders];
 
     const data = [];
     acceptedRegistrations(wcif.persons)

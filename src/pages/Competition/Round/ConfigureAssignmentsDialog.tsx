@@ -437,18 +437,10 @@ const ConfigureAssignmentsDialog = ({
   }, []);
 
   useEffect(() => {
-    if (open) {
-      window.addEventListener('keydown', handleKeyDown);
-
-      window.addEventListener('paste', onPaste);
-    } else {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('paste', onPaste);
-    }
+    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('paste', onPaste);
     };
   }, [onPaste]);
 
