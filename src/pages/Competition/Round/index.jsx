@@ -11,7 +11,8 @@ import {
 } from '../../../lib/activities';
 import { mayMakeCutoff, mayMakeTimeLimit } from '../../../lib/persons';
 import { formatTimeRange } from '../../../lib/time';
-import { byName, renderResultByEventId } from '../../../lib/utils';
+import { byName, pluralize, pluralizeWord, renderResultByEventId } from '../../../lib/utils';
+import { getExtensionData } from '../../../lib/wcif-extensions';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import {
   bulkRemovePersonAssignments,
@@ -202,6 +203,8 @@ const RoundPage = () => {
     setConfigureAssignmentsDialog(true);
   };
 
+  const adamRoundConfig = getExtensionData('RoundConfig', round, 'competitionScheduler');
+
   if (roundActivities.length === 0) {
     return (
       <div>
@@ -270,211 +273,224 @@ const RoundPage = () => {
   };
 
   return (
-    <Grid container direction="column" spacing={2}>
-      <Grid item>
-        <Card>
-          <CardHeader
-            title={activityCodeToName(activityCode)}
-            action={
-              <ActionMenu
-                items={[
-                  {
-                    label: 'Dangerously Edit Raw Round Data',
-                    onClick: () => setRawRoundDataDialogOpen(true),
-                  },
-                  {
-                    label: 'Dangerously Edit Raw Round Activities Data',
-                    onClick: () => setRawRoundActivitiesDataDialogOpen(true),
-                  },
-                ]}
-              />
-            }
-          />
-          <List dense subheader={<ListSubheader id="stages">Stages</ListSubheader>}>
-            {roundActivities.map(({ id, startTime, endTime, room }) => (
-              <ListItemButton key={id}>
-                {room.name}: {new Date(startTime).toLocaleDateString()}{' '}
-                {formatTimeRange(startTime, endTime)} (
-                {(new Date(endTime) - new Date(startTime)) / 1000 / 60} Minutes)
-              </ListItemButton>
-            ))}
-          </List>
-
-          <Divider />
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ textAlign: 'center' }}>Round Size</TableCell>
-                <TableCell sx={{ textAlign: 'center' }}>
-                  Persons In Round
-                  <br />
-                  <Typography variant="caption">Based on WCA-Live data</Typography>
-                </TableCell>
-                <TableCell sx={{ textAlign: 'center' }}>Competitors assigned</TableCell>
-                <TableCell sx={{ textAlign: 'center' }}>Persons with any assignment</TableCell>
-                <TableCell sx={{ textAlign: 'center' }}>
-                  Groups Configured <br />
-                  (per stage)
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              <TableRow>
-                <TableCell
-                  className="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1rmkli1-MuiButtonBase-root-MuiButton-root-MuiTableCell-root"
-                  sx={{ textAlign: 'center' }}
-                  onClick={() =>
-                    setShowPersonsDialog({
-                      open: true,
-                      persons: personsShouldBeInRound?.sort(byName) || [],
-                      title: 'People who should be in the round',
-                    })
-                  }>
-                  {personsShouldBeInRound?.length || '???'}
-                </TableCell>
-                <TableCell
-                  className="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1rmkli1-MuiButtonBase-root-MuiButton-root-MuiTableCell-root"
-                  sx={{ textAlign: 'center' }}
-                  onClick={() =>
-                    setShowPersonsDialog({
-                      open: round.results.length > 0,
-                      persons:
-                        round.results
-                          .map(({ personId }) =>
-                            wcif.persons.find(({ registrantId }) => registrantId === personId)
-                          )
-                          .sort(byName) || [],
-                      title: 'People in the round according to wca-live',
-                    })
-                  }>
-                  {round?.results?.length}
-                </TableCell>
-                <TableCell
-                  className="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1rmkli1-MuiButtonBase-root-MuiButton-root-MuiTableCell-root"
-                  sx={{ textAlign: 'center' }}>
-                  {personsAssignedWithCompetitorAssignmentCount}
-                </TableCell>
-                <TableCell
-                  className="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1rmkli1-MuiButtonBase-root-MuiButton-root-MuiTableCell-root"
-                  sx={{ textAlign: 'center' }}
-                  onClick={() => setShowPersonsAssignmentsDialog(true)}>
-                  {personsAssigned.length}
-                </TableCell>
-                <TableCell sx={{ textAlign: 'center' }}>{cumulativeGroupCount(round)}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-          <Box sx={{ display: 'flex' }}>
-            {round.timeLimit && (
-              <Tooltip title="Defined by the number of people who have a PR single under the timelimit">
-                <Box sx={{ px: 3, py: 1 }}>
-                  <Typography>
-                    Time Limit: {formatCentiseconds(round.timeLimit.centiseconds)}
-                  </Typography>
-                  {personsShouldBeInRound.length > 0 && (
-                    <Typography>
-                      May make TimeLimit:{' '}
-                      {mayMakeTimeLimit(eventId, round, personsShouldBeInRound)?.length}
-                    </Typography>
-                  )}
-                </Box>
-              </Tooltip>
-            )}
-            <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-            {round.cutoff && (
-              <Tooltip title="Defined by the number of people who have a PR average under the cutoff">
-                <Box sx={{ px: 3, py: 1 }}>
-                  <Typography>
-                    Cutoff: {round.cutoff.numberOfAttempts} attempts to get {'< '}
-                    {renderResultByEventId(eventId, 'average', round.cutoff.attemptResult)}
-                  </Typography>
-                  {personsShouldBeInRound.length > 0 && (
-                    <Typography>
-                      May make cutoff:{' '}
-                      {mayMakeCutoff(eventId, round, personsShouldBeInRound)?.length}
-                    </Typography>
-                  )}
-                </Box>
-              </Tooltip>
-            )}
-          </Box>
-          <Divider />
-
-          <CardActions>{actionButtons()}</CardActions>
-        </Card>
-      </Grid>
-
-      {personsShouldBeInRound.length === 0 && (
+    <>
+      <Grid container direction="column" spacing={2}>
         <Grid item>
-          <Alert severity="warning">
-            <Typography>
-              No one in round to automatically assign. Make sure the next round is opened on
-              WCA-Live to generate assignments
-            </Typography>
-          </Alert>
+          {adamRoundConfig && (
+            <Alert severity="info">
+              The delegate team strongly recommends <b>{adamRoundConfig.groupCount}</b>{' '}
+              {pluralizeWord(adamRoundConfig.groupCount, 'group', 'groups')} for this round. This
+              was based on an estimated number of competitors for this round of{' '}
+              <b>{adamRoundConfig.expectedRegistrations}</b>. Discuss with the delegates before
+              deviating from this number.
+            </Alert>
+          )}
         </Grid>
-      )}
+        <Grid item>
+          <Card>
+            <CardHeader
+              title={activityCodeToName(activityCode)}
+              action={
+                <ActionMenu
+                  items={[
+                    {
+                      label: 'Dangerously Edit Raw Round Data',
+                      onClick: () => setRawRoundDataDialogOpen(true),
+                    },
+                    {
+                      label: 'Dangerously Edit Raw Round Activities Data',
+                      onClick: () => setRawRoundActivitiesDataDialogOpen(true),
+                    },
+                  ]}
+                />
+              }
+            />
+            <List dense subheader={<ListSubheader id="stages">Stages</ListSubheader>}>
+              {roundActivities.map(({ id, startTime, endTime, room }) => (
+                <ListItemButton key={id}>
+                  {room.name}: {new Date(startTime).toLocaleDateString()}{' '}
+                  {formatTimeRange(startTime, endTime)} (
+                  {(new Date(endTime) - new Date(startTime)) / 1000 / 60} Minutes)
+                </ListItemButton>
+              ))}
+            </List>
 
-      <Grid item>
-        {sortedGroups.map((group) => (
-          <GroupCard key={group.id} groupActivity={group} />
-        ))}
-      </Grid>
-      <ConfigureAssignmentsDialog
-        open={configureAssignmentsDialog}
-        onClose={() => setConfigureAssignmentsDialog(false)}
-        round={round}
-        activityCode={activityCode}
-        groups={groups}
-      />
-      <ConfigureGroupCountsDialog
-        open={configureGroupCountsDialog}
-        onClose={() => setConfigureGroupCountsDialog(false)}
-        activityCode={activityCode}
-        round={round}
-        roundActivities={roundActivities}
-      />
-      {configureStationNumbersDialog && (
-        <ConfigureStationNumbersDialog
-          open={Boolean(configureStationNumbersDialog)}
-          onClose={() => setConfigureStationNumbersDialog(false)}
-          activityCode={configureStationNumbersDialog}
+            <Divider />
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ textAlign: 'center' }}>Round Size</TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}>
+                    Persons In Round
+                    <br />
+                    <Typography variant="caption">Based on WCA-Live data</Typography>
+                  </TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}>Competitors assigned</TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}>Persons with any assignment</TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}>
+                    Groups Configured <br />
+                    (per stage)
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell
+                    className="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1rmkli1-MuiButtonBase-root-MuiButton-root-MuiTableCell-root"
+                    sx={{ textAlign: 'center' }}
+                    onClick={() =>
+                      setShowPersonsDialog({
+                        open: true,
+                        persons: personsShouldBeInRound?.sort(byName) || [],
+                        title: 'People who should be in the round',
+                      })
+                    }>
+                    {personsShouldBeInRound?.length || '???'}
+                  </TableCell>
+                  <TableCell
+                    className="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1rmkli1-MuiButtonBase-root-MuiButton-root-MuiTableCell-root"
+                    sx={{ textAlign: 'center' }}
+                    onClick={() =>
+                      setShowPersonsDialog({
+                        open: round.results.length > 0,
+                        persons:
+                          round.results
+                            .map(({ personId }) =>
+                              wcif.persons.find(({ registrantId }) => registrantId === personId)
+                            )
+                            .sort(byName) || [],
+                        title: 'People in the round according to wca-live',
+                      })
+                    }>
+                    {round?.results?.length}
+                  </TableCell>
+                  <TableCell
+                    className="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1rmkli1-MuiButtonBase-root-MuiButton-root-MuiTableCell-root"
+                    sx={{ textAlign: 'center' }}>
+                    {personsAssignedWithCompetitorAssignmentCount}
+                  </TableCell>
+                  <TableCell
+                    className="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1rmkli1-MuiButtonBase-root-MuiButton-root-MuiTableCell-root"
+                    sx={{ textAlign: 'center' }}
+                    onClick={() => setShowPersonsAssignmentsDialog(true)}>
+                    {personsAssigned.length}
+                  </TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}>{cumulativeGroupCount(round)}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+            <Box sx={{ display: 'flex' }}>
+              {round.timeLimit && (
+                <Tooltip title="Defined by the number of people who have a PR single under the timelimit">
+                  <Box sx={{ px: 3, py: 1 }}>
+                    <Typography>
+                      Time Limit: {formatCentiseconds(round.timeLimit.centiseconds)}
+                    </Typography>
+                    {personsShouldBeInRound.length > 0 && (
+                      <Typography>
+                        May make TimeLimit:{' '}
+                        {mayMakeTimeLimit(eventId, round, personsShouldBeInRound)?.length}
+                      </Typography>
+                    )}
+                  </Box>
+                </Tooltip>
+              )}
+              <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+              {round.cutoff && (
+                <Tooltip title="Defined by the number of people who have a PR average under the cutoff">
+                  <Box sx={{ px: 3, py: 1 }}>
+                    <Typography>
+                      Cutoff: {round.cutoff.numberOfAttempts} attempts to get {'< '}
+                      {renderResultByEventId(eventId, 'average', round.cutoff.attemptResult)}
+                    </Typography>
+                    {personsShouldBeInRound.length > 0 && (
+                      <Typography>
+                        May make cutoff:{' '}
+                        {mayMakeCutoff(eventId, round, personsShouldBeInRound)?.length}
+                      </Typography>
+                    )}
+                  </Box>
+                </Tooltip>
+              )}
+            </Box>
+            <Divider />
+
+            <CardActions>{actionButtons()}</CardActions>
+          </Card>
+        </Grid>
+
+        {personsShouldBeInRound.length === 0 && (
+          <Grid item>
+            <Alert severity="warning">
+              <Typography>
+                No one in round to automatically assign. Make sure the next round is opened on
+                WCA-Live to generate assignments
+              </Typography>
+            </Alert>
+          </Grid>
+        )}
+
+        <Grid item>
+          {sortedGroups.map((group) => (
+            <GroupCard key={group.id} groupActivity={group} />
+          ))}
+        </Grid>
+        <ConfigureAssignmentsDialog
+          open={configureAssignmentsDialog}
+          onClose={() => setConfigureAssignmentsDialog(false)}
+          round={round}
+          activityCode={activityCode}
+          groups={groups}
         />
-      )}
-      <PersonsDialog
-        open={showPersonsDialog?.open}
-        persons={showPersonsDialog?.persons}
-        title={showPersonsDialog?.title}
-        onClose={() =>
-          setShowPersonsDialog({
-            open: false,
-            title: undefined,
-            persons: [],
-          })
-        }
-      />
-      <PersonsAssignmentsDialog
-        open={showPersonsAssignmentsDialog}
-        persons={personsShouldBeInRound}
-        roundId={round.id}
-        onClose={() => setShowPersonsAssignmentsDialog(false)}
-      />
-      <ConfigureGroupsDialog
-        open={configureGroupsDialog}
-        onClose={() => setConfigureGroupsDialog(false)}
-        activityCode={activityCode}
-      />
-      <RawRoundDataDialog
-        open={rawRoundDataDialogOpen}
-        onClose={() => setRawRoundDataDialogOpen(false)}
-        roundId={roundId}
-      />
-      <RawRoundActivitiesDataDialog
-        open={rawRoundActivitiesDataDialogOpen}
-        onClose={() => setRawRoundActivitiesDataDialogOpen(false)}
-        activityCode={activityCode}
-      />
-    </Grid>
+        <ConfigureGroupCountsDialog
+          open={configureGroupCountsDialog}
+          onClose={() => setConfigureGroupCountsDialog(false)}
+          activityCode={activityCode}
+          round={round}
+          roundActivities={roundActivities}
+        />
+        {configureStationNumbersDialog && (
+          <ConfigureStationNumbersDialog
+            open={Boolean(configureStationNumbersDialog)}
+            onClose={() => setConfigureStationNumbersDialog(false)}
+            activityCode={configureStationNumbersDialog}
+          />
+        )}
+        <PersonsDialog
+          open={showPersonsDialog?.open}
+          persons={showPersonsDialog?.persons}
+          title={showPersonsDialog?.title}
+          onClose={() =>
+            setShowPersonsDialog({
+              open: false,
+              title: undefined,
+              persons: [],
+            })
+          }
+        />
+        <PersonsAssignmentsDialog
+          open={showPersonsAssignmentsDialog}
+          persons={personsShouldBeInRound}
+          roundId={round.id}
+          onClose={() => setShowPersonsAssignmentsDialog(false)}
+        />
+        <ConfigureGroupsDialog
+          open={configureGroupsDialog}
+          onClose={() => setConfigureGroupsDialog(false)}
+          activityCode={activityCode}
+        />
+        <RawRoundDataDialog
+          open={rawRoundDataDialogOpen}
+          onClose={() => setRawRoundDataDialogOpen(false)}
+          roundId={roundId}
+        />
+        <RawRoundActivitiesDataDialog
+          open={rawRoundActivitiesDataDialogOpen}
+          onClose={() => setRawRoundActivitiesDataDialogOpen(false)}
+          activityCode={activityCode}
+        />
+      </Grid>
+    </>
   );
 };
 

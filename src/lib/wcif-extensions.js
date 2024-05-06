@@ -1,4 +1,6 @@
-const extensionId = (extensionName) => `delegateDashboard.${extensionName}`;
+const DDNamespace = 'delegateDashboard';
+
+const extensionId = (extensionName, namespace) => `${namespace}.${extensionName}`;
 
 export const buildExtension = (extensionName, data) => ({
   id: extensionId(extensionName),
@@ -9,13 +11,13 @@ export const buildExtension = (extensionName, data) => ({
 /**
  * Updates the extension data inside the wcifEntity and returns it
  */
-export const setExtensionData = (extensionName, wcifEntity, data) => {
+export const setExtensionData = (extensionName, wcifEntity, data, namespace = DDNamespace) => {
   const otherExtensions = wcifEntity.extensions.filter(
-    (extension) => extension.id !== extensionId(extensionName)
+    (extension) => extension.id !== extensionId(extensionName, namespace)
   );
   return {
     ...wcifEntity,
-    extensions: [...otherExtensions, buildExtension(extensionName, data)],
+    extensions: [...otherExtensions, buildExtension(extensionName, data, namespace)],
   };
 };
 
@@ -26,27 +28,27 @@ const defaultExtensionData = {
   },
 };
 
-export const getExtensionData = (extensionName, wcifEntity) => {
+export const getExtensionData = (extensionName, wcifEntity, namespace = DDNamespace) => {
   const extension = wcifEntity.extensions.find(
-    (extension) => extension.id === extensionId(extensionName)
+    (extension) => extension.id === extensionId(extensionName, namespace)
   );
   const defaultData = defaultExtensionData[extensionName];
   if (defaultData === null) return extension && extension.data;
   return extension ? { ...defaultData, ...extension.data } : defaultData;
 };
 
-export const removeExtensionData = (extensionName, wcifEntity) => ({
+export const removeExtensionData = (extensionName, wcifEntity, namespace) => ({
   ...wcifEntity,
   extensions: wcifEntity.extensions.filter(
-    (extension) => extension.id !== extensionId(extensionName)
+    (extension) => extension.id !== extensionId(extensionName, namespace)
   ),
 });
 
 export const getGroupData = (roundActivity) => {
   // Start off with using groupifier and then build own version. Makes compatible with groupifier.
-  if (roundActivity.extensions.find(({ id }) => id === 'delegateDashboard.activityConfig')) {
+  if (roundActivity.extensions.find(({ id }) => id === extensionId(activityConfig))) {
     const activityConfig = roundActivity.extensions.find(
-      ({ id }) => id === 'delegateDashboard.activityConfig'
+      ({ id }) => id === extensionId(activityConfig)
     ).data;
     return {
       groups: activityConfig.groupCount,
