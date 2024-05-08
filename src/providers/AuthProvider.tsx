@@ -1,18 +1,7 @@
-import {
-  getLocalStorage,
-  localStorageKey,
-  setLocalStorage,
-} from '../lib/localStorage';
+import { getLocalStorage, localStorageKey, setLocalStorage } from '../lib/localStorage';
 import { WCA_ORIGIN, WCA_OAUTH_CLIENT_ID } from '../lib/wca-env';
 import { getMe } from '../lib/wcaAPI';
-import {
-  useState,
-  useEffect,
-  createContext,
-  useContext,
-  useCallback,
-  useMemo,
-} from 'react';
+import { useState, useEffect, createContext, useContext, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 /**
@@ -48,14 +37,21 @@ const AuthContext = createContext<IAuthContext>({
 });
 
 export default function AuthProvider({ children }) {
-  const [accessToken, setAccessToken] = useState(
-    getLocalStorage('accessToken')
-  );
+  const [accessToken, setAccessToken] = useState(getLocalStorage('accessToken'));
+  const [expirationTime, setExpirationTime] = useState(() => {
+    const expirationTime = getLocalStorage('expirationTime');
+    return expirationTime ? new Date(expirationTime) : null;
+  });
   const [user, setUser] = useState<User | null>(null);
   const [userFetchError, setUserFetchError] = useState(null);
   const [now, setNow] = useState(new Date());
+
   const location = useLocation();
   const navigate = useNavigate();
+
+  const expired = useMemo(() => {
+    return expirationTime && now >= new Date(expirationTime);
+  }, [now]);
 
   useEffect(() => {
     const token = getLocalStorage('accessToken');
@@ -70,14 +66,22 @@ export default function AuthProvider({ children }) {
     return () => clearInterval(interval);
   }, []);
 
-  const expired = useMemo(() => {
-    const expirationTime = getLocalStorage('expirationTime');
-    return expirationTime && now >= new Date(expirationTime);
-  }, [now]);
+  useEffect(() => {
+    if (expired) {
+      setAccessToken(null);
+      setUser(null);
+      setExpirationTime(null);
+      localStorage.removeItem(localStorageKey('accessToken'));
+      localStorage.removeItem(localStorageKey('expirationTime'));
+    }
+  }, [expired]);
 
   useEffect(() => {
     const hash = window.location.hash.replace(/^#/, '');
 
+    if (!hash) {
+      return;
+    }
     const hashParams = new URLSearchParams(hash);
 
     if (hashParams.has('access_token')) {
@@ -88,21 +92,11 @@ export default function AuthProvider({ children }) {
 
     if (hashParams.has('expires_in')) {
       /* Expire the token 15 minutes before it actually does,
-         this way it doesn't expire right after the user enters the page. */
-      const expiresInSeconds =
-        Number.parseInt(hashParams.get('expires_in') ?? '0', 10) - 15 * 60;
-      const expirationTime = new Date(
-        new Date().getTime() + expiresInSeconds * 1000
-      );
+           this way it doesn't expire right after the user enters the page. */
+      const expiresInSeconds = Number.parseInt(hashParams.get('expires_in') ?? '0', 10) - 15 * 60;
+      const expirationTime = new Date(new Date().getTime() + expiresInSeconds * 1000);
       setLocalStorage('expirationTime', expirationTime.toISOString());
     }
-
-    /* If the token expired, sign the user out. */
-    const expirationTime = getLocalStorage('expirationTime');
-    if (expirationTime && new Date() >= new Date(expirationTime)) {
-      signOut();
-    }
-
     /* Clear the hash if there is a token. */
     if (hashParams.has('access_token')) {
       // history.replace({ ...history.location, hash: null });
@@ -111,19 +105,12 @@ export default function AuthProvider({ children }) {
         hash: '',
       });
     }
-
-    // /* Check if we know what path to redirect to (after OAuth redirect). */
-    // const redirectPath = localStorage.getItem(localStorageKey('redirectPath'));
-    // if (redirectPath) {
-    //   history.replace(redirectPath);
-    //   localStorage.removeItem(localStorageKey('redirectPath'));
-    // }
   }, [location, navigate]);
 
   const signedIn = useCallback(() => !!accessToken, [accessToken]);
 
   useEffect(() => {
-    if (!accessToken || !getLocalStorage('accessToken') || expired) {
+    if (user || !accessToken || expired) {
       return;
     }
 
