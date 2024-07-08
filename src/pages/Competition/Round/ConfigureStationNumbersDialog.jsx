@@ -1,6 +1,7 @@
-import { formatCentiseconds } from '@wca/helpers';
-import { useMemo, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { activityCodeIsChild, parseActivityCode, roomByActivity } from '../../../lib/activities';
+import { getSeedResult } from '../../../lib/persons';
+import { bulkUpsertPersonAssignments, upsertPersonAssignments } from '../../../store/actions';
+import { selectPersonsAssignedForRound, selectActivityById } from '../../../store/selectors';
 import {
   Button,
   Dialog,
@@ -12,10 +13,9 @@ import {
   useTheme,
 } from '@mui/material';
 import { DataGrid, GridToolbarContainer } from '@mui/x-data-grid';
-import { activityCodeIsChild, parseActivityCode, roomByActivity } from '../../../lib/activities';
-import { getSeedResult } from '../../../lib/persons';
-import { bulkUpsertPersonAssignments, upsertPersonAssignments } from '../../../store/actions';
-import { selectPersonsAssignedForRound, selectActivityById } from '../../../store/selectors';
+import { formatCentiseconds } from '@wca/helpers';
+import { useMemo, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
   const wcif = useSelector((state) => state.wcif);
@@ -30,7 +30,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
     selectPersonsAssignedForRound(state, activityCode)
   );
 
-  const personsAssignedToCompete = useMemo(
+  const personsAssignedToCompeteOrJudge = useMemo(
     () =>
       personsAssigned
         .map((p) => ({
@@ -53,7 +53,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
             })
             .find(
               ({ assignmentCode, activity }) =>
-                assignmentCode === 'competitor' &&
+                ['competitor', 'staff-judge'].includes(assignmentCode) &&
                 activityCodeIsChild(activityCode, activity.activityCode)
             ),
         }))
@@ -71,9 +71,10 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
     return 0;
   });
 
-  const rows = personsAssignedToCompete.map(({ assignment, seedResult, ...person }) => ({
+  const rows = personsAssignedToCompeteOrJudge.map(({ assignment, seedResult, ...person }) => ({
     id: person.registrantId,
     assignment: assignment,
+    assignmentCode: assignment.assignmentCode,
     name: person.name,
     seedResult,
     roomName: assignment.room.name,
@@ -83,6 +84,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
 
   const columns = [
     { field: 'name', headerName: 'Name', flex: 1, editable: false },
+    { field: 'assignmentCode', headerName: 'AssignmentCode', flex: 1, editable: false },
     { field: 'roomName', headerName: 'Room', flex: 0.75, hideable: true, editable: false },
     { field: 'groupNumber', headerName: 'Group', flex: 0.5, editable: false, type: 'number' },
     {
@@ -108,6 +110,9 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
   const arbitrarilyAssignStationNumbers = () => {
     const newAssignments = [];
     const lastStationNumberMap = new Map();
+    const personsAssignedToCompete = personsAssignedToCompeteOrJudge.filter(
+      ({ assignment }) => assignment.assignmentCode === 'competitor'
+    );
 
     for (let i = 0; i < personsAssignedToCompete.length; i++) {
       const groupId = personsAssignedToCompete[i].assignment.activity.id;
@@ -125,17 +130,40 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
       lastStationNumberMap.set(groupId, stationNumber + 1);
     }
 
+    lastStationNumberMap.clear();
+
+    const personsAssignedToJudge = personsAssignedToCompeteOrJudge.filter(
+      ({ assignment }) => assignment.assignmentCode === 'staff-judge'
+    );
+
+    for (let i = 0; i < personsAssignedToJudge.length; i++) {
+      const groupId = personsAssignedToJudge[i].assignment.activity.id;
+      const stationNumber = lastStationNumberMap.get(groupId) || 1;
+
+      dispatch(
+        upsertPersonAssignments(personsAssignedToJudge[i].registrantId, [
+          {
+            activityId: groupId,
+            assignmentCode: 'staff-judge',
+            stationNumber: stationNumber,
+          },
+        ])
+      );
+
+      lastStationNumberMap.set(groupId, stationNumber + 1);
+    }
+
     dispatch(bulkUpsertPersonAssignments(newAssignments));
   };
 
   const resetStationNumbers = () => {
     dispatch(
       bulkUpsertPersonAssignments(
-        personsAssignedToCompete.map(({ registrantId, assignment }) => ({
+        personsAssignedToCompeteOrJudge.map(({ registrantId, assignment }) => ({
           registrantId,
           activityId: assignment.activity.id,
           assignment: {
-            assignmentCode: 'competitor',
+            assignmentCode: assignment.assignmentCode,
             stationNumber: null,
           },
         }))
@@ -150,7 +178,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
         upsertPersonAssignments(row.id, [
           {
             activityId: row.assignment.activityId,
-            assignmentCode: row.assignment.assignmentCode,
+            assignmentCode: row.assignmentCode,
             stationNumber: parseInt(event.target.value, 10),
           },
         ])
