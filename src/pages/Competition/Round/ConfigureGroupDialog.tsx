@@ -40,7 +40,7 @@ const ConfigureGroupDialog = ({ open, onClose, activity }) => {
     if (!id) {
       return;
     }
-
+ 
     dispatch(
       editActivity(
         {

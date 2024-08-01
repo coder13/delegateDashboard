@@ -1,7 +1,7 @@
-import { Activity, Competition, EventId, Room } from '@wca/helpers';
 import { eventNameById } from './events';
 import { shortTime } from './utils';
 import { getExtensionData } from './wcif-extensions';
+import { Activity, Competition, EventId, Room } from '@wca/helpers';
 
 interface ActivityCode {
   eventId: EventId;
@@ -42,8 +42,9 @@ export const parseActivityCode = (activityCode: string): ActivityCode => {
  */
 export const createActivityCode = (parsedActivityCode: ActivityCode) => {
   const { eventId, roundNumber, groupNumber, attemptNumber } = parsedActivityCode;
-  return `${eventId}${roundNumber ? `-r${roundNumber}` : ''}${groupNumber ? `-g${groupNumber}` : ''
-    }${attemptNumber ? `-a${attemptNumber}` : ''}`;
+  return `${eventId}${roundNumber ? `-r${roundNumber}` : ''}${
+    groupNumber ? `-g${groupNumber}` : ''
+  }${attemptNumber ? `-a${attemptNumber}` : ''}`;
 };
 
 export const activityCodeToName = (activityCode: string) => {
@@ -285,11 +286,14 @@ export const cumulativeGroupCount = (round) => {
 };
 
 /**
- * Searches for an activity recursively and returns a new version of the activity 
+ * Searches for an activity recursively and returns a new version of the activity
  */
-export const findAndReplaceActivity = (where: Partial<Activity>, what: Partial<Activity>) => {
+export const findAndReplaceActivity = (
+  where: Partial<Activity> & { id: string },
+  what: Partial<Activity>
+) => {
   return (activity: Activity): Activity => {
-    if (Object.keys(where).every((key) => activity[key] === where[key])) {
+    if (activity.id === where.id) {
       return {
         ...activity,
         ...what,
@@ -301,4 +305,4 @@ export const findAndReplaceActivity = (where: Partial<Activity>, what: Partial<A
       childActivities: activity.childActivities.map(findAndReplaceActivity(where, what)),
     } as Activity;
   };
-}
+};

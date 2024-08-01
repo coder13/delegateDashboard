@@ -201,7 +201,7 @@ const reducers = {
         }))
       ),
       persons:
-        what.id !== where.id
+        what.id && where.id && what.id !== where.id
           ? state.wcif.persons.map((person) => ({
               ...person,
               assignments: person.assignments.map((assignment) => {
@@ -215,7 +215,7 @@ const reducers = {
                 return assignment;
               }),
             }))
-          : what,
+          : state.wcif.persons,
     },
   }),
   [UPDATE_ROUND_EXTENSION_DATA]: (state, action) => ({

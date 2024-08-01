@@ -241,7 +241,7 @@ export const generateAssignments = (roundId, options) => ({
 });
 
 /**
- * Queries activity based on the what and replaces it with the what
+ * Queries activity based on the where and replaces it with the what
  * @param {*} where
  * @param {*} what
  * @returns
