@@ -9,6 +9,9 @@ export const getMe = () => {
   return wcaApiFetch(`/me`);
 };
 
+/**
+ * @deprecated
+ */
 export const getManageableCompetitions = () => {
   const params = new URLSearchParams({
     managed_by_me: true,
@@ -69,7 +72,11 @@ export const wcaApiFetch = async (path, fetchOptions = {}) => {
   );
 
   if (!res.ok) {
-    throw new Error(`${res.status}${res.statusText ? `: ${res.statusText}` : ''}`);
+    if (res.statusText) {
+      throw new Error(`${res.status}: ${res.statusText}`);
+    } else {
+      throw new Error(`Something went wrong: Status code ${res.status}`);
+    }
   }
 
   return await res.json();

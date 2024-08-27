@@ -1,8 +1,7 @@
 import PersonSearchField, { User } from '../../../components/PersonSearchField';
 import RoleSelect from '../../../components/RoleSelect';
 import { addPerson } from '../../../store/actions';
-import { DialogActions } from '@material-ui/core';
-import { Button, Dialog, DialogContent, DialogTitle, Divider } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider } from '@mui/material';
 import { Role } from '@wca/helpers/lib/models/role';
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -35,12 +34,12 @@ export default function AddNonCompetingStaffDialog({
         registration: {
           isCompeting: false,
           eventIds: [],
-          administrativeNotes: 'Added with Delegate Dashboard'
+          administrativeNotes: 'Added with Delegate Dashboard',
         },
         wcaId: selectedUser.wca_id,
-        roles
+        roles,
       })
-    );  
+    );
     onClose();
   }, [roles, selectedUser]);
 
