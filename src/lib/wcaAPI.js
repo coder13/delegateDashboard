@@ -21,7 +21,7 @@ export const getUpcomingManageableCompetitions = () => {
   const params = new URLSearchParams({
     managed_by_me: true,
     start: oneWeekAgo.toISOString(),
-    sort: '-start_date',
+    sort: 'start_date',
   });
   return wcaApiFetch(`/competitions?${params.toString()}`);
 };
