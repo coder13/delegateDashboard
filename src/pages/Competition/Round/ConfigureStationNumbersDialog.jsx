@@ -33,16 +33,16 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
   const personsAssignedToCompeteOrJudge = useMemo(
     () =>
       personsAssigned
-        .map((p) => ({
-          ...p,
-          seedResult: getSeedResult(wcif, activityCode, p),
-          assignment: p.assignments
+        .flatMap((p) => {
+          const assigments = p.assignments
             .map((a) => {
               const activity = getActivityFromId(a.activityId);
 
               if (!activity?.activityCode) {
                 return a;
               }
+
+              console.log(45, activity.activityCode);
 
               return {
                 ...a,
@@ -51,15 +51,84 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
                 groupNumber: parseActivityCode(activity.activityCode).groupNumber,
               };
             })
-            .find(
-              ({ assignmentCode, activity }) =>
-                ['competitor', 'staff-judge'].includes(assignmentCode) &&
-                activityCodeIsChild(activityCode, activity.activityCode)
-            ),
-        }))
+            .filter(({ activity }) => activityCodeIsChild(activityCode, activity.activityCode));
+
+          const competitorAssignment = assigments.find(
+            ({ assignmentCode }) => assignmentCode === 'competitor'
+          );
+
+          const judgeAssignment = assigments.find(({ assignmentCode }) =>
+            assignmentCode.includes('judge')
+          );
+
+          let a = [];
+
+          if (competitorAssignment) {
+            a.push({
+              ...p,
+              assignment: competitorAssignment,
+              seedResult: getSeedResult(wcif, activityCode, p),
+            });
+          }
+
+          if (judgeAssignment) {
+            a.push({
+              ...p,
+              assignment: judgeAssignment,
+            });
+          }
+
+          return a;
+
+          // return {
+          //   ...p,
+          //   seedResult: getSeedResult(wcif, activityCode, p),
+          //   assignment: p.assignments
+          //     .map((a) => {
+          //       const activity = getActivityFromId(a.activityId);
+
+          //       if (!activity?.activityCode) {
+          //         return a;
+          //       }
+
+          //       return {
+          //         ...a,
+          //         activity,
+          //         room: roomByActivity(wcif, a.activityId),
+          //         groupNumber: parseActivityCode(activity.activityCode).groupNumber,
+          //       };
+          //     })
+          //     .find(
+          //       ({ assignmentCode, activity }) =>
+          //         ['competitor', 'staff-judge'].includes(assignmentCode) &&
+          //         activityCodeIsChild(activityCode, activity.activityCode)
+          //     ),
+          // };
+        })
         .filter((p) => Boolean(p.assignment)),
     [activityCode, getActivityFromId, personsAssigned, wcif]
   ).sort((a, b) => {
+    if (
+      a.assignment.assignmentCode &&
+      b.assignment.assignmentCode &&
+      a.assignment.assignmentCode !== b.assignment.assignmentCode
+    ) {
+      return a.assignment.assignmentCode.localeCompare(b.assignment.assignmentCode);
+      // const isACompetitor = a.assignment.assignmentCode === 'competitor';
+      // const isBCompetitor = b.assignment.assignmentCode === 'competitor';
+      // if (isACompetitor !== isBCompetitor) {
+      //   return isACompetitor ? -1 : 1;
+      // }
+    }
+
+    if (
+      a.assignment.groupNumber &&
+      b.assignment.groupNumber &&
+      a.assignment.groupNumber !== b.assignment.groupNumber
+    ) {
+      return a.assignment.groupNumber - b.assignment.groupNumber;
+    }
+
     if (a.seedResult && b.seedResult) {
       return a.seedResult.ranking - b.seedResult.ranking;
     } else if (!a.seedResult) {
@@ -70,6 +139,8 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
 
     return 0;
   });
+
+  console.log(personsAssignedToCompeteOrJudge);
 
   const rows = personsAssignedToCompeteOrJudge.map(({ assignment, seedResult, ...person }) => ({
     id: person.registrantId,
@@ -115,6 +186,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
     );
 
     for (let i = 0; i < personsAssignedToCompete.length; i++) {
+      debugger;
       const groupId = personsAssignedToCompete[i].assignment.activity.id;
       const stationNumber = lastStationNumberMap.get(groupId) || 1;
 
@@ -208,6 +280,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
           components={{ Toolbar }}
           componentsProps={{ Toolbar: { p: 2 } }}
           ref={dataGridRef}
+          getRowId={(row) => row.assignmentCode + row.id}
           experimentalFeatures={{ newEditingApi: true }}
           onCellEditStop={handleCellEditStop}
         />
