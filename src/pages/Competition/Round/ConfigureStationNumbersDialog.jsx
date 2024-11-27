@@ -42,8 +42,6 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
                 return a;
               }
 
-              console.log(45, activity.activityCode);
-
               return {
                 ...a,
                 activity,
@@ -140,8 +138,6 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
     return 0;
   });
 
-  console.log(personsAssignedToCompeteOrJudge);
-
   const rows = personsAssignedToCompeteOrJudge.map(({ assignment, seedResult, ...person }) => ({
     id: person.registrantId,
     assignment: assignment,
@@ -178,49 +174,25 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
     },
   ];
 
-  const arbitrarilyAssignStationNumbers = () => {
+  const arbitrarilyAssignStationNumbers = (assignmentCode) => {
     const newAssignments = [];
     const lastStationNumberMap = new Map();
-    const personsAssignedToCompete = personsAssignedToCompeteOrJudge.filter(
-      ({ assignment }) => assignment.assignmentCode === 'competitor'
+    const personsAssignedForCode = personsAssignedToCompeteOrJudge.filter(
+      ({ assignment }) => assignment.assignmentCode === assignmentCode
     );
 
-    for (let i = 0; i < personsAssignedToCompete.length; i++) {
-      debugger;
-      const groupId = personsAssignedToCompete[i].assignment.activity.id;
+    for (let i = 0; i < personsAssignedForCode.length; i++) {
+      const groupId = personsAssignedForCode[i].assignment.activity.id;
       const stationNumber = lastStationNumberMap.get(groupId) || 1;
 
       newAssignments.push({
-        registrantId: personsAssignedToCompete[i].registrantId,
+        registrantId: personsAssignedForCode[i].registrantId,
         activityId: groupId,
         assignment: {
-          assignmentCode: 'competitor',
+          assignmentCode: assignmentCode,
           stationNumber: stationNumber,
         },
       });
-
-      lastStationNumberMap.set(groupId, stationNumber + 1);
-    }
-
-    lastStationNumberMap.clear();
-
-    const personsAssignedToJudge = personsAssignedToCompeteOrJudge.filter(
-      ({ assignment }) => assignment.assignmentCode === 'staff-judge'
-    );
-
-    for (let i = 0; i < personsAssignedToJudge.length; i++) {
-      const groupId = personsAssignedToJudge[i].assignment.activity.id;
-      const stationNumber = lastStationNumberMap.get(groupId) || 1;
-
-      dispatch(
-        upsertPersonAssignments(personsAssignedToJudge[i].registrantId, [
-          {
-            activityId: groupId,
-            assignmentCode: 'staff-judge',
-            stationNumber: stationNumber,
-          },
-        ])
-      );
 
       lastStationNumberMap.set(groupId, stationNumber + 1);
     }
@@ -260,8 +232,17 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
 
   const Toolbar = () => (
     <GridToolbarContainer>
-      <Button sx={{ m: 1 }} variant="contained" onClick={arbitrarilyAssignStationNumbers}>
-        Assign Station Numbers in order of Seed Ranking
+      <Button
+        sx={{ m: 1 }}
+        variant="contained"
+        onClick={() => arbitrarilyAssignStationNumbers('competitor')}>
+        Assign For Competitors
+      </Button>
+      <Button
+        sx={{ m: 1 }}
+        variant="contained"
+        onClick={() => arbitrarilyAssignStationNumbers('staff-judge')}>
+        Assign For Judges
       </Button>
       <div style={{ display: 'flex', flexGrow: 1 }} />
       <Button sx={{ m: 1 }} variant="contained" color="error" onClick={resetStationNumbers}>
