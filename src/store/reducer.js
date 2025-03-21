@@ -201,7 +201,7 @@ const reducers = {
         }))
       ),
       persons:
-        what.id && where.id && what.id !== where.id
+        what.id !== undefined && where.id !== undefined && what.id !== where.id
           ? state.wcif.persons.map((person) => ({
               ...person,
               assignments: person.assignments.map((assignment) => {
