@@ -6,6 +6,7 @@ import {
   ActivityWithParent,
   ActivityWithRoom,
 } from '../../../lib/activities';
+import { roundFormatById } from '../../../lib/events';
 import { parseCompetitorAssignment } from '../../../lib/import2';
 import {
   acceptedRegistration,
@@ -48,7 +49,6 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Toolbar as MuiToolbar,
   Typography,
   useMediaQuery,
   Tooltip,
@@ -58,7 +58,14 @@ import {
 import { grey, red, yellow } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 import { useTheme } from '@mui/system';
-import { Assignment, EventId, Round, formatCentiseconds } from '@wca/helpers';
+import {
+  Assignment,
+  AttemptResult,
+  EventId,
+  Person,
+  Round,
+  formatCentiseconds,
+} from '@wca/helpers';
 import clsx from 'clsx';
 import { useConfirm } from 'material-ui-confirm';
 import PapaParse from 'papaparse';
@@ -94,16 +101,34 @@ const useStyles = makeStyles(() => ({
 // `
 // );
 
-function calcRanking(person, lastPerson) {
+function calcRanking(
+  person: Person & {
+    seedResult?: {
+      average?: AttemptResult;
+      single?: AttemptResult;
+    };
+  },
+  lastPerson?: Person & {
+    seedResult?: {
+      ranking?: number;
+      average?: AttemptResult;
+      single?: AttemptResult;
+    };
+  }
+) {
   if (!lastPerson?.seedResult?.ranking) {
     return 1;
   }
 
-  if (person?.seedResult?.rankingResult === lastPerson?.seedResult?.rankingResult) {
-    return lastPerson.seedResult.ranking;
+  if (
+    (lastPerson?.seedResult?.average &&
+      person.seedResult?.average !== lastPerson.seedResult.average) ||
+    (lastPerson?.seedResult?.single && person.seedResult?.single !== lastPerson.seedResult.single)
+  ) {
+    return lastPerson.seedResult.ranking + 1;
   }
 
-  return lastPerson.seedResult.ranking + 1;
+  return lastPerson.seedResult.ranking;
 }
 
 const ConfigureAssignmentsDialog = ({
@@ -159,68 +184,71 @@ const ConfigureAssignmentsDialog = ({
 
   const isRegistered = registeredForEvent(eventId);
 
-  const persons = useMemo(
-    () =>
-      event &&
-      wcif?.persons
-        .filter((p) => {
-          // if competitor does not have an accepted registration, do not show them
-          if (!acceptedRegistration(p)) {
-            return false;
-          }
+  const persons = useMemo(() => {
+    if (!wcif?.persons || !event) {
+      return [];
+    }
 
-          // If we want to show every anyways, return true
-          if (showCompetitorsNotInRound) {
-            return true;
-          }
+    const personsWithSeedResult = wcif.persons
+      .filter((p) => {
+        // if competitor does not have an accepted registration, do not show them
+        if (!acceptedRegistration(p)) {
+          return false;
+        }
 
-          // Else make sure they are registered and should be in the round.
-          return isRegistered(p) && round && shouldBeInRound(round)(p);
-        })
-        .map((person) => ({
-          ...person,
-          seedResult: getSeedResult(wcif, activityCode, person),
-        }))
-        .sort((a, b) => byPROrResult(event, roundNumber)(a, b))
-        .reduce((persons, person) => {
-          const lastPerson = persons[persons.length - 1];
+        // If we want to show every anyways, return true
+        if (showCompetitorsNotInRound) {
+          return true;
+        }
 
-          return [
-            ...persons,
-            {
-              ...person,
-              seedResult: {
-                ...person.seedResult,
-                ranking: calcRanking(person, lastPerson),
-              },
+        // Else make sure they are registered and should be in the round.
+        return isRegistered(p) && round && shouldBeInRound(round)(p);
+      })
+      .map((person) => ({
+        ...person,
+        seedResult: getSeedResult(wcif, activityCode, person),
+      }))
+      .sort((a, b) => byPROrResult(event, roundNumber)(a, b));
+
+    return personsWithSeedResult
+      .reduce((persons, person) => {
+        const lastPerson = persons[persons.length - 1];
+
+        return [
+          ...persons,
+          {
+            ...person,
+            seedResult: {
+              ...person.seedResult,
+              ranking: calcRanking(person, lastPerson),
             },
-          ];
-        }, [])
-        .filter(
-          (p) =>
-            showAllCompetitors ||
-            isOrganizerOrDelegate(p) ||
-            p.roles?.some((r) => r.indexOf('staff') > -1)
-        )
-        .sort((a, b) => {
-          if (competitorSort === 'speed') {
-            return 0;
-          }
+          },
+        ];
+      }, [])
+      .filter(
+        (p) =>
+          showAllCompetitors ||
+          isOrganizerOrDelegate(p) ||
+          p.roles?.some((r) => r.indexOf('staff') > -1)
+      )
+      .sort((a, b) => {
+        if (competitorSort === 'speed') {
+          return 0;
+        }
 
-          return a.name.localeCompare(b.name);
-        }),
-    [
-      activityCode,
-      competitorSort,
-      event,
-      isRegistered,
-      round,
-      roundNumber,
-      showAllCompetitors,
-      showCompetitorsNotInRound,
-      wcif,
-    ]
-  );
+        return a.name.localeCompare(b.name);
+      });
+  }, [
+    activityCode,
+    competitorSort,
+    event,
+    isRegistered,
+    round,
+    roundNumber,
+    showAllCompetitors,
+    showCompetitorsNotInRound,
+    wcif,
+  ]);
 
   const personAssignments = useCallback(
     (registrantId) => persons?.find((p) => p.registrantId === registrantId)?.assignments,
@@ -558,10 +586,10 @@ const ConfigureAssignmentsDialog = ({
           </TableHead>
           <TableBody>
             {persons?.map((person) => {
+              const roundFormat = roundFormatById(round.format)?.rankingResult || 'single';
+
               const rankingResult =
-                person?.seedResult && 'rankingResult' in person?.seedResult
-                  ? person?.seedResult?.rankingResult
-                  : undefined;
+                roundFormat === 'average' ? person.seedResult?.average : person.seedResult?.single;
 
               const formattedRankingResult =
                 rankingResult && !isNaN(rankingResult) && formatCentiseconds(rankingResult);

@@ -3,6 +3,7 @@ import { roundFormatById } from './events';
 import {
   Activity,
   Assignment,
+  AttemptResult,
   Competition,
   Event,
   EventId,
@@ -192,12 +193,9 @@ export const findResultFromRound = (
     return;
   }
 
-  const rankingResult = (roundFormat.rankingResult === 'average' && result.average) || result.best;
-
   return {
-    ...result,
-    ranking: result.ranking,
-    rankingResult: rankingResult,
+    average: roundFormat.rankingResult === 'average' ? result.average : undefined,
+    single: result.best,
   };
 };
 
@@ -208,7 +206,16 @@ export const findResultFromRound = (
  * @param {*} activityCode
  * @returns
  */
-export const getSeedResult = (wcif: Competition, activityCode: string, person: Person) => {
+export const getSeedResult = (
+  wcif: Competition,
+  activityCode: string,
+  person: Person
+):
+  | {
+      average?: AttemptResult;
+      single?: AttemptResult;
+    }
+  | undefined => {
   const { eventId, roundNumber } = parseActivityCode(activityCode);
 
   if (!roundNumber) {
@@ -226,20 +233,12 @@ export const getSeedResult = (wcif: Competition, activityCode: string, person: P
 
   // if activity is round 1, then return pr result
   if (roundNumber === 1) {
-    const pr =
-      roundFormat.rankingResult === 'average'
-        ? findPR(person.personalBests || [], eventId, 'average') ||
-          findPR(person.personalBests || [], eventId, 'single')
-        : findPR(person.personalBests || [], eventId, 'single');
-
-    if (!pr) {
-      return;
-    }
+    const average = findPR(person.personalBests || [], eventId, 'average');
+    const single = findPR(person.personalBests || [], eventId, 'single');
 
     return {
-      ...pr,
-      ranking: pr.worldRanking,
-      rankingResult: pr.best,
+      average: average?.best,
+      single: single?.best,
     };
   }
 
