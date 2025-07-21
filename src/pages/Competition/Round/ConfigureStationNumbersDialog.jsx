@@ -1,5 +1,5 @@
 import { activityCodeIsChild, parseActivityCode, roomByActivity } from '../../../lib/activities';
-import { getSeedResult } from '../../../lib/persons';
+import { byPROrResult, getSeedResult } from '../../../lib/persons';
 import { bulkUpsertPersonAssignments, upsertPersonAssignments } from '../../../store/actions';
 import { selectPersonsAssignedForRound, selectActivityById } from '../../../store/selectors';
 import {
@@ -29,6 +29,10 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
   const personsAssigned = useSelector((state) =>
     selectPersonsAssignedForRound(state, activityCode)
   );
+
+  const { eventId, roundNumber } = parseActivityCode(activityCode);
+
+  const event = wcif.events.find((e) => e.id === eventId);
 
   const personsAssignedToCompeteOrJudge = useMemo(
     () =>
@@ -119,24 +123,10 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
       // }
     }
 
-    if (
-      a.assignment.groupNumber &&
-      b.assignment.groupNumber &&
-      a.assignment.groupNumber !== b.assignment.groupNumber
-    ) {
-      return a.assignment.groupNumber - b.assignment.groupNumber;
-    }
-
-    if (a.seedResult && b.seedResult) {
-      return a.seedResult.ranking - b.seedResult.ranking;
-    } else if (!a.seedResult) {
-      return 1;
-    } else if (!b.seedResult) {
-      return -1;
-    }
-
-    return 0;
+    return byPROrResult(event, roundNumber)(a, b);
   });
+
+  console.log(personsAssignedToCompeteOrJudge);
 
   const rows = personsAssignedToCompeteOrJudge.map(({ assignment, seedResult, ...person }) => ({
     id: person.registrantId,
