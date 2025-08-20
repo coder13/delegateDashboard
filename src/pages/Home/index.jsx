@@ -1,4 +1,5 @@
 import mca_logo from '../../assets/mca_logo.png';
+import sec_logo from '../../assets/sec_logo.png';
 import wcc_logo from '../../assets/wcc_logo.png';
 import { useAuth } from '../../providers/AuthProvider';
 import CompetitionList from '../CompetitionList';
@@ -45,6 +46,7 @@ const Home = () => {
               }}>
               <img src={wcc_logo} alt="West Coast Cubing logo" height={120} />
               <img src={mca_logo} alt="Midwest Cubing Association logo" height={120} />
+              <img src={sec_logo} alt="Southeast Cubing Inc." height={120} />
               <a href="https://github.com/sponsors/coder13" target="_blank" rel="noreferrer">
                 <div
                   style={{
