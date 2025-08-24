@@ -17,12 +17,14 @@ import {
   shouldBeInRound,
 } from '../../../lib/persons';
 import { flatten } from '../../../lib/utils';
+import { getExtensionData, setExtensionData } from '../../../lib/wcif-extensions';
 import { useAppSelector } from '../../../store';
 import {
   upsertPersonAssignments,
   removePersonAssignments,
   bulkRemovePersonAssignments,
   bulkAddPersonAssignments,
+  editActivity,
 } from '../../../store/actions';
 import { selectWcifRooms } from '../../../store/selectors';
 import TableAssignmentCell from './TableAssignmentCell';
@@ -54,6 +56,7 @@ import {
   Tooltip,
   Box,
   Toolbar,
+  Checkbox,
 } from '@mui/material';
 import { grey, red, yellow } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
@@ -472,6 +475,58 @@ const ConfigureAssignmentsDialog = ({
     };
   }, [onPaste]);
 
+  // Array of wcaUserIds
+  const featuredCompetitors = useMemo(
+    () =>
+      groups.flatMap((activity) => {
+        const extensionData = getExtensionData('ActivityConfig', activity, 'groupifier');
+        return extensionData?.featuredCompetitorWcaUserIds || [];
+      }),
+    [groups]
+  );
+
+  const toggleFeaturedCompetitor = useCallback(
+    (person: Person) => {
+      const competingActivity = groups.find((activity) => {
+        const assignment = person.assignments?.find(
+          (a) => a.activityId === activity.id && a.assignmentCode === 'competitor'
+        );
+        return !!assignment;
+      });
+
+      if (!competingActivity) {
+        return;
+      }
+
+      const activityFeaturedCompetitors =
+        getExtensionData('ActivityConfig', competingActivity, 'groupifier')
+          ?.featuredCompetitorWcaUserIds || [];
+
+      const {
+        // @ts-expect-error
+        parent: __,
+        // @ts-expect-error
+        room: _,
+        ...competingActivityWithoutRoom
+      } = competingActivity as ActivityWithRoom | ActivityWithParent;
+
+      const newActivity = setExtensionData(
+        'ActivityConfig',
+        competingActivityWithoutRoom,
+        {
+          featuredCompetitorWcaUserIds: activityFeaturedCompetitors.includes(person.wcaUserId)
+            ? activityFeaturedCompetitors.filter((id) => id !== person.wcaUserId)
+            : [...activityFeaturedCompetitors, person.wcaUserId],
+        },
+        'groupifier',
+        'https://github.com/cubingusa/natshelper/blob/main/specification.md'
+      );
+
+      dispatch(editActivity(competingActivity, newActivity));
+    },
+    [groups, featuredCompetitors]
+  );
+
   if (!open) {
     return null;
   }
@@ -581,6 +636,7 @@ const ConfigureAssignmentsDialog = ({
                     </TableCell>
                   ))
               )}
+              <TableCell style={{ width: '1em' }}>Featured</TableCell>
               <TableCell style={{ width: '1em' }}>Total Staff Assignments</TableCell>
             </TableRow>
           </TableHead>
@@ -609,6 +665,8 @@ const ConfigureAssignmentsDialog = ({
                 Math.floor(
                   (Date.now() - new Date(person.birthdate).getTime()) / 1000 / 60 / 60 / 24 / 365.25
                 );
+
+              const isFeatured = featuredCompetitors.includes(person.wcaUserId);
 
               return (
                 <TableRow
@@ -658,6 +716,13 @@ const ConfigureAssignmentsDialog = ({
                         />
                       ))
                   )}
+                  <TableCell>
+                    <Checkbox
+                      checked={isFeatured}
+                      onClick={() => toggleFeaturedCompetitor(person)}
+                    />
+                  </TableCell>
+
                   <TableCell>
                     {Object.keys(totalStaffAssignments)
                       .filter((key) => Assignments.find((a) => a.id === key))

@@ -2,22 +2,30 @@ const DDNamespace = 'delegateDashboard';
 
 const extensionId = (extensionName, namespace) => `${namespace}.${extensionName}`;
 
-export const buildExtension = (extensionName, data) => ({
-  id: extensionId(extensionName),
-  specUrl: `https://github.com/coder13/delegateDashboard/blob/main/public/wcif-extensions/${extensionName}.json`,
+export const buildExtension = (extensionName, data, namespace = DDNamespace, specUrl) => ({
+  id: extensionId(extensionName, namespace),
+  specUrl:
+    specUrl ??
+    `https://github.com/coder13/delegateDashboard/blob/main/public/wcif-extensions/${extensionName}.json`,
   data,
 });
 
 /**
  * Updates the extension data inside the wcifEntity and returns it
  */
-export const setExtensionData = (extensionName, wcifEntity, data, namespace = DDNamespace) => {
+export const setExtensionData = (
+  extensionName,
+  wcifEntity,
+  data,
+  namespace = DDNamespace,
+  specUrl
+) => {
   const otherExtensions = wcifEntity.extensions.filter(
     (extension) => extension.id !== extensionId(extensionName, namespace)
   );
   return {
     ...wcifEntity,
-    extensions: [...otherExtensions, buildExtension(extensionName, data, namespace)],
+    extensions: [...otherExtensions, buildExtension(extensionName, data, namespace, specUrl)],
   };
 };
 
@@ -33,7 +41,7 @@ export const getExtensionData = (extensionName, wcifEntity, namespace = DDNamesp
     (extension) => extension.id === extensionId(extensionName, namespace)
   );
   const defaultData = defaultExtensionData[extensionName];
-  if (defaultData === null) return extension && extension.data;
+  if (!defaultData) return extension && extension.data;
   return extension ? { ...defaultData, ...extension.data } : defaultData;
 };
 
