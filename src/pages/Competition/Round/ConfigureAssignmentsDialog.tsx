@@ -636,7 +636,7 @@ const ConfigureAssignmentsDialog = ({
                     </TableCell>
                   ))
               )}
-              <TableCell style={{ width: '1em' }}>Featured</TableCell>
+              <TableCell style={{ width: '1em' }}>Stream</TableCell>
               <TableCell style={{ width: '1em' }}>Total Staff Assignments</TableCell>
             </TableRow>
           </TableHead>
