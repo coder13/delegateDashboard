@@ -44,7 +44,7 @@ const competingAssignmentToText = (activity) =>
 
 const getStageName = (room, activity) => {
   const stages = getExtensionData('Room', room, 'org.cubingusa.natshelper.v1')?.stages;
-  const stageId = getExtensionData('Room', activity, 'org.cubingusa.natshelper.v1')?.stageId;
+  const stageId = getExtensionData('Group', activity, 'org.cubingusa.natshelper.v1')?.stageId;
 
   if (stages?.length && stageId !== undefined) {
     const stageName = stages.find((s) => s.id === stageId)?.name;
