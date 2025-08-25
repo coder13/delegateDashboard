@@ -42,6 +42,21 @@ const staffingAssignmentToText = ({ assignmentCode, activity }) =>
 const competingAssignmentToText = (activity) =>
   `${activity.parent.room.name[0]}${groupNumber(activity)}`;
 
+const getStageName = (room, activity) => {
+  const stages = getExtensionData('Room', room, 'org.cubingusa.natshelper.v1')?.stages;
+  const stageId = getExtensionData('Room', activity, 'org.cubingusa.natshelper.v1')?.stageId;
+
+  if (stages?.length && stageId !== undefined) {
+    const stageName = stages.find((s) => s.id === stageId)?.name;
+
+    if (stageName) {
+      return stageName;
+    }
+  }
+
+  return room.name;
+};
+
 const ExportPage = () => {
   const wcif = useSelector((state) => state.wcif);
 
@@ -217,6 +232,8 @@ const ExportPage = () => {
             getExtensionData('ActivityConfig', groupActivity, 'groupifier')
               ?.featuredCompetitorWcaUserIds || [];
 
+          const stageName = getStageName(groupActivity.parent.room, groupActivity);
+
           people.forEach((person) => {
             scorecards.push({
               id: person.registrantId,
@@ -225,7 +242,7 @@ const ExportPage = () => {
               event_name: eventNameById(event.id),
               round_number: parseActivityCode(round.id)?.roundNumber,
               group_name: competingAssignmentToText(groupActivity),
-              stage: groupActivity.parent.room.name,
+              stage: stageName,
               group_number: parseActivityCode(groupActivity.activityCode).groupNumber,
               full_name: person.name,
               dnf_time: roundData.dnf_time,
