@@ -2,6 +2,7 @@ import { findGroupActivitiesByRound, parseActivityCode } from '../../../lib/acti
 import { eventNameById, roundFormatById } from '../../../lib/events';
 import { acceptedRegistrations } from '../../../lib/persons';
 import { flatten } from '../../../lib/utils';
+import { getExtensionData } from '../../../lib/wcif-extensions';
 import { Button, Grid, Typography } from '@mui/material';
 import { formatCentiseconds } from '@wca/helpers';
 import { ExportToCsv } from 'export-to-csv';
@@ -212,6 +213,10 @@ const ExportPage = () => {
             )
           );
 
+          const featuredCompetitors =
+            getExtensionData('ActivityConfig', groupActivity, 'groupifier')
+              ?.featuredCompetitorWcaUserIds || [];
+
           people.forEach((person) => {
             scorecards.push({
               id: person.registrantId,
@@ -229,6 +234,7 @@ const ExportPage = () => {
               advancement_condition: roundData.advancement_condition,
               today_date: new Date(groupActivity.startTime).toLocaleDateString(),
               time: new Date(groupActivity.startTime).toLocaleTimeString(),
+              stream: featuredCompetitors.includes(person.wcaUserId) ? 'True' : 'False',
             });
           });
         });
@@ -254,6 +260,7 @@ const ExportPage = () => {
         'advancement_condition',
         'today_date',
         'time',
+        'stream',
       ],
     });
 
