@@ -2,7 +2,15 @@
 
 ## Repository Summary
 
-Delegate Dashboard is a web application for managing WCA (World Cube Association) competition logistics. It enables delegates and organizers to edit competitions, set staff roles, assign groups, pick scrambles, and manage competitor assignments through an intuitive interface. The app is deployed on Netlify and integrates with the WCA API.
+Delegate Dashboard is a web application for managing WCA (World Cube Association) competition logistics. It enables delegates and organizers to edit competitions, set staff roles, create and edit groups, and manage competitor assignments through an intuitive interface. The app is deployed on Netlify and integrates with the WCA API.
+
+### Context
+
+WCA Competitions happen across one or more days. Across these days, various "events" are held such as 3x3, 4x4, 3x3 blindfolded, and so on.... A competition will hold 1 or more of these WCA events and the events will happen as a series of rounds. People will register for a competition and register for certain events such as 3x3 and 4x4, and they then can compete in those events. Everyone gets placed in round 1, but after each round, a subset of people will progress to the next round.
+
+All of the data for these competitions is stored in a "WCIF". That is the schedule, configuration of events, people and their registrations and assignments, are all stored in the wcif. We use the `@wca/helpers` npm package to manage this data format in a type safe way. A schedule will be split into multiple venues, each venue will have rooms, and each room will have multiple schedule activities (in this case, the top level schedule activities are typically rounds and other activities such as lunch). Round activities have `childActivities` which represent each group. A schedule will have multiple round activities for each room a round happens in, so 3x3 round 1 may exist at the same schedule start and end times in both "blue stage" and "red stage" rooms. They will have the same activityCode but different IDs.
+
+This app allows to configure the `schedule` and `person` fields in the wcif. For persons, we edit their assignments and for the schedule, we'll split a round into multiple groups and people will be assigned different jobs in those groups.
 
 ## Project Information
 
