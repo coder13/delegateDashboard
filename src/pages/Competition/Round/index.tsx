@@ -84,7 +84,7 @@ const RoundPage = (props?: any) => {
   const [rawRoundDataDialogOpen, setRawRoundDataDialogOpen] = useState<boolean>(false);
   const [rawRoundActivitiesDataDialogOpen, setRawRoundActivitiesDataDialogOpen] = useState<boolean>(false);
   const [showPersonsDialog, setShowPersonsDialog] = useState({
-    open: false,
+    open: false as any,
     title: undefined,
     persons: [],
   });
@@ -120,13 +120,13 @@ const RoundPage = (props?: any) => {
       groups.sort((groupA, groupB) => {
         return (
           byGroupNumber(groupA, groupB) ||
-          groupA?.parent?.room?.name?.localeCompare(groupB?.parent?.room?.name)
+          (groupA?.parent?.room?.name as any)?.localeCompare(groupB?.parent?.room?.name as any)
         );
       }),
     [groups]
   );
 
-  const personsAssigned = useSelector((state: AppState) => selectPersonsAssignedForRound(state, round!.id));
+  const personsAssigned = useSelector((state: AppState) => selectPersonsAssignedForRound(state as any, round!.id));
 
   const personsAssignedToCompete = useMemo(
     () =>
@@ -135,7 +135,7 @@ const RoundPage = (props?: any) => {
   );
 
   const personsAssignedWithCompetitorAssignmentCount = useSelector(
-    (state) => selectPersonsHavingCompetitorAssignmentsForRound(state, round!.id).length
+    (state) => selectPersonsHavingCompetitorAssignmentsForRound(state as any, round!.id).length
   );
 
   /**
@@ -257,7 +257,7 @@ const RoundPage = (props?: any) => {
       return (
         <>
           <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
-          <Button onClick={() => setConfigureStationNumbersDialog(activityCode)}>
+          <Button onClick={() => setConfigureStationNumbersDialog(Boolean(activityCode) as any)}>
             Configure Station Numbers
           </Button>
           <div style={{ display: 'flex', flex: 1 }} />
@@ -292,7 +292,7 @@ const RoundPage = (props?: any) => {
         <Grid item>
           <Card>
             <CardHeader
-              title={activityCodeToName(activityCode)}
+              title={activityCodeToName(activityCode!)}
               action={
                 <ActionMenu
                   items={[
@@ -313,7 +313,7 @@ const RoundPage = (props?: any) => {
                 <ListItemButton key={id}>
                   {room!.name}: {new Date(startTime).toLocaleDateString()}{' '}
                   {formatTimeRange(startTime, endTime)} (
-                  {(new Date(endTime) - new Date(startTime)) / 1000 / 60} Minutes)
+                  {((new Date(endTime) as any) - (new Date(startTime) as any)) / 1000 / 60} Minutes)
                 </ListItemButton>
               ))}
             </List>
@@ -344,8 +344,8 @@ const RoundPage = (props?: any) => {
                     onClick={() =>
                       setShowPersonsDialog({
                         open: true,
-                        persons: personsShouldBeInRound?.sort(byName) || [],
-                        title: 'People who should be in the round',
+                        persons: (personsShouldBeInRound?.sort(byName) || []) as any,
+                        title: 'People who should be in the round' as any,
                       })
                     }>
                     {personsShouldBeInRound?.length || '???'}
@@ -356,13 +356,12 @@ const RoundPage = (props?: any) => {
                     onClick={() =>
                       setShowPersonsDialog({
                         open: round!.results.length > 0,
-                        persons:
-                          round!.results
+                        persons: (round!.results
                             .map(({ personId }) =>
                               wcif.persons.find(({ registrantId }) => registrantId === personId)
                             )
-                            .sort(byName) || [],
-                        title: 'People in the round according to wca-live',
+                            .sort(byName) || []) as any,
+                        title: 'People in the round according to wca-live' as any,
                       })
                     }>
                     {round!.results?.length}
@@ -465,7 +464,7 @@ const RoundPage = (props?: any) => {
           title={showPersonsDialog?.title}
           onClose={() =>
             setShowPersonsDialog({
-              open: false,
+              open: false as any,
               title: undefined,
               persons: [],
             })

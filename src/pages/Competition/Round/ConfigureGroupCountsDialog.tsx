@@ -40,7 +40,7 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
   const actualCompetitors = useSelector((state: AppState) => selectPersonsShouldBeInRound(state)(round));
 
   if (!open) {
-    return '';
+    return null;
   }
 
   const { groups: groupCount } = groupsData;
