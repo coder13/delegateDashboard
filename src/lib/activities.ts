@@ -1,7 +1,7 @@
 import { eventNameById } from './events';
 import { shortTime } from './utils';
 import { getExtensionData } from './wcif-extensions';
-import { Activity, Competition, EventId, Room } from '@wca/helpers';
+import { Activity, Competition, EventId, Room, Round } from '@wca/helpers';
 
 interface ActivityCode {
   eventId: EventId;
@@ -78,10 +78,10 @@ export const activityCodeIsChild = (parentActivitiyCode: string, childActivityCo
 export const hasDistributedAttempts = (activityCode: string) =>
   ['333fm', '333mbf'].includes(parseActivityCode(activityCode).eventId);
 
-export const activityDuration = ({ startTime, endTime }) =>
+export const activityDuration = ({ startTime, endTime }: { startTime: string; endTime: string }) =>
   new Date(endTime).getTime() - new Date(startTime).getTime();
 
-export const activityDurationString = ({ startTime, endTime }, timezone = 'UTC') =>
+export const activityDurationString = ({ startTime, endTime }: { startTime: string; endTime: string }, timezone = 'UTC') =>
   `${shortTime(startTime, timezone)} - ${shortTime(endTime, timezone)}`;
 
 export const activitiesOverlap = (first: Activity, second: Activity) =>
@@ -103,7 +103,7 @@ export const activitiesIntersection = (first: Activity, second: Activity) => {
 export const findRooms = (wcif: Competition) =>
   wcif.schedule.venues?.map((venue) => venue.rooms).flat() || [];
 
-const findId = (activites, activityId: number) =>
+const findId = (activites: Activity[], activityId: number): boolean =>
   activites.some(
     ({ id, activities, childActivities }) =>
       id === activityId ||
@@ -156,7 +156,7 @@ export const findAllRoundActivities = (wcif: Competition): ActivityWithRoom[] =>
   return findRooms(wcif).flatMap((room) => room.activities.map((a) => ({ ...a, room })));
 };
 
-export const findAllActivitiesByRoom = (wcif: Competition, roomId) => {
+export const findAllActivitiesByRoom = (wcif: Competition, roomId: number) => {
   const room = findRooms(wcif).find((room) => room.id === roomId);
 
   if (!room) {
@@ -192,7 +192,7 @@ export const findActivityById = (wcif: Competition, activityId: number) => {
 };
 
 const activitiesByCodeAndRoomCache = new Map();
-export const activityByActivityCode = (wcif, roomId, activityCode) => {
+export const activityByActivityCode = (wcif: Competition, roomId: number, activityCode: string) => {
   const id = `${roomId}-${activityCode}`;
 
   if (activitiesByCodeAndRoomCache.has(id)) {
@@ -273,7 +273,7 @@ export const earliestStartTimeForRound = (wcif: Competition, roundId: string) =>
   );
 };
 
-export const cumulativeGroupCount = (round) => {
+export const cumulativeGroupCount = (round: Round) => {
   const groupsData = getExtensionData('groups', round);
   if (groupsData.spreadGroupsAcrossStages) {
     return groupsData.groups as number;

@@ -10,7 +10,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import Typography from '@mui/material/Typography';
 
-const CompetitionList = () => {
+const CompetitionList = (props?: any) => {
   return (
     <Container>
       <Typography variant="h4">My Competitions</Typography>

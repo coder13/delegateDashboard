@@ -19,7 +19,7 @@ interface IGroupifierPrintingConfig {
   scorecardPaperSize: ScorecardSize;
 }
 
-export const GroupifierPrintingConfig = () => {
+export const GroupifierPrintingConfig = (props?: any) => {
   const wcif = useAppSelector((state) => state.wcif);
   const dispatch = useDispatch();
   const groupifierConfig = wcif?.extensions?.find(

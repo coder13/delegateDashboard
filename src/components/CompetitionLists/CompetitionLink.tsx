@@ -12,7 +12,7 @@ export interface APICompetition {
 }
 
 // https://github.com/thewca/wca-live/blob/8884f8dc5bb2efcc3874f9fff4f6f3c098efbd6a/client/src/lib/date.js#L10
-const formatDateRange = (startString, endString) => {
+const formatDateRange = (startString: string, endString: string): string => {
   const [startDay, startMonth, startYear] = format(parseISO(startString), 'd MMM yyyy').split(' ');
   const [endDay, endMonth, endYear] = format(parseISO(endString), 'd MMM yyyy').split(' ');
   if (startString === endString) {
@@ -27,7 +27,7 @@ const formatDateRange = (startString, endString) => {
   return `${startMonth} ${startDay}, ${startYear} - ${endMonth} ${endDay}, ${endYear}`;
 };
 
-export const CompetitionLink = ({ comp }) => (
+export const CompetitionLink = ({ comp }: { comp: APICompetition }) => (
   <ListItemButton component={Link} to={`/competitions/${comp.id}`}>
     <ListItemIcon>
       {!comp.country_iso2 || RegExp('(x|X)', 'g').test(comp.country_iso2.toLowerCase()) ? (

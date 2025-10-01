@@ -13,7 +13,7 @@ const BreadcrumbsContext = createContext<{
   setBreadcrumbs: () => {},
 });
 
-export default function BreadcrumbsProvider({ children }) {
+export default function BreadcrumbsProvider({ children }: { children: React.ReactNode }) {
   const [breadcrumbs, setBreadcrumbs] = useState<Breadcrumb[]>([]);
 
   return (
@@ -23,4 +23,4 @@ export default function BreadcrumbsProvider({ children }) {
   );
 }
 
-export const useBreadcrumbs = () => useContext(BreadcrumbsContext);
+export const useBreadcrumbs = (props?: any) => useContext(BreadcrumbsContext);

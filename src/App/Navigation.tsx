@@ -22,7 +22,7 @@ import Layout from './Layout';
 import { useEffect } from 'react';
 import { Routes, Route, Outlet, Navigate, useNavigate, useParams } from 'react-router-dom';
 
-const AuthenticatedRoute = () => {
+const AuthenticatedRoute = (props?: any) => {
   const { signIn, signedIn } = useAuth();
 
   if (!signedIn()) {
@@ -33,7 +33,7 @@ const AuthenticatedRoute = () => {
   return <Outlet />;
 };
 
-const Comp404 = () => {
+const Comp404 = (props?: any) => {
   const navigate = useNavigate();
   const { competitionId } = useParams();
 
@@ -44,7 +44,7 @@ const Comp404 = () => {
   return null;
 };
 
-const Navigation = () => {
+const Navigation = (props?: any) => {
   usePageTracking(import.meta.env.VITE_GA_MEASUREMENT_ID);
 
   return (

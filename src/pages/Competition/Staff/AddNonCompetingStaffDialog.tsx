@@ -31,14 +31,19 @@ export default function AddNonCompetingStaffDialog({
       addPerson({
         name: selectedUser?.name,
         wcaUserId: selectedUser?.id,
+        registrantId: selectedUser?.id,
+        countryIso2: selectedUser?.country_iso2 || 'XX',
         registration: {
+          wcaRegistrationId: 0,
+          status: 'accepted',
           isCompeting: false,
           eventIds: [],
           administrativeNotes: 'Added with Delegate Dashboard',
-        },
+        } as any,
         wcaId: selectedUser.wca_id,
         roles,
-      })
+        extensions: [],
+      } as any)
     );
     onClose();
   }, [roles, selectedUser]);

@@ -15,7 +15,7 @@ import { findActivityById } from '../../../lib/activities';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import { useAppSelector } from '../../../store';
 
-const PersonPage = () => {
+const PersonPage = (props?: any) => {
   const { registrantId } = useParams<{ registrantId: string }>();
   const { setBreadcrumbs } = useBreadcrumbs();
 

@@ -3,7 +3,7 @@ import { Alert, AlertTitle, Box } from '@mui/material';
 import { useAuth } from '../providers/AuthProvider';
 import Footer from './Footer';
 
-const App = () => {
+const App = (props?: any) => {
   const { userFetchError } = useAuth();
 
   return (

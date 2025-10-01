@@ -64,10 +64,10 @@ export const ConfigurableGroupList = ({
       ...g,
       startTime: new Date(
         startDate.getTime() + (dateDiff / numberOfGroups) * i
-      ),
+      ).toISOString(),
       endTime: new Date(
         startDate.getTime() + (dateDiff / numberOfGroups) * (i + 1)
-      ),
+      ).toISOString(),
     }));
 
     dispatch(updateRoundChildActivities(roundActivity.id, newGroups));
@@ -133,10 +133,10 @@ export const ConfigurableGroupTable = ({
       ...g,
       startTime: new Date(
         startDate.getTime() + (dateDiff / numberOfGroups) * i
-      ),
+      ).toISOString(),
       endTime: new Date(
         startDate.getTime() + (dateDiff / numberOfGroups) * (i + 1)
-      ),
+      ).toISOString(),
     }));
 
     dispatch(updateRoundChildActivities(roundActivity.id, newGroups));

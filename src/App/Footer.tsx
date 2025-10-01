@@ -24,7 +24,7 @@ const links = [
   },
 ];
 
-const Footer = () => {
+const Footer = (props?: any) => {
   return (
     <Grid container sx={{ p: 2 }}>
       <Grid item>

@@ -4,6 +4,7 @@ import { generateCompetingAssignmentsForStaff } from '../../lib/groupAssignments
 import { generateCompetingGroupActitivitesForEveryone } from '../../lib/groupAssignments/generateCompetingGroupActitivitesForEveryone';
 import { generateGroupAssignmentsForDelegatesAndOrganizers } from '../../lib/groupAssignments/generateGroupAssignmentsForDelegatesAndOrganizers';
 import { generateJudgeAssignmentsFromCompetingAssignments } from '../../lib/groupAssignments/generateJudgeAssignmentsFromCompetingAssignments';
+import { AppState } from '../initialState';
 import { bulkAddPersonAssignments } from './competitorAssignments';
 
 /**
@@ -16,18 +17,20 @@ import { bulkAddPersonAssignments } from './competitorAssignments';
  * 2. Then give out judging assignments to competitors without staff assignments
  */
 export function generateAssignments(
-  state: {
-    wcif: Competition;
-  },
-  action
-) {
+  state: AppState,
+  action: { roundId: string }
+): AppState {
+  if (!state.wcif) {
+    return state;
+  }
+
   const initializedGenerators = [
     generateCompetingAssignmentsForStaff,
     generateGroupAssignmentsForDelegatesAndOrganizers,
     generateCompetingGroupActitivitesForEveryone,
     generateJudgeAssignmentsFromCompetingAssignments,
   ]
-    .map((generator) => generator(state.wcif, action.roundId))
+    .map((generator) => generator(state.wcif!, action.roundId))
     .filter(Boolean) as ((a: InProgressAssignmment[]) => InProgressAssignmment[])[];
 
   const newAssignments = initializedGenerators.reduce((accumulatingAssignments, generateFn) => {
