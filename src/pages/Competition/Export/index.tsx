@@ -1,15 +1,14 @@
-// @ts-nocheck
 import { findGroupActivitiesByRound, parseActivityCode } from '../../../lib/activities';
 import { eventNameById, roundFormatById } from '../../../lib/events';
 import { acceptedRegistrations } from '../../../lib/persons';
 import { flatten } from '../../../lib/utils';
 import { getExtensionData } from '../../../lib/wcif-extensions';
+import { AppState } from '../../../store/initialState';
 import { Button, Grid, Typography } from '@mui/material';
 import { formatCentiseconds } from '@wca/helpers';
 import { ExportToCsv } from 'export-to-csv';
 import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { AppState } from '../store/initialState';
 
 const advancementConditionToText = ({ type, level }: any) => {
   switch (type) {
@@ -36,7 +35,8 @@ const csvOptions = {
   showLabels: true,
 };
 
-const groupNumber = ({ activityCode }: any) => parseActivityCode(activityCode)?.groupNumber;
+const groupNumber = ({ activityCode }: { activityCode: string }) =>
+  parseActivityCode(activityCode)?.groupNumber;
 
 const staffingAssignmentToText = ({ assignmentCode, activity }: any) =>
   `${assignmentCode.split('-')[1][0].toUpperCase()}${groupNumber(activity)}`;
@@ -63,20 +63,24 @@ const ExportPage = (props?: any) => {
   const wcif = useSelector((state: AppState) => state.wcif);
 
   const memodGroupActivitiesForRound = useCallback(
-    (activityCode) => findGroupActivitiesByRound(wcif, activityCode),
+    (activityCode) => wcif && findGroupActivitiesByRound(wcif, activityCode),
     [wcif]
   );
 
   const assignmentsToObj = (person) => {
+    if (!wcif) {
+      return {};
+    }
+
     const obj = {};
     wcif.events.forEach((event) => {
       // get first round activities
       const activitiesForEvent = memodGroupActivitiesForRound(`${event.id}-r1`);
       const assignmentsForEvent = person.assignments
-        .filter((assignment) => activitiesForEvent.some((a) => a.id === assignment.activityId))
+        .filter((assignment) => activitiesForEvent?.some((a) => a.id === assignment.activityId))
         .map((assignment) => ({
           ...assignment,
-          activity: activitiesForEvent.find((activity) => assignment.activityId === activity.id),
+          activity: activitiesForEvent?.find((activity) => assignment.activityId === activity.id),
         }));
 
       const competingAssignment = assignmentsForEvent.find(
@@ -102,20 +106,24 @@ const ExportPage = (props?: any) => {
   };
 
   const onExportNametagsData = (props?: any) => {
+    if (!wcif) {
+      return;
+    }
     const assignmentHeaders = flatten(
       wcif.events.map((e) => [e.id, e.id + '_station_number', e.id + '_staff'])
     );
     const headers = ['registrantId', 'name', 'wcaId', 'role', 'country_iso', ...assignmentHeaders];
 
-    const data = [];
+    type AssignmentRow = [number, string, string, string, string, ...string[]];
+    const data: AssignmentRow[] = [];
     acceptedRegistrations(wcif.persons)
       .sort((a, b) => a.name.localeCompare(b.name))
       .forEach((person) => {
-        const assignmentData = [
+        const assignmentData: AssignmentRow = [
           person.registrantId,
           person.name,
-          person.wcaId,
-          person.roles.filter((role) => role.indexOf('staff') === -1).join(','),
+          person.wcaId || '',
+          person.roles?.filter((role) => role.indexOf('staff') === -1).join(',') || '',
           person.countryIso2,
         ];
         const assignments = assignmentsToObj(person);
@@ -136,8 +144,10 @@ const ExportPage = (props?: any) => {
   };
 
   const onExportNametagsForPublisherData = (props?: any) => {
+    if (!wcif) return;
+
     const assignmentHeaders = flatten(wcif.events.map((e) => [e.id, e.id + '_staff']));
-    const headers_template = [
+    const headers_template: string[] = [
       'name',
       'wcaId',
       'role',
@@ -145,22 +155,23 @@ const ExportPage = (props?: any) => {
       ...flatten(wcif.events.map((e) => [e.id, e.id + '_staff'])),
     ];
 
-    const headers = [];
+    const headers: string[] = [];
     for (let i = 0; i < 6; i++) {
       headers.push(...headers_template.map((col) => `${col}-${i}`));
     }
 
-    const data = [];
-    let buffer = [];
+    type AssignmentRow = [string, string, string, string, ...string[]];
+    const data: AssignmentRow[] = [];
+    let buffer: Partial<AssignmentRow> = [];
     let i = 0;
 
     acceptedRegistrations(wcif.persons)
       .sort((a, b) => a.name.localeCompare(b.name))
       .forEach((person) => {
-        const assignmentData = [
+        const assignmentData: AssignmentRow = [
           person.name,
-          person.wcaId,
-          person.roles.filter((role) => role.indexOf('staff') === -1).join(','),
+          person.wcaId || '',
+          person.roles?.filter((role) => role.indexOf('staff') === -1).join(',') || '',
           person.countryIso2,
         ];
         const assignments = assignmentsToObj(person);
@@ -173,7 +184,7 @@ const ExportPage = (props?: any) => {
         i++;
 
         if (i === 6) {
-          data.push(buffer);
+          data.push(buffer as AssignmentRow);
           buffer = [];
           i = 0;
         }
@@ -184,7 +195,7 @@ const ExportPage = (props?: any) => {
         buffer.push('');
       }
 
-      data.push(buffer);
+      data.push(buffer as AssignmentRow);
     }
 
     const csvExporter = new ExportToCsv({
@@ -197,7 +208,26 @@ const ExportPage = (props?: any) => {
   };
 
   const onExportScorecardData = (props?: any) => {
-    const scorecards = [];
+    if (!wcif) return;
+    type ScorecardRow = {
+      id: number;
+      wca_id: string;
+      competition_name: string;
+      event_name: string;
+      round_number: number;
+      group_name: string;
+      stage: string;
+      group_number: number;
+      full_name: string;
+      dnf_time: string;
+      cutoff_time: string;
+      round_format: string;
+      advancement_condition: string;
+      today_date: string;
+      time: string;
+      stream: string;
+    };
+    const scorecards: ScorecardRow[] = [];
 
     // For each event
     wcif.events.forEach((event) => {
@@ -211,21 +241,21 @@ const ExportPage = (props?: any) => {
           cutoff_time: round.cutoff
             ? `1 or 2 < ${formatCentiseconds(round.cutoff.attemptResult)}`
             : '',
-          round_format: roundFormatById(round.format).short,
+          round_format: roundFormatById(round.format)?.short,
           advancement_condition: round.advancementCondition
             ? advancementConditionToText(round.advancementCondition)
             : '',
           round_number: parseActivityCode(round.id)?.roundNumber,
         };
 
-        const groupAssignmentsByEventAndRound = memodGroupActivitiesForRound(round.id).sort(
-          (a, b) => groupNumber(a) - groupNumber(b)
+        const groupAssignmentsByEventAndRound = memodGroupActivitiesForRound(round.id)?.sort(
+          (a, b) => (groupNumber(a) ?? 99999) - (groupNumber(b) ?? 99999)
         );
 
         // Add scorecards group by group
-        groupAssignmentsByEventAndRound.forEach((groupActivity) => {
+        groupAssignmentsByEventAndRound?.forEach((groupActivity) => {
           const people = acceptedRegistrations(wcif.persons).filter((person) =>
-            person.assignments.some(
+            person.assignments?.some(
               (a) => a.activityId === groupActivity.id && a.assignmentCode === 'competitor'
             )
           );
@@ -234,23 +264,26 @@ const ExportPage = (props?: any) => {
             getExtensionData('ActivityConfig', groupActivity, 'groupifier')
               ?.featuredCompetitorWcaUserIds || [];
 
-          const stageName = getStageName(groupActivity.parent.room, groupActivity);
+          const stageName =
+            'room' in groupActivity.parent
+              ? getStageName(groupActivity.parent.room, groupActivity)
+              : '';
 
           people.forEach((person) => {
             scorecards.push({
               id: person.registrantId,
-              wca_id: person.wcaId,
+              wca_id: person.wcaId || '',
               competition_name: wcif.name,
               event_name: eventNameById(event.id),
-              round_number: parseActivityCode(round.id)?.roundNumber,
+              round_number: parseActivityCode(round.id).roundNumber!,
               group_name: competingAssignmentToText(groupActivity),
               stage: stageName,
-              group_number: parseActivityCode(groupActivity.activityCode).groupNumber,
+              group_number: parseActivityCode(groupActivity.activityCode).groupNumber!,
               full_name: person.name,
               dnf_time: roundData.dnf_time,
               cutoff_time: roundData.cutoff_time,
               round_format: roundData.round_format,
-              advancement_condition: roundData.advancement_condition,
+              advancement_condition: roundData.advancement_condition ?? '',
               today_date: new Date(groupActivity.startTime).toLocaleDateString(),
               time: new Date(groupActivity.startTime).toLocaleTimeString(),
               stream: featuredCompetitors.includes(person.wcaUserId) ? 'True' : 'False',
@@ -287,6 +320,7 @@ const ExportPage = (props?: any) => {
   };
 
   const onExportRegistrations = (props?: any) => {
+    if (!wcif) return;
     const csvExporter = new ExportToCsv({
       ...csvOptions,
       filename: `${wcif.id}_registrations`,

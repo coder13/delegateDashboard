@@ -1,13 +1,3 @@
-// @ts-nocheck
-import '@cubing/icons';
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { AppState } from '../../store/initialState';
-import { TransitionGroup } from 'react-transition-group';
-import { Collapse, Divider, FormControlLabel, Switch } from '@mui/material';
-import List from '@mui/material/List';
-import ListSubheader from '@mui/material/ListSubheader';
-import { makeStyles } from '@mui/styles';
 import {
   earliestStartTimeForRound,
   hasDistributedAttempts,
@@ -15,19 +5,30 @@ import {
 } from '../../lib/activities';
 import { eventNameById } from '../../lib/events';
 import { useCommandPrompt } from '../../providers/CommandPromptProvider';
+import { AppState } from '../../store/initialState';
 import RoundListItem from './RoundListItem';
+import '@cubing/icons';
+import { Collapse, Divider, FormControlLabel, Switch } from '@mui/material';
+import List from '@mui/material/List';
+import ListSubheader from '@mui/material/ListSubheader';
+import { makeStyles } from '@mui/styles';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { TransitionGroup } from 'react-transition-group';
 
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
-    flexDirection: 'Column',
+    flexDirection: 'column',
     flex: 1,
     width: '100%',
+    // @ts-expect-error TODO: Fix issues with MUI types
     backgroundColor: theme.palette.background.paper,
     marginTop: '1em',
   },
   paper: {
     width: '100%',
+    // @ts-expect-error TODO: Fix issues with MUI types
     padding: theme.spacing(2),
   },
   listSection: {
@@ -39,7 +40,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const RoundSelector = ({ competitionId, onSelected }: any) => {
+const RoundSelector = ({ onSelected }: { onSelected: (roundId: string) => void }) => {
   const wcif = useSelector((state: AppState) => state.wcif);
   const classes = useStyles();
   const { open: commandPromptOpen } = useCommandPrompt();
@@ -53,7 +54,7 @@ const RoundSelector = ({ competitionId, onSelected }: any) => {
       return true;
     }
 
-    const earliestStartTime = earliestStartTimeForRound(wcif, round.id);
+    const earliestStartTime = wcif && earliestStartTimeForRound(wcif, round.id);
     if (earliestStartTime && earliestStartTime.getTime() < Date.now()) {
       return true;
     }
@@ -65,12 +66,12 @@ const RoundSelector = ({ competitionId, onSelected }: any) => {
     return false;
   };
 
-  const rounds = wcif.events
+  const rounds = wcif?.events
     .map((e) => e.rounds)
     .flat()
     .filter(shouldShowRound);
 
-  const roundIds = rounds.flatMap((r) =>
+  const roundIds = rounds?.flatMap((r) =>
     hasDistributedAttempts(r.id)
       ? new Array(r.format === 'm' ? 3 : +r.format)
           .fill(0)
@@ -80,6 +81,9 @@ const RoundSelector = ({ competitionId, onSelected }: any) => {
 
   const handleKeyDown = (e) => {
     if (commandPromptOpen) {
+      return;
+    }
+    if (!roundIds || roundIds.length === 0 || !selectedId) {
       return;
     }
 
@@ -105,13 +109,17 @@ const RoundSelector = ({ competitionId, onSelected }: any) => {
     };
   });
 
+  if (!rounds || !wcif) {
+    return null;
+  }
+
   return (
     <>
       <FormControlLabel
         control={<Switch />}
         label={'Show All Rounds'}
         checked={showAllRounds}
-        onChange={(event) => setShowAllRounds(event.target.checked)}
+        onChange={(_, checked) => setShowAllRounds(checked)}
       />
       <Divider />
       <List className={classes.root}>

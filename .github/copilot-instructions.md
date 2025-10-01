@@ -15,7 +15,7 @@ This app allows to configure the `schedule` and `person` fields in the wcif. For
 ## Project Information
 
 - **Type**: Single-page web application (React SPA)
-- **Size**: ~110 source files (33 JSX, 33 TSX, 23 TS, 15 JS)
+- **Size**: ~110 source files (All typescript)
 - **Languages**: TypeScript, JavaScript (JSX/TSX), HTML, CSS
 - **Frameworks**: React 17, Redux, Material-UI v5, Vite
 - **Build Tool**: Vite 4.4.9 (migrated from Create React App)
@@ -75,6 +75,7 @@ yarn test
 ### Pre-commit Hook
 
 The repository uses Husky to run tests before commits:
+
 - Located at: `.husky/pre-commit`
 - Runs: `CI=true npm test` (which runs `npm run lint`)
 - This will block commits if linting fails
@@ -168,19 +169,24 @@ Before committing changes, always:
 ## Common Issues & Workarounds
 
 ### Issue 1: npm install fails with peer dependency errors
+
 **Solution**: Use `yarn install` instead, or `npm install --legacy-peer-deps`
 
 ### Issue 2: TypeScript compiler (tsc) not found
+
 **Cause**: Using npm without installing TypeScript properly
 **Solution**: Use `yarn` instead, which properly installs all dependencies
 
 ### Issue 3: Build fails with "Cannot find module" errors
-**Solution**: 
+
+**Solution**:
+
 1. Delete `node_modules/` and `yarn.lock`/`package-lock.json`
 2. Run `yarn install` (fresh install)
 3. Run `yarn build`
 
 ### Issue 4: Git commit blocked by pre-commit hook
+
 **Cause**: ESLint found errors in code
 **Solution**: Run `yarn lint` to see errors, fix them, then commit again
 
@@ -224,6 +230,7 @@ yarn.lock             # Yarn dependency lock file
 ## Trust These Instructions
 
 The information in this file has been validated by running actual commands against the repository. Only search for additional information if:
+
 - You encounter an error not documented here
 - You need to understand specific business logic in the code
 - The instructions appear outdated (check git commit dates)

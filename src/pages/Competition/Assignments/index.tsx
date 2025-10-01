@@ -1,8 +1,10 @@
-// @ts-nocheck
-import { useConfirm } from 'material-ui-confirm';
-import React, { useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppState } from '../store/initialState';
+import EventSelector from '../../../components/EventSelector';
+import { findAllActivities, findRooms } from '../../../lib/activities';
+import { acceptedRegistrations } from '../../../lib/persons';
+import { flatten } from '../../../lib/utils';
+import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import { resetAllGroupAssignments } from '../../../store/actions';
+import { AppState } from '../../../store/initialState';
 import { MoreVert } from '@mui/icons-material';
 import {
   Checkbox,
@@ -19,17 +21,14 @@ import {
   Paper,
   Typography,
 } from '@mui/material';
-import EventSelector from '../../../components/EventSelector';
-import { findAllActivities, findRooms } from '../../../lib/activities';
-import { acceptedRegistrations } from '../../../lib/persons';
-import { flatten } from '../../../lib/utils';
-import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
-import { resetAllGroupAssignments } from '../../../store/actions';
+import { useConfirm } from 'material-ui-confirm';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-const AssignmentsPage = (props?: any) => {
+const AssignmentsPage = () => {
   const wcif = useSelector((state: AppState) => state.wcif);
-  const eventIds = useMemo(() => wcif.events.map((e) => e.id), [wcif.events]);
-  const stages = useMemo(() => findRooms(wcif), [wcif]);
+  const eventIds = useMemo(() => (wcif ? wcif.events.map((e) => e.id) : []), [wcif?.events]);
+  const stages = useMemo(() => (wcif ? findRooms(wcif) : []), [wcif]);
   const dispatch = useDispatch();
   const { setBreadcrumbs } = useBreadcrumbs();
   const confirm = useConfirm();
@@ -45,24 +44,26 @@ const AssignmentsPage = (props?: any) => {
     ]);
   }, [setBreadcrumbs]);
 
-  const _allActivities = findAllActivities(wcif);
+  const _allActivities = wcif && findAllActivities(wcif);
 
   const allPersonsAssignments = useMemo(
     () =>
+      wcif &&
       flatten(
         acceptedRegistrations(wcif.persons).map((person) =>
-          person.assignments.map((assignment) => ({
+          person.assignments?.map((assignment) => ({
             assignment,
-            activity: _allActivities.find((a) => a.id === assignment.activityId),
+            activity: _allActivities?.find((a) => a.id === assignment.activityId),
             person,
           }))
         )
       ),
-    [_allActivities, wcif.persons]
+    [_allActivities, wcif?.persons]
   );
 
   const groupActivitiesByStage = useMemo(
     () =>
+      eventFilter &&
       stages
         .filter((stage) => stageFilter.indexOf(stage.name) > -1)
         .map((stage) => ({
@@ -83,7 +84,9 @@ const AssignmentsPage = (props?: any) => {
   };
 
   const handleResetAssignments = (props?: any) => {
-    confirm('Are you sure you want to reset all assignments?').then(() => {
+    confirm({
+      title: 'Are you sure you want to reset all assignments?',
+    }).then(() => {
       dispatch(resetAllGroupAssignments());
     });
   };
@@ -95,7 +98,6 @@ const AssignmentsPage = (props?: any) => {
       </Grid>
       <Grid item>
         <Paper
-          direction="row"
           sx={{
             padding: 2,
             display: 'flex',

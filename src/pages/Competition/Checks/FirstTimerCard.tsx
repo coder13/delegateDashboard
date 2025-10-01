@@ -1,3 +1,4 @@
+import { WcaPerson } from '../../../lib/wcaAPI';
 import {
   Avatar,
   Card,
@@ -14,34 +15,12 @@ import {
 } from '@mui/material';
 
 interface PersonMatch {
-  person: {
-    id: number;
-    name: string;
-    wca_id: string;
-    url: string;
-    avatar: {
-      thumb_url: string;
-    };
-    gender: string;
-    country?: {
-      name: string;
-    };
-    country_iso2?: string;
-  };
+  person: WcaPerson;
   competition_count: number;
 }
 
 interface FirstTimerCardProps {
-  person: {
-    name: string;
-    avatar?: {
-      thumbUrl: string;
-    };
-    countryIso2?: string;
-    email?: string;
-    gender?: string;
-    birthdate?: string;
-  };
+  person: WcaPerson;
   matches: PersonMatch[];
 }
 
@@ -82,7 +61,7 @@ interface PersonMatchRowProps {
 
 function PersonMatchRow({ match }: PersonMatchRowProps) {
   return (
-    <ListItemButton component={"a" as any} target="_blank" href={match.person.url}>
+    <ListItemButton component={'a' as any} target="_blank" href={match.person.url}>
       <ListItemIcon>
         <Avatar src={match.person.avatar.thumb_url} />
       </ListItemIcon>

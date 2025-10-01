@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { useCallback, useEffect, useState } from 'react';
+import { searchPersons } from '../../../lib/wcaAPI';
 import {
   Alert,
   AppBar,
@@ -20,25 +19,22 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import { searchPersons } from '../../../lib/wcaAPI';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function CheckFirstTimerDialog({ open, onClose, person }: any) {
   const [personSearch, setPersonSearch] = useState<any>(null);
   const [loadingPersonSearch, setLoadingPersonSearch] = useState(false);
 
-  const fetchPersonDetails = useCallback(
-    async (registrantId) => {
-      setLoadingPersonSearch(true);
-      const data = await searchPersons(person.name);
-      setPersonSearch(data);
-      setLoadingPersonSearch(false);
-    },
-    [person]
-  );
+  const fetchPersonDetails = useCallback(async () => {
+    setLoadingPersonSearch(true);
+    const data = await searchPersons(person.name);
+    setPersonSearch(data);
+    setLoadingPersonSearch(false);
+  }, [person]);
 
   useEffect(() => {
     if (person?.registrantId) {
-      fetchPersonDetails(person.registrantId);
+      fetchPersonDetails();
     }
   }, [fetchPersonDetails, person]);
 
@@ -49,7 +45,7 @@ export default function CheckFirstTimerDialog({ open, onClose, person }: any) {
       <AppBar sx={{ position: 'relative' }} color="inherit">
         <Toolbar>
           <Avatar
-            edge="start"
+            // edge="start"
             color="inherit"
             src={person?.avatar?.thumbUrl || person?.avatar?.url || ''}
           />
@@ -81,7 +77,7 @@ export default function CheckFirstTimerDialog({ open, onClose, person }: any) {
         {loadingPersonSearch && <LinearProgress />}
         <List>
           {personSearch?.map(({ person: p, competition_count }) => (
-            <ListItemButton key={p.id} component={"a" as any} to={p.url} target="_blank">
+            <ListItemButton key={p.id} component={'a' as any} to={p.url} target="_blank">
               <ListItemIcon>
                 <Avatar src={p.avatar.thumb_url} />
               </ListItemIcon>

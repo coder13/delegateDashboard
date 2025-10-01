@@ -1,9 +1,8 @@
-// @ts-nocheck
-import Fuse from 'fuse.js';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+import useDebounce from '../../hooks/useDebounce';
+import { findAllActivities } from '../../lib/activities';
+import { acceptedRegistrations } from '../../lib/persons';
 import { AppState } from '../../store/initialState';
-import { useNavigate } from 'react-router-dom';
+import SearchResultList from '../SearchResultList';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
@@ -14,10 +13,10 @@ import {
   Paper,
 } from '@mui/material';
 import { useTheme } from '@mui/styles';
-import useDebounce from '../../hooks/useDebounce';
-import { findAllActivities } from '../../lib/activities';
-import { acceptedRegistrations } from '../../lib/persons';
-import SearchResultList from '../SearchResultList';
+import Fuse from 'fuse.js';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 const options = {
   keys: ['name', 'wcaId', 'activityCode'],
@@ -25,10 +24,10 @@ const options = {
   includeScore: true,
 };
 
-function CommandPromptDialog({ open, onClose }: any) {
+function CommandPromptDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const wcif = useSelector((state: AppState) => state.wcif);
   const competitions = useSelector((state: AppState) => state.competitions);
-  const [currentCompetitionId, setCurrentCompetitionId] = useState(wcif?.id);
+  const [currentCompetitionId, setCurrentCompetitionId] = useState<string | null>(wcif?.id ?? null);
   const theme = useTheme();
   const navigate = useNavigate();
   const [command, setCommand] = useState('');
@@ -36,11 +35,13 @@ function CommandPromptDialog({ open, onClose }: any) {
   const [selected, setSelected] = useState(0);
 
   useEffect(() => {
-    setCurrentCompetitionId(wcif.id);
+    if (wcif) {
+      setCurrentCompetitionId(wcif.id);
+    }
   }, [wcif]);
 
-  const persons = useMemo(() => acceptedRegistrations(wcif.persons), [wcif]);
-  const activities = useMemo(() => findAllActivities(wcif), [wcif]);
+  const persons = useMemo(() => acceptedRegistrations(wcif?.persons || []), [wcif]);
+  const activities = useMemo(() => (wcif ? findAllActivities(wcif) : []), [wcif]);
 
   const fuse = useMemo(() => {
     if (currentCompetitionId && wcif) {
@@ -77,7 +78,7 @@ function CommandPromptDialog({ open, onClose }: any) {
 
   useEffect(() => {
     if (debouncedCommand) {
-      setSearchResults(fuse.search(debouncedCommand).filter(({ score }) => score < 1));
+      setSearchResults(fuse.search(debouncedCommand).filter(({ score }) => score && score < 1));
     } else {
       if (!currentCompetitionId) {
         setSearchResults(
@@ -102,10 +103,10 @@ function CommandPromptDialog({ open, onClose }: any) {
     (result) => {
       switch (result.class) {
         case 'person':
-          navigate(`/competitions/${wcif.id}/persons/${result.id}`);
+          navigate(`/competitions/${wcif?.id}/persons/${result.id}`);
           break;
         case 'activity':
-          navigate(`/competitions/${wcif.id}/events/${result.activityCode}`);
+          navigate(`/competitions/${wcif?.id}/events/${result.activityCode}`);
           break;
         case 'competition':
           navigate(`/competitions/${result.id}`);
@@ -116,7 +117,7 @@ function CommandPromptDialog({ open, onClose }: any) {
 
       handleClose();
     },
-    [handleClose, navigate, wcif.id]
+    [handleClose, navigate, wcif?.id]
   );
 
   const handleKeyDown = useCallback(
@@ -155,6 +156,7 @@ function CommandPromptDialog({ open, onClose }: any) {
     <ClickAwayListener onClickAway={handleClose}>
       <Box
         style={{
+          // @ts-expect-error TODO: Fix issues with MUI types
           zIndex: theme.zIndex.drawer * 10,
           top: open ? 0 : '-100%',
           left: open ? '25%' : '50%',
@@ -163,9 +165,12 @@ function CommandPromptDialog({ open, onClose }: any) {
 
           position: 'fixed',
           // display: open ? 'block' : 'none',
+          // @ts-expect-error TODO: Fix issues with MUI types
           border: theme.palette.divider,
+          // @ts-expect-error TODO: Fix issues with MUI types
           transition: theme.transitions.create(['top', 'left', 'width']),
           overflow: 'hidden',
+          // @ts-expect-error TODO: Fix issues with MUI types
           boxShadow: theme.shadows[6],
         }}>
         <Paper
@@ -211,6 +216,7 @@ function CommandPromptDialog({ open, onClose }: any) {
               display: 'flex',
               flex: 1,
               flexDirection: 'column',
+              // @ts-expect-error TODO: Fix issues with MUI types
               transition: theme.transitions.create(['top', 'left', 'width']),
             }}>
             {searchResults?.length ? (

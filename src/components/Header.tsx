@@ -1,8 +1,4 @@
-// @ts-nocheck
-import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import { AppState } from '../../store/initialState';
-import { Link } from 'react-router-dom';
+import { AppState } from '../store/initialState';
 import { Tune } from '@mui/icons-material';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
@@ -26,26 +22,35 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
+import { useMemo } from 'react';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 export const drawerWidth = 240;
 
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== 'open',
-})(({ theme, open }) => ({
-  transition: theme.transitions.create(['margin', 'width'], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  marginLeft: 0,
-  ...(open && {
-    width: `calc(100% - ${drawerWidth}px)`,
-    marginLeft: `${drawerWidth}px`,
+})(
+  ({
+    theme,
+    // @ts-expect-error TODO: fix typing
+    open,
+  }) => ({
     transition: theme.transitions.create(['margin', 'width'], {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
     }),
-  }),
-}));
+    marginLeft: 0,
+    ...(open && {
+      width: `calc(100% - ${drawerWidth}px)`,
+      marginLeft: `${drawerWidth}px`,
+      transition: theme.transitions.create(['margin', 'width'], {
+        easing: theme.transitions.easing.easeOut,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
+    }),
+  })
+);
 
 const MenuLink = ({ url, icon, text }: any) => (
   <ListItem button key={url} component={Link} to={url}>
@@ -64,7 +69,7 @@ export const DrawerHeader = styled('div')(({ theme }) => ({
 }));
 
 export const DrawerLinks = (props?: any) => {
-  const competitionId = useSelector((state: AppState) => state.wcif.id);
+  const competitionId = useSelector((state: AppState) => state.wcif?.id);
   const menuLinks = useMemo(
     () => ({
       top: [
@@ -145,11 +150,11 @@ export const DrawerLinks = (props?: any) => {
   );
 };
 
-export const Header = ({ open, onMenuOpen }: any) => {
-  const { name } = useSelector((state: AppState) => state.wcif);
+export const Header = ({ open, onMenuOpen }: { open: boolean; onMenuOpen: () => void }) => {
+  const name = useSelector((state: AppState) => state.wcif)?.name;
 
   return (
-    <AppBar position="static" open={open}>
+    <AppBar position="static">
       <Toolbar>
         <IconButton
           size="large"

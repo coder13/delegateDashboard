@@ -1,8 +1,8 @@
-// @ts-nocheck
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { AppState } from '../store/initialState';
-import { useParams } from 'react-router-dom';
+import { getLocalStorage, setLocalStorage } from '../../../lib/localStorage';
+import { acceptedRegistrations } from '../../../lib/persons';
+import { searchPersons, WcaPerson } from '../../../lib/wcaAPI';
+import { AppState } from '../../../store/initialState';
+import FirstTimerCard from './FirstTimerCard';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Accordion,
@@ -16,15 +16,18 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { getLocalStorage, setLocalStorage } from '../../../lib/localStorage';
-import { acceptedRegistrations } from '../../../lib/persons';
-import { searchPersons } from '../../../lib/wcaAPI';
-import FirstTimerCard from './FirstTimerCard';
+import { Person } from '@wca/helpers';
+import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 
-export default function FirstTimers(props?: any) {
+export default function FirstTimers() {
   const { competitionId } = useParams();
   const wcif = useSelector((state: AppState) => state.wcif);
-  const [{ index, firstTimer }, setFirstTimer] = useState({
+  const [{ index, firstTimer }, setFirstTimer] = useState<{
+    index: number;
+    firstTimer: Person | null;
+  }>({
     index: 0,
     firstTimer: null,
   });
@@ -37,15 +40,23 @@ export default function FirstTimers(props?: any) {
   });
   const [loading, setLoading] = useState(false);
 
-  const firstTimers = acceptedRegistrations(wcif.persons).filter((p) => !p.wcaId);
+  const firstTimers = wcif && acceptedRegistrations(wcif.persons).filter((p) => !p.wcaId);
 
   const incrementIndex = async (i = 0) => {
+    if (!firstTimers) {
+      return;
+    }
+
     if (i >= firstTimers.length) {
       setLoading(false);
       return;
     }
 
     const firstTimer = firstTimers[i];
+
+    if (!firstTimer) {
+      return;
+    }
 
     setFirstTimer({
       index: i,
@@ -75,7 +86,7 @@ export default function FirstTimers(props?: any) {
 
   return (
     <div>
-      <Typography variant="p">
+      <Typography variant="body1">
         Use this page to check if these first timers are indeed first timers.
       </Typography>
       <Accordion>
@@ -84,7 +95,7 @@ export default function FirstTimers(props?: any) {
         </AccordionSummary>
         <AccordionDetails>
           <List dense>
-            {firstTimers.map((p) => (
+            {firstTimers?.map((p) => (
               <ListItem key={p.registrantId}>
                 <ListItemText
                   primary={p.name}
@@ -109,7 +120,7 @@ export default function FirstTimers(props?: any) {
           ? 'Re-check All First-Timers'
           : 'Check All First-Timers'}
       </Button>
-      {loading && (
+      {firstTimer && firstTimers && loading && (
         <span>
           Checking {firstTimer?.name} | {index + 1} of {firstTimers.length}
         </span>
@@ -122,13 +133,13 @@ export default function FirstTimers(props?: any) {
         {personMatches
           .filter((pm) => pm.search?.length > 0)
           .map((pm) => {
-            const person = firstTimers.find((f) => f.registrantId === pm.id);
+            const person = firstTimers?.find((f) => f.registrantId === pm.id);
 
             if (!person) {
               return null;
             }
 
-            return <FirstTimerCard key={pm.id} person={person} matches={pm.search} />;
+            return <FirstTimerCard key={pm.id} person={pm} matches={pm.search} />;
           })}
       </Stack>
     </div>

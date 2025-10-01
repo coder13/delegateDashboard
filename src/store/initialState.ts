@@ -1,10 +1,10 @@
 import { Competition } from '@wca/helpers';
 
-interface WcifError {
+export interface WCIFError {
   type: string;
   key: string;
   message: string;
-  data?: any;
+  data: any;
 }
 
 export interface AppState {
@@ -26,7 +26,7 @@ export interface AppState {
   changedKeys: Set<keyof Competition>;
   wcif: null | Competition;
   competitions: any[];
-  errors: WcifError[];
+  errors: WCIFError[];
 }
 
 const INITIAL_STATE: AppState = {

@@ -1,5 +1,5 @@
-import { Event, EventId } from '@wca/helpers';
 import { sortBy } from './utils';
+import { Event, EventId, RoundFormat } from '@wca/helpers';
 
 interface EventInfo {
   id: EventId;
@@ -37,14 +37,14 @@ const propertyById = (property: 'name' | 'shortName', eventId: EventId): string 
 export const sortWcifEvents = (wcifEvents: Event[]): Event[] =>
   sortBy(wcifEvents, (wcifEvent) => events.findIndex((event) => event.id === wcifEvent.id));
 
-interface RoundFormat {
-  id: string;
+interface RoundFormatConfig {
+  id: RoundFormat;
   short: string;
   long: string;
   rankingResult: 'average' | 'single';
 }
 
-const roundFormats: RoundFormat[] = [
+const roundFormats: RoundFormatConfig[] = [
   { id: 'a', short: 'ao5', long: 'Average of 5', rankingResult: 'average' },
   { id: 'm', short: 'mo3', long: 'Mean of 5', rankingResult: 'average' },
   { id: '3', short: 'bo3', long: 'Best of 3', rankingResult: 'single' },
@@ -52,5 +52,5 @@ const roundFormats: RoundFormat[] = [
   { id: '1', short: 'bo1', long: 'Best of 1', rankingResult: 'single' },
 ];
 
-export const roundFormatById = (id: string): RoundFormat | undefined =>
-  roundFormats.find((roundFormat) => roundFormat.id === id);
+export const roundFormatById = (id: RoundFormat): RoundFormatConfig =>
+  roundFormats.find((roundFormat) => roundFormat.id === id)!;

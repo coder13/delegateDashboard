@@ -1,4 +1,3 @@
-import { Person, Round } from '@wca/helpers';
 import {
   findActivityById,
   activityCodeIsChild,
@@ -6,12 +5,13 @@ import {
   findRooms,
 } from '../lib/activities';
 import { acceptedRegistrations, personsShouldBeInRound } from '../lib/persons';
-import { createSelector } from 'reselect';
 import { AppState } from './initialState';
+import { Round } from '@wca/helpers';
+import { createSelector } from 'reselect';
 
 const selectWcif = (state: AppState) => state.wcif;
 
-export const selectWcifRooms = createSelector(selectWcif, (wcif) => wcif ? findRooms(wcif) : []);
+export const selectWcifRooms = createSelector(selectWcif, (wcif) => (wcif ? findRooms(wcif) : []));
 
 /**
  * Return a filtered array of all persons who's registration is defined and status is `accepted`

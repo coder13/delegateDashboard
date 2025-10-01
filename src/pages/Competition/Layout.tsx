@@ -1,9 +1,10 @@
-// @ts-nocheck
-import { useSnackbar } from 'notistack';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppState } from '../store/initialState';
-import { useParams, Outlet } from 'react-router-dom';
+import { Errors } from '../../components/Errors';
+import { DrawerHeader, DrawerLinks, drawerWidth, Header } from '../../components/Header';
+import MaterialLink from '../../components/MaterialLink';
+import { getLocalStorage, setLocalStorage } from '../../lib/localStorage';
+import BreadcrumbsProvider, { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
+import { fetchWCIF, uploadCurrentWCIFChanges } from '../../store/actions';
+import { AppState } from '../../store/initialState';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import {
   Alert,
@@ -19,12 +20,10 @@ import {
   Typography,
 } from '@mui/material';
 import { styled } from '@mui/system';
-import { Errors } from '../../components/Errors';
-import { DrawerHeader, DrawerLinks, drawerWidth, Header } from '../../components/Header';
-import MaterialLink from '../../components/MaterialLink';
-import { getLocalStorage, setLocalStorage } from '../../lib/localStorage';
-import BreadcrumbsProvider, { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
-import { fetchWCIF, uploadCurrentWCIFChanges } from '../../store/actions';
+import { useSnackbar } from 'notistack';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams, Outlet } from 'react-router-dom';
 
 const BreadCrumbsGridItem = (props?: any) => {
   const { breadcrumbs } = useBreadcrumbs();
@@ -36,7 +35,7 @@ const BreadCrumbsGridItem = (props?: any) => {
       <Breadcrumbs aria-label="breadcrumbs">
         <MaterialLink to={`/`}>Competitions</MaterialLink>
         <MaterialLink to={`/competitions/${competitionId}`}>
-          {wcif.name || competitionId}
+          {wcif?.name || competitionId}
         </MaterialLink>
         {breadcrumbs.map((breadcrumb) =>
           breadcrumb.to ? (
@@ -54,29 +53,37 @@ const BreadCrumbsGridItem = (props?: any) => {
   );
 };
 
-const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(
-  ({ theme, open }) => ({
-    flexGrow: 1,
-    padding: theme.spacing(3),
+const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
+  open: boolean;
+}>(({ theme, open }) => ({
+  flexGrow: 1,
+  padding: theme.spacing(3),
+  // @ts-expect-error TODO: Fix issues with MUI types
+  transition: theme.transitions.create('margin', {
+    // @ts-expect-error TODO: Fix issues with MUI types
+    easing: theme.transitions.easing.sharp,
+    // @ts-expect-error TODO: Fix issues with MUI types
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  ...(open && {
+    // @ts-expect-error TODO: Fix issues with MUI types
     transition: theme.transitions.create('margin', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
+      // @ts-expect-error TODO: Fix issues with MUI types
+      easing: theme.transitions.easing.easeOut,
+      // @ts-expect-error TODO: Fix issues with MUI types
+      duration: theme.transitions.duration.enteringScreen,
     }),
-    ...(open && {
-      transition: theme.transitions.create('margin', {
-        easing: theme.transitions.easing.easeOut,
-        duration: theme.transitions.duration.enteringScreen,
-      }),
-      marginLeft: `${drawerWidth}px`,
-    }),
-    overflowY: 'auto',
-  })
-);
+    marginLeft: `${drawerWidth}px`,
+  }),
+  overflowY: 'auto',
+}));
 
 const CompetitionLayout = (props?: any) => {
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
-  const { competitionId } = useParams();
+  const { competitionId } = useParams<{
+    competitionId: string;
+  }>();
   const [drawerOpen, setDrawerOpen] = useState(getLocalStorage('drawer-open') === 'true');
 
   const fetchingWCIF = useSelector((state: AppState) => state.fetchingWCIF);
@@ -103,11 +110,15 @@ const CompetitionLayout = (props?: any) => {
   }, [wcif]);
 
   useEffect(() => {
+    if (!competitionId) {
+      return;
+    }
+
     dispatch(fetchWCIF(competitionId));
   }, [dispatch, competitionId]);
 
   useEffect(() => {
-    setLocalStorage('drawer-open', drawerOpen);
+    setLocalStorage('drawer-open', drawerOpen.toString());
   }, [drawerOpen]);
 
   const handleKeyDown = useCallback(

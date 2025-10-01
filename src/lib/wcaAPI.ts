@@ -1,7 +1,7 @@
-import { Competition } from '@wca/helpers';
 import { getLocalStorage } from './localStorage';
 import { pick } from './utils';
 import { WCA_ORIGIN } from './wca-env';
+import { Competition } from '@wca/helpers';
 
 interface WcaUser {
   id: number;
@@ -13,7 +13,7 @@ interface WcaUser {
   [key: string]: any;
 }
 
-interface WcaPerson {
+export interface WcaPerson {
   id: string;
   name: string;
   [key: string]: any;
@@ -67,7 +67,10 @@ export const getPastManageableCompetitions = (): Promise<WcaCompetition[]> => {
 export const getWcif = (competitionId: string): Promise<Competition> =>
   wcaApiFetch(`/competitions/${competitionId}/wcif`);
 
-export const patchWcif = (competitionId: string, wcif: Partial<Competition>): Promise<Competition> =>
+export const patchWcif = (
+  competitionId: string,
+  wcif: Partial<Competition>
+): Promise<Competition> =>
   wcaApiFetch(`/competitions/${competitionId}/wcif`, {
     method: 'PATCH',
     body: JSON.stringify(wcif),

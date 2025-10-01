@@ -61,7 +61,7 @@
   "scripts": {
     "start": "VITE_GIT_SHA=`git rev-parse --short HEAD` GENERATE_SOURCEMAP=false vite",
     "build": "VITE_GIT_SHA=`git rev-parse --short HEAD` tsc && vite build",
-    "lint": "eslint ./",
+    "lint": "eslint",
     "test": "npm run lint",
     "prepare": "husky install",
     "prettier": "prettier \"src/**/*.js\" --write"
