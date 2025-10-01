@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Link from '../../../components/MaterialLink';
 import {
   acceptedRegistration,
@@ -54,7 +53,7 @@ const ROLES = [
 const useStyles = makeStyles((theme: any) => ({
   root: {
     display: 'flex',
-    flexDirection: 'Column',
+    flexDirection: 'column',
     flex: 1,
     width: '100%',
   },
@@ -107,11 +106,11 @@ const Staff = (props?: any) => {
   const [filterDeleted] = useState(true);
   const [filterPending] = useState(true);
 
-  const acceptedPersons = wcif.persons.filter(acceptedRegistration);
+  const acceptedPersons = wcif!.persons.filter(acceptedRegistration);
 
   const filteredPersons =
     filterDeleted || filterPending
-      ? wcif.persons.filter((person) => {
+      ? wcif!.persons.filter((person) => {
           if (filterDeleted && person.registration?.status === 'deleted') {
             return false;
           }
@@ -122,7 +121,7 @@ const Staff = (props?: any) => {
 
           return true;
         })
-      : wcif.persons;
+      : wcif!.persons;
 
   const handleChange = (e, registrantId, roleId) => {
     const person = filteredPersons.find((p) => p.registrantId === registrantId);
@@ -195,7 +194,7 @@ const Staff = (props?: any) => {
                 }
 
                 if (competitorSort === 'dob') {
-                  return a.birthdate.localeCompare(b.birthdate);
+                  return (a.birthdate || "").localeCompare(b.birthdate || "");
                 }
 
                 return 0;
@@ -227,14 +226,14 @@ const Staff = (props?: any) => {
                     <Checkbox
                       color="primary"
                       disabled
-                      checked={person.roles?.indexOf('delegate') > -1}
+                      checked={(person.roles || [])?.indexOf('delegate') > -1}
                     />
                   </TableCell>
                   <TableCell padding="checkbox">
                     <Checkbox
                       color="primary"
                       disabled
-                      checked={person.roles?.indexOf('organizer') > -1}
+                      checked={(person.roles || [])?.indexOf('organizer') > -1}
                     />
                   </TableCell>
                   {ROLES.map((role) => (
@@ -242,7 +241,7 @@ const Staff = (props?: any) => {
                       <Checkbox
                         disabled={!acceptedRegistration(person)}
                         color="primary"
-                        checked={person.roles?.indexOf(role.id) > -1}
+                        checked={(person.roles || [])?.indexOf(role.id) > -1}
                         onChange={(e) =>
                           handleChange(e, person.registrantId, role.id)
                         }
@@ -256,7 +255,7 @@ const Staff = (props?: any) => {
             <TableRow>
               <TableCell className={classes.bold}>
                 {
-                  acceptedPersons.filter((person) => person.roles.length > 0)
+                  acceptedPersons.filter((person) => (person.roles || []).length > 0)
                     .length
                 }
                 {' / '}
@@ -265,7 +264,7 @@ const Staff = (props?: any) => {
               </TableCell>
               <TableCell className={classes.bold}>
                 {pluralize(
-                  wcif.persons
+                  wcif!.persons
                     .filter(acceptedRegistration)
                     .filter((person) => !person.wcaId).length,
                   'First-Timer'
@@ -275,23 +274,23 @@ const Staff = (props?: any) => {
               <TableCell className={classes.bold}>
                 {
                   acceptedPersons.filter((person) =>
-                    person.roles.some((r) => r.includes('delegate'))
+                    (person.roles || []).some((r) => r.includes('delegate'))
                   ).length
                 }
               </TableCell>
               <TableCell className={classes.bold}>
                 {
                   acceptedPersons.filter((person) =>
-                    person.roles.includes('organizer')
+                    (person.roles || []).includes('organizer')
                   ).length
                 }
               </TableCell>
               {ROLES.map((role) => (
                 <TableCell key={role.id} className={classes.bold}>
                   {
-                    wcif.persons
+                    wcif!.persons
                       .filter(acceptedRegistration)
-                      .filter((person) => person.roles.includes(role.id)).length
+                      .filter((person) => (person.roles || []).includes(role.id)).length
                   }
                 </TableCell>
               ))}

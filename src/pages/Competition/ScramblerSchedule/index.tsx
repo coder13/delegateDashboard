@@ -1,7 +1,7 @@
-// @ts-nocheck
 import { useCallback, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store/initialState';
+import { Person } from '@wca/helpers';
 import {
   FormControl,
   FormControlLabel,
@@ -26,10 +26,12 @@ import { flatMap, groupBy } from '../../../lib/utils';
 
 const DaysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-export default function ScramblerSchedule(props?: any) {
+export default function ScramblerSchedule() {
   const wcif = useSelector((state: AppState) => state.wcif);
 
-  const mapNames = (array) =>
+  if (!wcif) return null;
+
+  const mapNames = (array: Person[]) =>
     array.length
       ? array
           .sort((a, b) => a.name.localeCompare(b.name))
@@ -40,7 +42,7 @@ export default function ScramblerSchedule(props?: any) {
               {name}
             </MaterialLink>
           ))
-          .reduce((a, b) => (
+          .reduce((a: any, b: any) => (
             <>
               {a}, {b}
             </>
@@ -49,7 +51,7 @@ export default function ScramblerSchedule(props?: any) {
 
   const _rooms = findRooms(wcif);
 
-  const [roomSelector, setRoomSelector] = useState(_rooms[0].id);
+  const [roomSelector, setRoomSelector] = useState<number>(_rooms[0].id);
 
   const _allRoundActivities = useMemo(
     () =>
@@ -62,14 +64,14 @@ export default function ScramblerSchedule(props?: any) {
   const _allActivities = useMemo(() => findAllActivities(wcif), [wcif]);
 
   const getActivity = useCallback(
-    (assignment) => _allActivities.find(({ id }) => id === assignment.activityId),
+    (assignment: any) => _allActivities.find(({ id }) => id === assignment.activityId),
     [_allActivities]
   );
 
   const assignments = useMemo(
     () =>
-      flatMap(wcif.persons, (person) =>
-        person.assignments
+      flatMap(wcif.persons, (person: Person) =>
+        (person.assignments || [])
           .filter((assignment) => assignment.assignmentCode === 'staff-scrambler')
           .map((assignment) => ({
             ...assignment,
@@ -86,14 +88,14 @@ export default function ScramblerSchedule(props?: any) {
       ...activity,
       date: DaysOfWeek[new Date(activity.startTime).getDay()],
     })),
-    (x) => x.date
+    (x: any) => x.date
   );
 
   return (
     <div>
       <FormControl>
         <FormLabel>Room</FormLabel>
-        <RadioGroup value={roomSelector} onChange={(e) => setRoomSelector(e.target.value)}>
+        <RadioGroup value={roomSelector} onChange={(e) => setRoomSelector(Number(e.target.value))}>
           {_rooms.map((room) => (
             <FormControlLabel key={room.id} value={room.id} control={<Radio />} label={room.name} />
           ))}
@@ -108,14 +110,14 @@ export default function ScramblerSchedule(props?: any) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {Object.entries(activitiesSplitAcrossDates).map(([date, activities]) => (
+          {Object.entries(activitiesSplitAcrossDates).map(([date, activities]: [string, any]) => (
             <>
               <TableRow key={date}>
                 <TableCell colSpan={2} style={{ textAlign: 'center' }}>
                   {date}
                 </TableCell>
               </TableRow>
-              {activities.map((activity) => (
+              {(activities as any[]).map((activity: any) => (
                 <>
                   <TableRow key={activity.id}>
                     <TableCell colSpan={2}>
@@ -130,13 +132,13 @@ export default function ScramblerSchedule(props?: any) {
                       {activityCodeToName(activity.activityCode)}
                     </TableCell>
                   </TableRow>
-                  {activity.childActivities.map((childActivity) => (
+                  {activity.childActivities.map((childActivity: any) => (
                     <TableRow key={childActivity.id}>
                       <TableCell>
                         {activityCodeToName(childActivity.activityCode).split(', ')[2]}
                       </TableCell>
                       <TableCell>
-                        {mapNames(assignments.filter((a) => a.activityId === childActivity.id))}
+                        {mapNames(assignments.filter((a: any) => a.activityId === childActivity.id))}
                       </TableCell>
                     </TableRow>
                   ))}

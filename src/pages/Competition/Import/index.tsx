@@ -123,7 +123,7 @@ const ImportPage = () => {
         const csvOutput = event.target?.result;
         if (typeof csvOutput === 'string') {
           readString(csvOutput, {
-            worker: false,
+            worker: false as any,
             header: true,
             skipEmptyLines: true,
             transformHeader: (header: string) => header.trim().toLowerCase(),

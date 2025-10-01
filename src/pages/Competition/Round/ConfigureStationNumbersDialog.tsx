@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { activityCodeIsChild, parseActivityCode, roomByActivity } from '../../../lib/activities';
 import { byPROrResult, getSeedResult } from '../../../lib/persons';
 import { bulkUpsertPersonAssignments, upsertPersonAssignments } from '../../../store/actions';
@@ -17,10 +16,12 @@ import { DataGrid, GridToolbarContainer } from '@mui/x-data-grid';
 import { formatCentiseconds } from '@wca/helpers';
 import { useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppState } from '../store/initialState';
+import { AppState } from '../../../store/initialState';
 
 const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }: any) => {
   const wcif = useSelector((state: AppState) => state.wcif);
+
+  if (!wcif) return null;
   const dispatch = useDispatch();
   const dataGridRef = useRef(null);
   const theme = useTheme();
@@ -40,7 +41,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }: any) => 
     () =>
       personsAssigned
         .flatMap((p) => {
-          const assigments = p.assignments
+          const assigments = (p.assignments || [])
             .map((a) => {
               const activity = getActivityFromId(a.activityId);
 
@@ -87,7 +88,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }: any) => 
           // return {
           //   ...p,
           //   seedResult: getSeedResult(wcif, activityCode, p),
-          //   assignment: p.assignments
+          //   assignment: (p.assignments || [])
           //     .map((a) => {
           //       const activity = getActivityFromId(a.activityId);
 

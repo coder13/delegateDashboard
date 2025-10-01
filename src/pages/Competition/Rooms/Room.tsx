@@ -169,8 +169,8 @@ const Room = ({ venue, room }: RoomProps) => {
                   const estimatedCompetitors =
                     roundNumber === 1
                       ? eventRegistrationCounts[eventId] || 0
-                      : advancingCompetitors(
-                          advancementCondition || null,
+                      : advancingCompetitors((
+                          advancementCondition || null) as any,
                           eventRegistrationCounts[eventId] || 0
                         );
                   const actualCompetitors = round.results?.length || 0;
@@ -197,7 +197,7 @@ const Room = ({ venue, room }: RoomProps) => {
                       return;
                     }
 
-                    const childActivities: Activity[] = [];
+                    const childActivities: any[] = [];
                     const startActivityId = generateNextChildActivityId(wcif);
 
                     for (let i = 0; i < groupData?.groups; i++) {

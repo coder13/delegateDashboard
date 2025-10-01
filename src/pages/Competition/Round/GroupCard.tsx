@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { formatCentiseconds } from '@wca/helpers';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -34,6 +33,8 @@ const withAssignmentCode =
 
 const GroupCard = ({ groupActivity }: any) => {
   const wcif = useSelector((state: AppState) => state.wcif);
+
+  if (!wcif) return null;
   const personsAssigned = useSelector((state: AppState) =>
     selectPersonsAssignedToActivitiyId(state, groupActivity.id)
   ).map((p) => ({
@@ -42,7 +43,7 @@ const GroupCard = ({ groupActivity }: any) => {
   }));
 
   const [anchorEl, setAnchorEl] = useState<any>(null);
-  const [editGroupDialogOpen, setEditGroupDialogOpen] = useState(false);
+  const [editGroupDialogOpen, setEditGroupDialogOpen] = useState<boolean>(false);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);

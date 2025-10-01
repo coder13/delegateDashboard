@@ -1,4 +1,3 @@
-// @ts-nocheck
 import ActionMenu from '../../../components/ActionMenu';
 import PersonsAssignmentsDialog from '../../../components/PersonsAssignmentsDialog';
 import PersonsDialog from '../../../components/PersonsDialog';
@@ -93,6 +92,8 @@ const RoundPage = (props?: any) => {
 
   const wcif = useSelector((state: AppState) => state.wcif);
 
+  if (!wcif) return null;
+
   const round = useSelector((state: AppState) => selectRoundById(state)(roundId));
   const personsShouldBeInRound = useSelector((state: AppState) => selectPersonsShouldBeInRound(state)(round));
 
@@ -125,16 +126,16 @@ const RoundPage = (props?: any) => {
     [groups]
   );
 
-  const personsAssigned = useSelector((state: AppState) => selectPersonsAssignedForRound(state, round.id));
+  const personsAssigned = useSelector((state: AppState) => selectPersonsAssignedForRound(state, round!.id));
 
   const personsAssignedToCompete = useMemo(
     () =>
-      personsAssigned.filter((p) => p.assignments!.some((a) => a.assignmentCode === 'competitor')),
+      personsAssigned.filter((p) => (p.assignments || [])!.some((a) => a.assignmentCode === 'competitor')),
     [personsAssigned]
   );
 
   const personsAssignedWithCompetitorAssignmentCount = useSelector(
-    (state) => selectPersonsHavingCompetitorAssignmentsForRound(state, round.id).length
+    (state) => selectPersonsHavingCompetitorAssignmentsForRound(state, round!.id).length
   );
 
   /**
@@ -147,7 +148,7 @@ const RoundPage = (props?: any) => {
    * 2. Then give out judging assignments to competitors without staff assignments
    */
   const onGenerateGroupActitivites = (props?: any) => {
-    dispatch(generateAssignments(round.id));
+    dispatch(generateAssignments(round!.id));
   };
 
   const onResetGroupActitivites = (props?: any) => {
@@ -281,7 +282,7 @@ const RoundPage = (props?: any) => {
           {adamRoundConfig && (
             <Alert severity="info">
               The delegate team strongly recommends <b>{adamRoundConfig.groupCount}</b>{' '}
-              {pluralizeWord(adamRoundConfig.groupCount, 'group', 'groups')} for this round. This
+              {pluralizeWord(adamRoundConfig.groupCount, 'group', 'groups')} for this round!. This
               was based on an estimated number of competitors for this round of{' '}
               <b>{adamRoundConfig.expectedRegistrations}</b>. Discuss with the delegates before
               deviating from this number.
@@ -354,9 +355,9 @@ const RoundPage = (props?: any) => {
                     sx={{ textAlign: 'center' }}
                     onClick={() =>
                       setShowPersonsDialog({
-                        open: round.results.length > 0,
+                        open: round!.results.length > 0,
                         persons:
-                          round.results
+                          round!.results
                             .map(({ personId }) =>
                               wcif.persons.find(({ registrantId }) => registrantId === personId)
                             )
@@ -382,11 +383,11 @@ const RoundPage = (props?: any) => {
               </TableBody>
             </Table>
             <Box sx={{ display: 'flex' }}>
-              {round.timeLimit && (
+              {round!.timeLimit && (
                 <Tooltip title="Defined by the number of people who have a PR single under the timelimit">
                   <Box sx={{ px: 3, py: 1 }}>
                     <Typography>
-                      Time Limit: {formatCentiseconds(round.timeLimit.centiseconds)}
+                      Time Limit: {formatCentiseconds(round!.timeLimit.centiseconds)}
                     </Typography>
                     {personsShouldBeInRound.length > 0 && (
                       <Typography>
@@ -398,12 +399,12 @@ const RoundPage = (props?: any) => {
                 </Tooltip>
               )}
               <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-              {round.cutoff && (
+              {round!.cutoff && (
                 <Tooltip title="Defined by the number of people who have a PR average under the cutoff">
                   <Box sx={{ px: 3, py: 1 }}>
                     <Typography>
-                      Cutoff: {round.cutoff.numberOfAttempts} attempts to get {'< '}
-                      {renderResultByEventId(eventId, 'average', round.cutoff.attemptResult)}
+                      Cutoff: {round!.cutoff.numberOfAttempts} attempts to get {'< '}
+                      {renderResultByEventId(eventId, 'average', round!.cutoff.attemptResult)}
                     </Typography>
                     {personsShouldBeInRound.length > 0 && (
                       <Typography>
@@ -440,15 +441,15 @@ const RoundPage = (props?: any) => {
         <ConfigureAssignmentsDialog
           open={configureAssignmentsDialog}
           onClose={() => setConfigureAssignmentsDialog(false)}
-          round={round}
-          activityCode={activityCode}
+          round={round!}
+          activityCode={activityCode!}
           groups={groups}
         />
         <ConfigureGroupCountsDialog
           open={configureGroupCountsDialog}
           onClose={() => setConfigureGroupCountsDialog(false)}
-          activityCode={activityCode}
-          round={round}
+          activityCode={activityCode!}
+          round={round!}
           roundActivities={roundActivities}
         />
         {configureStationNumbersDialog && (
@@ -473,23 +474,23 @@ const RoundPage = (props?: any) => {
         <PersonsAssignmentsDialog
           open={showPersonsAssignmentsDialog}
           persons={personsShouldBeInRound}
-          roundId={round.id}
+          roundId={round!.id}
           onClose={() => setShowPersonsAssignmentsDialog(false)}
         />
         <ConfigureGroupsDialog
           open={configureGroupsDialog}
           onClose={() => setConfigureGroupsDialog(false)}
-          activityCode={activityCode}
+          activityCode={activityCode!}
         />
         <RawRoundDataDialog
           open={rawRoundDataDialogOpen}
           onClose={() => setRawRoundDataDialogOpen(false)}
-          roundId={roundId}
+          roundId={roundId!}
         />
         <RawRoundActivitiesDataDialog
           open={rawRoundActivitiesDataDialogOpen}
           onClose={() => setRawRoundActivitiesDataDialogOpen(false)}
-          activityCode={activityCode}
+          activityCode={activityCode!}
         />
       </Grid>
     </>

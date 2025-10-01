@@ -1,7 +1,6 @@
-// @ts-nocheck
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppState } from '../store/initialState';
+import { AppState } from '../../../store/initialState';
 import {
   Alert,
   Box,
@@ -27,9 +26,11 @@ import { updateRoundActivities, updateRoundExtensionData } from '../../../store/
 import { selectPersonsShouldBeInRound } from '../../../store/selectors';
 
 const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundActivities }: any) => {
-  const wcif = useSelector((state: AppState) => state.wcif);
+  const wcif = useSelector((state: AppState) => (state.wcif as any));
+
+  if (!wcif) return null;
   const rooms = useSelector((state: AppState) =>
-    state.wcif.schedule.venues
+    (state.wcif as any).schedule.venues
       .flatMap((v) => v.rooms)
       .filter((room) => room.activities.find((a) => a.activityCode === activityCode))
   );
@@ -135,7 +136,7 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
                   id="groups"
                   label="Groups"
                   type="number"
-                  variant="outlined"
+                  variant={"outlined" as any}
                   value={groupCount || 1}
                   onChange={handleGroupsChange}
                 />
@@ -168,7 +169,7 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
               <Stack spacing={2}>
                 {rooms?.map((room) => {
                   const roomActivity = room.activities.find((a) => a.activityCode === activityCode);
-                  const roundDuration = activityDuration(roomActivity) / 60000;
+                  const roundDuration = activityDuration(roomActivity as any) / 60000;
 
                   return (
                     <Box key={room.id}>
@@ -178,7 +179,7 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
                           id={`groups-${room.id}-input`}
                           label={room.name}
                           type="number"
-                          variant="outlined"
+                          variant={"outlined" as any}
                           value={groupCount[room.id] ?? 1}
                           onChange={(e) => handleGroupsChangeMultipleRooms(e, room)}
                         />
