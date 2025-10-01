@@ -23,7 +23,7 @@ export const RawRoundDataDialog = ({ roundId, onClose, ...props }: RawRoundDataD
     setRawRoundData(JSON.stringify(round, null, 2));
   }, [wcif, roundId]);
 
-  const handleSave = () => {
+  const handleSave = (props?: any) => {
     const parsedJson = JSON.parse(rawRoundData);
     dispatch(updateRound(roundId, parsedJson));
     onClose();

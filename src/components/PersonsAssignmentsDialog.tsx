@@ -12,24 +12,35 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
+import { Person } from '@wca/helpers';
 import { findGroupActivitiesByRound, parseActivityCode } from '../lib/activities';
 import { byName } from '../lib/utils';
+import { AppState } from '../store/initialState';
 
-const PersonsAssignmentsDialog = ({ open, onClose, roundId, persons }) => {
-  const wcif = useSelector((state) => state.wcif);
+interface PersonsAssignmentsDialogProps {
+  open: boolean;
+  onClose: () => void;
+  roundId: string;
+  persons: Person[];
+}
+
+const PersonsAssignmentsDialog = ({ open, onClose, roundId, persons }: PersonsAssignmentsDialogProps) => {
+  const wcif = useSelector((state: AppState) => state.wcif);
+
+  if (!wcif) return null;
 
   const groupActivities = findGroupActivitiesByRound(wcif, roundId);
 
   const personAssignmentsInRound = useCallback(
-    (person) =>
-      person.assignments.filter((assignment) =>
+    (person: Person) =>
+      (person.assignments || []).filter((assignment) =>
         groupActivities.find((activity) => activity.id === assignment.activityId)
       ),
     [groupActivities]
   );
 
   const activitiesByPersonAndAssignmentCode = useCallback(
-    (person, assignmentCode) =>
+    (person: Person, assignmentCode: string) =>
       personAssignmentsInRound(person)
         .filter((assignment) => assignment.assignmentCode === assignmentCode)
         .map(({ activityId }) => groupActivities.find(({ id }) => id === activityId)),
@@ -55,8 +66,9 @@ const PersonsAssignmentsDialog = ({ open, onClose, roundId, persons }) => {
                 <TableCell>{person.name}</TableCell>
                 <TableCell>
                   {activitiesByPersonAndAssignmentCode(person, 'competitor')
+                    .filter(Boolean)
                     .map(
-                      (activity) =>
+                      (activity: any) =>
                         `${activity.parent.room.name}: ${
                           parseActivityCode(activity.activityCode).groupNumber
                         }`
@@ -65,8 +77,9 @@ const PersonsAssignmentsDialog = ({ open, onClose, roundId, persons }) => {
                 </TableCell>
                 <TableCell>
                   {activitiesByPersonAndAssignmentCode(person, 'staff-scrambler')
+                    .filter(Boolean)
                     .map(
-                      (activity) =>
+                      (activity: any) =>
                         `${activity.parent.room.name}: ${
                           parseActivityCode(activity.activityCode).groupNumber
                         }`
@@ -75,8 +88,9 @@ const PersonsAssignmentsDialog = ({ open, onClose, roundId, persons }) => {
                 </TableCell>
                 <TableCell>
                   {activitiesByPersonAndAssignmentCode(person, 'staff-judge')
+                    .filter(Boolean)
                     .map(
-                      (activity) =>
+                      (activity: any) =>
                         `${activity.parent.room.name}: ${
                           parseActivityCode(activity.activityCode).groupNumber
                         }`

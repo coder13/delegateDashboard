@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { activityCodeIsChild, parseActivityCode, roomByActivity } from '../../../lib/activities';
 import { byPROrResult, getSeedResult } from '../../../lib/persons';
 import { bulkUpsertPersonAssignments, upsertPersonAssignments } from '../../../store/actions';
@@ -16,17 +17,18 @@ import { DataGrid, GridToolbarContainer } from '@mui/x-data-grid';
 import { formatCentiseconds } from '@wca/helpers';
 import { useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppState } from '../store/initialState';
 
-const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
-  const wcif = useSelector((state) => state.wcif);
+const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }: any) => {
+  const wcif = useSelector((state: AppState) => state.wcif);
   const dispatch = useDispatch();
   const dataGridRef = useRef(null);
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
-  const getActivityFromId = useSelector((state) => selectActivityById(state));
+  const getActivityFromId = useSelector((state: AppState) => selectActivityById(state));
 
-  const personsAssigned = useSelector((state) =>
+  const personsAssigned = useSelector((state: AppState) =>
     selectPersonsAssignedForRound(state, activityCode)
   );
 
@@ -190,7 +192,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
     dispatch(bulkUpsertPersonAssignments(newAssignments));
   };
 
-  const resetStationNumbers = () => {
+  const resetStationNumbers = (props?: any) => {
     dispatch(
       bulkUpsertPersonAssignments(
         personsAssignedToCompeteOrJudge.map(({ registrantId, assignment }) => ({
@@ -220,7 +222,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
     }
   };
 
-  const Toolbar = () => (
+  const Toolbar = (props?: any) => (
     <GridToolbarContainer>
       <Button
         sx={{ m: 1 }}

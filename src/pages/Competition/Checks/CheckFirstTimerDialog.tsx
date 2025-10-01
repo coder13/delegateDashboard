@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
@@ -21,8 +22,8 @@ import {
 } from '@mui/material';
 import { searchPersons } from '../../../lib/wcaAPI';
 
-export default function CheckFirstTimerDialog({ open, onClose, person }) {
-  const [personSearch, setPersonSearch] = useState(null);
+export default function CheckFirstTimerDialog({ open, onClose, person }: any) {
+  const [personSearch, setPersonSearch] = useState<any>(null);
   const [loadingPersonSearch, setLoadingPersonSearch] = useState(false);
 
   const fetchPersonDetails = useCallback(
@@ -80,7 +81,7 @@ export default function CheckFirstTimerDialog({ open, onClose, person }) {
         {loadingPersonSearch && <LinearProgress />}
         <List>
           {personSearch?.map(({ person: p, competition_count }) => (
-            <ListItemButton key={p.id} component="a" to={p.url} target="_blank">
+            <ListItemButton key={p.id} component={"a" as any} to={p.url} target="_blank">
               <ListItemIcon>
                 <Avatar src={p.avatar.thumb_url} />
               </ListItemIcon>

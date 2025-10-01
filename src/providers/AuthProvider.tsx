@@ -7,7 +7,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 /**
  * Allows for use of staging api in production
  */
-const oauthRedirectUri = () => {
+const oauthRedirectUri = (props?: any) => {
   const appUri = window.location.origin;
   const searchParams = new URLSearchParams(window.location.search);
   const stagingParam = searchParams.has('staging');
@@ -43,7 +43,7 @@ export default function AuthProvider({ children }) {
     return expirationTime ? new Date(expirationTime) : null;
   });
   const [user, setUser] = useState<User | null>(null);
-  const [userFetchError, setUserFetchError] = useState(null);
+  const [userFetchError, setUserFetchError] = useState<any>(null);
   const [now, setNow] = useState(new Date());
 
   const location = useLocation();
@@ -126,7 +126,7 @@ export default function AuthProvider({ children }) {
       });
   }, [accessToken]);
 
-  const signIn = () => {
+  const signIn = (props?: any) => {
     const params = new URLSearchParams({
       client_id: WCA_OAUTH_CLIENT_ID,
       response_type: 'token',
@@ -137,7 +137,7 @@ export default function AuthProvider({ children }) {
     window.location.href = `${WCA_ORIGIN}/oauth/authorize?${params.toString()}`;
   };
 
-  const signOut = () => {
+  const signOut = (props?: any) => {
     setAccessToken(null);
     localStorage.removeItem(localStorageKey('accessToken'));
     setUser(null);
@@ -148,4 +148,4 @@ export default function AuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = (props?: any) => useContext(AuthContext);

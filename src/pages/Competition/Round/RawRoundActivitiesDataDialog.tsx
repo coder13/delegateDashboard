@@ -40,7 +40,7 @@ export const RawRoundActivitiesDataDialog = ({ activityCode, onClose, ...props }
     }), {}));
   }, [roundActivities]);
 
-  const handleSave = () => {
+  const handleSave = (props?: any) => {
     const parsedJson = Object.keys(rawRoundActivitiesData).map((id) => JSON.parse(rawRoundActivitiesData[+id])) as Activity[];
     console.log(45, parsedJson);
     dispatch(updateRoundActivities(parsedJson));

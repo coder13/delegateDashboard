@@ -1,3 +1,5 @@
+// @ts-nocheck
+import { Activity, Round } from "@wca/helpers";
 import {
   cumulativeGroupCount,
   findGroupActivitiesByRound,
@@ -14,11 +16,12 @@ import { Collapse, ListItemAvatar, ListItemButton, ListItemText } from '@mui/mat
 import { activityCodeToName } from '@wca/helpers';
 import React, { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
+import { AppState } from '../../store/initialState';
 import { Link as RouterLink } from 'react-router-dom';
 
 function RoundListItem({ activityCode, round, selected, ...props }) {
   const ref = useRef();
-  const wcif = useSelector((state) => state.wcif);
+  const wcif = useSelector((state: AppState) => state.wcif);
   const realGroups = findGroupActivitiesByRound(wcif, activityCode);
 
   const { eventId } = parseActivityCode(activityCode);

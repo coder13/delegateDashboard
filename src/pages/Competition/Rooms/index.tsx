@@ -5,16 +5,22 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import { AppState } from '../../../store/initialState';
 import Room from './Room';
+import { Venue as VenueType } from '@wca/helpers';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme: any) => ({
   paper: {
     width: '100%',
     padding: theme.spacing(2),
   },
 }));
 
-const Venue = ({ venue }) => {
+interface VenueProps {
+  venue: VenueType;
+}
+
+const Venue = ({ venue }: VenueProps) => {
   const classes = useStyles();
 
   return (
@@ -31,9 +37,9 @@ const Venue = ({ venue }) => {
   );
 };
 
-const Rooms = () => {
+const Rooms = (props?: any) => {
   const { setBreadcrumbs } = useBreadcrumbs();
-  const wcif = useSelector((state) => state.wcif);
+  const wcif = useSelector((state: AppState) => state.wcif);
 
   useEffect(() => {
     setBreadcrumbs([
@@ -42,6 +48,8 @@ const Rooms = () => {
       },
     ]);
   }, [setBreadcrumbs]);
+
+  if (!wcif) return null;
 
   return (
     <>

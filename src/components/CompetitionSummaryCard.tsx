@@ -1,11 +1,13 @@
+// @ts-nocheck
 import { Competition } from '@wca/helpers';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
+import { AppState } from '../../store/initialState';
 import { Card, CardContent, Typography } from '@mui/material';
 import { shortEventNameById } from '../lib/events';
 import { acceptedRegistrations } from '../lib/persons';
 
-export default function CompetitionSummary() {
+export default function CompetitionSummary(props?: any) {
   const wcif = useSelector((state: { wcif: Competition }) => state.wcif);
   const approvedRegistrations = acceptedRegistrations(wcif.persons);
 

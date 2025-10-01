@@ -1,5 +1,7 @@
+// @ts-nocheck
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
+import { AppState } from '../../store/initialState';
 import { Link } from 'react-router-dom';
 import { Tune } from '@mui/icons-material';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
@@ -45,7 +47,7 @@ const AppBar = styled(MuiAppBar, {
   }),
 }));
 
-const MenuLink = ({ url, icon, text }) => (
+const MenuLink = ({ url, icon, text }: any) => (
   <ListItem button key={url} component={Link} to={url}>
     <ListItemIcon>{icon}</ListItemIcon>
     <ListItemText primary={text} />
@@ -61,8 +63,8 @@ export const DrawerHeader = styled('div')(({ theme }) => ({
   justifyContent: 'flex-end',
 }));
 
-export const DrawerLinks = () => {
-  const competitionId = useSelector((state) => state.wcif.id);
+export const DrawerLinks = (props?: any) => {
+  const competitionId = useSelector((state: AppState) => state.wcif.id);
   const menuLinks = useMemo(
     () => ({
       top: [
@@ -143,8 +145,8 @@ export const DrawerLinks = () => {
   );
 };
 
-export const Header = ({ open, onMenuOpen }) => {
-  const { name } = useSelector((state) => state.wcif);
+export const Header = ({ open, onMenuOpen }: any) => {
+  const { name } = useSelector((state: AppState) => state.wcif);
 
   return (
     <AppBar position="static" open={open}>

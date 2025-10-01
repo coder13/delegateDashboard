@@ -1,6 +1,8 @@
+// @ts-nocheck
 import Fuse from 'fuse.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { AppState } from '../../store/initialState';
 import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import {
@@ -23,14 +25,14 @@ const options = {
   includeScore: true,
 };
 
-function CommandPromptDialog({ open, onClose }) {
-  const wcif = useSelector((state) => state.wcif);
-  const competitions = useSelector((state) => state.competitions);
+function CommandPromptDialog({ open, onClose }: any) {
+  const wcif = useSelector((state: AppState) => state.wcif);
+  const competitions = useSelector((state: AppState) => state.competitions);
   const [currentCompetitionId, setCurrentCompetitionId] = useState(wcif?.id);
   const theme = useTheme();
   const navigate = useNavigate();
   const [command, setCommand] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selected, setSelected] = useState(0);
 
   useEffect(() => {

@@ -20,7 +20,7 @@ export default function ActionMenu({items}: ActionMenuProps) {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleClose = () => {
+  const handleClose = (props?: any) => {
     setAnchorEl(null);
   };
 

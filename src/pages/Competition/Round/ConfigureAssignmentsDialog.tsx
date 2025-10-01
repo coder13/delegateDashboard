@@ -165,7 +165,7 @@ const ConfigureAssignmentsDialog = ({
   const [paintingAssignmentCode, setPaintingAssignmentCode] = useState('staff-scrambler');
   const [competitorSort, setCompetitorSort] = useState('speed');
   const [showCompetitorsNotInRound, setShowCompetitorsNotInRound] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [anchorEl, setAnchorEl] = useState<any>(null);
 
   const handleMenuOpen = (e) => {
     setAnchorEl(e.currentTarget);

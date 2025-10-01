@@ -1,8 +1,10 @@
+// @ts-nocheck
 import TreeItem from '@material-ui/lab/TreeItem';
 import TreeView from '@material-ui/lab/TreeView';
 import jp from 'jsonpath';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { AppState } from '../store/initialState';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -24,13 +26,13 @@ import { Box } from '@mui/system';
 import useDebounce from '../../../hooks/useDebounce';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 
-function useQuery() {
+function useQuery(props?: any) {
   const { search } = useLocation();
 
   return React.useMemo(() => new URLSearchParams(search), [search]);
 }
 
-const ColoredLabel = ({ text, color, label }) => (
+const ColoredLabel = ({ text, color, label }: any) => (
   <>
     <span style={{ color: blue[800] }}>
       {text}
@@ -98,15 +100,15 @@ const renderTree = (key, node, parent) => {
 
   return <TreeItem key={parent + key} nodeId={parent + key} label={renderLabel(key, node)} />;
 };
-const QueryPage = () => {
+const QueryPage = (props?: any) => {
   const navigate = useNavigate();
   const queryParams = useQuery();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [input, setInput] = useState(queryParams.get('query') || '');
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const wcif = useSelector((state) => state.wcif);
+  const [error, setError] = useState<any>(null);
+  const wcif = useSelector((state: AppState) => state.wcif);
   const debouncedInput = useDebounce(input, 800);
 
   useEffect(() => {

@@ -3,7 +3,7 @@ import { APICompetition, CompetitionLink } from './CompetitionLink';
 import { Container } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-export const UpcomingCompetitions = () => {
+export const UpcomingCompetitions = (props?: any) => {
   const [competitions, setCompetitions] = useState<APICompetition[] | null>(null);
   const [error, setError] = useState<Error | null>(null);
 

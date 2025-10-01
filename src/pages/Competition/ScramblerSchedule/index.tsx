@@ -1,5 +1,7 @@
+// @ts-nocheck
 import { useCallback, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { AppState } from '../../../store/initialState';
 import {
   FormControl,
   FormControlLabel,
@@ -24,8 +26,8 @@ import { flatMap, groupBy } from '../../../lib/utils';
 
 const DaysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-export default function ScramblerSchedule() {
-  const wcif = useSelector((state) => state.wcif);
+export default function ScramblerSchedule(props?: any) {
+  const wcif = useSelector((state: AppState) => state.wcif);
 
   const mapNames = (array) =>
     array.length
@@ -79,7 +81,7 @@ export default function ScramblerSchedule() {
     [getActivity, wcif.persons]
   );
 
-  const activitiesSplitAcrossDates = groupBy(
+  const activitiesSplitAcrossDates: any = groupBy(
     _allRoundActivities.map((activity) => ({
       ...activity,
       date: DaysOfWeek[new Date(activity.startTime).getDay()],

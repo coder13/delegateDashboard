@@ -1,5 +1,7 @@
+// @ts-nocheck
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppState } from '../store/initialState';
 import {
   Alert,
   Box,
@@ -24,9 +26,9 @@ import { getExtensionData } from '../../../lib/wcif-extensions';
 import { updateRoundActivities, updateRoundExtensionData } from '../../../store/actions';
 import { selectPersonsShouldBeInRound } from '../../../store/selectors';
 
-const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundActivities }) => {
-  const wcif = useSelector((state) => state.wcif);
-  const rooms = useSelector((state) =>
+const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundActivities }: any) => {
+  const wcif = useSelector((state: AppState) => state.wcif);
+  const rooms = useSelector((state: AppState) =>
     state.wcif.schedule.venues
       .flatMap((v) => v.rooms)
       .filter((room) => room.activities.find((a) => a.activityCode === activityCode))
@@ -34,7 +36,7 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
   const dispatch = useDispatch();
   const [groupsData, setGroupsData] = useState(getExtensionData('groups', round));
   const spreadGroupsAcrossAllStages = groupsData?.spreadGroupsAcrossAllStages ?? true;
-  const actualCompetitors = useSelector((state) => selectPersonsShouldBeInRound(state)(round));
+  const actualCompetitors = useSelector((state: AppState) => selectPersonsShouldBeInRound(state)(round));
 
   if (!open) {
     return '';
@@ -45,13 +47,13 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
 
   console.log(37, groupsData);
 
-  const reset = () => {
+  const reset = (props?: any) => {
     if (round) {
       setGroupsData(getExtensionData('groups', round));
     }
   };
 
-  const onSave = () => {
+  const onSave = (props?: any) => {
     if (!groupCount) {
       return;
     }

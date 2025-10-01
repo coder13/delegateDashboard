@@ -9,7 +9,7 @@ import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import { useAuth } from '../../providers/AuthProvider';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme: any) => ({
   title: {
     flexGrow: 1,
   },
@@ -24,16 +24,16 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Header = () => {
+const Header = (props?: any) => {
   const classes = useStyles();
   const { user, signIn, signOut } = useAuth();
-  const [anchorElUser, setAnchorElUser] = useState(null);
+  const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
 
-  const handleOpenUserMenu = (event) => {
+  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
   };
 
-  const handleCloseUserMenu = () => {
+  const handleCloseUserMenu = (props?: any) => {
     setAnchorElUser(null);
   };
 
@@ -50,7 +50,7 @@ const Header = () => {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt={user.name} src={user.avatar.thumb_url} />
+                <Avatar alt={user.name} src={(user as any).avatar?.thumb_url} />
               </IconButton>
             </Tooltip>
             <Menu

@@ -13,7 +13,39 @@ import {
   TableRow,
 } from '@mui/material';
 
-export default function FirstTimerCard({ person, matches }) {
+interface PersonMatch {
+  person: {
+    id: number;
+    name: string;
+    wca_id: string;
+    url: string;
+    avatar: {
+      thumb_url: string;
+    };
+    gender: string;
+    country?: {
+      name: string;
+    };
+    country_iso2?: string;
+  };
+  competition_count: number;
+}
+
+interface FirstTimerCardProps {
+  person: {
+    name: string;
+    avatar?: {
+      thumbUrl: string;
+    };
+    countryIso2?: string;
+    email?: string;
+    gender?: string;
+    birthdate?: string;
+  };
+  matches: PersonMatch[];
+}
+
+export default function FirstTimerCard({ person, matches }: FirstTimerCardProps) {
   return (
     <Card>
       <CardHeader avatar={<Avatar src={person.avatar?.thumbUrl} />} title={person.name} />
@@ -44,9 +76,13 @@ export default function FirstTimerCard({ person, matches }) {
   );
 }
 
-function PersonMatchRow({ match }) {
+interface PersonMatchRowProps {
+  match: PersonMatch;
+}
+
+function PersonMatchRow({ match }: PersonMatchRowProps) {
   return (
-    <ListItemButton component="a" target="_blank" to={match.person.url}>
+    <ListItemButton component={"a" as any} target="_blank" href={match.person.url}>
       <ListItemIcon>
         <Avatar src={match.person.avatar.thumb_url} />
       </ListItemIcon>

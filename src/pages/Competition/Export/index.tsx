@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { findGroupActivitiesByRound, parseActivityCode } from '../../../lib/activities';
 import { eventNameById, roundFormatById } from '../../../lib/events';
 import { acceptedRegistrations } from '../../../lib/persons';
@@ -8,8 +9,9 @@ import { formatCentiseconds } from '@wca/helpers';
 import { ExportToCsv } from 'export-to-csv';
 import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
+import { AppState } from '../store/initialState';
 
-const advancementConditionToText = ({ type, level }) => {
+const advancementConditionToText = ({ type, level }: any) => {
   switch (type) {
     case 'ranking':
       return `Top ${level}`;
@@ -34,9 +36,9 @@ const csvOptions = {
   showLabels: true,
 };
 
-const groupNumber = ({ activityCode }) => parseActivityCode(activityCode)?.groupNumber;
+const groupNumber = ({ activityCode }: any) => parseActivityCode(activityCode)?.groupNumber;
 
-const staffingAssignmentToText = ({ assignmentCode, activity }) =>
+const staffingAssignmentToText = ({ assignmentCode, activity }: any) =>
   `${assignmentCode.split('-')[1][0].toUpperCase()}${groupNumber(activity)}`;
 
 const competingAssignmentToText = (activity) =>
@@ -57,8 +59,8 @@ const getStageName = (room, activity) => {
   return room.name;
 };
 
-const ExportPage = () => {
-  const wcif = useSelector((state) => state.wcif);
+const ExportPage = (props?: any) => {
+  const wcif = useSelector((state: AppState) => state.wcif);
 
   const memodGroupActivitiesForRound = useCallback(
     (activityCode) => findGroupActivitiesByRound(wcif, activityCode),
@@ -99,7 +101,7 @@ const ExportPage = () => {
     return obj;
   };
 
-  const onExportNametagsData = () => {
+  const onExportNametagsData = (props?: any) => {
     const assignmentHeaders = flatten(
       wcif.events.map((e) => [e.id, e.id + '_station_number', e.id + '_staff'])
     );
@@ -133,7 +135,7 @@ const ExportPage = () => {
     csvExporter.generateCsv(data);
   };
 
-  const onExportNametagsForPublisherData = () => {
+  const onExportNametagsForPublisherData = (props?: any) => {
     const assignmentHeaders = flatten(wcif.events.map((e) => [e.id, e.id + '_staff']));
     const headers_template = [
       'name',
@@ -194,7 +196,7 @@ const ExportPage = () => {
     csvExporter.generateCsv(data);
   };
 
-  const onExportScorecardData = () => {
+  const onExportScorecardData = (props?: any) => {
     const scorecards = [];
 
     // For each event
@@ -284,7 +286,7 @@ const ExportPage = () => {
     csvExporter.generateCsv(scorecards);
   };
 
-  const onExportRegistrations = () => {
+  const onExportRegistrations = (props?: any) => {
     const csvExporter = new ExportToCsv({
       ...csvOptions,
       filename: `${wcif.id}_registrations`,

@@ -23,4 +23,4 @@ export default function BreadcrumbsProvider({ children }) {
   );
 }
 
-export const useBreadcrumbs = () => useContext(BreadcrumbsContext);
+export const useBreadcrumbs = (props?: any) => useContext(BreadcrumbsContext);

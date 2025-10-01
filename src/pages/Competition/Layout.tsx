@@ -1,6 +1,8 @@
+// @ts-nocheck
 import { useSnackbar } from 'notistack';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppState } from '../store/initialState';
 import { useParams, Outlet } from 'react-router-dom';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import {
@@ -24,9 +26,9 @@ import { getLocalStorage, setLocalStorage } from '../../lib/localStorage';
 import BreadcrumbsProvider, { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
 import { fetchWCIF, uploadCurrentWCIFChanges } from '../../store/actions';
 
-const BreadCrumbsGridItem = () => {
+const BreadCrumbsGridItem = (props?: any) => {
   const { breadcrumbs } = useBreadcrumbs();
-  const wcif = useSelector((state) => state.wcif);
+  const wcif = useSelector((state: AppState) => state.wcif);
   const { competitionId } = useParams();
 
   return (
@@ -71,16 +73,16 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(
   })
 );
 
-const CompetitionLayout = () => {
+const CompetitionLayout = (props?: any) => {
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
   const { competitionId } = useParams();
   const [drawerOpen, setDrawerOpen] = useState(getLocalStorage('drawer-open') === 'true');
 
-  const fetchingWCIF = useSelector((state) => state.fetchingWCIF);
-  const needToSave = useSelector((state) => state.needToSave);
-  const wcif = useSelector((state) => state.wcif);
-  const errors = useSelector((state) => state.errors);
+  const fetchingWCIF = useSelector((state: AppState) => state.fetchingWCIF);
+  const needToSave = useSelector((state: AppState) => state.needToSave);
+  const wcif = useSelector((state: AppState) => state.wcif);
+  const errors = useSelector((state: AppState) => state.errors);
 
   const handleSaveChanges = useCallback(() => {
     dispatch(

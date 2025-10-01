@@ -20,7 +20,7 @@ function SearchResultListItem({ selected, onClick, ...props }: SearchResultListI
     }
   }, [selected]);
 
-  const contents = () => {
+  const contents = (props?: any) => {
     switch (props.class) {
       case 'person':
         return <PersonListItem {...(props as any)} />;

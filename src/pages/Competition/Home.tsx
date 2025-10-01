@@ -5,7 +5,7 @@ import CompetitionSummary from '../../components/CompetitionSummaryCard';
 import RoundSelectorPage from '../../components/RoundSelector';
 import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
 
-const CompetitionHome = () => {
+const CompetitionHome = (props?: any) => {
   const { setBreadcrumbs } = useBreadcrumbs();
   const { competitionId } = useParams();
   const navigate = useNavigate();

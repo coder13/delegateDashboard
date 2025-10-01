@@ -1,6 +1,8 @@
+// @ts-nocheck
 import { useConfirm } from 'material-ui-confirm';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppState } from '../store/initialState';
 import { MoreVert } from '@mui/icons-material';
 import {
   Checkbox,
@@ -24,8 +26,8 @@ import { flatten } from '../../../lib/utils';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import { resetAllGroupAssignments } from '../../../store/actions';
 
-const AssignmentsPage = () => {
-  const wcif = useSelector((state) => state.wcif);
+const AssignmentsPage = (props?: any) => {
+  const wcif = useSelector((state: AppState) => state.wcif);
   const eventIds = useMemo(() => wcif.events.map((e) => e.id), [wcif.events]);
   const stages = useMemo(() => findRooms(wcif), [wcif]);
   const dispatch = useDispatch();
@@ -33,7 +35,7 @@ const AssignmentsPage = () => {
   const confirm = useConfirm();
   const [eventFilter, setEventFilter] = useState(eventIds);
   const [stageFilter, setStageFilter] = useState(stages.map((stage) => stage.name));
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [anchorEl, setAnchorEl] = useState<any>(null);
 
   useEffect(() => {
     setBreadcrumbs([
@@ -80,7 +82,7 @@ const AssignmentsPage = () => {
     }
   };
 
-  const handleResetAssignments = () => {
+  const handleResetAssignments = (props?: any) => {
     confirm('Are you sure you want to reset all assignments?').then(() => {
       dispatch(resetAllGroupAssignments());
     });

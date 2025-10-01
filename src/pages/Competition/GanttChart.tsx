@@ -21,7 +21,7 @@ import { acceptedRegistration } from '../../lib/persons';
 import { byName, uniq } from '../../lib/utils';
 import { useAppSelector } from '../../store';
 
-export default function GanttChart() {
+export default function GanttChart(props?: any) {
   const wcif = useAppSelector((state) => state.wcif);
   const persons = wcif?.persons.filter(acceptedRegistration).sort(byName) ?? [];
   const [selectedRounds, setSelectedRounds] = useState<string[]>([]);

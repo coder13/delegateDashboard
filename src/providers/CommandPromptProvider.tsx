@@ -51,4 +51,4 @@ export default function CommandPromptProvider({ children }) {
   );
 }
 
-export const useCommandPrompt = () => useContext(CommandPromptContext);
+export const useCommandPrompt = (props?: any) => useContext(CommandPromptContext);

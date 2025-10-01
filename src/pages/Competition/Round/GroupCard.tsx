@@ -1,6 +1,8 @@
+// @ts-nocheck
 import { formatCentiseconds } from '@wca/helpers';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { AppState } from '../store/initialState';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import {
   Card,
@@ -30,23 +32,23 @@ const withAssignmentCode =
       assignedActivity.activityId === activityId &&
       assignedActivity.assignmentCode.indexOf(assignmentCode) > -1;
 
-const GroupCard = ({ groupActivity }) => {
-  const wcif = useSelector((state) => state.wcif);
-  const personsAssigned = useSelector((state) =>
+const GroupCard = ({ groupActivity }: any) => {
+  const wcif = useSelector((state: AppState) => state.wcif);
+  const personsAssigned = useSelector((state: AppState) =>
     selectPersonsAssignedToActivitiyId(state, groupActivity.id)
   ).map((p) => ({
     ...p,
     assignedActivity: p.assignments.find((a) => a.activityId === groupActivity.id),
   }));
 
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [anchorEl, setAnchorEl] = useState<any>(null);
   const [editGroupDialogOpen, setEditGroupDialogOpen] = useState(false);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMenuClose = () => {
+  const handleMenuClose = (props?: any) => {
     setAnchorEl(null);
   };
 

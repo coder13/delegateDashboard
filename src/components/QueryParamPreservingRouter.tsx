@@ -13,14 +13,14 @@ function QueryParamPreservingRouter({ basename = '', children }: QueryParamPrese
   if (historyRef.current == null) {
     historyRef.current = createBrowserHistory();
     const originalPush = historyRef.current.push;
-    historyRef.current.push = (path: any, state?: any) => {
+    historyRef.current.push = (path: any, state?) => {
       return originalPush.apply(historyRef.current, [
         preserveQueryParams(historyRef.current, createLocationObject(path, state)),
       ]);
     };
 
     const originalReplace = historyRef.current.replace;
-    historyRef.current.replace = (path: any, state?: any) => {
+    historyRef.current.replace = (path: any, state?) => {
       return originalReplace.apply(historyRef.current, [
         preserveQueryParams(historyRef.current, createLocationObject(path, state)),
       ]);

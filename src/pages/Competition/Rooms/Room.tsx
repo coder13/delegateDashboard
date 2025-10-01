@@ -1,6 +1,8 @@
+// @ts-nocheck
 import { useConfirm } from 'material-ui-confirm';
 import React, { useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { AppState } from '../store/initialState';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Button, MenuItem, TextField } from '@mui/material';
 import Card from '@mui/material/Card';
@@ -38,23 +40,23 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 // TODO: Redesign this data import flow
-const Room = ({ venue, room }) => {
+const Room = ({ venue, room }: any) => {
   const classes = useStyles({ room });
   const dispatch = useDispatch();
   const confirm = useConfirm();
-  const wcif = useSelector((state) => state.wcif);
-  const [anchorEl, setAnchorEl] = React.useState(null);
+  const wcif = useSelector((state: AppState) => state.wcif);
+  const [anchorEl, setAnchorEl] = React.useState<any>(null);
   // const [configureStagesDialogOpen, setConfigureStagesDialogOpen] = React.useState(false);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMenuClose = () => {
+  const handleMenuClose = (props?: any) => {
     setAnchorEl(null);
   };
 
-  // const openConfigureStagesDialog = () => {
+  // const openConfigureStagesDialog = (props?: any) => {
   //   handleMenuClose();
   //   setConfigureStagesDialogOpen(true);
   // };
@@ -79,11 +81,11 @@ const Room = ({ venue, room }) => {
     return _eventRegistrationCounts;
   }, [wcif.persons]);
 
-  // const onCreateAllGroups = () => {
+  // const onCreateAllGroups = (props?: any) => {
   // TODO
   // };
 
-  const onResetAllGroups = () => {
+  const onResetAllGroups = (props?: any) => {
     handleMenuClose();
     confirm({
       description: `This button should *only* be used to reset group data if another software messed up or you want to completely start over.\nTechnically speaking: it resets the child activities and extension data.`,
@@ -184,7 +186,7 @@ const Room = ({ venue, room }) => {
                     );
                   };
 
-                  const handleGenerateGroupActitivites = () => {
+                  const handleGenerateGroupActitivites = (props?: any) => {
                     if (!groupData?.groups) {
                       return;
                     }

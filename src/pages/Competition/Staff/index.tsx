@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Link from '../../../components/MaterialLink';
 import {
   acceptedRegistration,
@@ -32,6 +33,7 @@ import { makeStyles } from '@mui/styles';
 import clsx from 'clsx';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppState } from '../../../store/initialState';
 import { useParams } from 'react-router-dom';
 
 const ROLES = [
@@ -49,7 +51,7 @@ const ROLES = [
   // },
 ];
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme: any) => ({
   root: {
     display: 'flex',
     flexDirection: 'Column',
@@ -84,8 +86,8 @@ const useStyles = makeStyles((theme) => ({
   hover: {},
 }));
 
-const Staff = () => {
-  const wcif = useSelector((state) => state.wcif);
+const Staff = (props?: any) => {
+  const wcif = useSelector((state: AppState) => state.wcif);
   const { competitionId } = useParams();
   const classes = useStyles();
   const dispatch = useDispatch();

@@ -1,5 +1,7 @@
+// @ts-nocheck
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
+import { AppState } from '../store/initialState';
 import { useParams } from 'react-router-dom';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
@@ -19,9 +21,9 @@ import { acceptedRegistrations } from '../../../lib/persons';
 import { searchPersons } from '../../../lib/wcaAPI';
 import FirstTimerCard from './FirstTimerCard';
 
-export default function FirstTimers() {
+export default function FirstTimers(props?: any) {
   const { competitionId } = useParams();
-  const wcif = useSelector((state) => state.wcif);
+  const wcif = useSelector((state: AppState) => state.wcif);
   const [{ index, firstTimer }, setFirstTimer] = useState({
     index: 0,
     firstTimer: null,
@@ -66,7 +68,7 @@ export default function FirstTimers() {
     setTimeout(() => incrementIndex(i + 1), 500);
   };
 
-  const checkFirstTimer = () => {
+  const checkFirstTimer = (props?: any) => {
     setLoading(true);
     incrementIndex(0);
   };

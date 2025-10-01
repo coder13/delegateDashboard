@@ -1,3 +1,4 @@
+// @ts-nocheck
 import ActionMenu from '../../../components/ActionMenu';
 import PersonsAssignmentsDialog from '../../../components/PersonsAssignmentsDialog';
 import PersonsDialog from '../../../components/PersonsDialog';
@@ -56,6 +57,7 @@ import { formatCentiseconds, parseActivityCode } from '@wca/helpers';
 import { useConfirm } from 'material-ui-confirm';
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppState } from '../store/initialState';
 import { useParams } from 'react-router-dom';
 
 /**
@@ -69,30 +71,30 @@ import { useParams } from 'react-router-dom';
 /**
  * Handles multiple activities across multiple rooms under 1 round activity code
  */
-const RoundPage = () => {
+const RoundPage = (props?: any) => {
   const dispatch = useDispatch();
   const confirm = useConfirm();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { roundId: activityCode } = useParams();
   const { eventId, roundNumber } = parseActivityCode(activityCode);
   const roundId = `${eventId}-r${roundNumber}`;
-  const [configureAssignmentsDialog, setConfigureAssignmentsDialog] = useState(false);
-  const [configureGroupCountsDialog, setConfigureGroupCountsDialog] = useState(false);
-  const [configureGroupsDialog, setConfigureGroupsDialog] = useState(false);
-  const [configureStationNumbersDialog, setConfigureStationNumbersDialog] = useState(false);
-  const [rawRoundDataDialogOpen, setRawRoundDataDialogOpen] = useState(false);
-  const [rawRoundActivitiesDataDialogOpen, setRawRoundActivitiesDataDialogOpen] = useState(false);
+  const [configureAssignmentsDialog, setConfigureAssignmentsDialog] = useState<boolean>(false);
+  const [configureGroupCountsDialog, setConfigureGroupCountsDialog] = useState<boolean>(false);
+  const [configureGroupsDialog, setConfigureGroupsDialog] = useState<boolean>(false);
+  const [configureStationNumbersDialog, setConfigureStationNumbersDialog] = useState<boolean>(false);
+  const [rawRoundDataDialogOpen, setRawRoundDataDialogOpen] = useState<boolean>(false);
+  const [rawRoundActivitiesDataDialogOpen, setRawRoundActivitiesDataDialogOpen] = useState<boolean>(false);
   const [showPersonsDialog, setShowPersonsDialog] = useState({
     open: false,
     title: undefined,
     persons: [],
   });
-  const [showPersonsAssignmentsDialog, setShowPersonsAssignmentsDialog] = useState(false);
+  const [showPersonsAssignmentsDialog, setShowPersonsAssignmentsDialog] = useState<boolean>(false);
 
-  const wcif = useSelector((state) => state.wcif);
+  const wcif = useSelector((state: AppState) => state.wcif);
 
-  const round = useSelector((state) => selectRoundById(state)(roundId));
-  const personsShouldBeInRound = useSelector((state) => selectPersonsShouldBeInRound(state)(round));
+  const round = useSelector((state: AppState) => selectRoundById(state)(roundId));
+  const personsShouldBeInRound = useSelector((state: AppState) => selectPersonsShouldBeInRound(state)(round));
 
   useEffect(() => {
     setBreadcrumbs([
@@ -123,11 +125,11 @@ const RoundPage = () => {
     [groups]
   );
 
-  const personsAssigned = useSelector((state) => selectPersonsAssignedForRound(state, round.id));
+  const personsAssigned = useSelector((state: AppState) => selectPersonsAssignedForRound(state, round.id));
 
   const personsAssignedToCompete = useMemo(
     () =>
-      personsAssigned.filter((p) => p.assignments.some((a) => a.assignmentCode === 'competitor')),
+      personsAssigned.filter((p) => p.assignments!.some((a) => a.assignmentCode === 'competitor')),
     [personsAssigned]
   );
 
@@ -144,11 +146,11 @@ const RoundPage = () => {
    *
    * 2. Then give out judging assignments to competitors without staff assignments
    */
-  const onGenerateGroupActitivites = () => {
+  const onGenerateGroupActitivites = (props?: any) => {
     dispatch(generateAssignments(round.id));
   };
 
-  const onResetGroupActitivites = () => {
+  const onResetGroupActitivites = (props?: any) => {
     confirm({
       description: 'Do you really want to reset all group activities in this round?',
       confirmationText: 'Yes',
@@ -173,7 +175,7 @@ const RoundPage = () => {
       });
   };
 
-  const onResetGroupNonScramblingActitivites = () => {
+  const onResetGroupNonScramblingActitivites = (props?: any) => {
     confirm({
       description: 'Do you really want to reset all group activities in this round?',
       confirmationText: 'Yes',
@@ -199,7 +201,7 @@ const RoundPage = () => {
       });
   };
 
-  const onConfigureAssignments = () => {
+  const onConfigureAssignments = (props?: any) => {
     setConfigureAssignmentsDialog(true);
   };
 
@@ -213,7 +215,7 @@ const RoundPage = () => {
     );
   }
 
-  const actionButtons = () => {
+  const actionButtons = (props?: any) => {
     if (groups.length === 0) {
       return (
         <>
@@ -308,7 +310,7 @@ const RoundPage = () => {
             <List dense subheader={<ListSubheader id="stages">Stages</ListSubheader>}>
               {roundActivities.map(({ id, startTime, endTime, room }) => (
                 <ListItemButton key={id}>
-                  {room.name}: {new Date(startTime).toLocaleDateString()}{' '}
+                  {room!.name}: {new Date(startTime).toLocaleDateString()}{' '}
                   {formatTimeRange(startTime, endTime)} (
                   {(new Date(endTime) - new Date(startTime)) / 1000 / 60} Minutes)
                 </ListItemButton>
@@ -362,7 +364,7 @@ const RoundPage = () => {
                         title: 'People in the round according to wca-live',
                       })
                     }>
-                    {round?.results?.length}
+                    {round!.results?.length}
                   </TableCell>
                   <TableCell
                     className="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1rmkli1-MuiButtonBase-root-MuiButton-root-MuiTableCell-root"

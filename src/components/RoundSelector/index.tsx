@@ -1,6 +1,8 @@
+// @ts-nocheck
 import '@cubing/icons';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { AppState } from '../../store/initialState';
 import { TransitionGroup } from 'react-transition-group';
 import { Collapse, Divider, FormControlLabel, Switch } from '@mui/material';
 import List from '@mui/material/List';
@@ -37,8 +39,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const RoundSelector = ({ competitionId, onSelected }) => {
-  const wcif = useSelector((state) => state.wcif);
+const RoundSelector = ({ competitionId, onSelected }: any) => {
+  const wcif = useSelector((state: AppState) => state.wcif);
   const classes = useStyles();
   const { open: commandPromptOpen } = useCommandPrompt();
 

@@ -9,7 +9,18 @@ import {
   TableRow,
 } from '@mui/material';
 
-export default function CSVPreview({ CSVContents }) {
+interface CSVContents {
+  meta: {
+    fields: string[];
+  };
+  data: Array<Record<string, string>>;
+}
+
+interface CSVPreviewProps {
+  CSVContents: CSVContents;
+}
+
+export default function CSVPreview({ CSVContents }: CSVPreviewProps) {
   return (
     <Accordion>
       <AccordionSummary>Preview</AccordionSummary>

@@ -1,7 +1,7 @@
 import clsx from 'clsx';
-import PropTypes from 'prop-types';
 import { IconButton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { EventId } from '@wca/helpers';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -17,12 +17,19 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+interface EventSelectorProps {
+  eventIds: EventId[];
+  value: EventId[];
+  onChange: (eventIds: EventId[]) => void;
+  styleOverrides?: {
+    root?: React.CSSProperties;
+  };
+}
+
 /**
  * Shows a list of events and allows the user to checkbox select the events
- *
- * @component
  */
-const EventSelector = ({ eventIds, value, onChange, styleOverrides }) => {
+const EventSelector = ({ eventIds, value, onChange, styleOverrides }: EventSelectorProps) => {
   const classes = useStyles();
   return (
     <div className={classes.root} style={styleOverrides?.root}>
@@ -47,30 +54,6 @@ const EventSelector = ({ eventIds, value, onChange, styleOverrides }) => {
       ))}
     </div>
   );
-};
-
-EventSelector.propTypes = {
-  events: PropTypes.arrayOf(
-    PropTypes.oneOf([
-      '333',
-      '222',
-      '444',
-      '555',
-      '666',
-      '777',
-      '333bf',
-      '333fm',
-      '333oh',
-      'minx',
-      'pyram',
-      'clock',
-      'skewb',
-      'sq1',
-      '444bf',
-      '555bf',
-      '333mbf',
-    ])
-  ),
 };
 
 export default EventSelector;

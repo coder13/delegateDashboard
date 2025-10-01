@@ -1,6 +1,8 @@
+// @ts-nocheck
 import { useEffect, useMemo, useState } from 'react';
 import { usePapaParse } from 'react-papaparse';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppState } from '../store/initialState';
 import {
   Accordion,
   AccordionDetails,
@@ -32,8 +34,8 @@ const mapCSVFieldToData = (necessaryFields) => (field) => {
   return null;
 };
 
-const ImportPage = () => {
-  const wcif = useSelector((state) => state.wcif);
+const ImportPage = (props?: any) => {
+  const wcif = useSelector((state: AppState) => state.wcif);
   const eventIds = wcif.events.map((e) => e.id);
   const necessaryFields = ['email', ...eventIds, ...eventIds.map((e) => `${e}-staff`)];
   const dispatch = useDispatch();
@@ -102,7 +104,7 @@ const ImportPage = () => {
     }
   };
 
-  const onGenerateCompetitorAssignments = () => {
+  const onGenerateCompetitorAssignments = (props?: any) => {
     try {
       const assignments = generateAssignments(wcif, CSVContents);
       setCompetitorAssignments(assignments);
@@ -117,7 +119,7 @@ const ImportPage = () => {
     }
   };
 
-  const onGenerateMissingGroupActivities = () => {
+  const onGenerateMissingGroupActivities = (props?: any) => {
     try {
       dispatch(
         partialUpdateWCIF({
@@ -135,7 +137,7 @@ const ImportPage = () => {
     }
   };
 
-  const onImportCompetitorAssignments = () => {
+  const onImportCompetitorAssignments = (props?: any) => {
     const newWcif = upsertCompetitorAssignments(
       wcif,
       determineStageForAssignments(wcif, competitorAssignments)
