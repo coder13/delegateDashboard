@@ -1,3 +1,4 @@
+import { Activity, Assignment, Competition, Person, Room } from '@wca/helpers';
 import {
   activitiesOverlap,
   activityCodeToName,
@@ -15,7 +16,20 @@ export const NO_ROUNDS_FOR_ACTIVITY = 'no_rounds_for_activity';
 export const MISSING_ACTIVITY_FOR_PERSON_ASSIGNMENT = 'missing_activity_for_person_assignment';
 export const PERSON_ASSIGNMENT_SCHEDULE_CONFLICT = 'person_assignment_schedule_conflict';
 
-export const validateWcif = (wcif) => {
+interface WcifError {
+  type: string;
+  key: string;
+  message: string;
+  data: any;
+}
+
+interface ConflictingAssignment {
+  id: string;
+  assignmentA: Assignment & { activity: Activity; room: Room };
+  assignmentB: Assignment & { activity: Activity; room: Room };
+}
+
+export const validateWcif = (wcif: Competition): WcifError[] => {
   const { events, persons } = wcif;
 
   const eventRoundErrors = flatMap(events, (event) => {
@@ -66,11 +80,13 @@ export const validateWcif = (wcif) => {
     return [...advancementConditionErrors, ...roundActivityErrors];
   });
 
-  const personAssignmentMissingActivityErrors = [];
+  const personAssignmentMissingActivityErrors: WcifError[] = [];
 
   const allActivityIds = findAllActivities(wcif).map((activity) => activity.id);
 
   acceptedRegistrations(persons).forEach((person) => {
+    if (!person.assignments) return;
+    
     person.assignments.forEach((assignment) => {
       if (allActivityIds.indexOf(assignment.activityId) > -1) {
         return;
@@ -92,18 +108,27 @@ export const validateWcif = (wcif) => {
     });
   });
 
-  const personAssignmentScheduleConflicts = [];
+  const personAssignmentScheduleConflicts: WcifError[] = [];
   acceptedRegistrations(persons).forEach((person) => {
-    const conflictingAssignments = [];
+    if (!person.assignments) return;
+    
+    const conflictingAssignments: ConflictingAssignment[] = [];
 
     person.assignments.forEach((assignment, index) => {
       const activity = findActivityById(wcif, assignment.activityId);
+      if (!activity) return;
 
-      const otherAssignments = person.assignments.slice(index + 1);
+      const otherAssignments = person.assignments!.slice(index + 1);
       return otherAssignments.forEach((otherAssignment) => {
-        if (!activitiesOverlap(activity, findActivityById(wcif, otherAssignment.activityId))) {
+        const otherActivity = findActivityById(wcif, otherAssignment.activityId);
+        if (!otherActivity || !activitiesOverlap(activity, otherActivity)) {
           return;
         }
+
+        const roomA = roomByActivity(wcif, assignment.activityId);
+        const roomB = roomByActivity(wcif, otherAssignment.activityId);
+        
+        if (!roomA || !roomB) return;
 
         conflictingAssignments.push({
           id: [
@@ -115,13 +140,13 @@ export const validateWcif = (wcif) => {
           ].join('-'),
           assignmentA: {
             ...assignment,
-            activity: findActivityById(wcif, assignment.activityId),
-            room: roomByActivity(wcif, assignment.activityId),
+            activity,
+            room: roomA,
           },
           assignmentB: {
             ...otherAssignment,
-            activity: findActivityById(wcif, otherAssignment.activityId),
-            room: roomByActivity(wcif, otherAssignment.activityId),
+            activity: otherActivity,
+            room: roomB,
           },
         });
       });
@@ -136,7 +161,7 @@ export const validateWcif = (wcif) => {
       key: [PERSON_ASSIGNMENT_SCHEDULE_CONFLICT, person.registrantId].join('-'),
       message: `${person.name} (id: ${person.registrantId}) has ${
         conflictingAssignments.length
-      } conflicting ${pluralizeWord(conflictingAssignments.length, 'assignment')}`,
+      } conflicting ${pluralizeWord(conflictingAssignments.length, 'assignment', 'assignments')}`,
       data: {
         person,
         conflictingAssignments,

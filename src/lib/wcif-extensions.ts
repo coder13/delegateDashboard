@@ -1,8 +1,35 @@
+interface Extension {
+  id: string;
+  specUrl: string;
+  data: any;
+}
+
+interface WcifEntity {
+  extensions: Extension[];
+  [key: string]: any;
+}
+
+interface GroupsExtensionData {
+  spreadGroupsAcrossAllStages: boolean;
+  groups: number;
+}
+
+interface DefaultExtensionData {
+  groups: GroupsExtensionData;
+  [key: string]: any;
+}
+
 const DDNamespace = 'delegateDashboard';
 
-const extensionId = (extensionName, namespace) => `${namespace}.${extensionName}`;
+const extensionId = (extensionName: string, namespace: string): string =>
+  `${namespace}.${extensionName}`;
 
-export const buildExtension = (extensionName, data, namespace = DDNamespace, specUrl) => ({
+export const buildExtension = (
+  extensionName: string,
+  data: any,
+  namespace: string = DDNamespace,
+  specUrl?: string
+): Extension => ({
   id: extensionId(extensionName, namespace),
   specUrl:
     specUrl ??
@@ -13,13 +40,13 @@ export const buildExtension = (extensionName, data, namespace = DDNamespace, spe
 /**
  * Updates the extension data inside the wcifEntity and returns it
  */
-export const setExtensionData = (
-  extensionName,
-  wcifEntity,
-  data,
-  namespace = DDNamespace,
-  specUrl
-) => {
+export const setExtensionData = <T extends WcifEntity>(
+  extensionName: string,
+  wcifEntity: T,
+  data: any,
+  namespace: string = DDNamespace,
+  specUrl?: string
+): T => {
   const otherExtensions = wcifEntity.extensions.filter(
     (extension) => extension.id !== extensionId(extensionName, namespace)
   );
@@ -29,14 +56,18 @@ export const setExtensionData = (
   };
 };
 
-const defaultExtensionData = {
+const defaultExtensionData: DefaultExtensionData = {
   groups: {
     spreadGroupsAcrossAllStages: true,
     groups: 1,
   },
 };
 
-export const getExtensionData = (extensionName, wcifEntity, namespace = DDNamespace) => {
+export const getExtensionData = (
+  extensionName: string,
+  wcifEntity: WcifEntity,
+  namespace: string = DDNamespace
+): any => {
   const extension = wcifEntity.extensions.find(
     (extension) => extension.id === extensionId(extensionName, namespace)
   );
@@ -45,19 +76,30 @@ export const getExtensionData = (extensionName, wcifEntity, namespace = DDNamesp
   return extension ? { ...defaultData, ...extension.data } : defaultData;
 };
 
-export const removeExtensionData = (extensionName, wcifEntity, namespace) => ({
+export const removeExtensionData = <T extends WcifEntity>(
+  extensionName: string,
+  wcifEntity: T,
+  namespace: string
+): T => ({
   ...wcifEntity,
   extensions: wcifEntity.extensions.filter(
     (extension) => extension.id !== extensionId(extensionName, namespace)
   ),
 });
 
-export const getGroupData = (roundActivity) => {
+interface GroupData {
+  groups: number;
+  source: string;
+}
+
+export const getGroupData = (roundActivity: WcifEntity): GroupData | null => {
   // Start off with using groupifier and then build own version. Makes compatible with groupifier.
-  if (roundActivity.extensions.find(({ id }) => id === extensionId(activityConfig))) {
-    const activityConfig = roundActivity.extensions.find(
-      ({ id }) => id === extensionId(activityConfig)
-    ).data;
+  const activityConfigExt = roundActivity.extensions.find(
+    ({ id }) => id === extensionId('activityConfig', DDNamespace)
+  );
+  
+  if (activityConfigExt) {
+    const activityConfig = activityConfigExt.data;
     return {
       groups: activityConfig.groupCount,
       source: 'Delegate Dashboard',
@@ -65,7 +107,7 @@ export const getGroupData = (roundActivity) => {
   } else if (roundActivity.extensions.find(({ id }) => id === 'groupifier.ActivityConfig')) {
     const activityConfig = roundActivity.extensions.find(
       ({ id }) => id === 'groupifier.ActivityConfig'
-    ).data;
+    )!.data;
     return {
       groups: activityConfig.groups,
       source: 'Groupifier',
