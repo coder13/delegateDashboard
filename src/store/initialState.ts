@@ -1,5 +1,12 @@
 import { Competition } from '@wca/helpers';
 
+interface WcifError {
+  type: string;
+  key: string;
+  message: string;
+  data?: any;
+}
+
 export interface AppState {
   anythingChanged: boolean;
   fetchingUser: boolean;
@@ -11,13 +18,13 @@ export interface AppState {
       thumb_url: string;
     };
   };
-  fetchingWCIF: false;
-  uploadingWCIF: false;
-  needToSave: false;
+  fetchingWCIF: boolean;
+  uploadingWCIF: boolean;
+  needToSave: boolean;
   changedKeys: Set<keyof Competition>;
   wcif: null | Competition;
-  competitions: [];
-  errors: [];
+  competitions: any[];
+  errors: WcifError[];
 }
 
 const INITIAL_STATE: AppState = {
