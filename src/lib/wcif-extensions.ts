@@ -1,12 +1,12 @@
 interface Extension {
   id: string;
   specUrl: string;
-  data: any;
+  data: unknown;
 }
 
 interface WcifEntity {
   extensions: Extension[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface GroupsExtensionData {
@@ -16,7 +16,7 @@ interface GroupsExtensionData {
 
 interface DefaultExtensionData {
   groups: GroupsExtensionData;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 const DDNamespace = 'delegateDashboard';
@@ -26,7 +26,7 @@ const extensionId = (extensionName: string, namespace: string): string =>
 
 export const buildExtension = (
   extensionName: string,
-  data: any,
+  data: unknown,
   namespace: string = DDNamespace,
   specUrl?: string
 ): Extension => ({
@@ -43,7 +43,7 @@ export const buildExtension = (
 export const setExtensionData = <T extends WcifEntity>(
   extensionName: string,
   wcifEntity: T,
-  data: any,
+  data: unknown,
   namespace: string = DDNamespace,
   specUrl?: string
 ): T => {
@@ -67,7 +67,7 @@ export const getExtensionData = (
   extensionName: string,
   wcifEntity: WcifEntity,
   namespace: string = DDNamespace
-): any => {
+): unknown => {
   const extension = wcifEntity.extensions.find(
     (extension) => extension.id === extensionId(extensionName, namespace)
   );

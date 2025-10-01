@@ -35,7 +35,7 @@ const propertyById = (property: 'name' | 'shortName', eventId: EventId): string 
   events.find((event) => event.id === eventId)?.[property] || '';
 
 export const sortWcifEvents = (wcifEvents: Event[]): Event[] =>
-  sortBy(wcifEvents, (wcifEvent) => events.findIndex((event) => event.id === wcifEvent.id));
+  sortBy(wcifEvents, (wcifEvent: Event) => events.findIndex((event) => event.id === wcifEvent.id));
 
 interface RoundFormatConfig {
   id: RoundFormat;

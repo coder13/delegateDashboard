@@ -10,13 +10,13 @@ interface WcaUser {
     url: string;
     thumb_url: string;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface WcaPerson {
   id: string;
   name: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface WcaCompetition {
@@ -25,7 +25,7 @@ interface WcaCompetition {
   country_iso2: string;
   start_date: string;
   end_date: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 const wcaAccessToken = (): string | null => getLocalStorage('accessToken');
