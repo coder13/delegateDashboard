@@ -1,6 +1,7 @@
 import { findAndReplaceActivity } from '../lib/activities';
 import { mapIn } from '../lib/utils';
 import { setExtensionData } from '../lib/wcif-extensions';
+import { Activity, Person, Venue, Room, Event, Round } from '@wca/helpers';
 import {
   SET_COMPETITIONS,
   TOGGLE_PERSON_ROLE,
@@ -34,10 +35,10 @@ import * as Reducers from './reducers';
 
 type Action = {
   type: string;
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
-type ReducerFunction = (state: AppState, action: any) => AppState;
+type ReducerFunction = (state: AppState, action: Action) => AppState;
 
 const reducers: Record<string, ReducerFunction> = {
   // Fetching and updating wcif
@@ -129,11 +130,11 @@ const reducers: Record<string, ReducerFunction> = {
   [UPDATE_GROUP_COUNT]: (state, action) => ({
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'schedule'] as any),
-    wcif: state.wcif ? mapIn(state.wcif, ['schedule', 'venues'], (venue: any) =>
-      mapIn(venue, ['rooms'], (room: any) =>
-        mapIn(room, ['activities'], (activity: any) => {
-          if (activity.id === action.activityId) {
+    changedKeys: new Set([...state.changedKeys, 'schedule'] as unknown as Iterable<keyof import('@wca/helpers').Competition>),
+    wcif: state.wcif ? mapIn(state.wcif, ['schedule', 'venues'], (venue: Venue) =>
+      mapIn(venue, ['rooms'], (room: Room) =>
+        mapIn(room, ['activities'], (activity: Activity) => {
+          if (activity.id === (action.activityId as number)) {
             return setExtensionData('activityConfig', activity, {
               groupCount: action.groupCount,
             });
@@ -147,14 +148,14 @@ const reducers: Record<string, ReducerFunction> = {
   [UPDATE_ROUND_CHILD_ACTIVITIES]: (state, action) => ({
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'schedule'] as any),
-    wcif: state.wcif ? mapIn(state.wcif, ['schedule', 'venues'], (venue: any) =>
-      mapIn(venue, ['rooms'], (room: any) =>
-        mapIn(room, ['activities'], (activity: any) =>
-          activity.id === action.activityId
+    changedKeys: new Set([...state.changedKeys, 'schedule'] as unknown as Iterable<keyof import('@wca/helpers').Competition>),
+    wcif: state.wcif ? mapIn(state.wcif, ['schedule', 'venues'], (venue: Venue) =>
+      mapIn(venue, ['rooms'], (room: Room) =>
+        mapIn(room, ['activities'], (activity: Activity) =>
+          activity.id === (action.activityId as number)
             ? {
                 ...activity,
-                childActivities: action.childActivities,
+                childActivities: action.childActivities as Activity[],
               }
             : activity
         )
@@ -164,13 +165,13 @@ const reducers: Record<string, ReducerFunction> = {
   [UPDATE_ROUND_ACTIVITIES]: (state, action) => ({
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'schedule'] as any),
-    wcif: state.wcif ? mapIn(state.wcif, ['schedule', 'venues'], (venue: any) =>
-      mapIn(venue, ['rooms'], (room: any) =>
+    changedKeys: new Set([...state.changedKeys, 'schedule'] as unknown as Iterable<keyof import('@wca/helpers').Competition>),
+    wcif: state.wcif ? mapIn(state.wcif, ['schedule', 'venues'], (venue: Venue) =>
+      mapIn(venue, ['rooms'], (room: Room) =>
         mapIn(
           room,
           ['activities'],
-          (activity: any) => action.activities.find((a: any) => a.id === activity.id) || activity
+          (activity: Activity) => (action.activities as Activity[]).find((a) => a.id === activity.id) || activity
         )
       )
     ) : null,
@@ -178,16 +179,16 @@ const reducers: Record<string, ReducerFunction> = {
   [UPDATE_ROUND]: (state, action) => ({
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'events'] as any),
-    wcif: state.wcif ? mapIn(state.wcif, ['events'], (event: any) =>
-      mapIn(event, ['rounds'], (round: any) => (round.id === action.roundId ? action.roundData : round))
+    changedKeys: new Set([...state.changedKeys, 'events'] as unknown as Iterable<keyof import('@wca/helpers').Competition>),
+    wcif: state.wcif ? mapIn(state.wcif, ['events'], (event: Event) =>
+      mapIn(event, ['rounds'], (round: Round) => (round.id === (action.roundId as string) ? action.roundData : round))
     ) : null,
   }),
   [RESET_ALL_GROUP_ASSIGNMENTS]: (state) => ({
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'persons'] as any),
-    wcif: state.wcif ? mapIn(state.wcif, ['persons'], (person: any) => ({
+    changedKeys: new Set([...state.changedKeys, 'persons'] as unknown as Iterable<keyof import('@wca/helpers').Competition>),
+    wcif: state.wcif ? mapIn(state.wcif, ['persons'], (person: Person) => ({
       ...person,
       assignments: [],
     })) : null,
@@ -199,11 +200,11 @@ const reducers: Record<string, ReducerFunction> = {
     return {
       ...state,
       needToSave: true,
-      changedKeys: new Set([...state.changedKeys, 'persons', 'schedule'] as any),
+      changedKeys: new Set([...state.changedKeys, 'persons', 'schedule'] as unknown as Iterable<keyof import('@wca/helpers').Competition>),
       wcif: {
         ...state.wcif,
-        schedule: mapIn(state.wcif.schedule, ['venues'], (venue: any) =>
-          mapIn(venue, ['rooms'], (room: any) => ({
+        schedule: mapIn(state.wcif.schedule, ['venues'], (venue: Venue) =>
+          mapIn(venue, ['rooms'], (room: Room) => ({
             ...room,
             activities: room.activities.map(findAndReplaceActivity(where, what)),
           }))
@@ -230,10 +231,10 @@ const reducers: Record<string, ReducerFunction> = {
   [UPDATE_ROUND_EXTENSION_DATA]: (state, action) => ({
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'events'] as any),
-    wcif: state.wcif ? mapIn(state.wcif, ['events'], (event: any) =>
-      mapIn(event, ['rounds'], (round: any) => {
-        if (round.id === action.activityCode) {
+    changedKeys: new Set([...state.changedKeys, 'events'] as unknown as Iterable<keyof import('@wca/helpers').Competition>),
+    wcif: state.wcif ? mapIn(state.wcif, ['events'], (event: Event) =>
+      mapIn(event, ['rounds'], (round: Round) => {
+        if (round.id === (action.activityCode as string)) {
           return setExtensionData('groups', round, action.extensionData);
         }
 
