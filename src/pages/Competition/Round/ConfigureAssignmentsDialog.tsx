@@ -275,6 +275,7 @@ const ConfigureAssignmentsDialog = ({
           {
             activityId,
             assignmentCode: paintingAssignmentCode,
+            stationNumber: null,
           },
         ])
       );

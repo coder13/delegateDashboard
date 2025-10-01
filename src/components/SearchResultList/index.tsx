@@ -1,7 +1,17 @@
 import { List } from '@mui/material';
 import SearchResultListItem from './SearchResultListItem';
 
-function SearchResultList({ searchResults, selected, onSelect }) {
+interface SearchResult {
+  item: any;
+}
+
+interface SearchResultListProps {
+  searchResults: SearchResult[];
+  selected: number;
+  onSelect: (item: any) => void;
+}
+
+function SearchResultList({ searchResults, selected, onSelect }: SearchResultListProps) {
   return (
     <List>
       {searchResults.map((result, index) => (

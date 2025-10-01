@@ -4,8 +4,15 @@ import ActivityListItem from './ActivityListItem';
 import CompetitionListItem from './CompetitionListItem';
 import PersonListItem from './PersonListItem';
 
-function SearchResultListItem({ selected, onClick, ...props }) {
-  const ref = useRef();
+interface SearchResultListItemProps {
+  selected: boolean;
+  onClick: () => void;
+  class?: string;
+  [key: string]: any;
+}
+
+function SearchResultListItem({ selected, onClick, ...props }: SearchResultListItemProps) {
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (selected && ref.current) {
@@ -16,11 +23,11 @@ function SearchResultListItem({ selected, onClick, ...props }) {
   const contents = () => {
     switch (props.class) {
       case 'person':
-        return <PersonListItem {...props} />;
+        return <PersonListItem {...(props as any)} />;
       case 'activity':
-        return <ActivityListItem {...props} />;
+        return <ActivityListItem {...(props as any)} />;
       case 'competition':
-        return <CompetitionListItem {...props} />;
+        return <CompetitionListItem {...(props as any)} />;
       default:
         return <ListItemText primary={props.primary} secondary={props.secondary} />;
     }

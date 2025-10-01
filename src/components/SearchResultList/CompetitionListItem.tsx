@@ -1,10 +1,13 @@
 import PublicIcon from '@mui/icons-material/Public';
-// import FlagIconFactory from 'react-flag-icon-css';
 import { ListItemIcon, ListItemText } from '@mui/material';
 
-// const FlagIcon = FlagIconFactory(React, { useCssModules: false });
+interface CompetitionListItemProps {
+  name: string;
+  start_date: string;
+  country_iso2?: string;
+}
 
-function CompetitionListItem({ name, start_date, country_iso2 }) {
+function CompetitionListItem({ name, start_date, country_iso2 }: CompetitionListItemProps) {
   return (
     <>
       <ListItemIcon>
@@ -12,7 +15,6 @@ function CompetitionListItem({ name, start_date, country_iso2 }) {
           <PublicIcon />
         ) : (
           <div />
-          // <FlagIcon code={country_iso2.toLowerCase()} size="lg" />
         )}
       </ListItemIcon>
       <ListItemText

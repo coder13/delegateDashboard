@@ -1,7 +1,10 @@
+import { Activity, Assignment, Competition, Person } from '@wca/helpers';
 import { sortWcifEvents } from '../lib/events';
 import { updateIn, pick } from '../lib/utils';
 import { getUpcomingManageableCompetitions, getWcif, patchWcif } from '../lib/wcaAPI';
 import { validateWcif } from '../lib/wcif-validation';
+import { AppState } from './initialState';
+import { ThunkAction } from 'redux-thunk';
 
 export const FETCHING_COMPETITIONS = 'fetching_competitions';
 export const SET_ERROR_FETCHING_COMPS = 'set_error_fetching_comps';
@@ -31,43 +34,45 @@ export const UPDATE_GLOBAL_EXTENSION = 'update_global_extension';
 export const ADD_PERSON = 'add_person';
 export const UPDATE_RAW_OBJ = 'update_raw_obj';
 
+type AppThunk<ReturnType = void> = ThunkAction<ReturnType, AppState, unknown, any>;
+
 const fetchingCompetitions = () => ({
   type: FETCHING_COMPETITIONS,
-});
+} as const);
 
 const fetchingWCIF = () => ({
   type: FETCHING_WCIF,
   fetching: true,
-});
+} as const);
 
-const updateFetching = (fetching) => ({
+const updateFetching = (fetching: boolean) => ({
   type: FETCHING_WCIF,
   fetching,
-});
+} as const);
 
-const updateWCIF = (wcif) => ({
+const updateWCIF = (wcif: Competition) => ({
   type: FETCHED_WCIF,
   fetched: false,
   wcif,
-});
+} as const);
 
-const updateWcifErrors = (errors, replace = false) => ({
+const updateWcifErrors = (errors: any[], replace: boolean = false) => ({
   type: UPDATE_WCIF_ERRORS,
   errors,
   replace,
-});
+} as const);
 
-const updateUploading = (uploading) => ({
+const updateUploading = (uploading: boolean) => ({
   type: UPLOADING_WCIF,
   uploading,
-});
+} as const);
 
-const setCompetitions = (competitions) => ({
+const setCompetitions = (competitions: any[]) => ({
   type: SET_COMPETITIONS,
   competitions,
-});
+} as const);
 
-export const fetchCompetitions = () => (dispatch) => {
+export const fetchCompetitions = (): AppThunk => (dispatch) => {
   dispatch(fetchingCompetitions());
   getUpcomingManageableCompetitions()
     .then((comps) => {
@@ -81,7 +86,7 @@ export const fetchCompetitions = () => (dispatch) => {
     });
 };
 
-export const fetchWCIF = (competitionId) => async (dispatch) => {
+export const fetchWCIF = (competitionId: string): AppThunk => async (dispatch) => {
   dispatch(fetchingWCIF());
   try {
     const wcif = await getWcif(competitionId);
@@ -96,8 +101,14 @@ export const fetchWCIF = (competitionId) => async (dispatch) => {
   dispatch(updateFetching(false));
 };
 
-export const uploadCurrentWCIFChanges = (cb) => (dispatch, getState) => {
+export const uploadCurrentWCIFChanges = (cb: (error?: any) => void): AppThunk => (dispatch, getState) => {
   const { wcif, changedKeys } = getState();
+  
+  if (!wcif) {
+    console.error('No WCIF to upload');
+    return;
+  }
+
   const competitionId = wcif.id;
 
   if (changedKeys.size === 0) {
@@ -120,54 +131,47 @@ export const uploadCurrentWCIFChanges = (cb) => (dispatch, getState) => {
     });
 };
 
-export const togglePersonRole = (registrantId, roleId) => ({
+export const togglePersonRole = (registrantId: number, roleId: string) => ({
   type: TOGGLE_PERSON_ROLE,
   registrantId,
   roleId,
-});
+} as const);
 
 /**
  * Adds assignments to a person
- * @param {number} registrantId
- * @param {Assignment[]} assignments
  */
-export const addPersonAssignments = (registrantId, assignments) => ({
+export const addPersonAssignments = (registrantId: number, assignments: Assignment[]) => ({
   type: ADD_PERSON_ASSIGNMENTS,
   registrantId,
   assignments,
-});
+} as const);
 
 /**
  * Removes assignments from a person matching the activityId
- * @param {number} registrantId
- * @param {number} activityId
  */
-export const removePersonAssignments = (registrantId, activityId) => ({
+export const removePersonAssignments = (registrantId: number, activityId: number) => ({
   type: REMOVE_PERSON_ASSIGNMENTS,
   registrantId,
   activityId,
-});
+} as const);
 
 /**
  * For a given person, creates or updates the assignments
- * @param {number} registrantId
- * @param {Assignment[]} assignments
  */
-export const upsertPersonAssignments = (registrantId, assignments) => ({
+export const upsertPersonAssignments = (registrantId: number, assignments: Assignment[]) => ({
   type: UPSERT_PERSON_ASSIGNMENTS,
   registrantId,
   assignments,
-});
+} as const);
 
 /**
  * For whoever matches the passed assignments,
  * adds the respective assignments to each person
- * @param {array} assignments - [{activityId, registrantId, assignment: Assignment}]
  */
-export const bulkAddPersonAssignments = (assignments) => ({
+export const bulkAddPersonAssignments = (assignments: any[]) => ({
   type: BULK_ADD_PERSON_ASSIGNMENTS,
   assignments,
-});
+} as const);
 
 /**
  * Optionally remove person assignments by either any of activityId, registrantId, and/or assignmentCode
@@ -175,101 +179,94 @@ export const bulkAddPersonAssignments = (assignments) => ({
  * if only registrantId is specified, then it removes all group assignments for the person.
  * if only assignmentCode is specified, then it removes all group assignments under that code.
  * if more than 1 is specified, then it will preform an *and*
- * @param {array} assignments - [{activityId?, registrantId?, assignmentCode?}]
  */
-export const bulkRemovePersonAssignments = (assignments) => ({
+export const bulkRemovePersonAssignments = (assignments: any[]) => ({
   type: BULK_REMOVE_PERSON_ASSIGNMENTS,
   assignments,
-});
+} as const);
 
 /**
  * For whoever matches the passed assignments, creates or updates the assignments
- * @param {array} assignments - [{activityId, registrantId, assignment}]
  */
-export const bulkUpsertPersonAssignments = (assignments) => ({
+export const bulkUpsertPersonAssignments = (assignments: any[]) => ({
   type: BULK_UPSERT_PERSON_ASSIGNMENTS,
   assignments,
-});
+} as const);
 
-export const updateGroupCount = (activityId, groupCount) => ({
+export const updateGroupCount = (activityId: number, groupCount: number) => ({
   type: UPDATE_GROUP_COUNT,
   activityId,
   groupCount,
-});
+} as const);
 
 /**
  * Replaces the round activities specified in the wcif
  */
-export const updateRoundActivities = (activities) => ({
+export const updateRoundActivities = (activities: Activity[]) => ({
   type: UPDATE_ROUND_ACTIVITIES,
   activities,
-});
+} as const);
 
-export const updateRoundChildActivities = (activityId, childActivities) => ({
+export const updateRoundChildActivities = (activityId: number, childActivities: Activity[]) => ({
   type: UPDATE_ROUND_CHILD_ACTIVITIES,
   activityId,
   childActivities,
-});
+} as const);
 
-export const updateRoundExtensionData = (activityCode, extensionData) => ({
+export const updateRoundExtensionData = (activityCode: string, extensionData: any) => ({
   type: UPDATE_ROUND_EXTENSION_DATA,
   activityCode,
   extensionData,
-});
+} as const);
 
-export const partialUpdateWCIF = (wcif) => ({
+export const partialUpdateWCIF = (wcif: Partial<Competition>) => ({
   type: PARTIAL_UPDATE_WCIF,
   wcif,
-});
+} as const);
 
 export const resetAllGroupAssignments = () => ({
   type: RESET_ALL_GROUP_ASSIGNMENTS,
-});
+} as const);
 
 /**
- *
- * @param {ActivityCode} roundId
- * @returns
+ * Generate assignments for a round
  */
-export const generateAssignments = (roundId, options) => ({
+export const generateAssignments = (roundId: string, options?: any) => ({
   type: GENERATE_ASSIGNMENTS,
   roundId,
   options: {
     sortOrganizationStaffInLastGroups: true,
     ...options,
   },
-});
+} as const);
 
 /**
  * Queries activity based on the where and replaces it with the what
- * @param {*} where
- * @param {*} what
- * @returns
  */
-export const editActivity = (where, what) => ({
+export const editActivity = (where: any, what: any) => ({
   type: EDIT_ACTIVITY,
   where,
   what,
-});
+} as const);
 
-export const updateGlobalExtension = (extensionData) => ({
+export const updateGlobalExtension = (extensionData: any) => ({
   type: UPDATE_GLOBAL_EXTENSION,
   extensionData,
-});
+} as const);
 
-export const addPerson = (person) => ({
+export const addPerson = (person: Person) => ({
   type: ADD_PERSON,
   person,
-});
+} as const);
 
-export const updateRound = (roundId, roundData) => ({
+export const updateRound = (roundId: string, roundData: any) => ({
   type: UPDATE_ROUND,
   roundId,
   roundData,
-});
+} as const);
 
-export const updateRawObj = (key, value) => ({
+export const updateRawObj = (key: string, value: any) => ({
   type: UPDATE_RAW_OBJ,
   key,
   value,
-});
+} as const);

@@ -1,7 +1,12 @@
 import { ListItemIcon, ListItemText } from '@mui/material';
 import { parseActivityCode } from '../../lib/activities';
 
-function ActivityListItem({ name, activityCode }) {
+interface ActivityListItemProps {
+  name: string;
+  activityCode: string;
+}
+
+function ActivityListItem({ name, activityCode }: ActivityListItemProps) {
   const { eventId } = parseActivityCode(activityCode);
 
   return (

@@ -10,6 +10,8 @@ interface WcifError {
 export interface AppState {
   anythingChanged: boolean;
   fetchingUser: boolean;
+  fetchingCompetitions?: boolean;
+  fetchingCompetitionsError?: any;
   user: {
     id?: number;
     name?: string;

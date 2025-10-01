@@ -1,6 +1,6 @@
 import { Avatar, ListItemAvatar, ListItemText } from '@mui/material';
 
-function stringToColor(string) {
+function stringToColor(string: string): string {
   let hash = 0;
   let i;
 
@@ -20,22 +20,30 @@ function stringToColor(string) {
   return color;
 }
 
-function stringAvatar(name) {
+function stringAvatar(name: string) {
+  const parts = name.split(' ');
   return {
     sx: {
       bgcolor: stringToColor(name),
     },
-    children: `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`,
+    children: parts.length > 1 ? `${parts[0][0]}${parts[1][0]}` : parts[0][0],
   };
 }
 
+interface PersonListItemProps {
+  name: string;
+  wcaId?: string;
+  avatar?: {
+    thumbUrl: string;
+  };
+}
 
-function PersonListItem({ name, wcaId, avatar }) {
+function PersonListItem({ name, wcaId, avatar }: PersonListItemProps) {
   return (
     <>
       <ListItemAvatar>
         {avatar ? (
-          <Avatar alt="Remy Sharp" src={avatar.thumbUrl} />
+          <Avatar alt={name} src={avatar.thumbUrl} />
         ) : (
           <Avatar {...stringAvatar(name)} />
         )}

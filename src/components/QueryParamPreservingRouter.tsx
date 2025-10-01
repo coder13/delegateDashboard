@@ -1,21 +1,26 @@
 import { createBrowserHistory } from 'history';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { ReactNode, useLayoutEffect, useRef, useState } from 'react';
 import { Router } from 'react-router-dom';
 import { preserveQueryParams, createLocationObject } from '../lib/history';
 
-function QueryParamPreservingRouter({ basename = '', children }) {
-  let historyRef = useRef();
+interface QueryParamPreservingRouterProps {
+  basename?: string;
+  children: ReactNode;
+}
+
+function QueryParamPreservingRouter({ basename = '', children }: QueryParamPreservingRouterProps) {
+  let historyRef = useRef<any>();
   if (historyRef.current == null) {
     historyRef.current = createBrowserHistory();
     const originalPush = historyRef.current.push;
-    historyRef.current.push = (path, state) => {
+    historyRef.current.push = (path: any, state?: any) => {
       return originalPush.apply(historyRef.current, [
         preserveQueryParams(historyRef.current, createLocationObject(path, state)),
       ]);
     };
 
     const originalReplace = historyRef.current.replace;
-    historyRef.current.replace = (path, state) => {
+    historyRef.current.replace = (path: any, state?: any) => {
       return originalReplace.apply(historyRef.current, [
         preserveQueryParams(historyRef.current, createLocationObject(path, state)),
       ]);
