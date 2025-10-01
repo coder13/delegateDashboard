@@ -1,8 +1,8 @@
-// @ts-nocheck
 import { useConfirm } from 'material-ui-confirm';
 import React, { useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { AppState } from '../store/initialState';
+import { AppState } from '../../../store/initialState';
+import { Room as RoomType, Venue as VenueType, Activity } from '@wca/helpers';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Button, MenuItem, TextField } from '@mui/material';
 import Card from '@mui/material/Card';
@@ -27,8 +27,12 @@ import {
   updateRoundActivities,
 } from '../../../store/actions';
 
-const useStyles = makeStyles((theme) => ({
-  card: ({ room }) => ({
+interface RoomStyles {
+  room?: RoomType;
+}
+
+const useStyles = makeStyles((theme: any) => ({
+  card: ({ room }: RoomStyles) => ({
     border: room ? `2px solid ${room.color}` : 'none',
   }),
   field: {
@@ -39,30 +43,31 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+interface RoomProps {
+  venue: VenueType;
+  room: RoomType;
+}
+
 // TODO: Redesign this data import flow
-const Room = ({ venue, room }: any) => {
+const Room = ({ venue, room }: RoomProps) => {
   const classes = useStyles({ room });
   const dispatch = useDispatch();
   const confirm = useConfirm();
   const wcif = useSelector((state: AppState) => state.wcif);
-  const [anchorEl, setAnchorEl] = React.useState<any>(null);
-  // const [configureStagesDialogOpen, setConfigureStagesDialogOpen] = React.useState(false);
+  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
 
-  const handleMenuOpen = (event) => {
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMenuClose = (props?: any) => {
+  const handleMenuClose = () => {
     setAnchorEl(null);
   };
 
-  // const openConfigureStagesDialog = (props?: any) => {
-  //   handleMenuClose();
-  //   setConfigureStagesDialogOpen(true);
-  // };
-
   const eventRegistrationCounts = useMemo(() => {
-    const _eventRegistrationCounts = {};
+    if (!wcif) return {};
+    
+    const _eventRegistrationCounts: Record<string, number> = {};
 
     acceptedRegistrations(wcif.persons).forEach((person) => {
       if (!person.registration) {
@@ -79,13 +84,9 @@ const Room = ({ venue, room }: any) => {
     });
 
     return _eventRegistrationCounts;
-  }, [wcif.persons]);
+  }, [wcif]);
 
-  // const onCreateAllGroups = (props?: any) => {
-  // TODO
-  // };
-
-  const onResetAllGroups = (props?: any) => {
+  const onResetAllGroups = () => {
     handleMenuClose();
     confirm({
       description: `This button should *only* be used to reset group data if another software messed up or you want to completely start over.\nTechnically speaking: it resets the child activities and extension data.`,
@@ -106,6 +107,8 @@ const Room = ({ venue, room }: any) => {
         console.error(e);
       });
   };
+
+  if (!wcif) return null;
 
   return (
     <Card className={classes.card}>
@@ -155,29 +158,32 @@ const Room = ({ venue, room }: any) => {
                 .map((activity) => {
                   const { eventId, roundNumber } = parseActivityCode(activity.activityCode);
                   const event = wcif.events.find((i) => i.id === eventId);
+                  if (!event || !roundNumber) return null;
+                  
                   const round = event.rounds[roundNumber - 1];
+                  if (!round) return null;
 
                   const previousRound = roundNumber > 1 ? event.rounds[roundNumber - 2] : null;
                   const advancementCondition = previousRound?.advancementCondition;
 
                   const estimatedCompetitors =
                     roundNumber === 1
-                      ? eventRegistrationCounts[eventId]
+                      ? eventRegistrationCounts[eventId] || 0
                       : advancingCompetitors(
-                          advancementCondition,
-                          eventRegistrationCounts[eventId]
+                          advancementCondition || null,
+                          eventRegistrationCounts[eventId] || 0
                         );
-                  const actualCompetitors = round.results.length;
+                  const actualCompetitors = round.results?.length || 0;
 
                   const groupData = getGroupData(activity);
 
                   // true if we are looking at a first round or we have results for that round
                   const canCreateGroups =
                     ((roundNumber === 1 && estimatedCompetitors > 0) ||
-                      (roundNumber > 1 && round.results.length > 0)) &&
+                      (roundNumber > 1 && (round.results?.length || 0) > 0)) &&
                     groupData?.groups;
 
-                  const handleGroupCountChange = (e) => {
+                  const handleGroupCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                     dispatch(
                       updateGroupCount(
                         activity.id,
@@ -186,12 +192,12 @@ const Room = ({ venue, room }: any) => {
                     );
                   };
 
-                  const handleGenerateGroupActitivites = (props?: any) => {
+                  const handleGenerateGroupActitivites = () => {
                     if (!groupData?.groups) {
                       return;
                     }
 
-                    const childActivities = [];
+                    const childActivities: Activity[] = [];
                     const startActivityId = generateNextChildActivityId(wcif);
 
                     for (let i = 0; i < groupData?.groups; i++) {

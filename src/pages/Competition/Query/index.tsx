@@ -1,10 +1,9 @@
-// @ts-nocheck
 import TreeItem from '@material-ui/lab/TreeItem';
 import TreeView from '@material-ui/lab/TreeView';
 import jp from 'jsonpath';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { AppState } from '../store/initialState';
+import { AppState } from '../../../store/initialState';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -26,13 +25,19 @@ import { Box } from '@mui/system';
 import useDebounce from '../../../hooks/useDebounce';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 
-function useQuery(props?: any) {
+function useQuery() {
   const { search } = useLocation();
 
   return React.useMemo(() => new URLSearchParams(search), [search]);
 }
 
-const ColoredLabel = ({ text, color, label }: any) => (
+interface ColoredLabelProps {
+  text: string;
+  color: string;
+  label: string;
+}
+
+const ColoredLabel = ({ text, color, label }: ColoredLabelProps) => (
   <>
     <span style={{ color: blue[800] }}>
       {text}
@@ -42,7 +47,7 @@ const ColoredLabel = ({ text, color, label }: any) => (
   </>
 );
 
-function renderLabel(key, node) {
+function renderLabel(key: string, node: any): React.ReactNode {
   if (node && Array.isArray(node) && node.length === 0) {
     return <ColoredLabel text={key} color={blue[800]} label={JSON.stringify(node)} />;
   }
@@ -65,7 +70,7 @@ function renderLabel(key, node) {
         {!!extraProps?.length && (
           <span style={{ color: blue[800] }}>
             {'{ '}
-            {extraProps.reduce((a, b) => (
+            {extraProps.reduce((a: any, b: any) => (
               <>
                 {a}, {b}
               </>
@@ -88,7 +93,7 @@ function renderLabel(key, node) {
   }
 }
 
-const renderTree = (key, node, parent) => {
+const renderTree = (key: string, node: any, parent: string = ''): React.ReactNode => {
   // Checks if node is object and *not* null or undefined
   if (node && typeof node === 'object') {
     return (
@@ -100,14 +105,15 @@ const renderTree = (key, node, parent) => {
 
   return <TreeItem key={parent + key} nodeId={parent + key} label={renderLabel(key, node)} />;
 };
-const QueryPage = (props?: any) => {
+
+const QueryPage = () => {
   const navigate = useNavigate();
   const queryParams = useQuery();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [input, setInput] = useState(queryParams.get('query') || '');
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<Error | null>(null);
   const wcif = useSelector((state: AppState) => state.wcif);
   const debouncedInput = useDebounce(input, 800);
 
@@ -115,7 +121,7 @@ const QueryPage = (props?: any) => {
     setInput(queryParams.get('query') || '');
   }, [queryParams]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
     setLoading(true);
     navigate({ ...location, search: e.target.value ? `?query=${e.target.value}` : '' });
@@ -141,7 +147,7 @@ const QueryPage = (props?: any) => {
         setResults(jp.query(wcif, debouncedInput));
         setError(null);
       } catch (e) {
-        setError(e);
+        setError(e as Error);
       }
 
       setLoading(false);

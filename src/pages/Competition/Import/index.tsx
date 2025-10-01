@@ -1,8 +1,8 @@
-// @ts-nocheck
 import { useEffect, useMemo, useState } from 'react';
 import { usePapaParse } from 'react-papaparse';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppState } from '../store/initialState';
+import { AppState } from '../../../store/initialState';
+import { EventId } from '@wca/helpers';
 import {
   Accordion,
   AccordionDetails,
@@ -26,7 +26,53 @@ import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import { partialUpdateWCIF } from '../../../store/actions';
 import CSVPreview from './CSVPreview';
 
-const mapCSVFieldToData = (necessaryFields) => (field) => {
+// Define types for the CSV data
+interface CSVMeta {
+  fields: string[];
+  delimiter: string;
+  linebreak: string;
+  aborted: boolean;
+  truncated: boolean;
+  cursor: number;
+}
+
+interface CSVRow {
+  email: string;
+  [key: string]: string;
+}
+
+interface CSVData {
+  meta: CSVMeta;
+  data: CSVRow[];
+  errors: any[];
+}
+
+interface Assignment {
+  registrantId: number;
+  eventId: EventId;
+  groupNumber: number;
+  activityCode: string;
+  assignmentCode: string;
+  roomId?: number;
+  roundNumber?: number;
+}
+
+interface MissingActivity {
+  activityCode: string;
+  groupNumber: number;
+  eventId: EventId;
+  roundNumber: number;
+  roomId: number;
+}
+
+interface ValidationCheck {
+  key: string;
+  passed: boolean;
+  message: string;
+  data?: any;
+}
+
+const mapCSVFieldToData = (necessaryFields: string[]) => (field: string): string | null => {
   if (necessaryFields.indexOf(field) > -1) {
     return field;
   }
@@ -34,19 +80,19 @@ const mapCSVFieldToData = (necessaryFields) => (field) => {
   return null;
 };
 
-const ImportPage = (props?: any) => {
+const ImportPage = () => {
   const wcif = useSelector((state: AppState) => state.wcif);
-  const eventIds = wcif.events.map((e) => e.id);
+  const eventIds = wcif?.events.map((e) => e.id) || [];
   const necessaryFields = ['email', ...eventIds, ...eventIds.map((e) => `${e}-staff`)];
   const dispatch = useDispatch();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { readString } = usePapaParse();
-  const [file, setFile] = useState();
-  const [CSVContents, setCSVContents] = useState();
-  const [CSVColumnMap, setCSVColumnMap] = useState();
-  const [competitorAssignments, setCompetitorAssignments] = useState();
-  const [missingGroupActivities, setMissingGroupActivities] = useState();
-  const [assignmentGenerationError, setAssignmentGenerationError] = useState();
+  const [file, setFile] = useState<File | undefined>();
+  const [CSVContents, setCSVContents] = useState<CSVData | undefined>();
+  const [CSVColumnMap, setCSVColumnMap] = useState<Record<string, string> | undefined>();
+  const [competitorAssignments, setCompetitorAssignments] = useState<Assignment[] | undefined>();
+  const [missingGroupActivities, setMissingGroupActivities] = useState<MissingActivity[] | undefined>();
+  const [assignmentGenerationError, setAssignmentGenerationError] = useState<Error | null>();
   const validateContents = useMemo(() => wcif && validate(wcif), [wcif]);
   const validation = useMemo(
     () => validateContents && CSVContents && validateContents(CSVContents),
@@ -63,48 +109,56 @@ const ImportPage = (props?: any) => {
 
   const fileReader = new FileReader();
 
-  const handleOnChange = (e) => {
-    setFile(e.target.files[0]);
+  const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
   };
 
-  const handleOnSubmit = (e) => {
+  const handleOnSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (file) {
       fileReader.onload = function (event) {
-        const csvOutput = event.target.result;
-        readString(csvOutput, {
-          worker: false,
-          header: true,
-          skipEmptyLines: true,
-          transformHeader: (header) => header.trim().toLowerCase(),
-          complete: (results) => {
-            const columnMap = {};
-            results.meta.fields.forEach((field) => {
-              const mappedField = mapCSVFieldToData(necessaryFields)(field);
-              if (mappedField) {
-                columnMap[field] = mappedField;
+        const csvOutput = event.target?.result;
+        if (typeof csvOutput === 'string') {
+          readString(csvOutput, {
+            worker: false,
+            header: true,
+            skipEmptyLines: true,
+            transformHeader: (header: string) => header.trim().toLowerCase(),
+            complete: (results: any) => {
+              const columnMap: Record<string, string> = {};
+              if (results.meta.fields) {
+                results.meta.fields.forEach((field: string) => {
+                  const mappedField = mapCSVFieldToData(necessaryFields)(field);
+                  if (mappedField) {
+                    columnMap[field] = mappedField;
+                  }
+                });
               }
-            });
 
-            setCSVColumnMap(columnMap);
+              setCSVColumnMap(columnMap);
 
-            setCSVContents({
-              ...results,
-              meta: {
-                ...results.meta,
-                fields: [...new Set(results.meta.fields)],
-              },
-            });
-          },
-        });
+              setCSVContents({
+                ...results,
+                meta: {
+                  ...results.meta,
+                  fields: [...new Set(results.meta.fields || [])],
+                },
+              });
+            },
+          });
+        }
       };
 
       fileReader.readAsText(file);
     }
   };
 
-  const onGenerateCompetitorAssignments = (props?: any) => {
+  const onGenerateCompetitorAssignments = () => {
+    if (!wcif || !CSVContents) return;
+    
     try {
       const assignments = generateAssignments(wcif, CSVContents);
       setCompetitorAssignments(assignments);
@@ -115,11 +169,13 @@ const ImportPage = (props?: any) => {
       setAssignmentGenerationError(null);
     } catch (e) {
       console.error(e);
-      setAssignmentGenerationError(e);
+      setAssignmentGenerationError(e as Error);
     }
   };
 
-  const onGenerateMissingGroupActivities = (props?: any) => {
+  const onGenerateMissingGroupActivities = () => {
+    if (!wcif || !missingGroupActivities) return;
+    
     try {
       dispatch(
         partialUpdateWCIF({
@@ -130,14 +186,16 @@ const ImportPage = (props?: any) => {
         })
       );
 
-      setMissingGroupActivities(null);
+      setMissingGroupActivities(undefined);
     } catch (e) {
       console.error(e);
-      setAssignmentGenerationError(e);
+      setAssignmentGenerationError(e as Error);
     }
   };
 
-  const onImportCompetitorAssignments = (props?: any) => {
+  const onImportCompetitorAssignments = () => {
+    if (!wcif || !competitorAssignments) return;
+    
     const newWcif = upsertCompetitorAssignments(
       wcif,
       determineStageForAssignments(wcif, competitorAssignments)
@@ -223,19 +281,19 @@ const ImportPage = (props?: any) => {
           </Button>
         </form>
       </Grid>
-      {CSVContents && (
+      {CSVContents && validation && (
         <>
           <Divider />
           <br />
           <Grid>
             <Typography variant="h5">Checks</Typography>
-            {validation.map((check, index) => (
+            {validation.map((check: ValidationCheck, index: number) => (
               <Alert key={check.key + index} severity={check.passed ? 'success' : 'error'}>
                 {check.message}
                 <br />
                 {check.data &&
                   check.key === 'has-all-competing-event-column' &&
-                  check.data.map((i) => i.email).join(', ')}
+                  check.data.map((i: CSVRow) => i.email).join(', ')}
               </Alert>
             ))}
           </Grid>
@@ -279,7 +337,7 @@ const ImportPage = (props?: any) => {
             <Button
               variant="contained"
               disabled={
-                !!competitorAssignments?.length || validation.some((check) => !check.passed)
+                !!competitorAssignments?.length || validation.some((check: ValidationCheck) => !check.passed)
               }
               onClick={onGenerateCompetitorAssignments}>
               GENERATE COMPETITOR ASSIGNMENTS
@@ -307,7 +365,7 @@ const ImportPage = (props?: any) => {
             <Button
               variant="contained"
               disabled={
-                (missingGroupActivities && missingGroupActivities.length) ||
+                (missingGroupActivities && missingGroupActivities.length > 0) ||
                 !competitorAssignments?.length
               }
               onClick={onImportCompetitorAssignments}>
