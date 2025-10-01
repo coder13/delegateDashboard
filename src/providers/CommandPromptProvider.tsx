@@ -12,12 +12,12 @@ const CommandPromptContext = createContext<CommandPromptContextProps>({
   setOpen: () => {},
 });
 
-export default function CommandPromptProvider({ children }) {
+export default function CommandPromptProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
 
   const handleKeyDown = useCallback(
-    (e) => {
+    (e: KeyboardEvent) => {
       if (!user) {
         return;
       }

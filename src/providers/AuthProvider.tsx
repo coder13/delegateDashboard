@@ -36,7 +36,7 @@ const AuthContext = createContext<IAuthContext>({
   userFetchError: undefined,
 });
 
-export default function AuthProvider({ children }) {
+export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const [accessToken, setAccessToken] = useState(getLocalStorage('accessToken'));
   const [expirationTime, setExpirationTime] = useState(() => {
     const expirationTime = getLocalStorage('expirationTime');

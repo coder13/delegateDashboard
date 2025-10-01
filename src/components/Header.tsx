@@ -52,7 +52,15 @@ const AppBar = styled(MuiAppBar, {
   })
 );
 
-const MenuLink = ({ url, icon, text }: any) => (
+interface MenuLinkProps {
+  url: string;
+  icon: React.ReactNode;
+  text: string;
+}
+
+type MenuLinkItem = MenuLinkProps | { type: 'divider' };
+
+const MenuLink = ({ url, icon, text }: MenuLinkProps) => (
   <ListItem button key={url} component={Link} to={url}>
     <ListItemIcon>{icon}</ListItemIcon>
     <ListItemText primary={text} />
@@ -68,7 +76,7 @@ export const DrawerHeader = styled('div')(({ theme }) => ({
   justifyContent: 'flex-end',
 }));
 
-export const DrawerLinks = (props?: any) => {
+export const DrawerLinks = () => {
   const competitionId = useSelector((state: AppState) => state.wcif?.id);
   const menuLinks = useMemo(
     () => ({
@@ -131,11 +139,11 @@ export const DrawerLinks = (props?: any) => {
     [competitionId]
   );
 
-  const renderLinkOrDivider = (link, index) =>
-    link.type === 'divider' ? (
+  const renderLinkOrDivider = (link: MenuLinkItem, index: number) =>
+    'type' in link && link.type === 'divider' ? (
       <Divider key={'divider' + index} />
     ) : (
-      <MenuLink key={link.url} {...link} />
+      <MenuLink key={(link as MenuLinkProps).url} {...(link as MenuLinkProps)} />
     );
 
   return (
