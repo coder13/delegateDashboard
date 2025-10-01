@@ -225,7 +225,7 @@ export const getSeedResult = (
   const roundId = `${eventId}-r${roundNumber}`;
   const event = wcif.events.find((e) => e.id === eventId);
   const round = event?.rounds?.find((r) => r.id === roundId);
-  const roundFormat = roundFormatById(round?.format);
+  const roundFormat = round?.format ? roundFormatById(round.format) : undefined;
 
   if (!roundFormat) {
     return;

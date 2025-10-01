@@ -1,6 +1,18 @@
 /* Customized history preserving `staging` query parameter on location change. */
 
-export const preserveQueryParams = (history, location) => {
+interface Location {
+  pathname?: string;
+  search?: string;
+  state?: any;
+}
+
+interface History {
+  location: {
+    search: string;
+  };
+}
+
+export const preserveQueryParams = (history: History, location: Location): Location => {
   const query = new URLSearchParams(history.location.search);
   const newQuery = new URLSearchParams(location.search);
   if (query.has('staging')) {
@@ -10,6 +22,6 @@ export const preserveQueryParams = (history, location) => {
   return location;
 };
 
-export const createLocationObject = (path, state) => {
+export const createLocationObject = (path: string | Location, state?: any): Location => {
   return typeof path === 'string' ? { pathname: path, state } : path;
 };

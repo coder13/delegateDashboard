@@ -85,9 +85,11 @@ export default function AuthProvider({ children }) {
     const hashParams = new URLSearchParams(hash);
 
     if (hashParams.has('access_token')) {
-      setLocalStorage('accessToken', hashParams.get('access_token'));
-
-      setAccessToken(hashParams.get('access_token'));
+      const token = hashParams.get('access_token');
+      if (token) {
+        setLocalStorage('accessToken', token);
+        setAccessToken(token);
+      }
     }
 
     if (hashParams.has('expires_in')) {
