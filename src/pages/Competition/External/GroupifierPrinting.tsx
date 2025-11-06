@@ -4,6 +4,7 @@ import {
   Container,
   FormControl,
   FormLabel,
+  Grid,
   InputLabel,
   Link,
   MenuItem,
@@ -33,84 +34,55 @@ export const GroupifierPrintingConfig = () => {
   )?.data as IGroupifierPrintingConfig | undefined;
   const scorecardPaperSize = groupifierConfig?.scorecardPaperSize;
 
-  const updateScorecardPaperSize = useCallback(
-    (event: SelectChangeEvent) => {
+  const updateExtension = useCallback(
+    (updates: Partial<IGroupifierPrintingConfig>) => {
       dispatch(
         updateGlobalExtension({
           id: 'groupifier.CompetitionConfig',
           specUrl: 'https://groupifier.jonatanklosko.com/wcif-extensions/CompetitionConfig.json',
           data: {
             ...groupifierConfig,
-            scorecardPaperSize: event.target.value as ScorecardSize,
+            ...updates,
           },
         })
       );
     },
     [dispatch, groupifierConfig]
+  );
+
+  const updateScorecardPaperSize = useCallback(
+    (event: SelectChangeEvent) => {
+      updateExtension({ scorecardPaperSize: event.target.value as ScorecardSize });
+    },
+    [updateExtension]
   );
 
   const updatePrintStations = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      dispatch(
-        updateGlobalExtension({
-          id: 'groupifier.CompetitionConfig',
-          specUrl: 'https://groupifier.jonatanklosko.com/wcif-extensions/CompetitionConfig.json',
-          data: {
-            ...groupifierConfig,
-            printStations: event.target.checked,
-          },
-        })
-      );
+      updateExtension({ printStations: event.target.checked });
     },
-    [dispatch, groupifierConfig]
+    [updateExtension]
   );
 
   const updatePrintScrambleCheckerForTopRankedCompetitors = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      dispatch(
-        updateGlobalExtension({
-          id: 'groupifier.CompetitionConfig',
-          specUrl: 'https://groupifier.jonatanklosko.com/wcif-extensions/CompetitionConfig.json',
-          data: {
-            ...groupifierConfig,
-            printScrambleCheckerForTopRankedCompetitors: event.target.checked,
-          },
-        })
-      );
+      updateExtension({ printScrambleCheckerForTopRankedCompetitors: event.target.checked });
     },
-    [dispatch, groupifierConfig]
+    [updateExtension]
   );
 
   const updatePrintScrambleCheckerForFinalRounds = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      dispatch(
-        updateGlobalExtension({
-          id: 'groupifier.CompetitionConfig',
-          specUrl: 'https://groupifier.jonatanklosko.com/wcif-extensions/CompetitionConfig.json',
-          data: {
-            ...groupifierConfig,
-            printScrambleCheckerForFinalRounds: event.target.checked,
-          },
-        })
-      );
+      updateExtension({ printScrambleCheckerForFinalRounds: event.target.checked });
     },
-    [dispatch, groupifierConfig]
+    [updateExtension]
   );
 
   const updatePrintScrambleCheckerForBlankScorecards = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      dispatch(
-        updateGlobalExtension({
-          id: 'groupifier.CompetitionConfig',
-          specUrl: 'https://groupifier.jonatanklosko.com/wcif-extensions/CompetitionConfig.json',
-          data: {
-            ...groupifierConfig,
-            printScrambleCheckerForBlankScorecards: event.target.checked,
-          },
-        })
-      );
+      updateExtension({ printScrambleCheckerForBlankScorecards: event.target.checked });
     },
-    [dispatch, groupifierConfig]
+    [updateExtension]
   );
 
   return (
@@ -140,34 +112,44 @@ export const GroupifierPrintingConfig = () => {
             <MenuItem value="letter">Letter</MenuItem>
           </Select>
         </FormControl>
-        <FormControl margin="none">
-          <FormLabel>Print Stations</FormLabel>
-          <Switch
-            checked={groupifierConfig?.printStations ?? false}
-            onChange={updatePrintStations}
-          />
-        </FormControl>
-        <FormControl margin="none">
-          <FormLabel>Print Scramble Checker for Top Ranked Competitors</FormLabel>
-          <Switch
-            checked={groupifierConfig?.printScrambleCheckerForTopRankedCompetitors ?? false}
-            onChange={updatePrintScrambleCheckerForTopRankedCompetitors}
-          />
-        </FormControl>
-        <FormControl margin="none">
-          <FormLabel>Print Scramble Checker for Final Rounds</FormLabel>
-          <Switch
-            checked={groupifierConfig?.printScrambleCheckerForFinalRounds ?? false}
-            onChange={updatePrintScrambleCheckerForFinalRounds}
-          />
-        </FormControl>
-        <FormControl margin="none">
-          <FormLabel>Print Scramble Checker for Blank Scorecards</FormLabel>
-          <Switch
-            checked={groupifierConfig?.printScrambleCheckerForBlankScorecards ?? false}
-            onChange={updatePrintScrambleCheckerForBlankScorecards}
-          />
-        </FormControl>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={8}>
+            <FormLabel>Print Stations</FormLabel>
+          </Grid>
+          <Grid item xs={4}>
+            <Switch
+              checked={groupifierConfig?.printStations ?? false}
+              onChange={updatePrintStations}
+            />
+          </Grid>
+          <Grid item xs={8}>
+            <FormLabel>Print Scramble Checker for Top Ranked Competitors</FormLabel>
+          </Grid>
+          <Grid item xs={4}>
+            <Switch
+              checked={groupifierConfig?.printScrambleCheckerForTopRankedCompetitors ?? false}
+              onChange={updatePrintScrambleCheckerForTopRankedCompetitors}
+            />
+          </Grid>
+          <Grid item xs={8}>
+            <FormLabel>Print Scramble Checker for Final Rounds</FormLabel>
+          </Grid>
+          <Grid item xs={4}>
+            <Switch
+              checked={groupifierConfig?.printScrambleCheckerForFinalRounds ?? false}
+              onChange={updatePrintScrambleCheckerForFinalRounds}
+            />
+          </Grid>
+          <Grid item xs={8}>
+            <FormLabel>Print Scramble Checker for Blank Scorecards</FormLabel>
+          </Grid>
+          <Grid item xs={4}>
+            <Switch
+              checked={groupifierConfig?.printScrambleCheckerForBlankScorecards ?? false}
+              onChange={updatePrintScrambleCheckerForBlankScorecards}
+            />
+          </Grid>
+        </Grid>
       </Stack>
     </Container>
   );
