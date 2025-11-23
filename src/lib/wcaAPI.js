@@ -58,6 +58,8 @@ export const getPerson = (personId) => wcaApiFetch(`/persons/${personId}`);
 
 export const searchUsers = (query) => wcaApiFetch(`/search/users?q=${query}`);
 
+export const getUser = (userId) => wcaApiFetch(`/users/${userId}`);
+
 export const wcaApiFetch = async (path, fetchOptions = {}) => {
   const baseApiUrl = `${WCA_ORIGIN}/api/v0`;
 

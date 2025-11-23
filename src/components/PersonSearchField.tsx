@@ -1,7 +1,17 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
-import { useAppSelector } from "../store";
-import { searchUsers } from "../lib/wcaAPI";
-import { Autocomplete, Avatar, FormControl, FormLabel, ListItem, ListItemAvatar, ListItemText, TextField, debounce } from "@mui/material";
+import { getUser, searchUsers } from '../lib/wcaAPI';
+import { useAppSelector } from '../store';
+import {
+  Autocomplete,
+  Avatar,
+  FormControl,
+  FormLabel,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  TextField,
+  debounce,
+} from '@mui/material';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 
 export type User = {
   id: number;
@@ -21,13 +31,12 @@ export type User = {
   };
 };
 
-
 export default function PersonSearchField({
   value,
   setValue,
 }: {
-  value: User | null,
-  setValue: (user: User | null) => void
+  value: User | null;
+  setValue: (user: User | null) => void;
 }) {
   // const wcif = useAppSelector((state) => state.wcif);
   // const persons = wcif?.persons;
@@ -38,19 +47,19 @@ export default function PersonSearchField({
 
   const fetch = useMemo(
     () =>
-      debounce(
-        (
-          request: { input: string },
-          callback: (results?: readonly User[]) => void,
-        ) => {
+      debounce((request: { input: string }, callback: (results?: readonly User[]) => void) => {
+        if (isNaN(Number(request.input))) {
           searchUsers(request.input).then((data) => {
-            console.log(data);
             callback(data.result as User[]);
-          })
-        },
-        400,
-      ),
-    [],
+          });
+        } else {
+          // fetch by user id
+          getUser(Number(request.input)).then((data) => {
+            callback([data.user as User]);
+          });
+        }
+      }, 400),
+    []
   );
 
   useEffect(() => {
@@ -75,7 +84,7 @@ export default function PersonSearchField({
           newOptions = [...newOptions, ...results];
         }
 
-        setOptions(newOptions)//.filter((p) => !userIds?.includes(p.id)));
+        setOptions(newOptions); //.filter((p) => !userIds?.includes(p.id)));
       }
     });
 
@@ -114,11 +123,7 @@ export default function PersonSearchField({
             label="User Search"
             InputProps={{
               ...params.InputProps,
-              endAdornment: (
-                <Fragment>
-                  {params.InputProps.endAdornment}
-                </Fragment>
-              ),
+              endAdornment: <Fragment>{params.InputProps.endAdornment}</Fragment>,
             }}
           />
         )}
@@ -137,5 +142,5 @@ export default function PersonSearchField({
         }}
       />
     </FormControl>
-  )
+  );
 }
