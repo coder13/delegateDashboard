@@ -1,10 +1,3 @@
-import '@cubing/icons';
-import { ConfirmProvider } from 'material-ui-confirm';
-import { SnackbarProvider } from 'notistack';
-import ReactDOM from 'react-dom';
-import { Provider } from 'react-redux';
-import CssBaseline from '@mui/material/CssBaseline';
-import { ThemeProvider } from '@mui/material/styles';
 import App from './App';
 import './assets/index.css';
 import QueryParamPreservingRouter from './components/QueryParamPreservingRouter';
@@ -13,8 +6,19 @@ import CommandPromptProvider from './providers/CommandPromptProvider';
 import reportWebVitals from './reportWebVitals';
 import { store } from './store';
 import theme from './theme';
+import '@cubing/icons';
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider } from '@mui/material/styles';
+import { ConfirmProvider } from 'material-ui-confirm';
+import { SnackbarProvider } from 'notistack';
+import { createRoot } from 'react-dom/client';
+import { Provider } from 'react-redux';
 
-ReactDOM.render(
+const container = document.getElementById('root');
+if (!container) throw new Error('Failed to find the root element');
+const root = createRoot(container);
+
+root.render(
   <Provider store={store}>
     <QueryParamPreservingRouter>
       <AuthProvider>
@@ -30,8 +34,7 @@ ReactDOM.render(
         </ThemeProvider>
       </AuthProvider>
     </QueryParamPreservingRouter>
-  </Provider>,
-  document.getElementById('root')
+  </Provider>
 );
 
 // // If you want your app to work offline and load faster, you can change

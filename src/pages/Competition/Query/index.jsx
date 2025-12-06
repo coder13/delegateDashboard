@@ -1,9 +1,5 @@
-import TreeItem from '@material-ui/lab/TreeItem';
-import TreeView from '@material-ui/lab/TreeView';
-import jp from 'jsonpath';
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import useDebounce from '../../../hooks/useDebounce';
+import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
@@ -21,8 +17,12 @@ import {
 } from '@mui/material';
 import { blue, green, red, yellow } from '@mui/material/colors';
 import { Box } from '@mui/system';
-import useDebounce from '../../../hooks/useDebounce';
-import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import { TreeItem } from '@mui/x-tree-view/TreeItem';
+import { TreeView } from '@mui/x-tree-view/TreeView';
+import jp from 'jsonpath';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 function useQuery() {
   const { search } = useLocation();

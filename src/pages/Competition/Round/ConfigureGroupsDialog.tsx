@@ -1,10 +1,7 @@
-import {
-  createGroupActivity,
-  findAllActivities,
-} from '../../../lib/activities';
+import { createGroupActivity, findAllActivities } from '../../../lib/activities';
 import { formatTimeRange } from '../../../lib/time';
 import { omit } from '../../../lib/utils';
-import { useAppSelector } from '../../../store';
+import { useAppSelector, useAppDispatch } from '../../../store';
 import { updateRoundChildActivities } from '../../../store/actions';
 import {
   Add as AddIcon,
@@ -30,7 +27,7 @@ import {
 import {
   DataGrid,
   GridActionsCellItem,
-  GridColumns,
+  GridColDef,
   GridEventListener,
   GridRowEditStopReasons,
   GridRowId,
@@ -42,7 +39,6 @@ import {
 import { Activity, activityCodeToName, parseActivityCode } from '@wca/helpers';
 import { formatDuration } from 'date-fns';
 import React, { Fragment, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
 
 export const ConfigurableGroupList = ({
   roundActivity,
@@ -51,7 +47,7 @@ export const ConfigurableGroupList = ({
   roundActivity: Activity;
   groups: Activity[];
 }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const handleDeleteGroup = (activity: Activity) => {
     console.log('delete', activity);
     const filteredGroups = groups.filter((g) => g.id !== activity.id);
@@ -62,12 +58,8 @@ export const ConfigurableGroupList = ({
 
     const newGroups = filteredGroups.map((g, i) => ({
       ...g,
-      startTime: new Date(
-        startDate.getTime() + (dateDiff / numberOfGroups) * i
-      ),
-      endTime: new Date(
-        startDate.getTime() + (dateDiff / numberOfGroups) * (i + 1)
-      ),
+      startTime: new Date(startDate.getTime() + (dateDiff / numberOfGroups) * i),
+      endTime: new Date(startDate.getTime() + (dateDiff / numberOfGroups) * (i + 1)),
     }));
 
     dispatch(updateRoundChildActivities(roundActivity.id, newGroups));
@@ -77,8 +69,7 @@ export const ConfigurableGroupList = ({
     <List>
       {groups.map((activity) => {
         const duration =
-          new Date(activity.endTime).getTime() -
-          new Date(activity.startTime).getTime();
+          new Date(activity.endTime).getTime() - new Date(activity.startTime).getTime();
         const minutes = duration / 1000 / 60;
 
         return (
@@ -120,7 +111,7 @@ export const ConfigurableGroupTable = ({
   addGroup: () => void;
   editGroups: (Activities: Activity[]) => void;
 }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const handleDeleteGroup = (activity: Activity) => {
     console.log('delete', activity);
     const filteredGroups = groups.filter((g) => g.id !== activity.id);
@@ -131,25 +122,16 @@ export const ConfigurableGroupTable = ({
 
     const newGroups = filteredGroups.map((g, i) => ({
       ...g,
-      startTime: new Date(
-        startDate.getTime() + (dateDiff / numberOfGroups) * i
-      ),
-      endTime: new Date(
-        startDate.getTime() + (dateDiff / numberOfGroups) * (i + 1)
-      ),
+      startTime: new Date(startDate.getTime() + (dateDiff / numberOfGroups) * i),
+      endTime: new Date(startDate.getTime() + (dateDiff / numberOfGroups) * (i + 1)),
     }));
 
     dispatch(updateRoundChildActivities(roundActivity.id, newGroups));
   };
 
-  const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>(
-    {}
-  );
+  const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
 
-  const handleRowEditStop: GridEventListener<'rowEditStop'> = (
-    params,
-    event
-  ) => {
+  const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
     if (params.reason === GridRowEditStopReasons.rowFocusOut) {
       event.defaultMuiPrevented = true;
     }
@@ -167,7 +149,7 @@ export const ConfigurableGroupTable = ({
     const activity = groups.find((g) => g.id === id);
     if (!activity) return;
 
-    dispatch(handleDeleteGroup(activity));
+    handleDeleteGroup(activity);
   };
 
   const handleCancelClick = (id: GridRowId) => () => {
@@ -177,11 +159,8 @@ export const ConfigurableGroupTable = ({
     });
   };
 
-  const processRowUpdate = (
-    newRow: GridRowModel<Activity & { duration: number }>
-  ) => {
-    const newEndTimestamp =
-      new Date(newRow.startTime).getTime() + newRow.duration * 60 * 1000;
+  const processRowUpdate = (newRow: GridRowModel<Activity & { duration: number }>) => {
+    const newEndTimestamp = new Date(newRow.startTime).getTime() + newRow.duration * 60 * 1000;
     const newEndTime = new Date(newEndTimestamp);
 
     const newGroup: Activity = {
@@ -189,9 +168,7 @@ export const ConfigurableGroupTable = ({
       endTime: newEndTime.toISOString(),
     };
     // the following group should have it's start Time increased based on the new endTime
-    const groupAfter = groups.find(
-      (g) => g.startTime > newRow.startTime
-    ) as Activity;
+    const groupAfter = groups.find((g) => g.startTime > newRow.startTime) as Activity;
 
     const newGroupAfter = {
       ...groupAfter,
@@ -213,7 +190,7 @@ export const ConfigurableGroupTable = ({
     return newGroup;
   };
 
-  const columns: GridColumns<Activity> = [
+  const columns: GridColDef<Activity>[] = [
     {
       field: 'name',
       headerName: 'Name',
@@ -225,8 +202,7 @@ export const ConfigurableGroupTable = ({
       headerName: 'Time Frame',
       flex: 1,
       editable: false,
-      valueGetter: ({ row }) =>
-        `${formatTimeRange(row.startTime, row.endTime)}`,
+      valueGetter: ({ row }) => `${formatTimeRange(row.startTime, row.endTime)}`,
     },
     {
       field: 'duration',
@@ -237,8 +213,7 @@ export const ConfigurableGroupTable = ({
       headerAlign: 'left',
       editable: true,
       valueGetter: ({ row }) => {
-        const duration =
-          new Date(row.endTime).getTime() - new Date(row.startTime).getTime();
+        const duration = new Date(row.endTime).getTime() - new Date(row.startTime).getTime();
         const minutes = duration / 1000 / 60;
         return minutes;
       },
@@ -254,6 +229,7 @@ export const ConfigurableGroupTable = ({
 
         if (isInEditMode) {
           return [
+            // @ts-ignore - React 18 type compatibility issue with @mui/x-data-grid v5
             <GridActionsCellItem
               icon={<SaveIcon />}
               label="Save"
@@ -262,6 +238,7 @@ export const ConfigurableGroupTable = ({
               }}
               onClick={handleSaveClick(id)}
             />,
+            // @ts-ignore - React 18 type compatibility issue with @mui/x-data-grid v5
             <GridActionsCellItem
               icon={<CancelIcon />}
               label="Cancel"
@@ -273,6 +250,7 @@ export const ConfigurableGroupTable = ({
         }
 
         return [
+          // @ts-ignore - React 18 type compatibility issue with @mui/x-data-grid v5
           <GridActionsCellItem
             icon={<EditIcon />}
             label="Edit"
@@ -280,6 +258,7 @@ export const ConfigurableGroupTable = ({
             onClick={handleEditClick(id)}
             color="inherit"
           />,
+          // @ts-ignore - React 18 type compatibility issue with @mui/x-data-grid v5
           <GridActionsCellItem
             icon={<Delete />}
             label="Delete"
@@ -309,21 +288,18 @@ export const ConfigurableGroupTable = ({
           </GridToolbarContainer>
         ),
       }}
-      experimentalFeatures={{ newEditingApi: true }}
     />
   );
 };
 
 export const ConfigureGroupsDialog = ({ open, onClose, activityCode }) => {
   const wcif = useAppSelector((state) => state.wcif);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   // Rooms that have this activity
   const rooms = wcif?.schedule?.venues
     .flatMap((venue) => venue.rooms)
-    ?.filter((room) =>
-      room.activities.some((ra) => ra.activityCode === activityCode)
-    );
+    ?.filter((room) => room.activities.some((ra) => ra.activityCode === activityCode));
 
   const addGroup = useCallback(
     (ra: Activity) => {
@@ -335,9 +311,7 @@ export const ConfigureGroupsDialog = ({ open, onClose, activityCode }) => {
           (parseActivityCode(a.activityCode).groupNumber ?? 0) -
           (parseActivityCode(b.activityCode).groupNumber ?? 0)
       );
-      const lastGroup = parseActivityCode(
-        groups[groups.length - 1].activityCode
-      );
+      const lastGroup = parseActivityCode(groups[groups.length - 1].activityCode);
       const newGroupNumber = (lastGroup?.groupNumber ?? 0) + 1;
       const startDate = new Date(ra.startTime);
       const endDate = new Date(ra.endTime);
@@ -345,21 +319,11 @@ export const ConfigureGroupsDialog = ({ open, onClose, activityCode }) => {
 
       const newGroups = [
         ...groups,
-        createGroupActivity(
-          maxId,
-          ra,
-          newGroupNumber,
-          ra.startTime,
-          ra.endTime
-        ),
+        createGroupActivity(maxId, ra, newGroupNumber, ra.startTime, ra.endTime),
       ].map((g, i, arr) => ({
         ...g,
-        startTime: new Date(
-          startDate.getTime() + (dateDiff / arr.length) * i
-        ).toISOString(),
-        endTime: new Date(
-          startDate.getTime() + (dateDiff / arr.length) * (i + 1)
-        ).toISOString(),
+        startTime: new Date(startDate.getTime() + (dateDiff / arr.length) * i).toISOString(),
+        endTime: new Date(startDate.getTime() + (dateDiff / arr.length) * (i + 1)).toISOString(),
       }));
 
       dispatch(
@@ -406,9 +370,8 @@ export const ConfigureGroupsDialog = ({ open, onClose, activityCode }) => {
                     <ConfigurableGroupTable
                       roundActivity={ra}
                       groups={
-                        room.activities.find(
-                          (ra) => ra.activityCode === activityCode
-                        )?.childActivities || []
+                        room.activities.find((ra) => ra.activityCode === activityCode)
+                          ?.childActivities || []
                       }
                       addGroup={() => addGroup(ra)}
                       editGroups={(groups) => editGroups(ra, groups)}

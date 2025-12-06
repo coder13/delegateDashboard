@@ -1,4 +1,3 @@
-import { Person } from '@wca/helpers';
 import {
   Button,
   Dialog,
@@ -8,6 +7,7 @@ import {
   List,
   ListItem,
 } from '@mui/material';
+import { Person } from '@wca/helpers';
 
 const PersonsDialog = ({
   open,
@@ -26,9 +26,7 @@ const PersonsDialog = ({
       <DialogContent>
         <List dense>
           {persons.map((person) => (
-            <ListItem button key={person.registrantId}>
-              {person.name}
-            </ListItem>
+            <ListItem key={person.registrantId}>{person.name}</ListItem>
           ))}
         </List>
       </DialogContent>

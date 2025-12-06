@@ -1,8 +1,8 @@
 import { AppState } from './initialState';
 import reducer from './reducer';
-import { TypedUseSelectorHook, useSelector } from 'react-redux';
-import { createStore, applyMiddleware, compose } from 'redux';
-import thunkMiddleware from 'redux-thunk';
+import { TypedUseSelectorHook, useSelector, useDispatch } from 'react-redux';
+import { createStore, applyMiddleware, compose, AnyAction } from 'redux';
+import thunkMiddleware, { ThunkDispatch } from 'redux-thunk';
 
 // @ts-ignore
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -11,7 +11,8 @@ export const store = createStore(reducer, composeEnhancers(applyMiddleware(thunk
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<typeof store.getState>;
-// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
-export type AppDispatch = typeof store.dispatch;
+// Configure AppDispatch to support thunk actions
+export type AppDispatch = ThunkDispatch<RootState, unknown, AnyAction>;
 
 export const useAppSelector: TypedUseSelectorHook<AppState> = useSelector;
+export const useAppDispatch: () => AppDispatch = useDispatch;
