@@ -1,7 +1,7 @@
 import { getUpcomingManageableCompetitions, getWcif, patchWcif } from '../lib/api';
 import { sortWcifEvents } from '../lib/domain/events';
 import { updateIn, pick } from '../lib/utils/utils';
-import { validateWcif } from '../lib/wcif/wcif-validation';
+import { validateWcif } from '../lib/wcif/validation';
 
 export const FETCHING_COMPETITIONS = 'fetching_competitions';
 export const SET_ERROR_FETCHING_COMPS = 'set_error_fetching_comps';

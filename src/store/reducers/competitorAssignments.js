@@ -4,7 +4,7 @@ import {
   upsertAssignmentsOnPerson,
 } from '../../lib/domain/persons';
 import { mapIn, updateIn } from '../../lib/utils/utils';
-import { validateWcif } from '../../lib/wcif/wcif-validation';
+import { validateWcif } from '../../lib/wcif/validation';
 
 const determineErrors = (state) => ({
   ...state,

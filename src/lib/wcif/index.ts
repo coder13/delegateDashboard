@@ -1,3 +1,3 @@
 export * from './extensions/wcif-extensions';
-export * from './wcif-validation';
+export * from './validation';
 export * from './groups';

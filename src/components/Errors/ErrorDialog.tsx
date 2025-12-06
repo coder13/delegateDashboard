@@ -1,5 +1,5 @@
 import { activityDurationString } from '../../lib/domain/activities';
-import { PERSON_ASSIGNMENT_SCHEDULE_CONFLICT } from '../../lib/wcif/wcif-validation';
+import { PERSON_ASSIGNMENT_SCHEDULE_CONFLICT } from '../../lib/wcif/validation';
 import { bulkRemovePersonAssignments } from '../../store/actions';
 import { WCIFError } from './types';
 import DeleteIcon from '@mui/icons-material/Delete';
