@@ -1,6 +1,11 @@
-import { getLocalStorage, localStorageKey, setLocalStorage } from '../lib/localStorage';
-import { WCA_ORIGIN, WCA_OAUTH_CLIENT_ID } from '../lib/wca-env';
-import { getMe } from '../lib/wcaAPI';
+import {
+  getLocalStorage,
+  localStorageKey,
+  setLocalStorage,
+  WCA_ORIGIN,
+  WCA_OAUTH_CLIENT_ID,
+  getMe,
+} from '../lib/api';
 import { useState, useEffect, createContext, useContext, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 

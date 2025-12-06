@@ -1,4 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import Assignments from '../../config/assignments';
+import { findRooms } from '../../lib/domain/activities';
+import { acceptedRegistration } from '../../lib/domain/persons';
+import { byName, uniq } from '../../lib/utils/utils';
+import { useAppSelector } from '../../store';
 import { EmojiPeople } from '@mui/icons-material';
 import {
   Checkbox,
@@ -15,11 +19,7 @@ import {
   TableRow,
   Tooltip,
 } from '@mui/material';
-import Assignments from '../../config/assignments';
-import { findRooms } from '../../lib/activities';
-import { acceptedRegistration } from '../../lib/persons';
-import { byName, uniq } from '../../lib/utils';
-import { useAppSelector } from '../../store';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export default function GanttChart() {
   const wcif = useAppSelector((state) => state.wcif);

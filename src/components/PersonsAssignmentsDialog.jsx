@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
-import { useSelector } from 'react-redux';
+import { findGroupActivitiesByRound, parseActivityCode } from '../lib/domain/activities';
+import { byName } from '../lib/utils/utils';
 import {
   Button,
   Dialog,
@@ -12,8 +12,8 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { findGroupActivitiesByRound, parseActivityCode } from '../lib/activities';
-import { byName } from '../lib/utils';
+import { useCallback } from 'react';
+import { useSelector } from 'react-redux';
 
 const PersonsAssignmentsDialog = ({ open, onClose, roundId, persons }) => {
   const wcif = useSelector((state) => state.wcif);

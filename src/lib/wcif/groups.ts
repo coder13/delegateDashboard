@@ -1,4 +1,3 @@
-import { Activity, Assignment, Competition } from '@wca/helpers';
 import {
   createGroupActivity,
   generateNextChildActivityId,
@@ -6,8 +5,9 @@ import {
   findGroupActivitiesByRound,
   ActivityWithParent,
   findRooms,
-} from './activities';
-import { InProgressAssignmment } from './assignments';
+} from '../domain';
+import { InProgressAssignmment } from '../domain';
+import { Activity, Assignment, Competition } from '@wca/helpers';
 
 /**
  * Takes WCIF to compute the initial startActivityId.

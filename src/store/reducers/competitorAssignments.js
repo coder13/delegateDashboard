@@ -2,9 +2,9 @@ import {
   addAssignmentsToPerson,
   removeAssignmentsFromPerson,
   upsertAssignmentsOnPerson,
-} from '../../lib/persons';
-import { mapIn, updateIn } from '../../lib/utils';
-import { validateWcif } from '../../lib/wcif-validation';
+} from '../../lib/domain/persons';
+import { mapIn, updateIn } from '../../lib/utils/utils';
+import { validateWcif } from '../../lib/wcif/wcif-validation';
 
 const determineErrors = (state) => ({
   ...state,

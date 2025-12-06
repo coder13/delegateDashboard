@@ -1,19 +1,19 @@
-import '@cubing/icons';
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { TransitionGroup } from 'react-transition-group';
-import { Collapse, Divider, FormControlLabel, Switch } from '@mui/material';
-import List from '@mui/material/List';
-import ListSubheader from '@mui/material/ListSubheader';
-import { makeStyles } from '@mui/styles';
 import {
   earliestStartTimeForRound,
   hasDistributedAttempts,
   parseActivityCode,
-} from '../../lib/activities';
-import { eventNameById } from '../../lib/events';
+} from '../../lib/domain/activities';
+import { eventNameById } from '../../lib/domain/events';
 import { useCommandPrompt } from '../../providers/CommandPromptProvider';
 import RoundListItem from './RoundListItem';
+import '@cubing/icons';
+import { Collapse, Divider, FormControlLabel, Switch } from '@mui/material';
+import List from '@mui/material/List';
+import ListSubheader from '@mui/material/ListSubheader';
+import { makeStyles } from '@mui/styles';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { TransitionGroup } from 'react-transition-group';
 
 const useStyles = makeStyles((theme) => ({
   root: {

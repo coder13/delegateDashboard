@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { generateNextChildActivityId, parseActivityCode } from '../../../lib/domain/activities';
+import { useAppSelector } from '../../../store';
+import { editActivity } from '../../../store/actions';
 import {
   Box,
   Button,
@@ -11,18 +12,17 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { generateNextChildActivityId, parseActivityCode } from '../../../lib/activities';
-import { editActivity } from '../../../store/actions';
 import { activityCodeToName } from '@wca/helpers';
-import { useAppSelector } from '../../../store';
+import { useCallback, useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
 const ConfigureGroupDialog = ({ open, onClose, activity }) => {
   const wcif = useAppSelector((state) => state.wcif);
   const dispatch = useDispatch();
   const { eventId, roundNumber, ...rest } = parseActivityCode(activity.activityCode) as {
-    eventId: string,
-    roundNumber: number,
-    groupNumber: number,
+    eventId: string;
+    roundNumber: number;
+    groupNumber: number;
   };
 
   const [id, setId] = useState<number>(activity.id);
@@ -34,13 +34,13 @@ const ConfigureGroupDialog = ({ open, onClose, activity }) => {
     if (groupNumber && !isNaN(groupNumber) && groupNumber > 0) {
       setName(activityCodeToName(newActivityCode));
     }
-  }, [setName, groupNumber])
+  }, [setName, groupNumber]);
 
   const handleSave = () => {
     if (!id) {
       return;
     }
- 
+
     dispatch(
       editActivity(
         {
@@ -49,21 +49,21 @@ const ConfigureGroupDialog = ({ open, onClose, activity }) => {
           name: activity.name,
         },
         {
-          ...(
-            id !== activity.id ? {
-              id,
-            } : null
-          ),
-          ...(
-            newActivityCode !== activity.activityCode ? {
-              activityCode: newActivityCode,
-            } : null
-          ),
-          ...(
-            name !== activity.name ? {
-              name: name,
-            } : null
-          )
+          ...(id !== activity.id
+            ? {
+                id,
+              }
+            : null),
+          ...(newActivityCode !== activity.activityCode
+            ? {
+                activityCode: newActivityCode,
+              }
+            : null),
+          ...(name !== activity.name
+            ? {
+                name: name,
+              }
+            : null),
         }
       )
     );
@@ -78,7 +78,7 @@ const ConfigureGroupDialog = ({ open, onClose, activity }) => {
 
     const maxId = generateNextChildActivityId(wcif);
     setId(maxId);
-  }
+  };
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -90,11 +90,11 @@ const ConfigureGroupDialog = ({ open, onClose, activity }) => {
           padding: '1em',
         }}>
         <Typography>
-          {'You likely shouldn\'t be using this dialog unless you know what you\'re doing.'}
+          {"You likely shouldn't be using this dialog unless you know what you're doing."}
         </Typography>
         <br />
         <FormGroup>
-          <Box sx={{display: 'flex'}}>
+          <Box sx={{ display: 'flex' }}>
             <TextField
               id="activityId"
               margin="dense"
@@ -115,7 +115,7 @@ const ConfigureGroupDialog = ({ open, onClose, activity }) => {
             inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
             value={groupNumber ?? ''}
             onChange={(e) => {
-              setGroupNumber(e.target.value ? parseInt(e.target.value, 10) : undefined)
+              setGroupNumber(e.target.value ? parseInt(e.target.value, 10) : undefined);
             }}
           />
           <TextField

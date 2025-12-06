@@ -1,9 +1,6 @@
 import Link from '../../../components/MaterialLink';
-import {
-  acceptedRegistration,
-  isOrganizerOrDelegate,
-} from '../../../lib/persons';
-import { pluralize } from '../../../lib/utils';
+import { acceptedRegistration, isOrganizerOrDelegate } from '../../../lib/domain/persons';
+import { pluralize } from '../../../lib/utils/utils';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import { togglePersonRole } from '../../../store/actions';
 import AddNonCompetingStaffDialog from './AddNonCompetingStaffDialog';
@@ -91,8 +88,7 @@ const Staff = () => {
   const dispatch = useDispatch();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [competitorSort, setCompetitorSort] = useState('name');
-  const [nonCompetingStaffDialogOpen, setNonCompetingStaffDialogOpen] =
-    useState(false);
+  const [nonCompetingStaffDialogOpen, setNonCompetingStaffDialogOpen] = useState(false);
 
   useEffect(() => {
     setBreadcrumbs([
@@ -139,11 +135,7 @@ const Staff = () => {
             value={competitorSort}
             onChange={(e) => setCompetitorSort(e.target.value)}>
             <FormControlLabel value="name" control={<Radio />} label="Name" />
-            <FormControlLabel
-              value="wcaId"
-              control={<Radio />}
-              label="Wca ID"
-            />
+            <FormControlLabel value="wcaId" control={<Radio />} label="Wca ID" />
             <FormControlLabel value="dob" control={<Radio />} label="Age" />
           </RadioGroup>
         </FormControl>
@@ -203,19 +195,16 @@ const Staff = () => {
                   key={person.wcaUserId}
                   hover
                   className={clsx({
-                    [classes.firstTimer]:
-                      acceptedRegistration(person) && !person.wcaId,
+                    [classes.firstTimer]: acceptedRegistration(person) && !person.wcaId,
                     [classes.delegateOrOrganizer]:
-                      acceptedRegistration(person) &&
-                      isOrganizerOrDelegate(person),
+                      acceptedRegistration(person) && isOrganizerOrDelegate(person),
                     [classes.disabled]: !acceptedRegistration(person),
                   })}
                   classes={{
                     hover: classes.hover,
                   }}>
                   <TableCell>
-                    <Link
-                      to={`/competitions/${competitionId}/persons/${person.registrantId}`}>
+                    <Link to={`/competitions/${competitionId}/persons/${person.registrantId}`}>
                       {person.name}
                     </Link>
                   </TableCell>
@@ -241,9 +230,7 @@ const Staff = () => {
                         disabled={!acceptedRegistration(person)}
                         color="primary"
                         checked={person.roles?.indexOf(role.id) > -1}
-                        onChange={(e) =>
-                          handleChange(e, person.registrantId, role.id)
-                        }
+                        onChange={(e) => handleChange(e, person.registrantId, role.id)}
                       />
                     </TableCell>
                   ))}
@@ -253,19 +240,15 @@ const Staff = () => {
           <TableFooter>
             <TableRow>
               <TableCell className={classes.bold}>
-                {
-                  acceptedPersons.filter((person) => person.roles.length > 0)
-                    .length
-                }
+                {acceptedPersons.filter((person) => person.roles.length > 0).length}
                 {' / '}
                 {wcif.persons.filter(acceptedRegistration).length}
                 {' Staff'}
               </TableCell>
               <TableCell className={classes.bold}>
                 {pluralize(
-                  wcif.persons
-                    .filter(acceptedRegistration)
-                    .filter((person) => !person.wcaId).length,
+                  wcif.persons.filter(acceptedRegistration).filter((person) => !person.wcaId)
+                    .length,
                   'First-Timer'
                 )}
               </TableCell>
@@ -278,11 +261,7 @@ const Staff = () => {
                 }
               </TableCell>
               <TableCell className={classes.bold}>
-                {
-                  acceptedPersons.filter((person) =>
-                    person.roles.includes('organizer')
-                  ).length
-                }
+                {acceptedPersons.filter((person) => person.roles.includes('organizer')).length}
               </TableCell>
               {ROLES.map((role) => (
                 <TableCell key={role.id} className={classes.bold}>

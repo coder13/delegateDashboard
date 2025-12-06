@@ -5,9 +5,8 @@ import {
   activityCodeToName,
   ActivityWithParent,
   ActivityWithRoom,
-} from '../../../lib/activities';
-import { roundFormatById } from '../../../lib/events';
-import { parseCompetitorAssignment } from '../../../lib/import2';
+} from '../../../lib/domain/activities';
+import { roundFormatById } from '../../../lib/domain/events';
 import {
   acceptedRegistration,
   byPROrResult,
@@ -15,9 +14,13 @@ import {
   isOrganizerOrDelegate,
   registeredForEvent,
   shouldBeInRound,
-} from '../../../lib/persons';
-import { flatten } from '../../../lib/utils';
-import { getExtensionData, setExtensionData } from '../../../lib/wcif-extensions';
+} from '../../../lib/domain/persons';
+import { parseCompetitorAssignment } from '../../../lib/importExport';
+import { flatten } from '../../../lib/utils/utils';
+import {
+  getGroupifierActivityConfig,
+  setGroupifierActivityConfig,
+} from '../../../lib/wcif/extensions/groupifier';
 import { useAppSelector } from '../../../store';
 import {
   upsertPersonAssignments,
@@ -479,7 +482,7 @@ const ConfigureAssignmentsDialog = ({
   const featuredCompetitors = useMemo(
     () =>
       groups.flatMap((activity) => {
-        const extensionData = getExtensionData('ActivityConfig', activity, 'groupifier');
+        const extensionData = getGroupifierActivityConfig(activity);
         return extensionData?.featuredCompetitorWcaUserIds || [];
       }),
     [groups]
@@ -499,8 +502,7 @@ const ConfigureAssignmentsDialog = ({
       }
 
       const activityFeaturedCompetitors =
-        getExtensionData('ActivityConfig', competingActivity, 'groupifier')
-          ?.featuredCompetitorWcaUserIds || [];
+        getGroupifierActivityConfig(competingActivity)?.featuredCompetitorWcaUserIds || [];
 
       const {
         // @ts-expect-error
@@ -510,17 +512,11 @@ const ConfigureAssignmentsDialog = ({
         ...competingActivityWithoutRoom
       } = competingActivity as ActivityWithRoom | ActivityWithParent;
 
-      const newActivity = setExtensionData(
-        'ActivityConfig',
-        competingActivityWithoutRoom,
-        {
-          featuredCompetitorWcaUserIds: activityFeaturedCompetitors.includes(person.wcaUserId)
-            ? activityFeaturedCompetitors.filter((id) => id !== person.wcaUserId)
-            : [...activityFeaturedCompetitors, person.wcaUserId],
-        },
-        'groupifier',
-        'https://github.com/cubingusa/natshelper/blob/main/specification.md'
-      );
+      const newActivity = setGroupifierActivityConfig(competingActivityWithoutRoom, {
+        featuredCompetitorWcaUserIds: activityFeaturedCompetitors.includes(person.wcaUserId)
+          ? activityFeaturedCompetitors.filter((id) => id !== person.wcaUserId)
+          : [...activityFeaturedCompetitors, person.wcaUserId],
+      });
 
       dispatch(editActivity(competingActivity, newActivity));
     },

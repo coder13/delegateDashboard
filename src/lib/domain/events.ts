@@ -1,4 +1,4 @@
-import { sortBy } from './utils';
+import { sortBy } from '../utils';
 import { Event, EventId } from '@wca/helpers';
 
 interface EventInfo {

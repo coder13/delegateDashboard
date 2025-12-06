@@ -1,9 +1,9 @@
+import { shortEventNameById } from '../lib/domain/events';
+import { acceptedRegistrations } from '../lib/domain/persons';
+import { Card, CardContent, Typography } from '@mui/material';
 import { Competition } from '@wca/helpers';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { Card, CardContent, Typography } from '@mui/material';
-import { shortEventNameById } from '../lib/events';
-import { acceptedRegistrations } from '../lib/persons';
 
 export default function CompetitionSummary() {
   const wcif = useSelector((state: { wcif: Competition }) => state.wcif);

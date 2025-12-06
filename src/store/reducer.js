@@ -1,6 +1,6 @@
-import { findAndReplaceActivity } from '../lib/activities';
-import { mapIn } from '../lib/utils';
-import { setExtensionData } from '../lib/wcif-extensions';
+import { findAndReplaceActivity } from '../lib/domain/activities';
+import { mapIn } from '../lib/utils/utils';
+import { setExtensionData } from '../lib/wcif/extensions/wcif-extensions';
 import {
   SET_COMPETITIONS,
   TOGGLE_PERSON_ROLE,

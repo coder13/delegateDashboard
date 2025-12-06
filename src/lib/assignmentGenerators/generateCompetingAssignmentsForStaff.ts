@@ -1,13 +1,13 @@
-import { Competition, Event, Person } from '@wca/helpers';
-import { ActivityWithParent, findGroupActivitiesByRound, parseActivityCode } from '../activities';
+import { ActivityWithParent, findGroupActivitiesByRound, parseActivityCode } from '../domain';
 import {
   hasStaffAssignment,
   InProgressAssignmment,
   isStaffAssignment,
   missingCompetitorAssignments,
-} from '../assignments';
-import { createGroupAssignment, previousGroupForActivity } from '../groups';
-import { personsShouldBeInRound } from '../persons';
+} from '../domain';
+import { personsShouldBeInRound } from '../domain';
+import { createGroupAssignment, previousGroupForActivity } from '../wcif';
+import { Competition, Event, Person } from '@wca/helpers';
 
 /**
  * Determines the soonest group that this person is assigned

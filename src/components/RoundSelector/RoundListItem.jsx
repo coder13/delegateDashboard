@@ -2,8 +2,8 @@ import {
   cumulativeGroupCount,
   findGroupActivitiesByRound,
   parseActivityCode,
-} from '../../lib/activities';
-import { pluralize } from '../../lib/utils';
+} from '../../lib/domain/activities';
+import { pluralize } from '../../lib/utils/utils';
 import {
   selectPersonsAssignedForRound,
   selectPersonsHavingCompetitorAssignmentsForRound,

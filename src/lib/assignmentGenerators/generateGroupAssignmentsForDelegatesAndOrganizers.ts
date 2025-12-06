@@ -1,9 +1,9 @@
-import { Activity, Competition, Event } from '@wca/helpers';
-import { findRoundActivitiesById, parseActivityCode } from '../activities';
-import { InProgressAssignmment, missingCompetitorAssignments } from '../assignments';
-import { createGroupAssignment } from '../groups';
-import { byPROrResult, isOrganizerOrDelegate, personsShouldBeInRound } from '../persons';
+import { findRoundActivitiesById, parseActivityCode } from '../domain';
+import { InProgressAssignmment, missingCompetitorAssignments } from '../domain';
+import { byPROrResult, isOrganizerOrDelegate, personsShouldBeInRound } from '../domain';
 import { byName } from '../utils';
+import { createGroupAssignment } from '../wcif';
+import { Activity, Competition, Event } from '@wca/helpers';
 
 export const generateGroupAssignmentsForDelegatesAndOrganizers = (
   wcif: Competition,

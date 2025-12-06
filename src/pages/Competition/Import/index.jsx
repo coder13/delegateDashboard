@@ -1,6 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
-import { usePapaParse } from 'react-papaparse';
-import { useDispatch, useSelector } from 'react-redux';
+import {
+  validate,
+  generateAssignments,
+  determineMissingGroupActivities,
+  upsertCompetitorAssignments,
+  generateMissingGroupActivities,
+  determineStageForAssignments,
+  balanceStartAndEndTimes,
+} from '../../../lib/importExport';
+import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import { partialUpdateWCIF } from '../../../store/actions';
+import CSVPreview from './CSVPreview';
 import {
   Accordion,
   AccordionDetails,
@@ -11,18 +20,9 @@ import {
   Grid,
   Typography,
 } from '@mui/material';
-import {
-  validate,
-  generateAssignments,
-  determineMissingGroupActivities,
-  upsertCompetitorAssignments,
-  generateMissingGroupActivities,
-  determineStageForAssignments,
-  balanceStartAndEndTimes,
-} from '../../../lib/import';
-import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
-import { partialUpdateWCIF } from '../../../store/actions';
-import CSVPreview from './CSVPreview';
+import { useEffect, useMemo, useState } from 'react';
+import { usePapaParse } from 'react-papaparse';
+import { useDispatch, useSelector } from 'react-redux';
 
 const mapCSVFieldToData = (necessaryFields) => (field) => {
   if (necessaryFields.indexOf(field) > -1) {

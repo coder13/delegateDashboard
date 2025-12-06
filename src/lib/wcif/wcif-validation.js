@@ -5,9 +5,9 @@ import {
   findAllActivities,
   findAllRoundActivities,
   roomByActivity,
-} from './activities';
-import { acceptedRegistrations } from './persons';
-import { flatMap, pluralizeWord } from './utils';
+} from '../domain';
+import { acceptedRegistrations } from '../domain';
+import { flatMap, pluralizeWord } from '../utils';
 
 export const MISSING_ADVANCEMENT_CONDITION = 'missing_advancement_condition';
 export const NO_SCHEDULE_ACTIVITIES_FOR_ROUND = 'no_schedule_activities_for_round';

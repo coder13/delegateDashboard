@@ -1,5 +1,5 @@
+import { pick } from '../utils';
 import { getLocalStorage } from './localStorage';
-import { pick } from './utils';
 import { WCA_ORIGIN } from './wca-env';
 
 const wcaAccessToken = () => getLocalStorage('accessToken');

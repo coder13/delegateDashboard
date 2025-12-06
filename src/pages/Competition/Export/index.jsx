@@ -1,8 +1,9 @@
-import { findGroupActivitiesByRound, parseActivityCode } from '../../../lib/activities';
-import { eventNameById, roundFormatById } from '../../../lib/events';
-import { acceptedRegistrations } from '../../../lib/persons';
-import { flatten } from '../../../lib/utils';
-import { getExtensionData } from '../../../lib/wcif-extensions';
+import { findGroupActivitiesByRound, parseActivityCode } from '../../../lib/domain/activities';
+import { eventNameById, roundFormatById } from '../../../lib/domain/events';
+import { acceptedRegistrations } from '../../../lib/domain/persons';
+import { flatten } from '../../../lib/utils/utils';
+import { getGroupifierActivityConfig } from '../../../lib/wcif/extensions/groupifier';
+import { getExtensionData } from '../../../lib/wcif/extensions/wcif-extensions';
 import { Button, Grid, Typography } from '@mui/material';
 import { formatCentiseconds } from '@wca/helpers';
 import { ExportToCsv } from 'export-to-csv';
@@ -229,8 +230,7 @@ const ExportPage = () => {
           );
 
           const featuredCompetitors =
-            getExtensionData('ActivityConfig', groupActivity, 'groupifier')
-              ?.featuredCompetitorWcaUserIds || [];
+            getGroupifierActivityConfig(groupActivity)?.featuredCompetitorWcaUserIds || [];
 
           const stageName = getStageName(groupActivity.parent.room, groupActivity);
 

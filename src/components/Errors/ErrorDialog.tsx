@@ -1,4 +1,7 @@
-import { useDispatch } from 'react-redux';
+import { activityDurationString } from '../../lib/domain/activities';
+import { PERSON_ASSIGNMENT_SCHEDULE_CONFLICT } from '../../lib/wcif/wcif-validation';
+import { bulkRemovePersonAssignments } from '../../store/actions';
+import { WCIFError } from './types';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {
   Button,
@@ -12,10 +15,7 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material';
-import { activityDurationString } from '../../lib/activities';
-import { PERSON_ASSIGNMENT_SCHEDULE_CONFLICT } from '../../lib/wcif-validation';
-import { bulkRemovePersonAssignments } from '../../store/actions';
-import { WCIFError } from './types';
+import { useDispatch } from 'react-redux';
 
 const ErrorRenderers = {
   [PERSON_ASSIGNMENT_SCHEDULE_CONFLICT]: (error: WCIFError) => {

@@ -1,13 +1,13 @@
-import { Competition, Event } from '@wca/helpers';
-import { findGroupActivitiesByRound, parseActivityCode } from '../activities';
+import { findGroupActivitiesByRound, parseActivityCode } from '../domain';
 import {
   findCompetingAssignment,
   hasCompetitorAssignment,
   InProgressAssignmment,
   missingStaffAssignments,
-} from '../assignments';
-import { createGroupAssignment, nextGroupForActivity } from '../groups';
-import { isOrganizerOrDelegate, personsShouldBeInRound } from '../persons';
+} from '../domain';
+import { isOrganizerOrDelegate, personsShouldBeInRound } from '../domain';
+import { createGroupAssignment, nextGroupForActivity } from '../wcif';
+import { Competition, Event } from '@wca/helpers';
 
 export const generateJudgeAssignmentsFromCompetingAssignments = (
   wcif: Competition,

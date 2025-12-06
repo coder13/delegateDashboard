@@ -1,5 +1,12 @@
-import { useCallback, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+import MaterialLink from '../../../components/MaterialLink';
+import {
+  activityCodeToName,
+  findAllActivities,
+  findAllRoundActivities,
+  parseActivityCode,
+  findRooms,
+} from '../../../lib/domain/activities';
+import { flatMap, groupBy } from '../../../lib/utils/utils';
 import {
   FormControl,
   FormControlLabel,
@@ -12,15 +19,8 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import MaterialLink from '../../../components/MaterialLink';
-import {
-  activityCodeToName,
-  findAllActivities,
-  findAllRoundActivities,
-  parseActivityCode,
-  findRooms,
-} from '../../../lib/activities';
-import { flatMap, groupBy } from '../../../lib/utils';
+import { useCallback, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 const DaysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 

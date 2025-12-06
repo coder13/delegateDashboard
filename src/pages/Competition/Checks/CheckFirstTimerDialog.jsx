@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { searchPersons } from '../../../lib/api';
 import {
   Alert,
   AppBar,
@@ -19,7 +19,7 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import { searchPersons } from '../../../lib/wcaAPI';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function CheckFirstTimerDialog({ open, onClose, person }) {
   const [personSearch, setPersonSearch] = useState(null);

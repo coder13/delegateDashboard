@@ -1,5 +1,8 @@
-import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { activityDuration } from '../../../lib/domain/activities';
+import { getExtensionData } from '../../../lib/wcif/extensions/wcif-extensions';
+import { createGroupsAcrossStages } from '../../../lib/wcif/groups';
+import { updateRoundActivities, updateRoundExtensionData } from '../../../store/actions';
+import { selectPersonsShouldBeInRound } from '../../../store/selectors';
 import {
   Alert,
   Box,
@@ -18,11 +21,8 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { activityDuration } from '../../../lib/activities';
-import { createGroupsAcrossStages } from '../../../lib/groups';
-import { getExtensionData } from '../../../lib/wcif-extensions';
-import { updateRoundActivities, updateRoundExtensionData } from '../../../store/actions';
-import { selectPersonsShouldBeInRound } from '../../../store/selectors';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundActivities }) => {
   const wcif = useSelector((state) => state.wcif);

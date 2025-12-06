@@ -1,4 +1,4 @@
-import { getUpcomingManageableCompetitions } from '../../lib/wcaAPI';
+import { getUpcomingManageableCompetitions } from '../../lib/api';
 import { APICompetition, CompetitionLink } from './CompetitionLink';
 import { Container } from '@mui/material';
 import { useEffect, useState } from 'react';

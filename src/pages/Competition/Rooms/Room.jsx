@@ -1,6 +1,12 @@
-import { useConfirm } from 'material-ui-confirm';
-import React, { useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { generateNextChildActivityId, parseActivityCode } from '../../../lib/domain/activities';
+import { advancingCompetitors } from '../../../lib/domain/formulas';
+import { acceptedRegistrations } from '../../../lib/domain/persons';
+import { getGroupData } from '../../../lib/wcif/extensions/wcif-extensions';
+import {
+  updateRoundChildActivities,
+  updateGroupCount,
+  updateRoundActivities,
+} from '../../../store/actions';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Button, MenuItem, TextField } from '@mui/material';
 import Card from '@mui/material/Card';
@@ -15,15 +21,9 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { makeStyles } from '@mui/styles';
-import { generateNextChildActivityId, parseActivityCode } from '../../../lib/activities';
-import { advancingCompetitors } from '../../../lib/formulas';
-import { acceptedRegistrations } from '../../../lib/persons';
-import { getGroupData } from '../../../lib/wcif-extensions';
-import {
-  updateRoundChildActivities,
-  updateGroupCount,
-  updateRoundActivities,
-} from '../../../store/actions';
+import { useConfirm } from 'material-ui-confirm';
+import React, { useMemo } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 
 const useStyles = makeStyles((theme) => ({
   card: ({ room }) => ({

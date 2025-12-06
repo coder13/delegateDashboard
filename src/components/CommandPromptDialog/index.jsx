@@ -1,7 +1,7 @@
-import Fuse from 'fuse.js';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import useDebounce from '../../hooks/useDebounce';
+import { findAllActivities } from '../../lib/domain/activities';
+import { acceptedRegistrations } from '../../lib/domain/persons';
+import SearchResultList from '../SearchResultList';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
@@ -12,10 +12,10 @@ import {
   Paper,
 } from '@mui/material';
 import { useTheme } from '@mui/styles';
-import useDebounce from '../../hooks/useDebounce';
-import { findAllActivities } from '../../lib/activities';
-import { acceptedRegistrations } from '../../lib/persons';
-import SearchResultList from '../SearchResultList';
+import Fuse from 'fuse.js';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 const options = {
   keys: ['name', 'wcaId', 'activityCode'],

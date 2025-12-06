@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { getLocalStorage, setLocalStorage, searchPersons } from '../../../lib/api';
+import { acceptedRegistrations } from '../../../lib/domain/persons';
+import FirstTimerCard from './FirstTimerCard';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Accordion,
@@ -14,10 +14,9 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { getLocalStorage, setLocalStorage } from '../../../lib/localStorage';
-import { acceptedRegistrations } from '../../../lib/persons';
-import { searchPersons } from '../../../lib/wcaAPI';
-import FirstTimerCard from './FirstTimerCard';
+import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 
 export default function FirstTimers() {
   const { competitionId } = useParams();

@@ -1,7 +1,7 @@
+import { preserveQueryParams, createLocationObject } from '../lib/utils/history';
 import { createBrowserHistory } from 'history';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Router } from 'react-router-dom';
-import { preserveQueryParams, createLocationObject } from '../lib/history';
 
 function QueryParamPreservingRouter({ basename = '', children }) {
   let historyRef = useRef();

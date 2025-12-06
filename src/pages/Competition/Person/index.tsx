@@ -1,6 +1,6 @@
-import { Activity, Assignment } from '@wca/helpers';
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { findActivityById } from '../../../lib/domain/activities';
+import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import { useAppSelector } from '../../../store';
 import { Card, CardContent, CardHeader } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
@@ -11,9 +11,9 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import { findActivityById } from '../../../lib/activities';
-import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
-import { useAppSelector } from '../../../store';
+import { Activity, Assignment } from '@wca/helpers';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 const PersonPage = () => {
   const { registrantId } = useParams<{ registrantId: string }>();

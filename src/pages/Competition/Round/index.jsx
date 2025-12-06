@@ -8,11 +8,11 @@ import {
   roomByActivity,
   cumulativeGroupCount,
   allChildActivities,
-} from '../../../lib/activities';
-import { mayMakeCutoff, mayMakeTimeLimit } from '../../../lib/persons';
-import { formatTimeRange } from '../../../lib/time';
-import { byName, pluralize, pluralizeWord, renderResultByEventId } from '../../../lib/utils';
-import { getExtensionData } from '../../../lib/wcif-extensions';
+} from '../../../lib/domain/activities';
+import { mayMakeCutoff, mayMakeTimeLimit } from '../../../lib/domain/persons';
+import { formatTimeRange } from '../../../lib/utils/time';
+import { byName, pluralize, pluralizeWord, renderResultByEventId } from '../../../lib/utils/utils';
+import { getExtensionData } from '../../../lib/wcif/extensions/wcif-extensions';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import {
   bulkRemovePersonAssignments,

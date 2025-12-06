@@ -1,6 +1,6 @@
-import { createGroupActivity, findAllActivities } from '../../../lib/activities';
-import { formatTimeRange } from '../../../lib/time';
-import { omit } from '../../../lib/utils';
+import { createGroupActivity, findAllActivities } from '../../../lib/domain/activities';
+import { formatTimeRange } from '../../../lib/utils/time';
+import { omit } from '../../../lib/utils/utils';
 import { useAppSelector, useAppDispatch } from '../../../store';
 import { updateRoundChildActivities } from '../../../store/actions';
 import {

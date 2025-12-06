@@ -1,6 +1,9 @@
-import { useConfirm } from 'material-ui-confirm';
-import React, { useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import EventSelector from '../../../components/EventSelector';
+import { findAllActivities, findRooms } from '../../../lib/domain/activities';
+import { acceptedRegistrations } from '../../../lib/domain/persons';
+import { flatten } from '../../../lib/utils/utils';
+import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import { resetAllGroupAssignments } from '../../../store/actions';
 import { MoreVert } from '@mui/icons-material';
 import {
   Checkbox,
@@ -17,12 +20,9 @@ import {
   Paper,
   Typography,
 } from '@mui/material';
-import EventSelector from '../../../components/EventSelector';
-import { findAllActivities, findRooms } from '../../../lib/activities';
-import { acceptedRegistrations } from '../../../lib/persons';
-import { flatten } from '../../../lib/utils';
-import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
-import { resetAllGroupAssignments } from '../../../store/actions';
+import { useConfirm } from 'material-ui-confirm';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 const AssignmentsPage = () => {
   const wcif = useSelector((state) => state.wcif);

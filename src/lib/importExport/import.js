@@ -6,10 +6,10 @@ import {
   createGroupActivity,
   activityByActivityCode,
   findAllActivities,
-} from './activities';
-import { events } from './events';
-import { createGroupAssignment } from './groups';
-import { groupBy, mapIn } from './utils';
+} from '../domain';
+import { events } from '../domain';
+import { groupBy, mapIn } from '../utils';
+import { createGroupAssignment } from '../wcif';
 
 export const validate = (wcif) => (data) => {
   const checks = [];

@@ -1,6 +1,6 @@
+import { shortTime } from '../utils';
+import { getExtensionData, GroupsExtensionData } from '../wcif';
 import { eventNameById } from './events';
-import { shortTime } from './utils';
-import { getExtensionData } from './wcif-extensions';
 import { Activity, Competition, EventId, Room } from '@wca/helpers';
 
 interface ActivityCode {
@@ -274,14 +274,15 @@ export const earliestStartTimeForRound = (wcif: Competition, roundId: string) =>
 };
 
 export const cumulativeGroupCount = (round) => {
-  const groupsData = getExtensionData('groups', round);
-  if (groupsData.spreadGroupsAcrossStages) {
-    return groupsData.groups as number;
+  const groupsData = getExtensionData<GroupsExtensionData>('groups', round);
+  if (!groupsData || !groupsData.groups) return 1;
+
+  if (groupsData.spreadGroupsAcrossAllStages) {
+    return typeof groupsData.groups === 'number' ? groupsData.groups : 1;
   } else {
-    return Object.values(groupsData.groups as Record<number, number>).reduce(
-      (acc, groupCount) => acc + groupCount,
-      0
-    );
+    return typeof groupsData.groups === 'object'
+      ? Object.values(groupsData.groups).reduce((acc, groupCount) => acc + groupCount, 0)
+      : 1;
   }
 };
 

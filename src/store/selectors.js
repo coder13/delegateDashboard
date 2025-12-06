@@ -3,8 +3,8 @@ import {
   activityCodeIsChild,
   parseActivityCode,
   findRooms,
-} from '../lib/activities';
-import { acceptedRegistrations, personsShouldBeInRound } from '../lib/persons';
+} from '../lib/domain/activities';
+import { acceptedRegistrations, personsShouldBeInRound } from '../lib/domain/persons';
 import { createSelector } from 'reselect';
 
 const selectWcif = (state) => state.wcif;

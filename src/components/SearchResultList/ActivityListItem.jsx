@@ -1,5 +1,5 @@
+import { parseActivityCode } from '../../lib/domain/activities';
 import { ListItemIcon, ListItemText } from '@mui/material';
-import { parseActivityCode } from '../../lib/activities';
 
 function ActivityListItem({ name, activityCode }) {
   const { eventId } = parseActivityCode(activityCode);

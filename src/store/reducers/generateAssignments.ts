@@ -1,10 +1,12 @@
-import { Competition } from '@wca/helpers';
-import { InProgressAssignmment } from '../../lib/assignments';
-import { generateCompetingAssignmentsForStaff } from '../../lib/groupAssignments/generateCompetingAssignmentsForStaff';
-import { generateCompetingGroupActitivitesForEveryone } from '../../lib/groupAssignments/generateCompetingGroupActitivitesForEveryone';
-import { generateGroupAssignmentsForDelegatesAndOrganizers } from '../../lib/groupAssignments/generateGroupAssignmentsForDelegatesAndOrganizers';
-import { generateJudgeAssignmentsFromCompetingAssignments } from '../../lib/groupAssignments/generateJudgeAssignmentsFromCompetingAssignments';
+import {
+  generateCompetingAssignmentsForStaff,
+  generateCompetingGroupActitivitesForEveryone,
+  generateGroupAssignmentsForDelegatesAndOrganizers,
+  generateJudgeAssignmentsFromCompetingAssignments,
+} from '../../lib/assignmentGenerators';
+import { InProgressAssignmment } from '../../lib/domain/assignments';
 import { bulkAddPersonAssignments } from './competitorAssignments';
+import { Competition } from '@wca/helpers';
 
 /**
  * Fills in assignment gaps. Everyone should end up having a competitor assignment and staff assignment

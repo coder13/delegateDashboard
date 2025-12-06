@@ -1,5 +1,9 @@
-import { activityCodeIsChild, parseActivityCode, roomByActivity } from '../../../lib/activities';
-import { byPROrResult, getSeedResult } from '../../../lib/persons';
+import {
+  activityCodeIsChild,
+  parseActivityCode,
+  roomByActivity,
+} from '../../../lib/domain/activities';
+import { byPROrResult, getSeedResult } from '../../../lib/domain/persons';
 import { bulkUpsertPersonAssignments, upsertPersonAssignments } from '../../../store/actions';
 import { selectPersonsAssignedForRound, selectActivityById } from '../../../store/selectors';
 import {

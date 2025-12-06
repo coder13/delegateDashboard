@@ -1,4 +1,4 @@
-import { getUser, searchUsers } from '../lib/wcaAPI';
+import { getUser, searchUsers } from '../lib/api';
 import { useAppSelector } from '../store';
 import {
   Autocomplete,
