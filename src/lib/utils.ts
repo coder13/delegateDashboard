@@ -12,9 +12,9 @@ export const updateIn = (object, [property, ...properyChain]: string[], updater)
   properyChain.length === 0
     ? { ...object, [property]: updater(object[property]) }
     : {
-      ...object,
-      [property]: updateIn(object[property], properyChain, updater),
-    };
+        ...object,
+        [property]: updateIn(object[property], properyChain, updater),
+      };
 
 /**
  * Returns a copy of the object with the value at the specified path set to the given one.
@@ -59,7 +59,7 @@ export const mapIn = (object, properyChain, mapper) =>
  * @param {*} defaultValue
  * @returns {*}
  */
-export const getIn = (object, [property, ...propertyChain]: string[], defaultValue = null) =>
+export const getIn = (object, [property, ...propertyChain]: string[], defaultValue: any = null) =>
   object
     ? propertyChain.length === 0
       ? object.hasOwnProperty(property)
@@ -95,7 +95,7 @@ export const isPresentDeep = (value) =>
  * @param {string} plural
  * @returns {string}
  */
-export const pluralize = (count, singular, plural) =>
+export const pluralize = (count, singular, plural?) =>
   `${count} ${count === 1 ? singular : plural || singular + 's'}`;
 
 /**
@@ -107,7 +107,7 @@ export const pluralize = (count, singular, plural) =>
  * @param {string} plural
  * @returns {string}
  */
-export const pluralizeWord = (count, singular, plural) =>
+export const pluralizeWord = (count, singular, plural?) =>
   `${count === 1 ? singular : plural || singular + 's'}`;
 
 /**
@@ -181,10 +181,10 @@ export const pick = (obj, keys) =>
   keys.reduce((newObj, key) => ({ ...newObj, [key]: obj[key] }), {});
 
 export const omit = <T extends object, K extends keyof T>(obj: T, ...keys: K[]): Omit<T, K> => {
-  const _ = { ...obj }
-  keys.forEach((key) => delete _[key])
-  return _
-}
+  const _ = { ...obj };
+  keys.forEach((key) => delete _[key]);
+  return _;
+};
 
 // Date utils
 

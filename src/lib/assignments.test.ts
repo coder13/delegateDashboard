@@ -37,34 +37,52 @@ describe('createGroupAssignment', () => {
 
 describe('isStaffAssignment', () => {
   it('returns true for staff assignments', () => {
-    expect(isStaffAssignment({ assignmentCode: 'staff-judge', activityId: 1 })).toBe(true);
-    expect(isStaffAssignment({ assignmentCode: 'staff-scrambler', activityId: 1 })).toBe(true);
-    expect(isStaffAssignment({ assignmentCode: 'staff-runner', activityId: 1 })).toBe(true);
+    expect(
+      isStaffAssignment({ assignmentCode: 'staff-judge', activityId: 1, stationNumber: null })
+    ).toBe(true);
+    expect(
+      isStaffAssignment({ assignmentCode: 'staff-scrambler', activityId: 1, stationNumber: null })
+    ).toBe(true);
+    expect(
+      isStaffAssignment({ assignmentCode: 'staff-runner', activityId: 1, stationNumber: null })
+    ).toBe(true);
   });
 
   it('returns false for non-staff assignments', () => {
-    expect(isStaffAssignment({ assignmentCode: 'competitor', activityId: 1 })).toBe(false);
+    expect(
+      isStaffAssignment({ assignmentCode: 'competitor', activityId: 1, stationNumber: null })
+    ).toBe(false);
   });
 });
 
 describe('isCompetitorAssignment', () => {
-  it('returns true for competitor assignment', () => {
-    expect(isCompetitorAssignment({ assignmentCode: 'competitor', activityId: 1 })).toBe(true);
+  it('returns true for competitor assignments', () => {
+    expect(
+      isCompetitorAssignment({ assignmentCode: 'competitor', activityId: 1, stationNumber: null })
+    ).toBe(true);
   });
 
-  it('returns false for staff assignments', () => {
-    expect(isCompetitorAssignment({ assignmentCode: 'staff-judge', activityId: 1 })).toBe(false);
+  it('returns false for non-competitor assignments', () => {
+    expect(
+      isCompetitorAssignment({ assignmentCode: 'staff-judge', activityId: 1, stationNumber: null })
+    ).toBe(false);
   });
 });
 
 describe('isJudgeAssignment', () => {
-  it('returns true for judge assignment', () => {
-    expect(isJudgeAssignment({ assignmentCode: 'staff-judge', activityId: 1 })).toBe(true);
+  it('returns true for judge assignments', () => {
+    expect(
+      isJudgeAssignment({ assignmentCode: 'staff-judge', activityId: 1, stationNumber: null })
+    ).toBe(true);
   });
 
-  it('returns false for other assignments', () => {
-    expect(isJudgeAssignment({ assignmentCode: 'staff-scrambler', activityId: 1 })).toBe(false);
-    expect(isJudgeAssignment({ assignmentCode: 'competitor', activityId: 1 })).toBe(false);
+  it('returns false for non-judge assignments', () => {
+    expect(
+      isJudgeAssignment({ assignmentCode: 'staff-scrambler', activityId: 1, stationNumber: null })
+    ).toBe(false);
+    expect(
+      isJudgeAssignment({ assignmentCode: 'competitor', activityId: 1, stationNumber: null })
+    ).toBe(false);
   });
 });
 
@@ -79,13 +97,14 @@ describe('hasAssignment', () => {
     birthdate: '2000-01-01',
     email: 'test@example.com',
     assignments: [
-      { assignmentCode: 'competitor', activityId: 100 },
-      { assignmentCode: 'staff-judge', activityId: 200 },
+      { assignmentCode: 'competitor', activityId: 100, stationNumber: null },
+      { assignmentCode: 'staff-judge', activityId: 200, stationNumber: null },
     ],
     avatar: null,
     roles: [],
     registration: null,
     personalBests: [],
+    extensions: [],
   };
 
   it('checks person assignments when no filters provided', () => {
@@ -117,7 +136,7 @@ describe('hasAssignment', () => {
   it('returns false when person has no matching assignments', () => {
     const personWithoutStaff: Person = {
       ...mockPerson,
-      assignments: [{ assignmentCode: 'competitor', activityId: 100 }],
+      assignments: [{ assignmentCode: 'competitor', activityId: 100, stationNumber: null }],
     };
 
     const hasStaff = hasAssignment(isStaffAssignment)({});
@@ -135,11 +154,12 @@ describe('doesNotHaveAssignment', () => {
     gender: 'm',
     birthdate: '2000-01-01',
     email: 'test@example.com',
-    assignments: [{ assignmentCode: 'competitor', activityId: 100 }],
+    assignments: [{ assignmentCode: 'competitor', activityId: 100, stationNumber: null }],
     avatar: null,
     roles: [],
     registration: null,
     personalBests: [],
+    extensions: [],
   };
 
   it('returns true when person does not have assignment', () => {
@@ -164,14 +184,15 @@ describe('filterAssignments', () => {
     birthdate: '2000-01-01',
     email: 'test@example.com',
     assignments: [
-      { assignmentCode: 'competitor', activityId: 100 },
-      { assignmentCode: 'staff-judge', activityId: 200 },
-      { assignmentCode: 'staff-scrambler', activityId: 300 },
+      { assignmentCode: 'competitor', activityId: 100, stationNumber: null },
+      { assignmentCode: 'staff-judge', activityId: 200, stationNumber: null },
+      { assignmentCode: 'staff-scrambler', activityId: 300, stationNumber: null },
     ],
     avatar: null,
     roles: [],
     registration: null,
     personalBests: [],
+    extensions: [],
   };
 
   it('filters person assignments by test', () => {
@@ -225,19 +246,20 @@ describe('helper functions', () => {
     birthdate: '2000-01-01',
     email: 'test@example.com',
     assignments: [
-      { assignmentCode: 'competitor', activityId: 100 },
-      { assignmentCode: 'staff-judge', activityId: 200 },
+      { assignmentCode: 'competitor', activityId: 100, stationNumber: null },
+      { assignmentCode: 'staff-judge', activityId: 200, stationNumber: null },
     ],
     avatar: null,
     roles: [],
     registration: null,
     personalBests: [],
+    extensions: [],
   };
 
   const mockPersonCompetitorOnly: Person = {
     ...mockPersonWithStaff,
     registrantId: 2,
-    assignments: [{ assignmentCode: 'competitor', activityId: 100 }],
+    assignments: [{ assignmentCode: 'competitor', activityId: 100, stationNumber: null }],
   };
 
   describe('hasStaffAssignment', () => {
@@ -275,7 +297,7 @@ describe('helper functions', () => {
     it('returns true when person lacks competitor assignment', () => {
       const personNoCompeting: Person = {
         ...mockPersonWithStaff,
-        assignments: [{ assignmentCode: 'staff-judge', activityId: 200 }],
+        assignments: [{ assignmentCode: 'staff-judge', activityId: 200, stationNumber: null }],
       };
       expect(missingCompetitorAssignments({})(personNoCompeting)).toBe(true);
     });
@@ -301,7 +323,7 @@ describe('helper functions', () => {
     it('returns empty array when no competing assignments', () => {
       const personNoCompeting: Person = {
         ...mockPersonWithStaff,
-        assignments: [{ assignmentCode: 'staff-judge', activityId: 200 }],
+        assignments: [{ assignmentCode: 'staff-judge', activityId: 200, stationNumber: null }],
       };
       expect(findCompetingAssignment({})(personNoCompeting)).toEqual([]);
     });

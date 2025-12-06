@@ -99,10 +99,10 @@ describe('roundFormatById', () => {
 describe('sortWcifEvents', () => {
   it('sorts events in canonical order', () => {
     const wcifEvents: Event[] = [
-      { id: 'minx', rounds: [] },
-      { id: '333', rounds: [] },
-      { id: '222', rounds: [] },
-      { id: '444', rounds: [] },
+      { id: 'minx', rounds: [], extensions: [] },
+      { id: '333', rounds: [], extensions: [] },
+      { id: '222', rounds: [], extensions: [] },
+      { id: '444', rounds: [], extensions: [] },
     ];
 
     const sorted = sortWcifEvents(wcifEvents);
@@ -111,9 +111,9 @@ describe('sortWcifEvents', () => {
 
   it('maintains order for events not in the standard list', () => {
     const wcifEvents: Event[] = [
-      { id: 'pyram', rounds: [] },
-      { id: 'clock', rounds: [] },
-      { id: 'skewb', rounds: [] },
+      { id: 'pyram', rounds: [], extensions: [] },
+      { id: 'clock', rounds: [], extensions: [] },
+      { id: 'skewb', rounds: [], extensions: [] },
     ];
 
     const sorted = sortWcifEvents(wcifEvents);

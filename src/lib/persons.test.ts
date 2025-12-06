@@ -37,8 +37,10 @@ const createMockPerson = (overrides: Partial<Person> = {}): Person => ({
     status: 'accepted',
     guests: 0,
     comments: '',
+    isCompeting: true,
   },
   personalBests: [],
+  extensions: [],
   ...overrides,
 });
 
@@ -156,6 +158,7 @@ describe('shouldBeInRound', () => {
         { personId: 1, ranking: 1, attempts: [], best: 0, average: 0 },
         { personId: 2, ranking: 2, attempts: [], best: 0, average: 0 },
       ],
+      extensions: [],
     };
 
     const test = shouldBeInRound(round);
@@ -172,6 +175,7 @@ describe('shouldBeInRound', () => {
       advancementCondition: null,
       scrambleSetCount: 1,
       results: [],
+      extensions: [],
     };
 
     const test = shouldBeInRound(round);
@@ -195,6 +199,7 @@ describe('shouldBeInRound', () => {
       advancementCondition: null,
       scrambleSetCount: 1,
       results: [],
+      extensions: [],
     };
 
     const test = shouldBeInRound(round);
@@ -212,6 +217,7 @@ describe('personsShouldBeInRound', () => {
       advancementCondition: null,
       scrambleSetCount: 1,
       results: [],
+      extensions: [],
     };
 
     const persons = [
@@ -406,8 +412,8 @@ describe('addAssignmentsToPerson', () => {
   it('adds assignments to person', () => {
     const person = createMockPerson({ assignments: [] });
     const newAssignments = [
-      { assignmentCode: 'competitor', activityId: 100 },
-      { assignmentCode: 'staff-judge', activityId: 200 },
+      { assignmentCode: 'competitor', activityId: 100, stationNumber: null },
+      { assignmentCode: 'staff-judge', activityId: 200, stationNumber: null },
     ];
 
     const updated = addAssignmentsToPerson(person, newAssignments);
@@ -417,9 +423,11 @@ describe('addAssignmentsToPerson', () => {
 
   it('appends to existing assignments', () => {
     const person = createMockPerson({
-      assignments: [{ assignmentCode: 'competitor', activityId: 100 }],
+      assignments: [{ assignmentCode: 'competitor', activityId: 100, stationNumber: null }],
     });
-    const newAssignments = [{ assignmentCode: 'staff-judge', activityId: 200 }];
+    const newAssignments = [
+      { assignmentCode: 'staff-judge', activityId: 200, stationNumber: null },
+    ];
 
     const updated = addAssignmentsToPerson(person, newAssignments);
     expect(updated.assignments).toHaveLength(2);
@@ -430,8 +438,8 @@ describe('removeAssignmentsFromPerson', () => {
   it('removes assignments for specific activity', () => {
     const person = createMockPerson({
       assignments: [
-        { assignmentCode: 'competitor', activityId: 100 },
-        { assignmentCode: 'staff-judge', activityId: 200 },
+        { assignmentCode: 'competitor', activityId: 100, stationNumber: null },
+        { assignmentCode: 'staff-judge', activityId: 200, stationNumber: null },
       ],
     });
 
@@ -451,26 +459,30 @@ describe('upsertAssignmentsOnPerson', () => {
   it('replaces existing assignment for same activity', () => {
     const person = createMockPerson({
       assignments: [
-        { assignmentCode: 'competitor', activityId: 100 },
-        { assignmentCode: 'staff-judge', activityId: 200 },
+        { assignmentCode: 'competitor', activityId: 100, stationNumber: null },
+        { assignmentCode: 'staff-judge', activityId: 200, stationNumber: null },
       ],
     });
 
-    const newAssignments = [{ assignmentCode: 'staff-scrambler', activityId: 100 }];
+    const newAssignments = [
+      { assignmentCode: 'staff-scrambler', activityId: 100, stationNumber: null },
+    ];
 
     const updated = upsertAssignmentsOnPerson(person, newAssignments);
     expect(updated.assignments).toHaveLength(2);
-    expect(updated.assignments.find((a) => a.activityId === 100)?.assignmentCode).toBe(
+    expect(updated.assignments!.find((a) => a.activityId === 100)?.assignmentCode).toBe(
       'staff-scrambler'
     );
   });
 
   it('adds new assignment when activity not present', () => {
     const person = createMockPerson({
-      assignments: [{ assignmentCode: 'competitor', activityId: 100 }],
+      assignments: [{ assignmentCode: 'competitor', activityId: 100, stationNumber: null }],
     });
 
-    const newAssignments = [{ assignmentCode: 'staff-judge', activityId: 200 }];
+    const newAssignments = [
+      { assignmentCode: 'staff-judge', activityId: 200, stationNumber: null },
+    ];
 
     const updated = upsertAssignmentsOnPerson(person, newAssignments);
     expect(updated.assignments).toHaveLength(2);
@@ -487,6 +499,7 @@ describe('mayMakeTimeLimit', () => {
       advancementCondition: null,
       scrambleSetCount: 1,
       results: [],
+      extensions: [],
     };
 
     const persons = [
@@ -532,6 +545,7 @@ describe('mayMakeTimeLimit', () => {
       advancementCondition: null,
       scrambleSetCount: 1,
       results: [],
+      extensions: [],
     };
 
     expect(mayMakeTimeLimit('333', round, [])).toEqual([]);
@@ -548,6 +562,7 @@ describe('mayMakeCutoff', () => {
       advancementCondition: null,
       scrambleSetCount: 1,
       results: [],
+      extensions: [],
     };
 
     const persons = [
@@ -593,6 +608,7 @@ describe('mayMakeCutoff', () => {
       advancementCondition: null,
       scrambleSetCount: 1,
       results: [],
+      extensions: [],
     };
 
     expect(mayMakeCutoff('333', round, [])).toEqual([]);
