@@ -1,6 +1,13 @@
 import { sortBy } from './utils';
+import { Event, EventId } from '@wca/helpers';
 
-export const events = [
+interface EventInfo {
+  id: EventId;
+  name: string;
+  shortName: string;
+}
+
+export const events: EventInfo[] = [
   { id: '333', name: '3x3x3 Cube', shortName: '3x3' },
   { id: '222', name: '2x2x2 Cube', shortName: '2x2' },
   { id: '444', name: '4x4x4 Cube', shortName: '4x4' },
@@ -20,16 +27,29 @@ export const events = [
   { id: '333mbf', name: '3x3x3 Multi-Blind', shortName: 'MBLD' },
 ];
 
-export const eventNameById = (eventId) => propertyById('name', eventId);
+export const eventNameById = (eventId: EventId): string => propertyById('name', eventId);
 
-export const shortEventNameById = (eventId) => propertyById('shortName', eventId);
+export const shortEventNameById = (eventId: EventId): string => propertyById('shortName', eventId);
 
-const propertyById = (property, eventId) => events.find((event) => event.id === eventId)[property];
+const propertyById = (property: keyof EventInfo, eventId: EventId): string => {
+  const event = events.find((event) => event.id === eventId);
+  if (!event) {
+    throw new Error(`Event not found: ${eventId}`);
+  }
+  return event[property] as string;
+};
 
-export const sortWcifEvents = (wcifEvents) =>
+export const sortWcifEvents = (wcifEvents: Event[]): Event[] =>
   sortBy(wcifEvents, (wcifEvent) => events.findIndex((event) => event.id === wcifEvent.id));
 
-const roundFormats = [
+interface RoundFormat {
+  id: string;
+  short: string;
+  long: string;
+  rankingResult: 'average' | 'single';
+}
+
+const roundFormats: RoundFormat[] = [
   { id: 'a', short: 'ao5', long: 'Average of 5', rankingResult: 'average' },
   { id: 'm', short: 'mo3', long: 'Mean of 5', rankingResult: 'average' },
   { id: '3', short: 'bo3', long: 'Best of 3', rankingResult: 'single' },
@@ -37,4 +57,5 @@ const roundFormats = [
   { id: '1', short: 'bo1', long: 'Best of 1', rankingResult: 'single' },
 ];
 
-export const roundFormatById = (id) => roundFormats.find((roundFormat) => roundFormat.id === id);
+export const roundFormatById = (id: string | undefined): RoundFormat | undefined =>
+  id ? roundFormats.find((roundFormat) => roundFormat.id === id) : undefined;
