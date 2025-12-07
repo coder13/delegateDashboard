@@ -1,5 +1,3 @@
-import { describe, it, expect } from 'vitest';
-import type { Competition, Person } from '@wca/helpers';
 import {
   validatePersonAssignmentActivitiesExist,
   validatePersonAssignmentScheduleConflicts,
@@ -9,6 +7,8 @@ import {
   MISSING_ACTIVITY_FOR_PERSON_ASSIGNMENT,
   PERSON_ASSIGNMENT_SCHEDULE_CONFLICT,
 } from './types';
+import type { Competition, Person } from '@wca/helpers';
+import { describe, it, expect } from 'vitest';
 
 const mockWcif: Competition = {
   formatVersion: '1.0',

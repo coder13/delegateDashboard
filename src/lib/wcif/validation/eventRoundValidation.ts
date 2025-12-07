@@ -1,8 +1,4 @@
-import type { Competition, Event } from '@wca/helpers';
-import {
-  activityCodeToName,
-  findAllRoundActivities,
-} from '../../domain';
+import { activityCodeToName, findAllRoundActivities } from '../../domain';
 import { flatMap } from '../../utils';
 import {
   MISSING_ADVANCEMENT_CONDITION,
@@ -10,6 +6,7 @@ import {
   NO_SCHEDULE_ACTIVITIES_FOR_ROUND,
   ValidationError,
 } from './types';
+import type { Competition, Event } from '@wca/helpers';
 
 /**
  * Validates that an event has at least one round configured
@@ -57,12 +54,12 @@ export const validateRoundsHaveScheduleActivities = (
   event: Event
 ): ValidationError[] => {
   const allRoundActivities = findAllRoundActivities(wcif);
-  
+
   return flatMap(event.rounds, (round) => {
     const hasScheduleActivity = allRoundActivities.some((activity) =>
       activity.activityCode.startsWith(round.id)
     );
-    
+
     return hasScheduleActivity
       ? []
       : [
@@ -91,7 +88,7 @@ export const validateEventRounds = (wcif: Competition): ValidationError[] => {
 
     const advancementErrors = validateAdvancementConditions(event);
     const scheduleActivityErrors = validateRoundsHaveScheduleActivities(wcif, event);
-    
+
     return [...advancementErrors, ...scheduleActivityErrors];
   });
 };

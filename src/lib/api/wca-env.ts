@@ -1,4 +1,3 @@
-console.log('env', import.meta.env);
 const searchParams = new URLSearchParams(window.location.search);
 export const STAGING_QUERY_PARAMS = searchParams.has('staging');
 
