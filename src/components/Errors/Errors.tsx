@@ -1,10 +1,14 @@
-import { useState } from 'react';
+import { WcifError } from '../../lib/wcif';
+import { ErrorDialog } from './ErrorDialog';
 import { Alert, AlertTitle, Button } from '@mui/material';
 import { Stack } from '@mui/system';
-import { ErrorDialog } from './ErrorDialog';
-import { ErrorsProps } from './types';
+import { useState } from 'react';
 
-export function Errors({ errors }: ErrorsProps) {
+export interface ErrorsProps<T extends object> {
+  errors: WcifError<T>[];
+}
+
+export function Errors<T extends object>({ errors }: ErrorsProps<T>) {
   const [selectedErrorKey, setSelectedErrorKey] = useState<string | undefined>(undefined);
 
   return (

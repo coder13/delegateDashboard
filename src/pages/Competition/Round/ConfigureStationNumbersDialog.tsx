@@ -24,7 +24,7 @@ import type { Activity, Assignment, Person, Room } from '@wca/helpers';
 import { useMemo, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 
-const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
+const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }: any) => {
   const wcif = useAppSelector((state) => state.wcif);
   const dispatch = useDispatch();
   const dataGridRef = useRef(null);
@@ -172,9 +172,9 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
       headerName: 'Seed',
       flex: 0.5,
       editable: false,
-      valueFormatter: ({ value }) =>
+      valueFormatter: ({ value }: { value: any }) =>
         value?.rankingResult ? formatCentiseconds(value.rankingResult) : '-',
-      sortComparator: (a, b) =>
+      sortComparator: (a: any, b: any) =>
         (b?.ranking || Number.MAX_SAFE_INTEGER) - (a?.ranking || Number.MAX_SAFE_INTEGER),
       type: 'number',
     },
@@ -234,7 +234,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
     );
   };
 
-  const handleCellEditStop = ({ row }, event) => {
+  const handleCellEditStop = ({ row }: { row: any }, event: any) => {
     const stationNumber = parseInt(event?.target?.value, 10);
     if (stationNumber) {
       dispatch(

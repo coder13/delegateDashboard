@@ -168,9 +168,9 @@ const ConfigureAssignmentsDialog = ({
   const [paintingAssignmentCode, setPaintingAssignmentCode] = useState('staff-scrambler');
   const [competitorSort, setCompetitorSort] = useState('speed');
   const [showCompetitorsNotInRound, setShowCompetitorsNotInRound] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
-  const handleMenuOpen = (e) => {
+  const handleMenuOpen = (e: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(e.currentTarget);
   };
 
@@ -181,8 +181,8 @@ const ConfigureAssignmentsDialog = ({
   const groupsRooms = useMemo(
     () =>
       wcifRooms.filter((room) =>
-        flatten(room.activities.map((activity) => activity.childActivities)).some((activity) =>
-          groups.find((g) => g.id === activity.id)
+        flatten(room.activities.map((activity: any) => activity.childActivities)).some(
+          (activity: any) => groups.find((g) => g.id === activity.id)
         )
       ),
     [groups, wcifRooms]
@@ -260,19 +260,19 @@ const ConfigureAssignmentsDialog = ({
   ]);
 
   const personAssignments = useCallback(
-    (registrantId) => persons?.find((p) => p.registrantId === registrantId)?.assignments,
+    (registrantId: number) => persons?.find((p) => p.registrantId === registrantId)?.assignments,
     [persons]
   );
 
   const getAssignmentCodeForPersonGroup = useCallback(
-    (registrantId, activityId) => {
+    (registrantId: number, activityId: number) => {
       return personAssignments(registrantId)?.find((a) => a.activityId === activityId)
         ?.assignmentCode;
     },
     [personAssignments]
   );
 
-  const handleUpdateAssignmentForPerson = (registrantId, activityId) => () => {
+  const handleUpdateAssignmentForPerson = (registrantId: number, activityId: number) => () => {
     if (getAssignmentCodeForPersonGroup(registrantId, activityId) === paintingAssignmentCode) {
       dispatch(removePersonAssignments(registrantId, activityId));
     } else {
@@ -302,7 +302,7 @@ const ConfigureAssignmentsDialog = ({
     });
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.ctrlKey) {
       return;
     }
@@ -317,7 +317,7 @@ const ConfigureAssignmentsDialog = ({
     }
   };
 
-  const onPaste = useCallback((e) => {
+  const onPaste = useCallback((e: React.ClipboardEvent) => {
     e.preventDefault();
     const clipboardData = e.clipboardData;
     if (!clipboardData) {
@@ -351,8 +351,8 @@ const ConfigureAssignmentsDialog = ({
       description: 'Are you sure you want to overwrite existing data?',
     })
       .then(() => {
-        const competitorGroupSizes = {};
-        const staffGroupSizes = {};
+        const competitorGroupSizes: Record<number, number> = {};
+        const staffGroupSizes: Record<string, Record<number, number>> = {};
 
         const assignments = parsedData.data
           .filter((row) => {
@@ -475,10 +475,10 @@ const ConfigureAssignmentsDialog = ({
   }, []);
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown as any);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown as any);
     };
   }, [onPaste]);
 
@@ -652,9 +652,10 @@ const ConfigureAssignmentsDialog = ({
                   ?.reduce((acc, assignment) => {
                     return {
                       ...acc,
-                      [assignment.assignmentCode]: (acc[assignment.assignmentCode] || 0) + 1,
+                      [assignment.assignmentCode]:
+                        (acc[assignment.assignmentCode as keyof typeof acc] || 0) + 1,
                     };
-                  }, {}) || {};
+                  }, {} as Record<string, number>) || {};
 
               const age =
                 person.birthdate &&
@@ -734,7 +735,7 @@ const ConfigureAssignmentsDialog = ({
                               marginRight: '0.25em',
                               display: 'inline',
                             }}>
-                            <b>{totalStaffAssignments[key]}</b>
+                            <b>{(totalStaffAssignments as Record<string, number>)[key]}</b>
                             {assignment.letter}
                             {index < arry.length - 1 ? ', ' : ''}
                           </div>

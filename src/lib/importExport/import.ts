@@ -441,16 +441,19 @@ export const generateMissingGroupActivities = (
   missingActivities: { activityCode: string; roomId: number }[]
 ): Competition => {
   const schedule = wcif.schedule;
-  const missingActivitiesByRoundId = groupBy(missingActivities, (activity) => {
-    const { eventId, roundNumber } = parseActivityCode(activity.activityCode);
-    return `${eventId}-r${roundNumber}`;
-  });
+  const missingActivitiesByRoundId = groupBy(
+    missingActivities,
+    (activity: { activityCode: string; roomId: number }) => {
+      const { eventId, roundNumber } = parseActivityCode(activity.activityCode);
+      return `${eventId}-r${roundNumber}`;
+    }
+  );
 
   let startingActivityId = generateNextChildActivityId(wcif);
 
   Object.keys(missingActivitiesByRoundId).forEach((eventRound) => {
     const groups = missingActivitiesByRoundId[eventRound];
-    groups.forEach((group) => {
+    groups.forEach((group: { activityCode: string; roomId: number }) => {
       const { activityCode, roomId } = group;
       const { groupNumber } = parseActivityCode(activityCode);
 
@@ -493,8 +496,8 @@ export const balanceStartAndEndTimes = (
   wcif: Competition,
   missingActivities: { activityCode: string; roomId: number }[]
 ): Competition => {
-  return mapIn(wcif, ['schedule', 'venues'], (venue) =>
-    mapIn(venue, ['rooms'], (room) => {
+  return mapIn(wcif, ['schedule', 'venues'], (venue: any) =>
+    mapIn(venue, ['rooms'], (room: any) => {
       return mapIn(room, ['activities'], (activity: Activity) => {
         const groupCount = activity.childActivities.length;
         if (!groupCount) {
@@ -543,7 +546,7 @@ export const upsertCompetitorAssignments = (
       return;
     }
     person.assignments = person.assignments ?? [];
-    const activity = activityByActivityCode(wcif, assignment.roomId, assignment.activityCode);
+    const activity = activityByActivityCode(wcif, assignment.roomId!, assignment.activityCode);
 
     const newAssignment = createGroupAssignment(
       person.registrantId,

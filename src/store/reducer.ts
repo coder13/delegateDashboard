@@ -144,9 +144,9 @@ const reducers: Record<string, ReducerFunction> = {
       ...state,
       needToSave: true,
       changedKeys: new Set([...state.changedKeys, 'schedule']),
-      wcif: mapIn(state.wcif, ['schedule', 'venues'], (venue) =>
-        mapIn(venue, ['rooms'], (room) =>
-          mapIn(room, ['activities'], (activity) => {
+      wcif: mapIn(state.wcif, ['schedule', 'venues'], (venue: any) =>
+        mapIn(venue, ['rooms'], (room: any) =>
+          mapIn(room, ['activities'], (activity: any) => {
             if (activity.id === action.activityId) {
               return setExtensionData('activityConfig', activity, {
                 groupCount: action.groupCount,
@@ -188,12 +188,12 @@ const reducers: Record<string, ReducerFunction> = {
       ...state,
       needToSave: true,
       changedKeys: new Set([...state.changedKeys, 'schedule']),
-      wcif: mapIn(state.wcif, ['schedule', 'venues'], (venue) =>
-        mapIn(venue, ['rooms'], (room) =>
+      wcif: mapIn(state.wcif, ['schedule', 'venues'], (venue: any) =>
+        mapIn(venue, ['rooms'], (room: any) =>
           mapIn(
             room,
             ['activities'],
-            (activity) => action.activities.find((a) => a.id === activity.id) || activity
+            (activity: any) => action.activities.find((a) => a.id === activity.id) || activity
           )
         )
       ),
@@ -218,7 +218,7 @@ const reducers: Record<string, ReducerFunction> = {
       ...state,
       needToSave: true,
       changedKeys: new Set([...state.changedKeys, 'persons']),
-      wcif: mapIn(state.wcif, ['persons'], (person) => ({
+      wcif: mapIn(state.wcif, ['persons'], (person: any) => ({
         ...person,
         assignments: [],
       })),
@@ -234,17 +234,17 @@ const reducers: Record<string, ReducerFunction> = {
       changedKeys: new Set([...state.changedKeys, 'persons', 'schedule']),
       wcif: {
         ...state.wcif,
-        schedule: mapIn(state.wcif.schedule, ['venues'], (venue) =>
-          mapIn(venue, ['rooms'], (room) => ({
+        schedule: mapIn(state.wcif.schedule, ['venues'], (venue: any) =>
+          mapIn(venue, ['rooms'], (room: any) => ({
             ...room,
             activities: room.activities.map(findAndReplaceActivity(where, what)),
           }))
         ),
         persons:
           what.id !== undefined && where.id !== undefined && what.id !== where.id
-            ? state.wcif.persons.map((person) => ({
+            ? state.wcif.persons.map((person: any) => ({
                 ...person,
-                assignments: person.assignments?.map((assignment) => {
+                assignments: person.assignments?.map((assignment: any) => {
                   if (assignment.activityId === where.id) {
                     return {
                       ...assignment,
@@ -266,8 +266,8 @@ const reducers: Record<string, ReducerFunction> = {
       ...state,
       needToSave: true,
       changedKeys: new Set([...state.changedKeys, 'events']),
-      wcif: mapIn(state.wcif, ['events'], (event) =>
-        mapIn(event, ['rounds'], (round) => {
+      wcif: mapIn(state.wcif, ['events'], (event: any) =>
+        mapIn(event, ['rounds'], (round: any) => {
           if (round.id === action.activityCode) {
             return setExtensionData('groups', round, action.extensionData);
           }

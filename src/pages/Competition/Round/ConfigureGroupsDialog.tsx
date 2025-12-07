@@ -296,7 +296,7 @@ export const ConfigurableGroupTable = ({
   );
 };
 
-export const ConfigureGroupsDialog = ({ open, onClose, activityCode }) => {
+export const ConfigureGroupsDialog = ({ open, onClose, activityCode }: any) => {
   const wcif = useAppSelector((state) => state.wcif);
   const dispatch = useAppDispatch();
 

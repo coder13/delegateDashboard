@@ -73,7 +73,7 @@ export const personsShouldBeInRound = (round: Round) => (persons: Person[]) =>
  * @param {[Activity]} groups - list of groups to filter person assignments to
  */
 export const assignedInGroupsForRoles =
-  (groups: Activity[], test: (Assignment) => boolean) => (person: Person) =>
+  (groups: Activity[], test: (assignment: Assignment) => boolean) => (person: Person) =>
     person.assignments?.some((a) => groups.some((g) => g.id === +a.activityId) && test(a));
 
 export const findPR = (personalBests: PersonalBest[], eventId: EventId, type: RankingType) =>

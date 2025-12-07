@@ -25,15 +25,17 @@ export interface ConflictingAssignment {
   };
 }
 
-export interface ValidationError {
-  type: ValidationErrorType;
+export type WcifError<T extends object> = {
+  type: string;
   key: string;
   message: string;
-  data: {
-    eventId?: string;
-    activityCode?: string;
-    person?: Person;
-    assignment?: Assignment;
-    conflictingAssignments?: ConflictingAssignment[];
-  };
-}
+  data: T;
+};
+
+export type ValidationError = WcifError<{
+  eventId?: string;
+  activityCode?: string;
+  person?: Person;
+  assignment?: Assignment;
+  conflictingAssignments?: ConflictingAssignment[];
+}>;

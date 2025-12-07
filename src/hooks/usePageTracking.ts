@@ -1,9 +1,9 @@
+import { useAuth } from '../providers/AuthProvider';
 import { useEffect, useState } from 'react';
 import ReactGA from 'react-ga';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from '../providers/AuthProvider';
 
-const usePageTracking = (trackingCode) => {
+const usePageTracking = (trackingCode: string) => {
   const location = useLocation();
   const { user } = useAuth();
   const [initialized, setInitialized] = useState(false);

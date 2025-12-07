@@ -53,8 +53,8 @@ function TableAssignmentCell({ value, onClick }: TableAssignmentCellProps) {
         e.bubbles = false;
         onClick();
       }}
-      assignmentColor={value ? AssignmentsMap[value]?.color : undefined}>
-      {value && AssignmentsMap[value]?.letter}
+      assignmentColor={value ? (AssignmentsMap as any)[value]?.color : undefined}>
+      {value && (AssignmentsMap as any)[value]?.letter}
     </TableButton>
   );
 }

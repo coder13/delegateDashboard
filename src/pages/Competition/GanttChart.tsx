@@ -61,7 +61,7 @@ export default function GanttChart() {
   }, [roundActivityCodes]);
 
   const toggleRound = useCallback(
-    (roundId) => () => {
+    (roundId: string) => () => {
       if (selectedRounds.includes(roundId)) {
         setSelectedRounds(selectedRounds.filter((round) => round !== roundId));
       } else {

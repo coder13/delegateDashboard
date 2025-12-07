@@ -89,14 +89,18 @@ export const RawRoundActivitiesDataDialog = ({
                 id="filled-multiline-flexible"
                 label="Multiline"
                 multiline
-                value={rawRoundActivitiesData[id]}
+                value={rawRoundActivitiesData[id as unknown as keyof typeof rawRoundActivitiesData]}
                 onChange={(e) =>
                   setRawRoundActivitiesData((prev) => ({
                     ...prev,
                     [id]: e.target.value,
                   }))
                 }
-                maxRows={rawRoundActivitiesData[id].split('\n').length}
+                maxRows={
+                  rawRoundActivitiesData[
+                    id as unknown as keyof typeof rawRoundActivitiesData
+                  ].split('\n').length
+                }
                 variant="filled"
               />
             </Fragment>

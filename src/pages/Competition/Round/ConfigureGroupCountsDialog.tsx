@@ -25,7 +25,13 @@ import {
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundActivities }) => {
+const ConfigureGroupCountsDialog = ({
+  open,
+  onClose,
+  activityCode,
+  round,
+  roundActivities,
+}: any) => {
   const wcif = useAppSelector((state) => state.wcif);
   const rooms = useAppSelector((state) =>
     state.wcif?.schedule.venues
@@ -81,7 +87,7 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
     onClose();
   };
 
-  const handleGroupsChange = (e) => {
+  const handleGroupsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newGroupCount = parseInt(e.currentTarget.value);
 
     if (newGroupCount && newGroupCount > 0) {
@@ -92,7 +98,7 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
     }
   };
 
-  const handleGroupsChangeMultipleRooms = (e, room) => {
+  const handleGroupsChangeMultipleRooms = (e: React.ChangeEvent<HTMLInputElement>, room: any) => {
     console.log(e.target.value, room);
     setGroupsData({
       ...groupsData,
@@ -203,7 +209,12 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
                           }
                           onChange={(
                             e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-                          ) => handleGroupsChangeMultipleRooms(e, room)}
+                          ) =>
+                            handleGroupsChangeMultipleRooms(
+                              e as React.ChangeEvent<HTMLInputElement>,
+                              room
+                            )
+                          }
                         />
                         <FormHelperText id="my-helper-text">
                           {room.name} would have an average duration of{' '}

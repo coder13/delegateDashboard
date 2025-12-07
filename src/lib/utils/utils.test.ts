@@ -36,7 +36,7 @@ import { describe, it, expect } from 'vitest';
 describe('updateIn', () => {
   it('updates a top-level property', () => {
     const obj = { a: 1, b: 2 };
-    const result = updateIn(obj, ['a'], (val) => val + 10);
+    const result = updateIn(obj, ['a'], (val: any) => val + 10);
 
     expect(result).toEqual({ a: 11, b: 2 });
     expect(obj).toEqual({ a: 1, b: 2 }); // Original unchanged
@@ -44,7 +44,7 @@ describe('updateIn', () => {
 
   it('updates a nested property immutably', () => {
     const obj = { a: { b: { c: 1 } } };
-    const result = updateIn(obj, ['a', 'b', 'c'], (val) => val + 1);
+    const result = updateIn(obj, ['a', 'b', 'c'], (val: any) => val + 1);
 
     expect(result.a.b.c).toBe(2);
     expect(obj.a.b.c).toBe(1); // Original unchanged
@@ -54,7 +54,7 @@ describe('updateIn', () => {
 
   it('handles deep nesting', () => {
     const obj = { a: { b: { c: { d: 'test' } } } };
-    const result = updateIn(obj, ['a', 'b', 'c', 'd'], (val) => val.toUpperCase());
+    const result = updateIn(obj, ['a', 'b', 'c', 'd'], (val: any) => val.toUpperCase());
 
     expect(result.a.b.c.d).toBe('TEST');
   });
@@ -80,7 +80,7 @@ describe('setIn', () => {
 describe('mapIn', () => {
   it('maps over a nested array', () => {
     const obj = { items: [1, 2, 3] };
-    const result = mapIn(obj, ['items'], (x) => x * 2);
+    const result = mapIn(obj, ['items'], (x: any) => x * 2);
 
     expect(result.items).toEqual([2, 4, 6]);
     expect(obj.items).toEqual([1, 2, 3]); // Original unchanged
@@ -88,14 +88,14 @@ describe('mapIn', () => {
 
   it('handles deeply nested arrays', () => {
     const obj = { a: { b: { list: ['a', 'b', 'c'] } } };
-    const result = mapIn(obj, ['a', 'b', 'list'], (x) => x.toUpperCase());
+    const result = mapIn(obj, ['a', 'b', 'list'], (x: any) => x.toUpperCase());
 
     expect(result.a.b.list).toEqual(['A', 'B', 'C']);
   });
 
   it('handles null or undefined arrays', () => {
     const obj = { items: null };
-    const result = mapIn(obj, ['items'], (x) => x * 2);
+    const result = mapIn(obj, ['items'], (x: any) => x * 2);
 
     expect(result.items).toBeNull();
   });
@@ -214,7 +214,7 @@ describe('scaleToOne', () => {
 
 describe('firstResult', () => {
   it('returns first truthy result', () => {
-    const result = firstResult([1, 2, 3], (x) => (x > 2 ? x * 10 : null));
+    const result = firstResult([1, 2, 3], (x: any) => (x > 2 ? x * 10 : null));
     expect(result).toBe(30);
   });
 
@@ -226,12 +226,12 @@ describe('firstResult', () => {
 
 describe('flatMap', () => {
   it('flattens mapped results', () => {
-    const result = flatMap([1, 2, 3], (x) => [x, x * 2]);
+    const result = flatMap([1, 2, 3], (x: any) => [x, x * 2]);
     expect(result).toEqual([1, 2, 2, 4, 3, 6]);
   });
 
   it('handles empty arrays', () => {
-    expect(flatMap([], (x) => [x])).toEqual([]);
+    expect(flatMap([], (x: any) => [x])).toEqual([]);
   });
 });
 
@@ -254,7 +254,7 @@ describe('groupBy', () => {
       { type: 'b', value: 2 },
       { type: 'a', value: 3 },
     ];
-    const result = groupBy(items, (x) => x.type);
+    const result = groupBy(items, (x: any) => x.type);
 
     expect(result).toEqual({
       a: [
@@ -283,12 +283,12 @@ describe('zip', () => {
 
 describe('findLast', () => {
   it('finds the last matching element', () => {
-    const result = findLast([1, 2, 3, 4, 3, 2], (x) => x === 3);
+    const result = findLast([1, 2, 3, 4, 3, 2], (x: any) => x === 3);
     expect(result).toBe(3);
   });
 
   it('returns undefined when no match', () => {
-    const result = findLast([1, 2, 3], (x) => x > 10);
+    const result = findLast([1, 2, 3], (x: any) => x > 10);
     expect(result).toBeUndefined();
   });
 });
@@ -311,7 +311,7 @@ describe('difference', () => {
 
 describe('partition', () => {
   it('splits array by predicate', () => {
-    const [evens, odds] = partition([1, 2, 3, 4, 5], (x) => x % 2 === 0);
+    const [evens, odds] = partition([1, 2, 3, 4, 5], (x: any) => x % 2 === 0);
     expect(evens).toEqual([2, 4]);
     expect(odds).toEqual([1, 3, 5]);
   });
@@ -320,13 +320,13 @@ describe('partition', () => {
 describe('sortBy', () => {
   it('sorts by function result', () => {
     const items = [{ age: 30 }, { age: 20 }, { age: 25 }];
-    const result = sortBy(items, (x) => x.age);
-    expect(result.map((x) => x.age)).toEqual([20, 25, 30]);
+    const result = sortBy(items, (x: any) => x.age);
+    expect(result.map((x: any) => x.age)).toEqual([20, 25, 30]);
   });
 
   it('does not mutate original array', () => {
     const items = [3, 1, 2];
-    const result = sortBy(items, (x) => x);
+    const result = sortBy(items, (x: any) => x);
     expect(result).toEqual([1, 2, 3]);
     expect(items).toEqual([3, 1, 2]);
   });
@@ -339,7 +339,7 @@ describe('sortByArray', () => {
       { lastName: 'Doe', firstName: 'Jane' },
       { lastName: 'Doe', firstName: 'Alice' },
     ];
-    const result = sortByArray(items, (x) => [x.lastName, x.firstName]);
+    const result = sortByArray(items, (x: any) => [x.lastName, x.firstName]);
     expect(result).toEqual([
       { lastName: 'Doe', firstName: 'Alice' },
       { lastName: 'Doe', firstName: 'Jane' },
@@ -360,7 +360,7 @@ describe('chunk', () => {
 
 describe('times', () => {
   it('executes function n times', () => {
-    const result = times(3, (i) => i * 2);
+    const result = times(3, (i: any) => i * 2);
     expect(result).toEqual([0, 2, 4]);
   });
 });
@@ -465,6 +465,6 @@ describe('byName', () => {
   it('sorts by name property', () => {
     const items = [{ name: 'Charlie' }, { name: 'Alice' }, { name: 'Bob' }];
     items.sort(byName);
-    expect(items.map((x) => x.name)).toEqual(['Alice', 'Bob', 'Charlie']);
+    expect(items.map((x: any) => x.name)).toEqual(['Alice', 'Bob', 'Charlie']);
   });
 });

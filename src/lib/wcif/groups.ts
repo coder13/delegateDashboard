@@ -62,7 +62,9 @@ export const createGroupsAcrossStages = (
         throw new Error('No room found for activity ' + roundActivity.name);
       }
 
-      const groupCount = groupsData.groups[room.id] as number;
+      const groupCount = (
+        typeof groupsData.groups === 'object' ? groupsData.groups[room.id] : groupsData.groups
+      ) as number;
 
       if (!groupCount) {
         throw new Error('No group count found for room ' + room.name);
@@ -166,14 +168,15 @@ export const computeGroupSizes = (assignments: Assignment[]) => (activity: Activ
  * @param {string} roundId
  * @returns
  */
-export const computeGroupSizesForRoundId = (wcif, roundId) => {
+export const computeGroupSizesForRoundId = (wcif: Competition, roundId: string) => {
   const groups = findGroupActivitiesByRound(wcif, roundId);
   return groups.map((group) => ({
     activity: group,
     size: wcif.persons.filter(
-      (p) =>
-        p.assignments.filter((a) => a.activityId === group.id && a.assignmentCode === 'competitor')
-          .length > 0
+      (p: any) =>
+        p.assignments.filter(
+          (a: any) => a.activityId === group.id && a.assignmentCode === 'competitor'
+        ).length > 0
     ).length,
   }));
 };

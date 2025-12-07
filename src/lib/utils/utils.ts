@@ -8,7 +8,11 @@ import { AttemptResult, EventId, RankingType, formatCentiseconds } from '@wca/he
  * @param {Function} updater
  * @returns {Object}
  */
-export const updateIn = (object, [property, ...properyChain]: string[], updater) =>
+export const updateIn = (
+  object: any,
+  [property, ...properyChain]: string[],
+  updater: (value: any) => any
+): any =>
   properyChain.length === 0
     ? { ...object, [property]: updater(object[property]) }
     : {
@@ -24,7 +28,8 @@ export const updateIn = (object, [property, ...properyChain]: string[], updater)
  * @param {*} value
  * @returns {Object}
  */
-export const setIn = (object, properyChain, value) => updateIn(object, properyChain, () => value);
+export const setIn = (object: any, properyChain: string[], value: any) =>
+  updateIn(object, properyChain, () => value);
 
 /**
  * Returns a copy of the object with the value at the specified path merged with the given one.
@@ -34,8 +39,8 @@ export const setIn = (object, properyChain, value) => updateIn(object, properyCh
  * @param {Object} newValue
  * @returns {Object}
  */
-export const mergeIn = (object, properyChain, newValue) =>
-  updateIn(object, properyChain, (currentValue) => ({
+export const mergeIn = (object: any, properyChain: string[], newValue: any) =>
+  updateIn(object, properyChain, (currentValue: any) => ({
     ...currentValue,
     ...newValue,
   }));
@@ -48,8 +53,8 @@ export const mergeIn = (object, properyChain, newValue) =>
  * @param {Object} mapper
  * @returns {Object}
  */
-export const mapIn = (object, properyChain, mapper) =>
-  updateIn(object, properyChain, (array) => array && array.map(mapper));
+export const mapIn = (object: any, properyChain: string[], mapper: (item: any) => any) =>
+  updateIn(object, properyChain, (array: any) => array && array.map(mapper));
 
 /**
  * Returns object's value at the specified path or the default value if it doesn't exist.
@@ -59,7 +64,11 @@ export const mapIn = (object, properyChain, mapper) =>
  * @param {*} defaultValue
  * @returns {*}
  */
-export const getIn = (object, [property, ...propertyChain]: string[], defaultValue: any = null) =>
+export const getIn = (
+  object: any,
+  [property, ...propertyChain]: string[],
+  defaultValue: any = null
+): any =>
   object
     ? propertyChain.length === 0
       ? object.hasOwnProperty(property)
@@ -74,7 +83,7 @@ export const getIn = (object, [property, ...propertyChain]: string[], defaultVal
  * @param {*} value
  * @returns {boolean}
  */
-const isObject = (obj) => obj === Object(obj);
+const isObject = (obj: any) => obj === Object(obj);
 
 /**
  * When given an object, deeply checks if it doesn't contain null values.
@@ -83,7 +92,7 @@ const isObject = (obj) => obj === Object(obj);
  * @param {*} value
  * @returns {boolean}
  */
-export const isPresentDeep = (value) =>
+export const isPresentDeep = (value: any): boolean =>
   isObject(value) ? Object.values(value).every(isPresentDeep) : value != null;
 
 /**
@@ -95,7 +104,7 @@ export const isPresentDeep = (value) =>
  * @param {string} plural
  * @returns {string}
  */
-export const pluralize = (count, singular, plural?) =>
+export const pluralize = (count: number, singular: string, plural?: string) =>
   `${count} ${count === 1 ? singular : plural || singular + 's'}`;
 
 /**
@@ -107,7 +116,7 @@ export const pluralize = (count, singular, plural?) =>
  * @param {string} plural
  * @returns {string}
  */
-export const pluralizeWord = (count, singular, plural?) =>
+export const pluralizeWord = (count: number, singular: string, plural?: string) =>
   `${count === 1 ? singular : plural || singular + 's'}`;
 
 /**
@@ -117,7 +126,7 @@ export const pluralizeWord = (count, singular, plural?) =>
  * @param {Array} arr
  * @returns {Array}
  */
-export const scaleToOne = (arr) => {
+export const scaleToOne = (arr: number[]) => {
   if (arr.length === 0) return [];
   const arrSum = sum(arr);
   return arr.map((x) => (arrSum !== 0 ? x / arrSum : 1 / arr.length));
@@ -129,11 +138,13 @@ export const scaleToOne = (arr) => {
  * @param {Array} arr
  * @returns {*}
  */
-export const firstResult = (arr, fn) => arr.reduce((result, x) => result || fn(x), null);
+export const firstResult = (arr: any[], fn: (x: any) => any) =>
+  arr.reduce((result: any, x: any) => result || fn(x), null);
 
-export const flatMap = (arr, fn) => arr.reduce((xs, x) => xs.concat(fn(x)), []);
+export const flatMap = (arr: any[], fn: (x: any) => any) =>
+  arr.reduce((xs: any, x: any) => xs.concat(fn(x)), []);
 
-export const flatten = (arr) => arr.reduce((xs, x) => xs.concat(x), []);
+export const flatten = (arr: any[]) => arr.reduce((xs: any, x: any) => xs.concat(x), []);
 
 /**
  *
@@ -141,43 +152,52 @@ export const flatten = (arr) => arr.reduce((xs, x) => xs.concat(x), []);
  * @param {*} fn - returns a value to group by
  * @returns
  */
-export const groupBy = (arr, fn) =>
-  arr.reduce((obj, x) => updateIn(obj, [fn(x)], (xs) => (xs || []).concat(x)), {});
+export const groupBy = (arr: any[], fn: (x: any) => string) =>
+  arr.reduce((obj, x) => updateIn(obj, [fn(x)], (xs: any) => (xs || []).concat(x)), {});
 
-export const zip = (...arrs) =>
+export const zip = (...arrs: any[][]) =>
   arrs.length === 0 ? [] : arrs[0].map((_, i) => arrs.map((arr) => arr[i]));
 
-export const findLast = (arr, predicate) =>
+export const findLast = (arr: any[], predicate: (x: any) => boolean) =>
   arr.reduceRight(
     (found, x) => (found !== undefined ? found : predicate(x) ? x : undefined),
     undefined
   );
 
-export const intersection = (xs, ys) => xs.filter((x) => ys.includes(x));
+export const intersection = (xs: any[], ys: any[]) => xs.filter((x) => ys.includes(x));
 
-export const difference = (xs, ys) => xs.filter((x) => !ys.includes(x));
+export const difference = (xs: any[], ys: any[]) => xs.filter((x) => !ys.includes(x));
 
-export const partition = (xs, fn) => [xs.filter(fn), xs.filter((x) => !fn(x))];
+export const partition = (xs: any[], fn: (x: any) => boolean) => [
+  xs.filter(fn),
+  xs.filter((x) => !fn(x)),
+];
 
-const sortCompare = (x, y) => (x < y ? -1 : x > y ? 1 : 0);
+const sortCompare = (x: any, y: any) => (x < y ? -1 : x > y ? 1 : 0);
 
-export const sortBy = (arr, fn) => arr.slice().sort((x, y) => sortCompare(fn(x), fn(y)));
+export const sortBy = (arr: any[], fn: (x: any) => any) =>
+  arr.slice().sort((x, y) => sortCompare(fn(x), fn(y)));
 
-export const sortByArray = (arr, fn) => {
+export const sortByArray = (arr: any[], fn: (x: any) => any[]) => {
   const values = new Map(arr.map((x) => [x, fn(x)])); /* Compute every value once. */
   return arr
     .slice()
-    .sort((x, y) => firstResult(zip(values.get(x), values.get(y)), ([a, b]) => sortCompare(a, b)));
+    .sort((x, y) =>
+      firstResult(zip(values.get(x) || [], values.get(y) || []), ([a, b]: [any, any]) =>
+        sortCompare(a, b)
+      )
+    );
 };
 
-export const chunk = (arr, size) =>
+export const chunk = (arr: any[], size: number): any[][] =>
   arr.length <= size ? [arr] : [arr.slice(0, size), ...chunk(arr.slice(size), size)];
 
-export const times = (n, fn) => Array.from({ length: n }, (_, index) => fn(index));
+export const times = (n: number, fn: (index: number) => any) =>
+  Array.from({ length: n }, (_, index) => fn(index));
 
 export const uniq = <T>(arr: T[]): T[] => [...new Set(arr)];
 
-export const pick = (obj, keys) =>
+export const pick = (obj: any, keys: string[]) =>
   keys.reduce((newObj, key) => ({ ...newObj, [key]: obj[key] }), {});
 
 export const omit = <T extends object, K extends keyof T>(obj: T, ...keys: K[]): Omit<T, K> => {
@@ -197,7 +217,7 @@ export const addMilliseconds = (isoString: string, milliseconds: number) =>
 export const isoTimeDiff = (first: string, second: string) =>
   Math.abs(new Date(first).getTime() - new Date(second).getTime());
 
-export const shortTime = (isoString, timeZone = 'UTC') =>
+export const shortTime = (isoString: string, timeZone = 'UTC') =>
   new Date(isoString).toLocaleTimeString('en-US', {
     timeZone,
     hour: 'numeric',

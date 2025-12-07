@@ -23,7 +23,7 @@ export const generateCompetingGroupActitivitesForEveryone = (
   }
   const personsInRound = personsShouldBeInRound(round)(wcif.persons);
 
-  const allExistingCompetiorAssignments = {};
+  const allExistingCompetiorAssignments: Record<number, number> = {};
 
   for (const group of groups) {
     allExistingCompetiorAssignments[group.id] = 0;
@@ -40,10 +40,10 @@ export const generateCompetingGroupActitivitesForEveryone = (
         ? { [competingAssignment.activityId]: sizes[+competingAssignment.activityId] + 1 }
         : {}),
     };
-  }, {});
+  }, {} as Record<number, number>);
 
   const nextGroupActivityIdToAssign = (assignments: InProgressAssignmment[]) => {
-    const groupSizes = assignments
+    const groupSizes: Record<number, number> = assignments
       .filter((a) => isCompetitorAssignment(a.assignment))
       .reduce((sizes, { assignment }) => {
         return {
@@ -55,7 +55,7 @@ export const generateCompetingGroupActitivitesForEveryone = (
     const sortedGroups = Object.keys(groupSizes)
       .map((activityId) => ({
         activityId,
-        size: groupSizes[activityId],
+        size: groupSizes[+activityId],
       }))
       .sort((a, b) => +a.activityId - +b.activityId)
       .sort((a, b) => a.size - b.size);

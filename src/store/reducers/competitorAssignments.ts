@@ -47,7 +47,7 @@ export const removePersonAssignments = (
     ...state,
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'persons']),
-    wcif: mapIn(state.wcif, ['persons'], (person) =>
+    wcif: mapIn(state.wcif, ['persons'], (person: any) =>
       person.registrantId === action.registrantId
         ? removeAssignmentsFromPerson(person, action.activityId)
         : person
@@ -62,7 +62,7 @@ export const upsertPersonAssignments = (
     ...state,
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'persons']),
-    wcif: mapIn(state.wcif, ['persons'], (person) =>
+    wcif: mapIn(state.wcif, ['persons'], (person: any) =>
       person.registrantId === action.registrantId
         ? upsertAssignmentsOnPerson(person, action.assignments)
         : person
@@ -83,7 +83,7 @@ export const bulkAddPersonAssignments = (
     ...state,
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'persons']),
-    wcif: mapIn(state.wcif, ['persons'], (person) => {
+    wcif: mapIn(state.wcif, ['persons'], (person: any) => {
       const personAssignments = action.assignments
         .filter((a) => a.registrantId === person.registrantId)
         .map((a) => ({
@@ -110,13 +110,13 @@ export const bulkRemovePersonAssignments = (
     ...state,
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'persons']),
-    wcif: mapIn(state.wcif, ['persons'], (person) => {
+    wcif: mapIn(state.wcif, ['persons'], (person: any) => {
       if (person.assignments?.length === 0 || !person.assignments) {
         return person;
       }
 
       // Find arguments to keep assignment: that is, return true
-      return updateIn(person, ['assignments'], (assignments) =>
+      return updateIn(person, ['assignments'], (assignments: any) =>
         assignments.filter((personAssignment: Assignment) => {
           const filtersApplicable = action.assignments.filter((a) => {
             const filterByRegistrantId = a.registrantId
@@ -153,7 +153,7 @@ export const bulkUpsertPersonAssignments = (
     ...state,
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'persons']),
-    wcif: mapIn(state.wcif, ['persons'], (person) => {
+    wcif: mapIn(state.wcif, ['persons'], (person: any) => {
       const personAssignments = action.assignments
         .filter((a) => a.registrantId === person.registrantId)
         .map((a) => ({

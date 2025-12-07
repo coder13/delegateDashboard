@@ -16,7 +16,7 @@ import { activityCodeToName } from '@wca/helpers';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-const ConfigureGroupDialog = ({ open, onClose, activity }) => {
+const ConfigureGroupDialog = ({ open, onClose, activity }: any) => {
   const wcif = useAppSelector((state) => state.wcif);
   const dispatch = useDispatch();
   const { eventId, roundNumber, ...rest } = parseActivityCode(activity.activityCode) as {

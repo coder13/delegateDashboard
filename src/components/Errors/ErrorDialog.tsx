@@ -1,99 +1,17 @@
-import { activityDurationString } from '../../lib/domain/activities';
-import { PERSON_ASSIGNMENT_SCHEDULE_CONFLICT } from '../../lib/wcif/validation';
-import { bulkRemovePersonAssignments } from '../../store/actions';
-import { WCIFError } from './types';
-import DeleteIcon from '@mui/icons-material/Delete';
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-} from '@mui/material';
-import { useDispatch } from 'react-redux';
+import { ValidationError, ValidationErrorType, WcifError } from '../../lib/wcif/validation';
+import { ValidationErrorRenderer } from './renderers/ValidationErrorRenderer';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 
-const ErrorRenderers = {
-  [PERSON_ASSIGNMENT_SCHEDULE_CONFLICT]: (error: WCIFError) => {
-    const dispatch = useDispatch();
-    console.log(17, error);
-
-    const removeAssignment = ({ assignmentCode, activity }) => {
-      dispatch(
-        bulkRemovePersonAssignments([
-          {
-            registrantId: error.data.person.registrantId,
-            activityId: activity.id,
-            assignmentCode,
-          },
-        ])
-      );
-    };
-
-    return (
-      <>
-        {error.data.conflictingAssignments.map(({ id, assignmentA, assignmentB }) => {
-          return (
-            <div key={id}>
-              <List>
-                <ListItem
-                  secondaryAction={
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={() => removeAssignment(assignmentA)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  }>
-                  <ListItemText
-                    primary={assignmentA.assignmentCode}
-                    secondary={`${assignmentA.room.name}: ${
-                      assignmentA.activity.name
-                    } (${activityDurationString(assignmentA.activity)})`}
-                  />
-                </ListItem>
-                <ListItem
-                  secondaryAction={
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={() => removeAssignment(assignmentB)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  }>
-                  <ListItemText
-                    primary={assignmentB.assignmentCode}
-                    secondary={`${assignmentB.room.name}: ${
-                      assignmentB.activity.name
-                    } (${activityDurationString(assignmentB.activity)})`}
-                  />
-                </ListItem>
-              </List>
-              <Divider />
-            </div>
-          );
-        })}
-      </>
-    );
-  },
-};
-
-interface ErrorDialogProps {
-  error?: WCIFError;
+interface ErrorDialogProps<T extends object> {
+  error?: WcifError<T>;
   onClose: () => void;
 }
 
-export function ErrorDialog({ error, onClose }: ErrorDialogProps) {
+export function ErrorDialog<T extends object>({ error, onClose }: ErrorDialogProps<T>) {
   return (
     <Dialog open={!!error} onClose={onClose}>
       <DialogTitle>{error?.message}</DialogTitle>
-      <DialogContent>
-        {error && ErrorRenderers[error.type] && ErrorRenderers[error.type](error)}
-      </DialogContent>
+      <DialogContent>{error ? <ErrorRenderer error={error} /> : null}</DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary">
           Close
@@ -102,3 +20,12 @@ export function ErrorDialog({ error, onClose }: ErrorDialogProps) {
     </Dialog>
   );
 }
+
+export const ErrorRenderer = <T extends object>({ error }: { error: WcifError<T> }) => {
+  switch (error.type as ValidationErrorType) {
+    case 'person_assignment_schedule_conflict':
+      return <ValidationErrorRenderer error={error as ValidationError} />;
+    default:
+      return <div>No renderer for this error type.</div>;
+  }
+};
