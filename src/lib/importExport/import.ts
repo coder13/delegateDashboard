@@ -43,7 +43,7 @@ export interface ParsedAssignment {
 export const validate = (wcif: Competition) => (data: ImportData): ValidationCheck[] => {
   const checks: ValidationCheck[] = [];
 
-  if (!data.meta.fields.indexOf('email') === -1) {
+  if (data.meta.fields.indexOf('email') === -1) {
     checks.push({
       key: 'email',
       passed: false,
@@ -179,7 +179,7 @@ export const findCompetingAssignment = (
 
   const matchWithoutStage = data.match(competitorAssignmentRegexWithoutStage);
 
-  if (stages.length > 2 && matchWithoutStage) {
+  if (stages.length > 1 && matchWithoutStage) {
     throw new Error('Stage data for competitor assignment is ambiguous');
   }
 
@@ -343,7 +343,7 @@ export const determineMissingGroupActivities = (
     const bParsedActivityCode = parseActivityCode(b.activityCode);
 
     if (aParsedActivityCode.eventId === bParsedActivityCode.eventId) {
-      return aParsedActivityCode.groupNumber - bParsedActivityCode.groupNumber;
+      return (aParsedActivityCode.groupNumber ?? 0) - (bParsedActivityCode.groupNumber ?? 0);
     } else {
       return (
         events.findIndex((e) => e.id === aParsedActivityCode.eventId) -
@@ -444,8 +444,12 @@ export const generateMissingGroupActivities = (
         throw new Error(`Could not find round activity ${eventRound} in room ${roomId}`);
       }
 
+      if (groupNumber === undefined) {
+        return;
+      }
+
       roundActivity.childActivities.push(
-        createGroupActivity(startingActivityId, roundActivity as Activity, groupNumber)
+        createGroupActivity(startingActivityId, roundActivity as Activity, groupNumber, roundActivity.startTime, roundActivity.endTime)
       );
 
       startingActivityId += 1;
@@ -484,7 +488,7 @@ export const balanceStartAndEndTimes = (
             return childActivity;
           }
 
-          const groupNumber = parseActivityCode(childActivity.activityCode).groupNumber;
+          const groupNumber = parseActivityCode(childActivity.activityCode).groupNumber ?? 1;
 
           return {
             ...childActivity,

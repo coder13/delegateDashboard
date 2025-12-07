@@ -1,5 +1,3 @@
-import { describe, it, expect } from 'vitest';
-import type { Competition } from '@wca/helpers';
 import { validateWcif } from './index';
 import {
   MISSING_ADVANCEMENT_CONDITION,
@@ -7,6 +5,8 @@ import {
   MISSING_ACTIVITY_FOR_PERSON_ASSIGNMENT,
   PERSON_ASSIGNMENT_SCHEDULE_CONFLICT,
 } from './types';
+import type { Competition } from '@wca/helpers';
+import { describe, it, expect } from 'vitest';
 
 const mockWcif: Competition = {
   formatVersion: '1.0',
@@ -232,15 +232,15 @@ describe('validateWcif', () => {
     const errors = validateWcif(wcif);
 
     expect(errors.length).toBeGreaterThan(0);
-    
+
     // Check for event errors
     const noRoundsErrors = errors.filter((e) => e.type === NO_ROUNDS_FOR_ACTIVITY);
     expect(noRoundsErrors.length).toBeGreaterThan(0);
-    
+
     // Check for advancement condition errors
     const advancementErrors = errors.filter((e) => e.type === MISSING_ADVANCEMENT_CONDITION);
     expect(advancementErrors.length).toBeGreaterThan(0);
-    
+
     // Check for person assignment errors
     const assignmentErrors = errors.filter(
       (e) => e.type === MISSING_ACTIVITY_FOR_PERSON_ASSIGNMENT

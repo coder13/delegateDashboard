@@ -36,14 +36,22 @@ const buildCompetition = (rooms: any[], persons: Person[]): Competition => ({
   id: 'comp',
   shortName: 'comp',
   name: 'Comp',
+  formatVersion: 'v1.0',
   competitorLimit: null,
-  competitors: [],
+  extensions: [],
   schedule: {
+    startDate: '2024-01-01',
+    numberOfDays: 1,
     venues: [
       {
         id: 1,
         name: 'Venue',
+        latitudeMicrodegrees: 0,
+        longitudeMicrodegrees: 0,
+        countryIso2: 'US',
+        timezone: 'America/New_York',
         rooms,
+        extensions: [],
       },
     ],
   },
@@ -55,9 +63,9 @@ const buildCompetition = (rooms: any[], persons: Person[]): Competition => ({
         {
           id: '333-r1',
           format: 'a',
-          advancesTo: null,
-          cutOff: null,
+          cutoff: null,
           timeLimit: null,
+          advancementCondition: null,
           results: [],
           scrambleSetCount: 1,
           extensions: [],
@@ -72,14 +80,18 @@ const buildCompetition = (rooms: any[], persons: Person[]): Competition => ({
 
 const competitor = (overrides: Partial<Person>): Person => ({
   registrantId: 1,
+  wcaUserId: 1,
   name: 'Alice',
   email: 'alice@example.com',
   countryIso2: 'US',
   assignments: [],
   registration: {
+    wcaRegistrationId: 1,
     status: 'accepted',
     eventIds: ['333'],
+    isCompeting: true,
   },
+  extensions: [],
   ...overrides,
 });
 

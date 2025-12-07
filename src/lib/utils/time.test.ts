@@ -11,7 +11,6 @@ import {
 declare const navigator: Navigator;
 
 const setNavigatorLanguages = (languages: string[]) => {
-  // @ts-expect-error - test helper for overriding languages
   Object.defineProperty(globalThis, 'navigator', {
     value: { ...navigator, languages },
     configurable: true,

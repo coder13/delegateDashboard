@@ -21,15 +21,24 @@ const baseRound: Activity = {
 
 const buildWcif = (roundActivities: Activity[]): Competition => ({
   schedule: {
+    startDate: '2024-01-01',
+    numberOfDays: 1,
     venues: [
       {
         id: 1,
+        name: 'Main Venue',
+        latitudeMicrodegrees: 0,
+        longitudeMicrodegrees: 0,
+        countryIso2: 'US',
+        timezone: 'America/New_York',
+        extensions: [],
         rooms: [
           {
             id: 10,
             name: 'Main Room',
             activities: roundActivities,
             color: '#000',
+            extensions: [],
           },
         ],
       },
@@ -40,8 +49,9 @@ const buildWcif = (roundActivities: Activity[]): Competition => ({
   id: 'test-competition',
   shortName: 'test',
   name: 'Test',
+  formatVersion: 'v1.0',
   competitorLimit: null,
-  competitors: [],
+  extensions: [],
 });
 
 describe('group helpers', () => {
@@ -105,8 +115,8 @@ describe('group helpers', () => {
   });
 
   it('calculates group sizes for a round id', () => {
-    const group1 = { id: 2, activityCode: '333-r1-g1', childActivities: [], extensions: [] } as Activity;
-    const group2 = { id: 3, activityCode: '333-r1-g2', childActivities: [], extensions: [] } as Activity;
+    const group1 = { id: 2, name: '333 Round 1 Group 1', activityCode: '333-r1-g1', startTime: '2024-01-01T10:00:00Z', endTime: '2024-01-01T11:00:00Z', childActivities: [], extensions: [] } as Activity;
+    const group2 = { id: 3, name: '333 Round 1 Group 2', activityCode: '333-r1-g2', startTime: '2024-01-01T10:00:00Z', endTime: '2024-01-01T11:00:00Z', childActivities: [], extensions: [] } as Activity;
     const roundWithGroups: Activity = {
       ...baseRound,
       childActivities: [group1, group2],
