@@ -67,11 +67,11 @@ export const selectActivityById = createSelector(
 );
 
 export const selectPersonsAssignedForRound = createSelector(
-  [selectAcceptedPersons, selectActivityById, (_: AppState, roundId: string) => roundId],
-  (acceptedPersons, _selectActivityById, roundId): Person[] => {
+  [selectWcif, selectAcceptedPersons, (_: AppState, roundId: string) => roundId],
+  (wcif, acceptedPersons, roundId: string): Person[] => {
     return acceptedPersons.filter((p) =>
       p.assignments?.find((a) => {
-        const activity = _selectActivityById(a.activityId);
+        const activity = wcif ? findActivityById(wcif, a.activityId) : null;
 
         if (!activity) {
           console.error(`Can't find activity for activityId ${a.activityId}`);
@@ -85,11 +85,11 @@ export const selectPersonsAssignedForRound = createSelector(
 );
 
 export const selectPersonsHavingCompetitorAssignmentsForRound = createSelector(
-  [selectAcceptedPersons, selectActivityById, (_: AppState, roundId: string) => roundId],
-  (acceptedPersons, _selectActivityById, roundId): Person[] => {
+  [selectWcif, selectAcceptedPersons, (_: AppState, roundId: string) => roundId],
+  (wcif, acceptedPersons, roundId: string): Person[] => {
     return acceptedPersons.filter((p) =>
       p.assignments?.find((a) => {
-        const activity = _selectActivityById(a.activityId);
+        const activity = wcif ? findActivityById(wcif, a.activityId) : null;
 
         if (!activity) {
           console.error(`Can't find activity for activityId ${a.activityId}`);

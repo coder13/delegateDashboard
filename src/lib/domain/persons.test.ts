@@ -9,7 +9,6 @@ import {
   findPR,
   byPsychsheet,
   byResult,
-  byPROrResult,
   addAssignmentsToPerson,
   removeAssignmentsFromPerson,
   upsertAssignmentsOnPerson,

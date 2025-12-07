@@ -1,27 +1,29 @@
 import { shortEventNameById } from '../lib/domain/events';
 import { acceptedRegistrations } from '../lib/domain/persons';
+import { useAppSelector } from '../store';
 import { Card, CardContent, Typography } from '@mui/material';
-import { Competition } from '@wca/helpers';
 import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
 
 export default function CompetitionSummary() {
-  const wcif = useSelector((state: { wcif: Competition }) => state.wcif);
-  const approvedRegistrations = acceptedRegistrations(wcif.persons);
+  const wcif = useAppSelector((state) => state.wcif);
+  const approvedRegistrations = acceptedRegistrations(wcif?.persons || []);
 
   const startDate = useMemo(() => {
+    if (!wcif) return new Date();
     const start = new Date(wcif.schedule.startDate);
     start.setHours(start.getHours() + new Date().getTimezoneOffset() / 60);
     return start;
   }, [wcif]);
 
   const endDate = useMemo(() => {
-    if (wcif.schedule.numberOfDays <= 1) return undefined;
+    if (!wcif || wcif.schedule.numberOfDays <= 1) return undefined;
 
     const end = new Date(wcif.schedule.startDate);
     end.setDate(startDate.getDate() + wcif.schedule.numberOfDays);
     return end;
-  }, [startDate, wcif.schedule.numberOfDays, wcif.schedule.startDate]);
+  }, [startDate, wcif]);
+
+  if (!wcif) return null;
 
   return (
     <Card>

@@ -5,6 +5,7 @@ import {
   parseActivityCode,
 } from '../../../lib/domain/activities';
 import { mayMakeCutoff, mayMakeTimeLimit } from '../../../lib/domain/persons';
+import { useAppSelector } from '../../../store';
 import { selectPersonsAssignedToActivitiyId } from '../../../store/selectors';
 import ConfigureGroupDialog from './ConfigureGroupDialog';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -20,29 +21,38 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import { formatCentiseconds } from '@wca/helpers';
+import { Activity, Assignment, formatCentiseconds, Person } from '@wca/helpers';
 import React, { useCallback, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+
+interface PersonWithAssignment extends Person {
+  assignedActivity: Assignment;
+}
 
 const withAssignmentCode =
-  (activityId, assignmentCode) =>
-  ({ assignedActivity }) =>
+  (activityId: number, assignmentCode: string) =>
+  ({ assignedActivity }: PersonWithAssignment): boolean =>
     assignedActivity.activityId === activityId &&
     assignedActivity.assignmentCode.indexOf(assignmentCode) > -1;
 
-const GroupCard = ({ groupActivity }) => {
-  const wcif = useSelector((state) => state.wcif);
-  const personsAssigned = useSelector((state) =>
-    selectPersonsAssignedToActivitiyId(state, groupActivity.id)
-  ).map((p) => ({
-    ...p,
-    assignedActivity: p.assignments.find((a) => a.activityId === groupActivity.id),
-  }));
+interface GroupCardProps {
+  groupActivity: Activity;
+}
 
-  const [anchorEl, setAnchorEl] = useState(null);
+const GroupCard = ({ groupActivity }: GroupCardProps) => {
+  const wcif = useAppSelector((state) => state.wcif);
+  const personsAssigned = useAppSelector((state) =>
+    selectPersonsAssignedToActivitiyId(state, groupActivity.id)
+  ).map(
+    (p): PersonWithAssignment => ({
+      ...p,
+      assignedActivity: p.assignments!.find((a) => a.activityId === groupActivity.id)!,
+    })
+  );
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [editGroupDialogOpen, setEditGroupDialogOpen] = useState(false);
 
-  const handleMenuOpen = (event) => {
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -79,7 +89,7 @@ const GroupCard = ({ groupActivity }) => {
   const other = useMemo(
     () =>
       staff.filter((p) =>
-        p.assignments.find(
+        p.assignments?.find(
           ({ activityId, assignmentCode }) =>
             activityId === groupActivity.id &&
             assignmentCode.indexOf('staff-') > -1 &&
@@ -90,17 +100,17 @@ const GroupCard = ({ groupActivity }) => {
   );
 
   const mapNames = useCallback(
-    (array) =>
+    (array: PersonWithAssignment[]) =>
       array.length
         ? array
             .sort((a, b) => a.name.localeCompare(b.name))
             .map(({ registrantId, name, assignments }) => {
-              const assignment = assignments.find((a) => a.activityId === groupActivity.id);
+              const assignment = assignments!.find((a) => a.activityId === groupActivity.id);
 
               return (
                 <MaterialLink
                   key={registrantId || name}
-                  to={`/competitions/${wcif.id}/persons/${registrantId}`}>
+                  to={`/competitions/${wcif!.id}/persons/${registrantId}`}>
                   {`${name}${assignment?.stationNumber ? ` (${assignment.stationNumber})` : ''}`}
                 </MaterialLink>
               );
@@ -111,7 +121,7 @@ const GroupCard = ({ groupActivity }) => {
               </>
             ))
         : null,
-    [groupActivity.id, wcif.id]
+    [groupActivity.id, wcif]
   );
 
   const errors = useMemo(
@@ -126,18 +136,18 @@ const GroupCard = ({ groupActivity }) => {
     [competitors, staff]
   );
 
-  const roomName = groupActivity.parent.room.name;
+  const roomName = (groupActivity as any).parent.room.name;
 
   const personalRecords = useMemo(
     () =>
       competitors
         .map((person) => {
-          const pr = person.personalBests.find(
+          const pr = person.personalBests?.find(
             (pb) => pb.eventId === eventId && pb.type === 'average'
           );
           return pr?.best;
         })
-        .filter((pr) => !!pr),
+        .filter((pr) => !!pr) as number[],
     [competitors, eventId]
   );
 

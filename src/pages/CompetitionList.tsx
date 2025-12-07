@@ -1,12 +1,8 @@
 import { UpcomingCompetitions } from '../components/CompetitionLists';
 import { PastCompetitions } from '../components/CompetitionLists/PastCompetitions';
-import PublicIcon from '@mui/icons-material/Public';
-import { ListItemButton } from '@mui/material';
 import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import Typography from '@mui/material/Typography';
 

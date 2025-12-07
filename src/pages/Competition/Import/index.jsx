@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { usePapaParse } from 'react-papaparse';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 const mapCSVFieldToData = (necessaryFields) => (field) => {
   if (necessaryFields.indexOf(field) > -1) {
@@ -33,7 +33,7 @@ const mapCSVFieldToData = (necessaryFields) => (field) => {
 };
 
 const ImportPage = () => {
-  const wcif = useSelector((state) => state.wcif);
+  const wcif = useAppSelector((state) => state.wcif);
   const eventIds = wcif.events.map((e) => e.id);
   const necessaryFields = ['email', ...eventIds, ...eventIds.map((e) => `${e}-staff`)];
   const dispatch = useDispatch();
@@ -167,11 +167,12 @@ const ImportPage = () => {
               The first item to note is that whatever CSV you upload must have 1 row per person,
               identified by their email.
               <br />
-              You must also have a column for each event containing a competitor's competing group.
+              You must also have a column for each event containing a competitor&aposs competing
+              group.
               <br />
-              If you wish to specify staffing assignments, you will also include those. This column
+              {`If you wish to specify staffing assignments, you will also include those. This column
               name can have any format so long as it includes the event Id but is not only the
-              eventId. A perfectly fine format would be '{'{'}eventId{'}'}-staff'
+              eventId. A perfectly fine format would be '{eventId}-staff'`}
             </Typography>
           </AccordionDetails>
         </Accordion>

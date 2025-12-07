@@ -7,6 +7,7 @@ import {
   findRooms,
 } from '../../../lib/domain/activities';
 import { flatMap, groupBy } from '../../../lib/utils/utils';
+import { useAppSelector } from '../../../store';
 import {
   FormControl,
   FormControlLabel,
@@ -20,12 +21,11 @@ import {
   TableRow,
 } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
 
 const DaysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export default function ScramblerSchedule() {
-  const wcif = useSelector((state) => state.wcif);
+  const wcif = useAppSelector((state) => state.wcif);
 
   const mapNames = (array) =>
     array.length

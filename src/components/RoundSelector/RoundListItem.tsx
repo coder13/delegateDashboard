@@ -4,6 +4,7 @@ import {
   parseActivityCode,
 } from '../../lib/domain/activities';
 import { pluralize } from '../../lib/utils/utils';
+import { useAppSelector } from '../../store';
 import {
   selectPersonsAssignedForRound,
   selectPersonsHavingCompetitorAssignmentsForRound,
@@ -11,28 +12,33 @@ import {
 } from '../../store/selectors';
 import '@cubing/icons';
 import { Collapse, ListItemAvatar, ListItemButton, ListItemText } from '@mui/material';
-import { activityCodeToName } from '@wca/helpers';
-import React, { useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { activityCodeToName, Round } from '@wca/helpers';
+import { useEffect, useRef } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 
-function RoundListItem({ activityCode, round, selected, ...props }) {
-  const ref = useRef();
-  const wcif = useSelector((state) => state.wcif);
-  const realGroups = findGroupActivitiesByRound(wcif, activityCode);
+interface RoundListItemProps {
+  activityCode: string;
+  round: Round;
+  selected: boolean;
+  in?: boolean;
+}
+
+function RoundListItem({ activityCode, round, selected, ...props }: RoundListItemProps) {
+  const ref = useRef<HTMLAnchorElement>(null);
+  const wcif = useAppSelector((state) => state.wcif);
+  const realGroups = wcif ? findGroupActivitiesByRound(wcif, activityCode) : [];
 
   const { eventId } = parseActivityCode(activityCode);
 
-  const personsShouldBeInRoundCount = useSelector(
-    (state) => selectPersonsShouldBeInRound(state)(round).length
-  );
+  const personsSelector = useAppSelector(selectPersonsShouldBeInRound);
+  const personsShouldBeInRoundCount = personsSelector(round).length;
 
-  const personsAssignedCount = useSelector(
-    (state) => selectPersonsAssignedForRound(state, round.id).length
-  );
+  const personsAssignedCount = useAppSelector((state) =>
+    (selectPersonsAssignedForRound as any)(state, round.id)
+  ).length;
 
-  const personsAssignedWithCompetitorAssignmentCount = useSelector(
-    (state) => selectPersonsHavingCompetitorAssignmentsForRound(state, round.id).length
+  const personsAssignedWithCompetitorAssignmentCount = useAppSelector(
+    (state) => (selectPersonsHavingCompetitorAssignmentsForRound as any)(state, round.id).length
   );
 
   const _cumulativeGroupCount = cumulativeGroupCount(round);
@@ -66,7 +72,7 @@ function RoundListItem({ activityCode, round, selected, ...props }) {
     <Collapse in={props.in}>
       <ListItemButton
         component={RouterLink}
-        to={`/competitions/${wcif.id}/events/${activityCode}`}
+        to={`/competitions/${wcif?.id}/events/${activityCode}`}
         selected={selected}
         ref={ref}>
         <ListItemAvatar>

@@ -1,5 +1,6 @@
 import { findGroupActivitiesByRound, parseActivityCode } from '../lib/domain/activities';
 import { byName } from '../lib/utils/utils';
+import { useAppSelector } from '../store';
 import {
   Button,
   Dialog,
@@ -12,27 +13,40 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
+import { Person } from '@wca/helpers';
 import { useCallback } from 'react';
-import { useSelector } from 'react-redux';
 
-const PersonsAssignmentsDialog = ({ open, onClose, roundId, persons }) => {
-  const wcif = useSelector((state) => state.wcif);
+interface PersonsAssignmentsDialogProps {
+  open: boolean;
+  onClose: () => void;
+  roundId: string;
+  persons: Person[];
+}
 
-  const groupActivities = findGroupActivitiesByRound(wcif, roundId);
+const PersonsAssignmentsDialog = ({
+  open,
+  onClose,
+  roundId,
+  persons,
+}: PersonsAssignmentsDialogProps) => {
+  const wcif = useAppSelector((state) => state.wcif);
+
+  const groupActivities = wcif ? findGroupActivitiesByRound(wcif, roundId) : [];
 
   const personAssignmentsInRound = useCallback(
-    (person) =>
-      person.assignments.filter((assignment) =>
+    (person: Person) =>
+      (person.assignments || []).filter((assignment) =>
         groupActivities.find((activity) => activity.id === assignment.activityId)
       ),
     [groupActivities]
   );
 
   const activitiesByPersonAndAssignmentCode = useCallback(
-    (person, assignmentCode) =>
+    (person: Person, assignmentCode: string) =>
       personAssignmentsInRound(person)
         .filter((assignment) => assignment.assignmentCode === assignmentCode)
-        .map(({ activityId }) => groupActivities.find(({ id }) => id === activityId)),
+        .map(({ activityId }) => groupActivities.find(({ id }) => id === activityId))
+        .filter((activity) => activity !== undefined),
     [groupActivities, personAssignmentsInRound]
   );
 
@@ -57,7 +71,7 @@ const PersonsAssignmentsDialog = ({ open, onClose, roundId, persons }) => {
                   {activitiesByPersonAndAssignmentCode(person, 'competitor')
                     .map(
                       (activity) =>
-                        `${activity.parent.room.name}: ${
+                        `${(activity as any).parent?.room?.name || 'Unknown'}: ${
                           parseActivityCode(activity.activityCode).groupNumber
                         }`
                     )
@@ -67,7 +81,7 @@ const PersonsAssignmentsDialog = ({ open, onClose, roundId, persons }) => {
                   {activitiesByPersonAndAssignmentCode(person, 'staff-scrambler')
                     .map(
                       (activity) =>
-                        `${activity.parent.room.name}: ${
+                        `${(activity as any).parent?.room?.name || 'Unknown'}: ${
                           parseActivityCode(activity.activityCode).groupNumber
                         }`
                     )
@@ -77,7 +91,7 @@ const PersonsAssignmentsDialog = ({ open, onClose, roundId, persons }) => {
                   {activitiesByPersonAndAssignmentCode(person, 'staff-judge')
                     .map(
                       (activity) =>
-                        `${activity.parent.room.name}: ${
+                        `${(activity as any).parent?.room?.name || 'Unknown'}: ${
                           parseActivityCode(activity.activityCode).groupNumber
                         }`
                     )

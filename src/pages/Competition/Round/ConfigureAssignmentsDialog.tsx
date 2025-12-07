@@ -217,20 +217,23 @@ const ConfigureAssignmentsDialog = ({
       .sort((a, b) => byPROrResult(event, roundNumber)(a, b));
 
     return personsWithSeedResult
-      .reduce((persons, person) => {
-        const lastPerson = persons[persons.length - 1];
+      .reduce<Array<(typeof personsWithSeedResult)[number] & { seedResult: { ranking: number } }>>(
+        (persons, person) => {
+          const lastPerson = persons[persons.length - 1];
 
-        return [
-          ...persons,
-          {
-            ...person,
-            seedResult: {
-              ...person.seedResult,
-              ranking: calcRanking(person, lastPerson),
+          return [
+            ...persons,
+            {
+              ...person,
+              seedResult: {
+                ...person.seedResult,
+                ranking: calcRanking(person, lastPerson),
+              },
             },
-          },
-        ];
-      }, [])
+          ];
+        },
+        []
+      )
       .filter(
         (p) =>
           showAllCompetitors ||
@@ -505,13 +508,9 @@ const ConfigureAssignmentsDialog = ({
       const activityFeaturedCompetitors =
         getGroupifierActivityConfig(competingActivity)?.featuredCompetitorWcaUserIds || [];
 
-      const {
-        // @ts-expect-error
-        parent: __,
-        // @ts-expect-error
-        room: _,
-        ...competingActivityWithoutRoom
-      } = competingActivity as ActivityWithRoom | ActivityWithParent;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { parent: _, ...competingActivityWithoutRoom } =
+        competingActivity as ActivityWithParent;
 
       const newActivity = setGroupifierActivityConfig(competingActivityWithoutRoom, {
         featuredCompetitorWcaUserIds: activityFeaturedCompetitors.includes(person.wcaUserId)
@@ -521,7 +520,7 @@ const ConfigureAssignmentsDialog = ({
 
       dispatch(editActivity(competingActivity, newActivity));
     },
-    [groups, featuredCompetitors]
+    [groups, dispatch]
   );
 
   if (!open) {
@@ -730,6 +729,7 @@ const ConfigureAssignmentsDialog = ({
 
                         return (
                           <div
+                            key={key}
                             style={{
                               marginRight: '0.25em',
                               display: 'inline',

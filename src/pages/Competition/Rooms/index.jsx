@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import { useAppSelector } from '../../../store';
+import Room from './Room';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
-import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
-import Room from './Room';
+import React, { useEffect } from 'react';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -33,7 +33,7 @@ const Venue = ({ venue }) => {
 
 const Rooms = () => {
   const { setBreadcrumbs } = useBreadcrumbs();
-  const wcif = useSelector((state) => state.wcif);
+  const wcif = useAppSelector((state) => state.wcif);
 
   useEffect(() => {
     setBreadcrumbs([

@@ -93,7 +93,7 @@ export const validate =
           .filter((eventData) => eventData !== null),
         raw: row,
       }))
-      .filter(({ email, assignments, raw }) => {
+      .filter(({ email, assignments }) => {
         const person = wcif.persons.find((p) => p.email === email);
         if (!person) {
           checks.push({

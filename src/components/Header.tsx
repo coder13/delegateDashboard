@@ -1,6 +1,4 @@
-import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { useAppSelector } from '../store';
 import { Tune } from '@mui/icons-material';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
@@ -24,12 +22,14 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
+import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 
 export const drawerWidth = 240;
 
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== 'open',
-})(({ theme, open }) => ({
+})<{ open?: boolean }>(({ theme, open }) => ({
   transition: theme.transitions.create(['margin', 'width'], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
@@ -45,8 +45,14 @@ const AppBar = styled(MuiAppBar, {
   }),
 }));
 
-const MenuLink = ({ url, icon, text }) => (
-  <ListItem button key={url} component={Link} to={url}>
+interface MenuLinkProps {
+  url: string;
+  icon: React.ReactNode;
+  text: string;
+}
+
+const MenuLink = ({ url, icon, text }: MenuLinkProps) => (
+  <ListItem key={url} component={Link} to={url}>
     <ListItemIcon>{icon}</ListItemIcon>
     <ListItemText primary={text} />
   </ListItem>
@@ -61,8 +67,24 @@ export const DrawerHeader = styled('div')(({ theme }) => ({
   justifyContent: 'flex-end',
 }));
 
+interface MenuItem {
+  url: string;
+  icon: React.ReactNode;
+  text: string;
+  type?: never;
+}
+
+interface MenuDivider {
+  type: 'divider';
+  url?: never;
+  icon?: never;
+  text?: never;
+}
+
+type MenuItemOrDivider = MenuItem | MenuDivider;
+
 export const DrawerLinks = () => {
-  const competitionId = useSelector((state) => state.wcif.id);
+  const competitionId = useAppSelector((state) => state.wcif?.id);
   const menuLinks = useMemo(
     () => ({
       top: [
@@ -82,7 +104,7 @@ export const DrawerLinks = () => {
           text: 'Scrambler Schedule',
         },
         {
-          type: 'divider',
+          type: 'divider' as const,
         },
         {
           url: `/competitions/${competitionId}/import`,
@@ -95,7 +117,7 @@ export const DrawerLinks = () => {
           text: 'Export Data',
         },
         {
-          type: 'divider',
+          type: 'divider' as const,
         },
         {
           url: `/competitions/${competitionId}/checks/first-timers`,
@@ -107,7 +129,7 @@ export const DrawerLinks = () => {
           icon: <Tune />,
           text: 'Groupifier Printing Config',
         },
-      ],
+      ] as MenuItemOrDivider[],
       debug: [
         {
           url: `/competitions/${competitionId}/assignments`,
@@ -119,12 +141,12 @@ export const DrawerLinks = () => {
           icon: <SearchIcon />,
           text: 'Query',
         },
-      ],
+      ] as MenuItemOrDivider[],
     }),
     [competitionId]
   );
 
-  const renderLinkOrDivider = (link, index) =>
+  const renderLinkOrDivider = (link: MenuItemOrDivider, index: number) =>
     link.type === 'divider' ? (
       <Divider key={'divider' + index} />
     ) : (
@@ -143,8 +165,13 @@ export const DrawerLinks = () => {
   );
 };
 
-export const Header = ({ open, onMenuOpen }) => {
-  const { name } = useSelector((state) => state.wcif);
+interface HeaderProps {
+  open?: boolean;
+  onMenuOpen: () => void;
+}
+
+export const Header = ({ open, onMenuOpen }: HeaderProps) => {
+  const name = useAppSelector((state) => state.wcif?.name);
 
   return (
     <AppBar position="static" open={open}>

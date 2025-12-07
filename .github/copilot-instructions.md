@@ -28,7 +28,7 @@ Use `@wca/helpers` npm package for type-safe WCIF manipulation (types: `Competit
 - **Actions**: `src/store/actions.js` - Action creators and thunks for async operations (WCA API calls)
 - **Reducer**: Switch-style reducer with sub-reducers in `src/store/reducers/` for complex operations
 - **Selectors**: `src/store/selectors.js` - Memoized selectors using `reselect`
-- **Typed Hooks**: Use `useAppSelector` and `useAppDispatch` from `src/store/index.ts` (not raw `useSelector`/`useDispatch`)
+- **Typed Hooks**: Use `useAppSelector` and `useAppDispatch` from `src/store/index.ts` (not raw `useAppSelector`/`useDispatch`)
 
 ### WCIF Update Pattern
 

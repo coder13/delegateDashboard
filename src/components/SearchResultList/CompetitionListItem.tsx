@@ -4,7 +4,13 @@ import { ListItemIcon, ListItemText } from '@mui/material';
 
 // const FlagIcon = FlagIconFactory(React, { useCssModules: false });
 
-function CompetitionListItem({ name, start_date, country_iso2 }) {
+interface CompetitionListItemProps {
+  name: string;
+  start_date: string;
+  country_iso2?: string;
+}
+
+function CompetitionListItem({ name, start_date, country_iso2 }: CompetitionListItemProps) {
   return (
     <>
       <ListItemIcon>

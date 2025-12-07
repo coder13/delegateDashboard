@@ -3,6 +3,7 @@ import { DrawerHeader, DrawerLinks, drawerWidth, Header } from '../../components
 import MaterialLink from '../../components/MaterialLink';
 import { getLocalStorage, setLocalStorage } from '../../lib/api';
 import BreadcrumbsProvider, { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
+import { useAppDispatch, useAppSelector } from '../../store';
 import { fetchWCIF, uploadCurrentWCIFChanges } from '../../store/actions';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import {
@@ -20,21 +21,20 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { useSnackbar } from 'notistack';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, Outlet } from 'react-router-dom';
 
 const BreadCrumbsGridItem = () => {
   const { breadcrumbs } = useBreadcrumbs();
-  const wcif = useSelector((state) => state.wcif);
-  const { competitionId } = useParams();
+  const wcif = useAppSelector((state) => state.wcif);
+  const { competitionId } = useParams<{ competitionId: string }>();
 
   return (
     <Grid item>
       <Breadcrumbs aria-label="breadcrumbs">
         <MaterialLink to={`/`}>Competitions</MaterialLink>
         <MaterialLink to={`/competitions/${competitionId}`}>
-          {wcif.name || competitionId}
+          {wcif?.name || competitionId}
         </MaterialLink>
         {breadcrumbs.map((breadcrumb) =>
           breadcrumb.to ? (
@@ -52,35 +52,29 @@ const BreadCrumbsGridItem = () => {
   );
 };
 
-const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(
-  ({ theme, open }) => ({
-    flexGrow: 1,
-    padding: theme.spacing(3),
-    transition: theme.transitions.create('margin', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    ...(open && {
-      transition: theme.transitions.create('margin', {
-        easing: theme.transitions.easing.easeOut,
-        duration: theme.transitions.duration.enteringScreen,
-      }),
-      marginLeft: `${drawerWidth}px`,
-    }),
-    overflowY: 'auto',
-  })
-);
+const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
+  open?: boolean;
+}>(({ theme, open }) => ({
+  flexGrow: 1,
+  padding: theme.spacing(3),
+  transition: 'margin 225ms cubic-bezier(0.4, 0, 0.6, 1) 0ms',
+  ...(open && {
+    transition: 'margin 195ms cubic-bezier(0, 0, 0.2, 1) 0ms',
+    marginLeft: `${drawerWidth}px`,
+  }),
+  overflowY: 'auto',
+}));
 
 const CompetitionLayout = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { enqueueSnackbar } = useSnackbar();
-  const { competitionId } = useParams();
+  const { competitionId } = useParams<{ competitionId: string }>();
   const [drawerOpen, setDrawerOpen] = useState(getLocalStorage('drawer-open') === 'true');
 
-  const fetchingWCIF = useSelector((state) => state.fetchingWCIF);
-  const needToSave = useSelector((state) => state.needToSave);
-  const wcif = useSelector((state) => state.wcif);
-  const errors = useSelector((state) => state.errors);
+  const fetchingWCIF = useAppSelector((state) => state.fetchingWCIF);
+  const needToSave = useAppSelector((state) => state.needToSave);
+  const wcif = useAppSelector((state) => state.wcif);
+  const errors = useAppSelector((state) => state.errors);
 
   const handleSaveChanges = useCallback(() => {
     dispatch(
@@ -101,15 +95,17 @@ const CompetitionLayout = () => {
   }, [wcif]);
 
   useEffect(() => {
-    dispatch(fetchWCIF(competitionId));
+    if (competitionId) {
+      dispatch(fetchWCIF(competitionId));
+    }
   }, [dispatch, competitionId]);
 
   useEffect(() => {
-    setLocalStorage('drawer-open', drawerOpen);
+    setLocalStorage('drawer-open', drawerOpen.toString());
   }, [drawerOpen]);
 
   const handleKeyDown = useCallback(
-    (event) => {
+    (event: KeyboardEvent) => {
       if (!event) {
         return;
       }
@@ -165,7 +161,7 @@ const CompetitionLayout = () => {
                       SAVE
                     </Button>
                   }>
-                  Don't Forget to save changes!
+                  {"Don't Forget to save changes!"}
                 </Alert>
               </Grid>
               <BreadCrumbsGridItem />

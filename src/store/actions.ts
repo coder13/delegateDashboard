@@ -17,59 +17,63 @@ interface CompetitionSearchResult {
   country_iso2: string;
 }
 
-export enum Action {
-  FETCHING_COMPETITIONS = 'fetching_competitions',
-  SET_ERROR_FETCHING_COMPS = 'set_error_fetching_comps',
-  SET_COMPETITIONS = 'set_competitions',
-  FETCHING_WCIF = 'fetching_wcif',
-  FETCHED_WCIF = 'fetched_wcif',
-  UPLOADING_WCIF = 'uploading_wcif',
-  UPDATE_WCIF_ERRORS = 'update_wcif_errors',
-  TOGGLE_PERSON_ROLE = 'toggle_person_role',
-  ADD_PERSON_ASSIGNMENTS = 'add_person_assignments',
-  REMOVE_PERSON_ASSIGNMENTS = 'remove_person_assignments',
-  UPSERT_PERSON_ASSIGNMENTS = 'upsert_person_assignments',
-  BULK_ADD_PERSON_ASSIGNMENTS = 'bulk_add_person_assignments',
-  BULK_REMOVE_PERSON_ASSIGNMENTS = 'bulk_remove_person_assignment',
-  BULK_UPSERT_PERSON_ASSIGNMENTS = 'bulk_upsert_person_assignments',
-  UPDATE_GROUP_COUNT = 'update_group_count',
-  UPDATE_ROUND_ACTIVITIES = 'update_round_activities',
-  UPDATE_ROUND_CHILD_ACTIVITIES = 'update_round_child_activities',
-  UPDATE_ROUND_EXTENSION_DATA = 'update_round_extension_data',
-  UPDATE_ROUND = 'update_round',
-  PARTIAL_UPDATE_WCIF = 'partial_update_wcif',
-  RESET_ALL_GROUP_ASSIGNMENTS = 'reset_all_group_assignments',
-  GENERATE_ASSIGNMENTS = 'generate_assignments',
-  EDIT_ACTIVITY = 'edit_activity',
-  UPDATE_GLOBAL_EXTENSION = 'update_global_extension',
-  ADD_PERSON = 'add_person',
-  UPDATE_RAW_OBJ = 'update_raw_obj',
-}
+export const ActionType = {
+  FETCHING_COMPETITIONS: 'fetching_competitions',
+  SET_ERROR_FETCHING_COMPS: 'set_error_fetching_comps',
+  SET_COMPETITIONS: 'set_competitions',
+  FETCHING_WCIF: 'fetching_wcif',
+  FETCHED_WCIF: 'fetched_wcif',
+  UPLOADING_WCIF: 'uploading_wcif',
+  UPDATE_WCIF_ERRORS: 'update_wcif_errors',
+  TOGGLE_PERSON_ROLE: 'toggle_person_role',
+  ADD_PERSON_ASSIGNMENTS: 'add_person_assignments',
+  REMOVE_PERSON_ASSIGNMENTS: 'remove_person_assignments',
+  UPSERT_PERSON_ASSIGNMENTS: 'upsert_person_assignments',
+  BULK_ADD_PERSON_ASSIGNMENTS: 'bulk_add_person_assignments',
+  BULK_REMOVE_PERSON_ASSIGNMENTS: 'bulk_remove_person_assignment',
+  BULK_UPSERT_PERSON_ASSIGNMENTS: 'bulk_upsert_person_assignments',
+  UPDATE_GROUP_COUNT: 'update_group_count',
+  UPDATE_ROUND_ACTIVITIES: 'update_round_activities',
+  UPDATE_ROUND_CHILD_ACTIVITIES: 'update_round_child_activities',
+  UPDATE_ROUND_EXTENSION_DATA: 'update_round_extension_data',
+  UPDATE_ROUND: 'update_round',
+  PARTIAL_UPDATE_WCIF: 'partial_update_wcif',
+  RESET_ALL_GROUP_ASSIGNMENTS: 'reset_all_group_assignments',
+  GENERATE_ASSIGNMENTS: 'generate_assignments',
+  EDIT_ACTIVITY: 'edit_activity',
+  UPDATE_GLOBAL_EXTENSION: 'update_global_extension',
+  ADD_PERSON: 'add_person',
+  UPDATE_RAW_OBJ: 'update_raw_obj',
+} as const;
+
+export type Action = (typeof ActionType)[keyof typeof ActionType];
 
 export type ReduxAction<T extends Action, P extends object = object> = {
   type: T;
 } & P;
 
-const fetchingCompetitions = (): ReduxAction<Action.FETCHING_COMPETITIONS> => ({
-  type: Action.FETCHING_COMPETITIONS,
+const fetchingCompetitions = (): ReduxAction<typeof ActionType.FETCHING_COMPETITIONS> => ({
+  type: ActionType.FETCHING_COMPETITIONS,
 });
 
 export type FetchingWcifPayload = { fetching: boolean };
-const fetchingWCIF = (): ReduxAction<Action.FETCHING_WCIF, FetchingWcifPayload> => ({
-  type: Action.FETCHING_WCIF,
+const fetchingWCIF = (): ReduxAction<typeof ActionType.FETCHING_WCIF, FetchingWcifPayload> => ({
+  type: ActionType.FETCHING_WCIF,
   fetching: true,
 });
 
 const updateFetching = (
   fetching: boolean
-): ReduxAction<Action.FETCHING_WCIF, FetchingWcifPayload> => ({
-  type: Action.FETCHING_WCIF,
+): ReduxAction<typeof ActionType.FETCHING_WCIF, FetchingWcifPayload> => ({
+  type: ActionType.FETCHING_WCIF,
   fetching,
 });
 
 export type UpdateWcifPayload = { fetched: boolean; wcif: Competition };
-const updateWCIF = (wcif: Competition): ReduxAction<Action.FETCHED_WCIF, UpdateWcifPayload> => ({
-  type: Action.FETCHED_WCIF,
+const updateWCIF = (
+  wcif: Competition
+): ReduxAction<typeof ActionType.FETCHED_WCIF, UpdateWcifPayload> => ({
+  type: ActionType.FETCHED_WCIF,
   fetched: false,
   wcif,
 });
@@ -78,8 +82,8 @@ export type UpdateWcifErrorsPayload = { errors: ValidationError[]; replace: bool
 const updateWcifErrors = (
   errors: ValidationError[],
   replace = false
-): ReduxAction<Action.UPDATE_WCIF_ERRORS, UpdateWcifErrorsPayload> => ({
-  type: Action.UPDATE_WCIF_ERRORS,
+): ReduxAction<typeof ActionType.UPDATE_WCIF_ERRORS, UpdateWcifErrorsPayload> => ({
+  type: ActionType.UPDATE_WCIF_ERRORS,
   errors,
   replace,
 });
@@ -87,16 +91,16 @@ const updateWcifErrors = (
 export type UploadingWcifPayload = { uploading: boolean };
 const updateUploading = (
   uploading: boolean
-): ReduxAction<Action.UPLOADING_WCIF, UploadingWcifPayload> => ({
-  type: Action.UPLOADING_WCIF,
+): ReduxAction<typeof ActionType.UPLOADING_WCIF, UploadingWcifPayload> => ({
+  type: ActionType.UPLOADING_WCIF,
   uploading,
 });
 
 export type SetCompetitionsPayload = { competitions: CompetitionSearchResult[] };
 const setCompetitions = (
   competitions: CompetitionSearchResult[]
-): ReduxAction<Action.SET_COMPETITIONS, SetCompetitionsPayload> => ({
-  type: Action.SET_COMPETITIONS,
+): ReduxAction<typeof ActionType.SET_COMPETITIONS, SetCompetitionsPayload> => ({
+  type: ActionType.SET_COMPETITIONS,
   competitions,
 });
 
@@ -108,7 +112,7 @@ export const fetchCompetitions = () => (dispatch: Dispatch) => {
     })
     .catch((error: Error) => {
       dispatch({
-        type: Action.SET_ERROR_FETCHING_COMPS,
+        type: ActionType.SET_ERROR_FETCHING_COMPS,
         error,
       });
     });
@@ -124,7 +128,7 @@ export const fetchWCIF = (competitionId: string) => async (dispatch: Dispatch) =
     dispatch(updateWCIF(updatedWcif));
     dispatch(updateWcifErrors(validateWcif(updatedWcif)));
   } catch (e) {
-    dispatch(updateWcifErrors([e], true));
+    dispatch(updateWcifErrors([e as ValidationError], true));
   }
   dispatch(updateFetching(false));
 };
@@ -164,8 +168,8 @@ export type TogglePersonRolePayload = { registrantId: number; roleId: string };
 export const togglePersonRole = (
   registrantId: number,
   roleId: string
-): ReduxAction<Action.TOGGLE_PERSON_ROLE, TogglePersonRolePayload> => ({
-  type: Action.TOGGLE_PERSON_ROLE,
+): ReduxAction<typeof ActionType.TOGGLE_PERSON_ROLE, TogglePersonRolePayload> => ({
+  type: ActionType.TOGGLE_PERSON_ROLE,
   registrantId,
   roleId,
 });
@@ -179,8 +183,8 @@ export type AddPersonAssignmentsPayload = { registrantId: number; assignments: A
 export const addPersonAssignments = (
   registrantId: number,
   assignments: Assignment[]
-): ReduxAction<Action.ADD_PERSON_ASSIGNMENTS, AddPersonAssignmentsPayload> => ({
-  type: Action.ADD_PERSON_ASSIGNMENTS,
+): ReduxAction<typeof ActionType.ADD_PERSON_ASSIGNMENTS, AddPersonAssignmentsPayload> => ({
+  type: ActionType.ADD_PERSON_ASSIGNMENTS,
   registrantId,
   assignments,
 });
@@ -194,8 +198,8 @@ export type RemovePersonAssignmentsPayload = { registrantId: number; activityId:
 export const removePersonAssignments = (
   registrantId: number,
   activityId: number
-): ReduxAction<Action.REMOVE_PERSON_ASSIGNMENTS, RemovePersonAssignmentsPayload> => ({
-  type: Action.REMOVE_PERSON_ASSIGNMENTS,
+): ReduxAction<typeof ActionType.REMOVE_PERSON_ASSIGNMENTS, RemovePersonAssignmentsPayload> => ({
+  type: ActionType.REMOVE_PERSON_ASSIGNMENTS,
   registrantId,
   activityId,
 });
@@ -209,8 +213,8 @@ export type UpsertPersonAssignmentsPayload = { registrantId: number; assignments
 export const upsertPersonAssignments = (
   registrantId: number,
   assignments: Assignment[]
-): ReduxAction<Action.UPSERT_PERSON_ASSIGNMENTS, UpsertPersonAssignmentsPayload> => ({
-  type: Action.UPSERT_PERSON_ASSIGNMENTS,
+): ReduxAction<typeof ActionType.UPSERT_PERSON_ASSIGNMENTS, UpsertPersonAssignmentsPayload> => ({
+  type: ActionType.UPSERT_PERSON_ASSIGNMENTS,
   registrantId,
   assignments,
 });
@@ -225,8 +229,8 @@ export type BulkAddPersonAssignmentsPayload = {
  */
 export const bulkAddPersonAssignments = (
   assignments: BulkInProgressAssignments
-): ReduxAction<Action.BULK_ADD_PERSON_ASSIGNMENTS, BulkAddPersonAssignmentsPayload> => ({
-  type: Action.BULK_ADD_PERSON_ASSIGNMENTS,
+): ReduxAction<typeof ActionType.BULK_ADD_PERSON_ASSIGNMENTS, BulkAddPersonAssignmentsPayload> => ({
+  type: ActionType.BULK_ADD_PERSON_ASSIGNMENTS,
   assignments,
 });
 
@@ -249,8 +253,11 @@ export type BulkRemovePersonAssignmentsPayload = {
  */
 export const bulkRemovePersonAssignments = (
   assignments: BulkFindAssignments
-): ReduxAction<Action.BULK_REMOVE_PERSON_ASSIGNMENTS, BulkRemovePersonAssignmentsPayload> => ({
-  type: Action.BULK_REMOVE_PERSON_ASSIGNMENTS,
+): ReduxAction<
+  typeof ActionType.BULK_REMOVE_PERSON_ASSIGNMENTS,
+  BulkRemovePersonAssignmentsPayload
+> => ({
+  type: ActionType.BULK_REMOVE_PERSON_ASSIGNMENTS,
   assignments,
 });
 
@@ -263,8 +270,11 @@ export type BulkUpsertPersonAssignmentsPayload = {
  */
 export const bulkUpsertPersonAssignments = (
   assignments: BulkUpsertPersonAssignmentsPayload['assignments']
-): ReduxAction<Action.BULK_UPSERT_PERSON_ASSIGNMENTS, BulkUpsertPersonAssignmentsPayload> => ({
-  type: Action.BULK_UPSERT_PERSON_ASSIGNMENTS,
+): ReduxAction<
+  typeof ActionType.BULK_UPSERT_PERSON_ASSIGNMENTS,
+  BulkUpsertPersonAssignmentsPayload
+> => ({
+  type: ActionType.BULK_UPSERT_PERSON_ASSIGNMENTS,
   assignments,
 });
 
@@ -272,8 +282,8 @@ export type UpdateGroupCountPayload = { activityId: number; groupCount: number }
 export const updateGroupCount = (
   activityId: number,
   groupCount: number
-): ReduxAction<Action.UPDATE_GROUP_COUNT, UpdateGroupCountPayload> => ({
-  type: Action.UPDATE_GROUP_COUNT,
+): ReduxAction<typeof ActionType.UPDATE_GROUP_COUNT, UpdateGroupCountPayload> => ({
+  type: ActionType.UPDATE_GROUP_COUNT,
   activityId,
   groupCount,
 });
@@ -286,8 +296,8 @@ export type UpdateRoundActivitiesPayload = {
  */
 export const updateRoundActivities = (
   activities: Activity[]
-): ReduxAction<Action.UPDATE_ROUND_ACTIVITIES, UpdateRoundActivitiesPayload> => ({
-  type: Action.UPDATE_ROUND_ACTIVITIES,
+): ReduxAction<typeof ActionType.UPDATE_ROUND_ACTIVITIES, UpdateRoundActivitiesPayload> => ({
+  type: ActionType.UPDATE_ROUND_ACTIVITIES,
   activities,
 });
 
@@ -298,8 +308,11 @@ export type UpdateRoundChildActivitiesPayload = {
 export const updateRoundChildActivities = (
   activityId: number,
   childActivities: Activity[]
-): ReduxAction<Action.UPDATE_ROUND_CHILD_ACTIVITIES, UpdateRoundChildActivitiesPayload> => ({
-  type: Action.UPDATE_ROUND_CHILD_ACTIVITIES,
+): ReduxAction<
+  typeof ActionType.UPDATE_ROUND_CHILD_ACTIVITIES,
+  UpdateRoundChildActivitiesPayload
+> => ({
+  type: ActionType.UPDATE_ROUND_CHILD_ACTIVITIES,
   activityId,
   childActivities,
 });
@@ -311,8 +324,8 @@ export type UpdateRoundExtensionDataPayload = {
 export const updateRoundExtensionData = (
   activityCode: string,
   extensionData: Record<string, unknown>
-): ReduxAction<Action.UPDATE_ROUND_EXTENSION_DATA, UpdateRoundExtensionDataPayload> => ({
-  type: Action.UPDATE_ROUND_EXTENSION_DATA,
+): ReduxAction<typeof ActionType.UPDATE_ROUND_EXTENSION_DATA, UpdateRoundExtensionDataPayload> => ({
+  type: ActionType.UPDATE_ROUND_EXTENSION_DATA,
   activityCode,
   extensionData,
 });
@@ -320,13 +333,15 @@ export const updateRoundExtensionData = (
 export type PartialUpdateWcifPayload = { wcif: Partial<Competition> };
 export const partialUpdateWCIF = (
   wcif: Partial<Competition>
-): ReduxAction<Action.PARTIAL_UPDATE_WCIF, PartialUpdateWcifPayload> => ({
-  type: Action.PARTIAL_UPDATE_WCIF,
+): ReduxAction<typeof ActionType.PARTIAL_UPDATE_WCIF, PartialUpdateWcifPayload> => ({
+  type: ActionType.PARTIAL_UPDATE_WCIF,
   wcif,
 });
 
-export const resetAllGroupAssignments = (): ReduxAction<Action.RESET_ALL_GROUP_ASSIGNMENTS> => ({
-  type: Action.RESET_ALL_GROUP_ASSIGNMENTS,
+export const resetAllGroupAssignments = (): ReduxAction<
+  typeof ActionType.RESET_ALL_GROUP_ASSIGNMENTS
+> => ({
+  type: ActionType.RESET_ALL_GROUP_ASSIGNMENTS,
 });
 
 export type GenerateAssignmentsPayload = {
@@ -343,8 +358,8 @@ export type GenerateAssignmentsPayload = {
 export const generateAssignments = (
   roundId: string,
   options?: Partial<GenerateAssignmentsPayload['options']>
-): ReduxAction<Action.GENERATE_ASSIGNMENTS, GenerateAssignmentsPayload> => ({
-  type: Action.GENERATE_ASSIGNMENTS,
+): ReduxAction<typeof ActionType.GENERATE_ASSIGNMENTS, GenerateAssignmentsPayload> => ({
+  type: ActionType.GENERATE_ASSIGNMENTS,
   roundId,
   options: {
     sortOrganizationStaffInLastGroups: true,
@@ -365,8 +380,8 @@ export type EditActivityPayload = {
 export const editActivity = (
   where: EditActivityPayload['where'],
   what: EditActivityPayload['what']
-): ReduxAction<Action.EDIT_ACTIVITY, EditActivityPayload> => ({
-  type: Action.EDIT_ACTIVITY,
+): ReduxAction<typeof ActionType.EDIT_ACTIVITY, EditActivityPayload> => ({
+  type: ActionType.EDIT_ACTIVITY,
   where,
   what,
 });
@@ -374,14 +389,16 @@ export const editActivity = (
 export type UpdateGlobalExtensionPayload = { extensionData: Extension };
 export const updateGlobalExtension = (
   extensionData: Extension
-): ReduxAction<Action.UPDATE_GLOBAL_EXTENSION, UpdateGlobalExtensionPayload> => ({
-  type: Action.UPDATE_GLOBAL_EXTENSION,
+): ReduxAction<typeof ActionType.UPDATE_GLOBAL_EXTENSION, UpdateGlobalExtensionPayload> => ({
+  type: ActionType.UPDATE_GLOBAL_EXTENSION,
   extensionData,
 });
 
 export type AddPersonPayload = { person: Person };
-export const addPerson = (person: Person): ReduxAction<Action.ADD_PERSON, AddPersonPayload> => ({
-  type: Action.ADD_PERSON,
+export const addPerson = (
+  person: Person
+): ReduxAction<typeof ActionType.ADD_PERSON, AddPersonPayload> => ({
+  type: ActionType.ADD_PERSON,
   person,
 });
 
@@ -392,8 +409,8 @@ export type UpdateRoundPayload = {
 export const updateRound = (
   roundId: string,
   roundData: Round
-): ReduxAction<Action.UPDATE_ROUND, UpdateRoundPayload> => ({
-  type: Action.UPDATE_ROUND,
+): ReduxAction<typeof ActionType.UPDATE_ROUND, UpdateRoundPayload> => ({
+  type: ActionType.UPDATE_ROUND,
   roundId,
   roundData,
 });
@@ -402,8 +419,8 @@ export type UpdateRawObjPayload = { key: keyof Competition; value: unknown };
 export const updateRawObj = (
   key: keyof Competition,
   value: unknown
-): ReduxAction<Action.UPDATE_RAW_OBJ, UpdateRawObjPayload> => ({
-  type: Action.UPDATE_RAW_OBJ,
+): ReduxAction<typeof ActionType.UPDATE_RAW_OBJ, UpdateRawObjPayload> => ({
+  type: ActionType.UPDATE_RAW_OBJ,
   key,
   value,
 });

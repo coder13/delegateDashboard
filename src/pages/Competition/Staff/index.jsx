@@ -2,6 +2,7 @@ import Link from '../../../components/MaterialLink';
 import { acceptedRegistration, isOrganizerOrDelegate } from '../../../lib/domain/persons';
 import { pluralize } from '../../../lib/utils/utils';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import { useAppSelector } from '../../../store';
 import { togglePersonRole } from '../../../store/actions';
 import AddNonCompetingStaffDialog from './AddNonCompetingStaffDialog';
 import {
@@ -27,8 +28,8 @@ import red from '@mui/material/colors/red';
 import yellow from '@mui/material/colors/yellow';
 import { makeStyles } from '@mui/styles';
 import clsx from 'clsx';
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 const ROLES = [
@@ -82,7 +83,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Staff = () => {
-  const wcif = useSelector((state) => state.wcif);
+  const wcif = useAppSelector((state) => state.wcif);
   const { competitionId } = useParams();
   const classes = useStyles();
   const dispatch = useDispatch();

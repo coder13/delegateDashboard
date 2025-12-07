@@ -1,6 +1,7 @@
 import { activityDuration } from '../../../lib/domain/activities';
 import { getExtensionData } from '../../../lib/wcif/extensions/wcif-extensions';
 import { createGroupsAcrossStages } from '../../../lib/wcif/groups';
+import { useAppSelector } from '../../../store';
 import { updateRoundActivities, updateRoundExtensionData } from '../../../store/actions';
 import { selectPersonsShouldBeInRound } from '../../../store/selectors';
 import {
@@ -22,43 +23,57 @@ import {
   Typography,
 } from '@mui/material';
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundActivities }) => {
-  const wcif = useSelector((state) => state.wcif);
-  const rooms = useSelector((state) =>
-    state.wcif.schedule.venues
+  const wcif = useAppSelector((state) => state.wcif);
+  const rooms = useAppSelector((state) =>
+    state.wcif?.schedule.venues
       .flatMap((v) => v.rooms)
       .filter((room) => room.activities.find((a) => a.activityCode === activityCode))
   );
   const dispatch = useDispatch();
-  const [groupsData, setGroupsData] = useState(getExtensionData('groups', round));
+  const [groupsData, setGroupsData] = useState<{
+    groups: number | Record<number, number>;
+    spreadGroupsAcrossAllStages?: boolean;
+  } | null>(getExtensionData('groups', round) as any);
   const spreadGroupsAcrossAllStages = groupsData?.spreadGroupsAcrossAllStages ?? true;
-  const actualCompetitors = useSelector((state) => selectPersonsShouldBeInRound(state)(round));
+  const actualCompetitors = useAppSelector((state) => selectPersonsShouldBeInRound(state)(round));
 
   if (!open) {
     return '';
   }
 
-  const { groups: groupCount } = groupsData;
+  const { groups: groupCount = 0 } = groupsData || {};
   const multipleStages = roundActivities.length > 1;
 
   console.log(37, groupsData);
 
   const reset = () => {
     if (round) {
-      setGroupsData(getExtensionData('groups', round));
+      const data = getExtensionData('groups', round) as {
+        groups: number | Record<number, number>;
+        spreadGroupsAcrossAllStages?: boolean;
+      } | null;
+      setGroupsData(data);
     }
   };
 
   const onSave = () => {
-    if (!groupCount) {
+    if (!groupCount || !groupsData) {
       return;
     }
 
-    dispatch(updateRoundExtensionData(round.id, groupsData));
+    dispatch(updateRoundExtensionData(round.id, groupsData as Record<string, unknown>));
 
-    const newRoundActivities = createGroupsAcrossStages(wcif, roundActivities, groupsData);
+    const newRoundActivities = createGroupsAcrossStages(
+      wcif!,
+      roundActivities,
+      groupsData as {
+        spreadGroupsAcrossAllStages: boolean;
+        groups: number | Record<number, number>;
+      }
+    );
     console.log(newRoundActivities);
     dispatch(updateRoundActivities(newRoundActivities));
 
@@ -82,18 +97,25 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
     setGroupsData({
       ...groupsData,
       groups: {
-        ...groupsData.groups,
+        ...(typeof groupsData?.groups === 'object' ? groupsData.groups : {}),
         [room.id]: +e.target.value,
       },
     });
   };
 
   const roundSize = actualCompetitors.length;
-  const activityMinutes = activityDuration(roundActivities[0]) / 60000;
+  const activityMinutes = roundActivities[0] ? activityDuration(roundActivities[0]) / 60000 : 0;
+
+  const groupCountNumber = typeof groupCount === 'number' ? groupCount : 0;
 
   const cumulativeGroupCount = groupsData?.spreadGroupsAcrossAllStages
-    ? groupCount
-    : Object.keys(groupCount).reduce((acc, key) => acc + groupCount[key], 0);
+    ? groupCountNumber
+    : typeof groupCount === 'object'
+    ? Object.keys(groupCount).reduce(
+        (acc, key) => acc + (groupCount as Record<string, number>)[key],
+        0
+      )
+    : 0;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xl">
@@ -112,10 +134,10 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
                       groups: e.target.checked
                         ? 1
                         : {
-                            ...rooms.reduce((acc, room) => {
+                            ...(rooms?.reduce((acc, room) => {
                               acc[room.id] = 1;
                               return acc;
-                            }, {}),
+                            }, {} as Record<number, number>) || {}),
                           },
                     })
                   }
@@ -131,9 +153,7 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
                 <InputLabel htmlFor="groups">Groups</InputLabel>
                 <Input
                   id="groups"
-                  label="Groups"
                   type="number"
-                  variant="outlined"
                   value={groupCount || 1}
                   onChange={handleGroupsChange}
                 />
@@ -142,16 +162,17 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
                 </FormHelperText>
               </FormControl>
               <Typography>
-                There will be max group sizes of {Math.ceil(roundSize / (groupCount || 1))} (
+                There will be max group sizes of {Math.ceil(roundSize / (groupCountNumber || 1))} (
                 {multipleStages && (
                   <>
-                    {Math.ceil(roundSize / roundActivities.length / (groupCount || 1))} per stage)
+                    {Math.ceil(roundSize / roundActivities.length / (groupCountNumber || 1))} per
+                    stage)
                   </>
                 )}
               </Typography>
               <Typography>
                 There will be an average group duration of{' '}
-                {Math.round(activityMinutes / (groupCount || 1))} Minutes
+                {Math.round(activityMinutes / (groupCountNumber || 1))} Minutes
               </Typography>
             </>
           )}
@@ -166,7 +187,7 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
               <Stack spacing={2}>
                 {rooms?.map((room) => {
                   const roomActivity = room.activities.find((a) => a.activityCode === activityCode);
-                  const roundDuration = activityDuration(roomActivity) / 60000;
+                  const roundDuration = roomActivity ? activityDuration(roomActivity) / 60000 : 0;
 
                   return (
                     <Box key={room.id}>
@@ -174,15 +195,24 @@ const ConfigureGroupCountsDialog = ({ open, onClose, activityCode, round, roundA
                         <InputLabel htmlFor={`groups-${room.id}-label`}>{room.name}</InputLabel>
                         <Input
                           id={`groups-${room.id}-input`}
-                          label={room.name}
                           type="number"
-                          variant="outlined"
-                          value={groupCount[room.id] ?? 1}
-                          onChange={(e) => handleGroupsChangeMultipleRooms(e, room)}
+                          value={
+                            typeof groupCount === 'object'
+                              ? (groupCount as Record<number, number>)[room.id] ?? 1
+                              : 1
+                          }
+                          onChange={(
+                            e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+                          ) => handleGroupsChangeMultipleRooms(e, room)}
                         />
                         <FormHelperText id="my-helper-text">
                           {room.name} would have an average duration of{' '}
-                          {Math.round(roundDuration / (groupCount[room.id] ?? 1))}
+                          {Math.round(
+                            roundDuration /
+                              (typeof groupCount === 'object'
+                                ? (groupCount as Record<number, number>)[room.id] ?? 1
+                                : 1)
+                          )}
                         </FormHelperText>
                       </FormControl>
                     </Box>

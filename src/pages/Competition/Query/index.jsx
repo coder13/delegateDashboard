@@ -1,5 +1,6 @@
 import useDebounce from '../../../hooks/useDebounce';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import { useAppSelector } from '../../../store';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
@@ -21,7 +22,6 @@ import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import { TreeView } from '@mui/x-tree-view/TreeView';
 import jp from 'jsonpath';
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 function useQuery() {
@@ -106,7 +106,7 @@ const QueryPage = () => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const wcif = useSelector((state) => state.wcif);
+  const wcif = useAppSelector((state) => state.wcif);
   const debouncedInput = useDebounce(input, 800);
 
   useEffect(() => {

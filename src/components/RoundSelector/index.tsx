@@ -5,20 +5,22 @@ import {
 } from '../../lib/domain/activities';
 import { eventNameById } from '../../lib/domain/events';
 import { useCommandPrompt } from '../../providers/CommandPromptProvider';
+import { useAppSelector } from '../../store';
 import RoundListItem from './RoundListItem';
 import '@cubing/icons';
 import { Collapse, Divider, FormControlLabel, Switch } from '@mui/material';
 import List from '@mui/material/List';
 import ListSubheader from '@mui/material/ListSubheader';
+import { Theme } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
+import { Round } from '@wca/helpers';
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { TransitionGroup } from 'react-transition-group';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme: Theme) => ({
   root: {
     display: 'flex',
-    flexDirection: 'Column',
+    flexDirection: 'column',
     flex: 1,
     width: '100%',
     backgroundColor: theme.palette.background.paper,
@@ -37,15 +39,22 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const RoundSelector = ({ competitionId, onSelected }) => {
-  const wcif = useSelector((state) => state.wcif);
+interface RoundSelectorProps {
+  competitionId: string;
+  onSelected: (roundId: string) => void;
+}
+
+const RoundSelector = ({ onSelected }: RoundSelectorProps) => {
+  const wcif = useAppSelector((state) => state.wcif);
   const classes = useStyles();
   const { open: commandPromptOpen } = useCommandPrompt();
 
   const [showAllRounds, setShowAllRounds] = useState(false);
-  const [selectedId, setSelectedId] = useState(wcif?.events[0].rounds[0].id || null);
+  const [selectedId, setSelectedId] = useState(wcif?.events[0]?.rounds[0]?.id || null);
 
-  const shouldShowRound = (round) => {
+  const shouldShowRound = (round: Round) => {
+    if (!wcif) return false;
+
     const { roundNumber } = parseActivityCode(round.id);
     if (roundNumber === 1 || showAllRounds) {
       return true;
@@ -63,10 +72,12 @@ const RoundSelector = ({ competitionId, onSelected }) => {
     return false;
   };
 
-  const rounds = wcif.events
-    .map((e) => e.rounds)
-    .flat()
-    .filter(shouldShowRound);
+  const rounds = wcif
+    ? wcif.events
+        .map((e) => e.rounds)
+        .flat()
+        .filter(shouldShowRound)
+    : [];
 
   const roundIds = rounds.flatMap((r) =>
     hasDistributedAttempts(r.id)
@@ -76,21 +87,23 @@ const RoundSelector = ({ competitionId, onSelected }) => {
       : r.id
   );
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (commandPromptOpen) {
       return;
     }
 
     if (e.key === 'ArrowUp') {
-      const selectedIndex = roundIds.indexOf(selectedId);
+      const selectedIndex = roundIds.indexOf(selectedId || '');
       const nextIndex = (selectedIndex - 1 + roundIds.length) % roundIds.length;
       setSelectedId(roundIds[nextIndex]);
     } else if (e.key === 'ArrowDown') {
-      const selectedIndex = roundIds.indexOf(selectedId);
+      const selectedIndex = roundIds.indexOf(selectedId || '');
       const nextIndex = (selectedIndex + 1 + roundIds.length) % roundIds.length;
       setSelectedId(roundIds[nextIndex]);
     } else if (e.key === 'Enter') {
-      onSelected(selectedId);
+      if (selectedId) {
+        onSelected(selectedId);
+      }
     } else if (e.key === ' ' || e.key === 'a') {
       setShowAllRounds(!showAllRounds);
     }
@@ -103,13 +116,17 @@ const RoundSelector = ({ competitionId, onSelected }) => {
     };
   });
 
+  if (!wcif) {
+    return null;
+  }
+
   return (
     <>
       <FormControlLabel
         control={<Switch />}
         label={'Show All Rounds'}
         checked={showAllRounds}
-        onChange={(event) => setShowAllRounds(event.target.checked)}
+        onChange={(_, checked) => setShowAllRounds(checked)}
       />
       <Divider />
       <List className={classes.root}>

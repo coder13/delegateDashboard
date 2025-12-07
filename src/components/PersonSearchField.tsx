@@ -1,10 +1,8 @@
 import { getUser, searchUsers } from '../lib/api';
-import { useAppSelector } from '../store';
 import {
   Autocomplete,
   Avatar,
   FormControl,
-  FormLabel,
   ListItem,
   ListItemAvatar,
   ListItemText,

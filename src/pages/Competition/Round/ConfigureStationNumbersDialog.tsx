@@ -1,11 +1,13 @@
 import {
   activityCodeIsChild,
+  findActivityById,
   parseActivityCode,
   roomByActivity,
 } from '../../../lib/domain/activities';
 import { byPROrResult, getSeedResult } from '../../../lib/domain/persons';
+import { useAppSelector } from '../../../store';
 import { bulkUpsertPersonAssignments, upsertPersonAssignments } from '../../../store/actions';
-import { selectPersonsAssignedForRound, selectActivityById } from '../../../store/selectors';
+import { selectPersonsAssignedForRound } from '../../../store/selectors';
 import {
   Button,
   Dialog,
@@ -18,46 +20,58 @@ import {
 } from '@mui/material';
 import { DataGrid, GridToolbarContainer } from '@mui/x-data-grid';
 import { formatCentiseconds } from '@wca/helpers';
+import type { Activity, Assignment, Person, Room } from '@wca/helpers';
 import { useMemo, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
-  const wcif = useSelector((state) => state.wcif);
+  const wcif = useAppSelector((state) => state.wcif);
   const dispatch = useDispatch();
   const dataGridRef = useRef(null);
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
-  const getActivityFromId = useSelector((state) => selectActivityById(state));
+  const getActivityFromId = (id: number) => {
+    return wcif ? findActivityById(wcif, id) : null;
+  };
 
-  const personsAssigned = useSelector((state) =>
+  const personsAssigned = useAppSelector((state) =>
     selectPersonsAssignedForRound(state, activityCode)
   );
 
   const { eventId, roundNumber } = parseActivityCode(activityCode);
 
-  const event = wcif.events.find((e) => e.id === eventId);
+  const event = wcif?.events.find((e) => e.id === eventId);
 
   const personsAssignedToCompeteOrJudge = useMemo(
     () =>
       personsAssigned
         .flatMap((p) => {
-          const assigments = p.assignments
-            .map((a) => {
+          type ExtendedAssignment = Assignment & {
+            activity: Activity;
+            room: Room | undefined;
+            groupNumber: number | undefined;
+          };
+
+          const assigments: ExtendedAssignment[] = p
+            .assignments!.map((a) => {
               const activity = getActivityFromId(a.activityId);
 
               if (!activity?.activityCode) {
-                return a;
+                return null;
               }
 
               return {
                 ...a,
                 activity,
-                room: roomByActivity(wcif, a.activityId),
+                room: roomByActivity(wcif!, a.activityId),
                 groupNumber: parseActivityCode(activity.activityCode).groupNumber,
               };
             })
-            .filter(({ activity }) => activityCodeIsChild(activityCode, activity.activityCode));
+            .filter(
+              (a): a is ExtendedAssignment =>
+                a !== null && activityCodeIsChild(activityCode, a.activity.activityCode)
+            );
 
           const competitorAssignment = assigments.find(
             ({ assignmentCode }) => assignmentCode === 'competitor'
@@ -67,13 +81,18 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
             assignmentCode.includes('judge')
           );
 
-          let a = [];
+          type PersonWithAssignment = Person & {
+            assignment: ExtendedAssignment;
+            seedResult?: ReturnType<typeof getSeedResult>;
+          };
+
+          const a: PersonWithAssignment[] = [];
 
           if (competitorAssignment) {
             a.push({
               ...p,
               assignment: competitorAssignment,
-              seedResult: getSeedResult(wcif, activityCode, p),
+              seedResult: getSeedResult(wcif!, activityCode, p),
             });
           }
 
@@ -127,7 +146,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
       // }
     }
 
-    return byPROrResult(event, roundNumber)(a, b);
+    return byPROrResult(event!, roundNumber ?? 1)(a, b);
   });
 
   console.log(personsAssignedToCompeteOrJudge);
@@ -138,7 +157,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
     assignmentCode: assignment.assignmentCode,
     name: person.name,
     seedResult,
-    roomName: assignment.room.name,
+    roomName: assignment.room?.name || '',
     groupNumber: assignment.groupNumber,
     stationNumber: assignment.stationNumber,
   }));
@@ -168,8 +187,12 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
     },
   ];
 
-  const arbitrarilyAssignStationNumbers = (assignmentCode) => {
-    const newAssignments = [];
+  const arbitrarilyAssignStationNumbers = (assignmentCode: string) => {
+    const newAssignments: Array<{
+      registrantId: number;
+      activityId: number;
+      assignment: Assignment;
+    }> = [];
     const lastStationNumberMap = new Map();
     const personsAssignedForCode = personsAssignedToCompeteOrJudge.filter(
       ({ assignment }) => assignment.assignmentCode === assignmentCode
@@ -183,6 +206,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
         registrantId: personsAssignedForCode[i].registrantId,
         activityId: groupId,
         assignment: {
+          activityId: groupId,
           assignmentCode: assignmentCode,
           stationNumber: stationNumber,
         },
@@ -199,8 +223,9 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
       bulkUpsertPersonAssignments(
         personsAssignedToCompeteOrJudge.map(({ registrantId, assignment }) => ({
           registrantId,
-          activityId: assignment.activity.id,
+          activityId: assignment.activityId,
           assignment: {
+            activityId: assignment.activityId,
             assignmentCode: assignment.assignmentCode,
             stationNumber: null,
           },
@@ -252,11 +277,10 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }) => {
         <DataGrid
           rows={rows}
           columns={columns}
-          components={{ Toolbar }}
-          componentsProps={{ Toolbar: { p: 2 } }}
+          slots={{ toolbar: Toolbar }}
+          slotProps={{ toolbar: { p: 2 as any } }}
           ref={dataGridRef}
           getRowId={(row) => row.assignmentCode + row.id}
-          experimentalFeatures={{ newEditingApi: true }}
           onCellEditStop={handleCellEditStop}
         />
       </DialogContent>

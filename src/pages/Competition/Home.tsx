@@ -1,20 +1,20 @@
-import React, { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Grid } from '@mui/material';
 import CompetitionSummary from '../../components/CompetitionSummaryCard';
 import RoundSelectorPage from '../../components/RoundSelector';
 import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
+import { Grid } from '@mui/material';
+import { useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const CompetitionHome = () => {
   const { setBreadcrumbs } = useBreadcrumbs();
-  const { competitionId } = useParams();
+  const { competitionId } = useParams<{ competitionId: string }>();
   const navigate = useNavigate();
 
   useEffect(() => {
     setBreadcrumbs([]);
   }, [setBreadcrumbs]);
 
-  const handleSelected = (roundId) => {
+  const handleSelected = (roundId: string) => {
     navigate(`/competitions/${competitionId}/events/${roundId}`);
   };
 
@@ -28,7 +28,7 @@ const CompetitionHome = () => {
         <CompetitionSummary />
       </Grid>
       <Grid item>
-        <RoundSelectorPage competitionId={competitionId} onSelected={handleSelected} />
+        <RoundSelectorPage competitionId={competitionId || ''} onSelected={handleSelected} />
       </Grid>
     </Grid>
   );

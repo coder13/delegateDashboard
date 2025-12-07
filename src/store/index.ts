@@ -1,7 +1,7 @@
 import { AppState } from './initialState';
 import reducer from './reducer';
 import { TypedUseSelectorHook, useSelector, useDispatch } from 'react-redux';
-import { createStore, applyMiddleware, compose, AnyAction } from 'redux';
+import { createStore, applyMiddleware, compose, AnyAction, Reducer } from 'redux';
 import thunkMiddleware, { ThunkDispatch } from 'redux-thunk';
 
 // Redux DevTools Extension - window property may not exist in production
@@ -13,7 +13,10 @@ declare global {
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
-export const store = createStore(reducer, composeEnhancers(applyMiddleware(thunkMiddleware)));
+export const store = createStore(
+  reducer as Reducer<AppState, AnyAction>,
+  composeEnhancers(applyMiddleware(thunkMiddleware))
+);
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<typeof store.getState>;

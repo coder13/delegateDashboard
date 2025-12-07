@@ -4,6 +4,7 @@ import { ValidationError } from '../lib/wcif';
 import { setExtensionData } from '../lib/wcif/extensions/wcif-extensions';
 import {
   Action,
+  ActionType,
   AddPersonPayload,
   EditActivityPayload,
   FetchingWcifPayload,
@@ -25,36 +26,37 @@ import INITIAL_STATE, { AppState } from './initialState';
 import * as Reducers from './reducers';
 import { Competition } from '@wca/helpers';
 
-type ReducerFunction = (state: AppState, action: object) => AppState;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ReducerFunction = (state: AppState, action: any) => AppState;
 
-const reducers: Record<Action, ReducerFunction> = {
+const reducers: Record<string, ReducerFunction> = {
   // Fetching and updating wcif
-  [Action.FETCHING_COMPETITIONS]: (state) => ({
+  [ActionType.FETCHING_COMPETITIONS]: (state) => ({
     ...state,
     fetchingCompetitions: true,
   }),
-  [Action.SET_ERROR_FETCHING_COMPS]: (state, action: { error?: Error }) => ({
+  [ActionType.SET_ERROR_FETCHING_COMPS]: (state, action: { error?: Error }) => ({
     ...state,
     fetchingCompetitions: false,
     fetchingCompetitionsError: 'error' in action ? action.error : undefined,
   }),
-  [Action.SET_COMPETITIONS]: (state, action: SetCompetitionsPayload) => ({
+  [ActionType.SET_COMPETITIONS]: (state, action: SetCompetitionsPayload) => ({
     ...state,
     fetchingCompetitions: false,
     competitions: 'competitions' in action ? action.competitions : state.competitions,
   }),
-  [Action.FETCHING_WCIF]: (state, action: FetchingWcifPayload) => ({
+  [ActionType.FETCHING_WCIF]: (state, action: FetchingWcifPayload) => ({
     ...state,
     fetchingWCIF: 'fetching' in action ? action.fetching : state.fetchingWCIF,
   }),
-  [Action.FETCHED_WCIF]: (state, action: UpdateWcifPayload) => ({
+  [ActionType.FETCHED_WCIF]: (state, action: UpdateWcifPayload) => ({
     ...state,
     needToSave: false,
     changedKeys: new Set(),
     fetchingWCIF: false,
     wcif: 'wcif' in action ? action.wcif : state.wcif,
   }),
-  [Action.UPDATE_WCIF_ERRORS]: (
+  [ActionType.UPDATE_WCIF_ERRORS]: (
     state,
     action: { errors: ValidationError[]; replace?: boolean }
   ) => ({
@@ -66,13 +68,13 @@ const reducers: Record<Action, ReducerFunction> = {
           : [...state.errors, ...action.errors]
         : state.errors,
   }),
-  [Action.UPLOADING_WCIF]: (state, action: UploadingWcifPayload) => ({
+  [ActionType.UPLOADING_WCIF]: (state, action: UploadingWcifPayload) => ({
     ...state,
     fetchingWCIF: 'uploading' in action ? action.uploading : state.fetchingWCIF,
     needToSave: 'uploading' in action ? action.uploading : state.needToSave,
     changedKeys: 'uploading' in action && action.uploading ? state.changedKeys : new Set(),
   }),
-  [Action.PARTIAL_UPDATE_WCIF]: (state, action: PartialUpdateWcifPayload) => {
+  [ActionType.PARTIAL_UPDATE_WCIF]: (state, action: PartialUpdateWcifPayload) => {
     if (!('wcif' in action)) return state;
     return {
       ...state,
@@ -90,7 +92,7 @@ const reducers: Record<Action, ReducerFunction> = {
     };
   },
   // Editing person data
-  [Action.TOGGLE_PERSON_ROLE]: (state, action: TogglePersonRolePayload) => {
+  [ActionType.TOGGLE_PERSON_ROLE]: (state, action: TogglePersonRolePayload) => {
     if (!('registrantId' in action && 'roleId' in action) || !state.wcif) return state;
     return {
       ...state,
@@ -114,7 +116,7 @@ const reducers: Record<Action, ReducerFunction> = {
       },
     };
   },
-  [Action.ADD_PERSON]: (state, action: AddPersonPayload) => {
+  [ActionType.ADD_PERSON]: (state, action: AddPersonPayload) => {
     if (!('person' in action) || !state.wcif) return state;
     const { person } = action;
 
@@ -129,14 +131,14 @@ const reducers: Record<Action, ReducerFunction> = {
     };
   },
   // Editing assignments
-  [Action.ADD_PERSON_ASSIGNMENTS]: Reducers.addPersonAssignments,
-  [Action.REMOVE_PERSON_ASSIGNMENTS]: Reducers.removePersonAssignments,
-  [Action.UPSERT_PERSON_ASSIGNMENTS]: Reducers.upsertPersonAssignments,
-  [Action.BULK_ADD_PERSON_ASSIGNMENTS]: Reducers.bulkAddPersonAssignments,
-  [Action.BULK_REMOVE_PERSON_ASSIGNMENTS]: Reducers.bulkRemovePersonAssignments,
-  [Action.BULK_UPSERT_PERSON_ASSIGNMENTS]: Reducers.bulkUpsertPersonAssignments,
+  [ActionType.ADD_PERSON_ASSIGNMENTS]: Reducers.addPersonAssignments,
+  [ActionType.REMOVE_PERSON_ASSIGNMENTS]: Reducers.removePersonAssignments,
+  [ActionType.UPSERT_PERSON_ASSIGNMENTS]: Reducers.upsertPersonAssignments,
+  [ActionType.BULK_ADD_PERSON_ASSIGNMENTS]: Reducers.bulkAddPersonAssignments,
+  [ActionType.BULK_REMOVE_PERSON_ASSIGNMENTS]: Reducers.bulkRemovePersonAssignments,
+  [ActionType.BULK_UPSERT_PERSON_ASSIGNMENTS]: Reducers.bulkUpsertPersonAssignments,
   // Editing group information
-  [Action.UPDATE_GROUP_COUNT]: (state, action: UpdateGroupCountPayload) => {
+  [ActionType.UPDATE_GROUP_COUNT]: (state, action: UpdateGroupCountPayload) => {
     if (!('activityId' in action && 'groupCount' in action) || !state.wcif) return state;
     return {
       ...state,
@@ -157,7 +159,10 @@ const reducers: Record<Action, ReducerFunction> = {
       ),
     };
   },
-  [Action.UPDATE_ROUND_CHILD_ACTIVITIES]: (state, action: UpdateRoundChildActivitiesPayload) => {
+  [ActionType.UPDATE_ROUND_CHILD_ACTIVITIES]: (
+    state,
+    action: UpdateRoundChildActivitiesPayload
+  ) => {
     if (!('activityId' in action && 'childActivities' in action) || !state.wcif) return state;
     return {
       ...state,
@@ -177,7 +182,7 @@ const reducers: Record<Action, ReducerFunction> = {
       ),
     };
   },
-  [Action.UPDATE_ROUND_ACTIVITIES]: (state, action: UpdateRoundActivitiesPayload) => {
+  [ActionType.UPDATE_ROUND_ACTIVITIES]: (state, action: UpdateRoundActivitiesPayload) => {
     if (!('activities' in action) || !state.wcif) return state;
     return {
       ...state,
@@ -194,7 +199,7 @@ const reducers: Record<Action, ReducerFunction> = {
       ),
     };
   },
-  [Action.UPDATE_ROUND]: (state, action: UpdateRoundPayload) => {
+  [ActionType.UPDATE_ROUND]: (state, action: UpdateRoundPayload) => {
     if (!('roundId' in action && 'roundData' in action) || !state.wcif) return state;
     return {
       ...state,
@@ -207,7 +212,7 @@ const reducers: Record<Action, ReducerFunction> = {
       ),
     };
   },
-  [Action.RESET_ALL_GROUP_ASSIGNMENTS]: (state) => {
+  [ActionType.RESET_ALL_GROUP_ASSIGNMENTS]: (state) => {
     if (!state.wcif) return state;
     return {
       ...state,
@@ -219,8 +224,8 @@ const reducers: Record<Action, ReducerFunction> = {
       })),
     };
   },
-  [Action.GENERATE_ASSIGNMENTS]: Reducers.generateAssignments,
-  [Action.EDIT_ACTIVITY]: (state, action: EditActivityPayload) => {
+  [ActionType.GENERATE_ASSIGNMENTS]: Reducers.generateAssignments,
+  [ActionType.EDIT_ACTIVITY]: (state, action: EditActivityPayload) => {
     if (!('where' in action && 'what' in action) || !state.wcif) return state;
     const { where, what } = action;
     return {
@@ -255,7 +260,7 @@ const reducers: Record<Action, ReducerFunction> = {
       },
     };
   },
-  [Action.UPDATE_ROUND_EXTENSION_DATA]: (state, action: UpdateRoundExtensionDataPayload) => {
+  [ActionType.UPDATE_ROUND_EXTENSION_DATA]: (state, action: UpdateRoundExtensionDataPayload) => {
     if (!('activityCode' in action && 'extensionData' in action) || !state.wcif) return state;
     return {
       ...state,
@@ -272,7 +277,7 @@ const reducers: Record<Action, ReducerFunction> = {
       ),
     };
   },
-  [Action.UPDATE_GLOBAL_EXTENSION]: (state, action: UpdateGlobalExtensionPayload) => {
+  [ActionType.UPDATE_GLOBAL_EXTENSION]: (state, action: UpdateGlobalExtensionPayload) => {
     if (!('extensionData' in action) || !state.wcif) return state;
     const { extensionData } = action;
     return {
@@ -288,7 +293,7 @@ const reducers: Record<Action, ReducerFunction> = {
       },
     };
   },
-  [Action.UPDATE_RAW_OBJ]: (state, action: UpdateRawObjPayload) => {
+  [ActionType.UPDATE_RAW_OBJ]: (state, action: UpdateRawObjPayload) => {
     if (!('key' in action && 'value' in action) || !state.wcif) return state;
     const { key, value } = action;
     return {

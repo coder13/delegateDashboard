@@ -1,6 +1,6 @@
 import { Avatar, ListItemAvatar, ListItemText } from '@mui/material';
 
-function stringToColor(string) {
+function stringToColor(string: string): string {
   let hash = 0;
   let i;
 
@@ -20,7 +20,7 @@ function stringToColor(string) {
   return color;
 }
 
-function stringAvatar(name) {
+function stringAvatar(name: string) {
   return {
     sx: {
       bgcolor: stringToColor(name),
@@ -29,8 +29,15 @@ function stringAvatar(name) {
   };
 }
 
+interface PersonListItemProps {
+  name: string;
+  wcaId?: string;
+  avatar?: {
+    thumbUrl: string;
+  };
+}
 
-function PersonListItem({ name, wcaId, avatar }) {
+function PersonListItem({ name, wcaId, avatar }: PersonListItemProps) {
   return (
     <>
       <ListItemAvatar>

@@ -1,37 +1,37 @@
-import ActionMenu from '../../../components/ActionMenu';
-import PersonsAssignmentsDialog from '../../../components/PersonsAssignmentsDialog';
-import PersonsDialog from '../../../components/PersonsDialog';
+import ActionMenu from '../components/ActionMenu';
+import PersonsAssignmentsDialog from '../components/PersonsAssignmentsDialog';
+import PersonsDialog from '../components/PersonsDialog';
 import {
   activityCodeToName,
-  findAllActivities,
-  byGroupNumber,
-  roomByActivity,
-  cumulativeGroupCount,
   allChildActivities,
-} from '../../../lib/domain/activities';
-import { mayMakeCutoff, mayMakeTimeLimit } from '../../../lib/domain/persons';
-import { formatTimeRange } from '../../../lib/utils/time';
-import { byName, pluralize, pluralizeWord, renderResultByEventId } from '../../../lib/utils/utils';
-import { getExtensionData } from '../../../lib/wcif/extensions/wcif-extensions';
-import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+  byGroupNumber,
+  cumulativeGroupCount,
+  findAllActivities,
+  roomByActivity,
+} from '../lib/domain/activities';
+import { mayMakeCutoff, mayMakeTimeLimit } from '../lib/domain/persons';
+import { formatTimeRange } from '../lib/utils/time';
+import { byName, pluralizeWord, renderResultByEventId } from '../lib/utils/utils';
+import { getExtensionData } from '../lib/wcif/extensions/wcif-extensions';
+import ConfigureAssignmentsDialog from '../pages/Competition/Round/ConfigureAssignmentsDialog';
+import ConfigureGroupCountsDialog from '../pages/Competition/Round/ConfigureGroupCountsDialog';
+import { ConfigureGroupsDialog } from '../pages/Competition/Round/ConfigureGroupsDialog';
+import ConfigureStationNumbersDialog from '../pages/Competition/Round/ConfigureStationNumbersDialog';
+import GroupCard from '../pages/Competition/Round/GroupCard';
+import { RawRoundActivitiesDataDialog } from '../pages/Competition/Round/RawRoundActivitiesDataDialog';
+import { RawRoundDataDialog } from '../pages/Competition/Round/RawRoundDataDialog';
+import { useAppSelector } from '../store';
 import {
   bulkRemovePersonAssignments,
   generateAssignments,
   updateRoundChildActivities,
-} from '../../../store/actions';
+} from '../store/actions';
+import { AppState } from '../store/initialState';
 import {
   selectPersonsAssignedForRound,
   selectPersonsHavingCompetitorAssignmentsForRound,
   selectPersonsShouldBeInRound,
-  selectRoundById,
-} from '../../../store/selectors';
-import ConfigureAssignmentsDialog from './ConfigureAssignmentsDialog';
-import ConfigureGroupCountsDialog from './ConfigureGroupCountsDialog';
-import { ConfigureGroupsDialog } from './ConfigureGroupsDialog';
-import ConfigureStationNumbersDialog from './ConfigureStationNumbersDialog';
-import GroupCard from './GroupCard';
-import { RawRoundActivitiesDataDialog } from './RawRoundActivitiesDataDialog';
-import { RawRoundDataDialog } from './RawRoundDataDialog';
+} from '../store/selectors';
 import {
   Alert,
   Box,
@@ -52,87 +52,99 @@ import {
 } from '@mui/material';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
-import { formatCentiseconds, parseActivityCode } from '@wca/helpers';
+import { type EventId, formatCentiseconds, type Person, type Round } from '@wca/helpers';
 import { useConfirm } from 'material-ui-confirm';
-import { useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
-/**
- * I want some visualization of who's competing / staffing what for this particular round
- * If no one has been assigned, I want to generate assignments
- * I want to view a mini psych sheet so that I can pick scramblers
- * I want DOB so that I know who really not to bother assigning
- *
- */
+interface RoundContainerProps {
+  roundId: string;
+  activityCode: string;
+  eventId: string;
+  round: Round;
+}
 
-/**
- * Handles multiple activities across multiple rooms under 1 round activity code
- */
-const RoundPage = () => {
+interface GroupWithRoom {
+  id: number;
+  parent?: {
+    room?: {
+      name?: string;
+    };
+  };
+}
+
+const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContainerProps) => {
   const dispatch = useDispatch();
   const confirm = useConfirm();
-  const { setBreadcrumbs } = useBreadcrumbs();
-  const { roundId: activityCode } = useParams();
-  const { eventId, roundNumber } = parseActivityCode(activityCode);
-  const roundId = `${eventId}-r${roundNumber}`;
+
   const [configureAssignmentsDialog, setConfigureAssignmentsDialog] = useState(false);
   const [configureGroupCountsDialog, setConfigureGroupCountsDialog] = useState(false);
   const [configureGroupsDialog, setConfigureGroupsDialog] = useState(false);
-  const [configureStationNumbersDialog, setConfigureStationNumbersDialog] = useState(false);
+  const [configureStationNumbersDialog, setConfigureStationNumbersDialog] = useState<
+    string | false
+  >(false);
   const [rawRoundDataDialogOpen, setRawRoundDataDialogOpen] = useState(false);
   const [rawRoundActivitiesDataDialogOpen, setRawRoundActivitiesDataDialogOpen] = useState(false);
-  const [showPersonsDialog, setShowPersonsDialog] = useState({
+  const [showPersonsDialog, setShowPersonsDialog] = useState<{
+    open: boolean;
+    title?: string;
+    persons: Person[];
+  }>({
     open: false,
     title: undefined,
     persons: [],
   });
   const [showPersonsAssignmentsDialog, setShowPersonsAssignmentsDialog] = useState(false);
 
-  const wcif = useSelector((state) => state.wcif);
+  const wcif = useAppSelector((state) => state.wcif);
 
-  const round = useSelector((state) => selectRoundById(state)(roundId));
-  const personsShouldBeInRound = useSelector((state) => selectPersonsShouldBeInRound(state)(round));
-
-  useEffect(() => {
-    setBreadcrumbs([
-      {
-        text: activityCode,
-      },
-    ]);
-  }, [setBreadcrumbs, activityCode]);
+  const personsShouldBeInRound = useAppSelector((state) =>
+    round ? selectPersonsShouldBeInRound(state)(round) : []
+  );
 
   // list of each stage's round activity
-  const roundActivities = findAllActivities(wcif)
-    .filter((activity) => activity.activityCode === activityCode)
-    .map((activity) => ({
-      ...activity,
-      room: roomByActivity(wcif, activity.id),
-    }));
+  const roundActivities = wcif
+    ? findAllActivities(wcif)
+        .filter((activity) => activity.activityCode === activityCode)
+        .map((activity) => ({
+          ...activity,
+          room: roomByActivity(wcif, activity.id),
+        }))
+    : [];
 
   const groups = roundActivities.flatMap((roundActivity) => allChildActivities(roundActivity));
 
   const sortedGroups = useMemo(
     () =>
       groups.sort((groupA, groupB) => {
+        const groupAWithRoom = groupA as unknown as GroupWithRoom;
+        const groupBWithRoom = groupB as unknown as GroupWithRoom;
+        const groupAName = groupAWithRoom?.parent?.room?.name;
+        const groupBName = groupBWithRoom?.parent?.room?.name;
         return (
           byGroupNumber(groupA, groupB) ||
-          groupA?.parent?.room?.name?.localeCompare(groupB?.parent?.room?.name)
+          (groupAName && groupBName ? groupAName.localeCompare(groupBName) : 0)
         );
       }),
     [groups]
   );
 
-  const personsAssigned = useSelector((state) => selectPersonsAssignedForRound(state, round.id));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const personsAssigned = useAppSelector((state: any) =>
+    round ? selectPersonsAssignedForRound(state as AppState, round.id) : []
+  );
 
   const personsAssignedToCompete = useMemo(
     () =>
-      personsAssigned.filter((p) => p.assignments.some((a) => a.assignmentCode === 'competitor')),
+      personsAssigned.filter((p: Person) =>
+        p.assignments?.some((a) => a.assignmentCode === 'competitor')
+      ),
     [personsAssigned]
   );
 
-  const personsAssignedWithCompetitorAssignmentCount = useSelector(
-    (state) => selectPersonsHavingCompetitorAssignmentsForRound(state, round.id).length
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const personsAssignedWithCompetitorAssignmentCount = useAppSelector((state: any) =>
+    round ? selectPersonsHavingCompetitorAssignmentsForRound(state as AppState, round.id).length : 0
   );
 
   /**
@@ -145,6 +157,7 @@ const RoundPage = () => {
    * 2. Then give out judging assignments to competitors without staff assignments
    */
   const onGenerateGroupActitivites = () => {
+    if (!round) return;
     dispatch(generateAssignments(round.id));
   };
 
@@ -203,7 +216,12 @@ const RoundPage = () => {
     setConfigureAssignmentsDialog(true);
   };
 
-  const adamRoundConfig = getExtensionData('RoundConfig', round, 'competitionScheduler');
+  const adamRoundConfig = round
+    ? (getExtensionData('RoundConfig', round, 'competitionScheduler') as {
+        groupCount?: number;
+        expectedRegistrations?: number;
+      } | null)
+    : null;
 
   if (roundActivities.length === 0) {
     return (
@@ -272,6 +290,10 @@ const RoundPage = () => {
     );
   };
 
+  if (!round) {
+    return null;
+  }
+
   return (
     <>
       <Grid container direction="column" spacing={2}>
@@ -279,8 +301,8 @@ const RoundPage = () => {
           {adamRoundConfig && (
             <Alert severity="info">
               The delegate team strongly recommends <b>{adamRoundConfig.groupCount}</b>{' '}
-              {pluralizeWord(adamRoundConfig.groupCount, 'group', 'groups')} for this round. This
-              was based on an estimated number of competitors for this round of{' '}
+              {pluralizeWord(adamRoundConfig.groupCount || 0, 'group', 'groups')} for this round.
+              This was based on an estimated number of competitors for this round of{' '}
               <b>{adamRoundConfig.expectedRegistrations}</b>. Discuss with the delegates before
               deviating from this number.
             </Alert>
@@ -308,9 +330,10 @@ const RoundPage = () => {
             <List dense subheader={<ListSubheader id="stages">Stages</ListSubheader>}>
               {roundActivities.map(({ id, startTime, endTime, room }) => (
                 <ListItemButton key={id}>
-                  {room.name}: {new Date(startTime).toLocaleDateString()}{' '}
+                  {room?.name}: {new Date(startTime).toLocaleDateString()}{' '}
                   {formatTimeRange(startTime, endTime)} (
-                  {(new Date(endTime) - new Date(startTime)) / 1000 / 60} Minutes)
+                  {(new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000 / 60}{' '}
+                  Minutes)
                 </ListItemButton>
               ))}
             </List>
@@ -356,8 +379,9 @@ const RoundPage = () => {
                         persons:
                           round.results
                             .map(({ personId }) =>
-                              wcif.persons.find(({ registrantId }) => registrantId === personId)
+                              wcif?.persons.find(({ registrantId }) => registrantId === personId)
                             )
+                            .filter((p): p is Person => p !== undefined)
                             .sort(byName) || [],
                         title: 'People in the round according to wca-live',
                       })
@@ -389,7 +413,10 @@ const RoundPage = () => {
                     {personsShouldBeInRound.length > 0 && (
                       <Typography>
                         May make TimeLimit:{' '}
-                        {mayMakeTimeLimit(eventId, round, personsShouldBeInRound)?.length}
+                        {
+                          mayMakeTimeLimit(eventId as EventId, round, personsShouldBeInRound)
+                            ?.length
+                        }
                       </Typography>
                     )}
                   </Box>
@@ -401,12 +428,16 @@ const RoundPage = () => {
                   <Box sx={{ px: 3, py: 1 }}>
                     <Typography>
                       Cutoff: {round.cutoff.numberOfAttempts} attempts to get {'< '}
-                      {renderResultByEventId(eventId, 'average', round.cutoff.attemptResult)}
+                      {renderResultByEventId(
+                        eventId as EventId,
+                        'average',
+                        round.cutoff.attemptResult
+                      )}
                     </Typography>
                     {personsShouldBeInRound.length > 0 && (
                       <Typography>
                         May make cutoff:{' '}
-                        {mayMakeCutoff(eventId, round, personsShouldBeInRound)?.length}
+                        {mayMakeCutoff(eventId as EventId, round, personsShouldBeInRound)?.length}
                       </Typography>
                     )}
                   </Box>
@@ -459,7 +490,7 @@ const RoundPage = () => {
         <PersonsDialog
           open={showPersonsDialog?.open}
           persons={showPersonsDialog?.persons}
-          title={showPersonsDialog?.title}
+          title={showPersonsDialog?.title || ''}
           onClose={() =>
             setShowPersonsDialog({
               open: false,
@@ -494,4 +525,4 @@ const RoundPage = () => {
   );
 };
 
-export default RoundPage;
+export default RoundContainer;

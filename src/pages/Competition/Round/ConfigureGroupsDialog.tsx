@@ -158,27 +158,32 @@ export const ConfigurableGroupTable = ({
     });
   };
 
-  const processRowUpdate = (newRow: GridRowModel<Activity & { duration: number }>) => {
+  const processRowUpdate = (
+    newRow: GridRowModel<Activity & { duration: number }>
+  ): Activity & { duration: number } => {
     const newEndTimestamp = new Date(newRow.startTime).getTime() + newRow.duration * 60 * 1000;
     const newEndTime = new Date(newEndTimestamp);
 
-    const newGroup: Activity = {
+    const newGroup: Activity & { duration: number } = {
       ...omit(newRow, 'duration'),
       endTime: newEndTime.toISOString(),
+      duration: newRow.duration,
     };
     // the following group should have it's start Time increased based on the new endTime
     const groupAfter = groups.find((g) => g.startTime > newRow.startTime) as Activity;
 
-    const newGroupAfter = {
-      ...groupAfter,
-      startTime: newGroup.endTime,
-    };
+    const newGroupAfter = groupAfter
+      ? {
+          ...groupAfter,
+          startTime: newGroup.endTime,
+        }
+      : undefined;
 
     editGroups(
-      groups.reduce((acc, g) => {
+      groups.reduce<Activity[]>((acc, g) => {
         if (g.id === newGroup.id) {
           return [...acc, newGroup];
-        } else if (g.id === newGroupAfter.id) {
+        } else if (newGroupAfter && g.id === newGroupAfter.id) {
           return [...acc, newGroupAfter];
         } else {
           return [...acc, g];
@@ -272,8 +277,8 @@ export const ConfigurableGroupTable = ({
   return (
     <DataGrid
       autoHeight
-      rows={groups}
-      columns={columns}
+      rows={groups as Array<Activity & { duration: number }>}
+      columns={columns as GridColDef<Activity & { duration: number }>[]}
       editMode="row"
       rowModesModel={rowModesModel}
       onRowEditStop={handleRowEditStop}

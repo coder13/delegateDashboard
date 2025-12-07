@@ -13,7 +13,7 @@ import {
   missingStaffAssignments,
   findCompetingAssignment,
 } from './assignments';
-import { Person, Assignment } from '@wca/helpers';
+import { Person } from '@wca/helpers';
 import { describe, it, expect } from 'vitest';
 
 describe('createGroupAssignment', () => {

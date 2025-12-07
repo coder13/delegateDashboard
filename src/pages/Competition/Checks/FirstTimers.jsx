@@ -1,5 +1,6 @@
 import { getLocalStorage, setLocalStorage, searchPersons } from '../../../lib/api';
 import { acceptedRegistrations } from '../../../lib/domain/persons';
+import { useAppSelector } from '../../../store';
 import FirstTimerCard from './FirstTimerCard';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
@@ -15,12 +16,11 @@ import {
   Typography,
 } from '@mui/material';
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 export default function FirstTimers() {
   const { competitionId } = useParams();
-  const wcif = useSelector((state) => state.wcif);
+  const wcif = useAppSelector((state) => state.wcif);
   const [{ index, firstTimer }, setFirstTimer] = useState({
     index: 0,
     firstTimer: null,

@@ -1,36 +1,8 @@
 import { pick } from '../utils';
 import { getLocalStorage } from './localStorage';
+import { CompetitionSearchResult, WcaPerson, WcaUser } from './types';
 import { WCA_ORIGIN } from './wca-env';
 import { Competition } from '@wca/helpers';
-
-interface WcaUser {
-  id: number;
-  name: string;
-  wca_id?: string;
-  avatar: {
-    url: string;
-    thumb_url: string;
-  };
-  country_iso2: string;
-  email?: string;
-}
-
-interface WcaPerson {
-  id: number;
-  name: string;
-  wcaUserId?: number;
-  wcaId?: string;
-  countryIso2: string;
-}
-
-interface CompetitionSearchResult {
-  id: string;
-  name: string;
-  start_date: string;
-  end_date: string;
-  city: string;
-  country_iso2: string;
-}
 
 const wcaAccessToken = (): string | null => getLocalStorage('accessToken');
 

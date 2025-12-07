@@ -4,11 +4,11 @@ import { acceptedRegistrations } from '../../../lib/domain/persons';
 import { flatten } from '../../../lib/utils/utils';
 import { getGroupifierActivityConfig } from '../../../lib/wcif/extensions/groupifier';
 import { getExtensionData } from '../../../lib/wcif/extensions/wcif-extensions';
+import { useAppSelector } from '../../../store';
 import { Button, Grid, Typography } from '@mui/material';
 import { formatCentiseconds } from '@wca/helpers';
 import { ExportToCsv } from 'export-to-csv';
 import { useCallback } from 'react';
-import { useSelector } from 'react-redux';
 
 const advancementConditionToText = ({ type, level }) => {
   switch (type) {
@@ -59,7 +59,7 @@ const getStageName = (room, activity) => {
 };
 
 const ExportPage = () => {
-  const wcif = useSelector((state) => state.wcif);
+  const wcif = useAppSelector((state) => state.wcif);
 
   const memodGroupActivitiesForRound = useCallback(
     (activityCode) => findGroupActivitiesByRound(wcif, activityCode),

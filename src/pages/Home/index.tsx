@@ -4,7 +4,7 @@ import wcc_logo from '../../assets/wcc_logo.png';
 import { useAuth } from '../../providers/AuthProvider';
 import CompetitionList from '../CompetitionList';
 import Header from './Header';
-import { Alert, Button, Container, Divider, Typography } from '@mui/material';
+import { Button, Container, Divider, Typography } from '@mui/material';
 
 const Home = () => {
   const { signedIn, signIn } = useAuth();

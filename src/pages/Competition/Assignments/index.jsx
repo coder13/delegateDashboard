@@ -3,6 +3,7 @@ import { findAllActivities, findRooms } from '../../../lib/domain/activities';
 import { acceptedRegistrations } from '../../../lib/domain/persons';
 import { flatten } from '../../../lib/utils/utils';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import { useAppSelector } from '../../../store';
 import { resetAllGroupAssignments } from '../../../store/actions';
 import { MoreVert } from '@mui/icons-material';
 import {
@@ -22,10 +23,10 @@ import {
 } from '@mui/material';
 import { useConfirm } from 'material-ui-confirm';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 const AssignmentsPage = () => {
-  const wcif = useSelector((state) => state.wcif);
+  const wcif = useAppSelector((state) => state.wcif);
   const eventIds = useMemo(() => wcif.events.map((e) => e.id), [wcif.events]);
   const stages = useMemo(() => findRooms(wcif), [wcif]);
   const dispatch = useDispatch();

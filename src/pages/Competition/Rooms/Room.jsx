@@ -2,6 +2,7 @@ import { generateNextChildActivityId, parseActivityCode } from '../../../lib/dom
 import { advancingCompetitors } from '../../../lib/domain/formulas';
 import { acceptedRegistrations } from '../../../lib/domain/persons';
 import { getGroupData } from '../../../lib/wcif/extensions/wcif-extensions';
+import { useAppSelector } from '../../../store';
 import {
   updateRoundChildActivities,
   updateGroupCount,
@@ -23,7 +24,7 @@ import TableRow from '@mui/material/TableRow';
 import { makeStyles } from '@mui/styles';
 import { useConfirm } from 'material-ui-confirm';
 import React, { useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 const useStyles = makeStyles((theme) => ({
   card: ({ room }) => ({
@@ -42,7 +43,7 @@ const Room = ({ venue, room }) => {
   const classes = useStyles({ room });
   const dispatch = useDispatch();
   const confirm = useConfirm();
-  const wcif = useSelector((state) => state.wcif);
+  const wcif = useAppSelector((state) => state.wcif);
   const [anchorEl, setAnchorEl] = React.useState(null);
   // const [configureStagesDialogOpen, setConfigureStagesDialogOpen] = React.useState(false);
 

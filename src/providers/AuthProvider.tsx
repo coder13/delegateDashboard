@@ -6,6 +6,7 @@ import {
   WCA_OAUTH_CLIENT_ID,
   getMe,
 } from '../lib/api';
+import { WcaUser } from '../lib/api/types';
 import { useState, useEffect, createContext, useContext, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -19,18 +20,12 @@ const oauthRedirectUri = () => {
   return stagingParam ? `${appUri}?staging=true` : appUri;
 };
 
-type User = {
-  id: string;
-  name: string;
-  email: string;
-};
-
 interface IAuthContext {
-  user: User | null;
+  user: WcaUser | null;
   signIn: () => void;
   signOut: () => void;
   signedIn: () => boolean;
-  userFetchError?: any;
+  userFetchError?: Error;
 }
 
 const AuthContext = createContext<IAuthContext>({
@@ -47,16 +42,17 @@ export default function AuthProvider({ children }) {
     const expirationTime = getLocalStorage('expirationTime');
     return expirationTime ? new Date(expirationTime) : null;
   });
-  const [user, setUser] = useState<User | null>(null);
-  const [userFetchError, setUserFetchError] = useState(null);
+  const [user, setUser] = useState<WcaUser | null>(null);
+  const [userFetchError, setUserFetchError] = useState<Error | undefined>();
   const [now, setNow] = useState(new Date());
 
   const location = useLocation();
   const navigate = useNavigate();
 
-  const expired = useMemo(() => {
-    return expirationTime && now >= new Date(expirationTime);
-  }, [now]);
+  const expired = useMemo(
+    () => expirationTime && now >= new Date(expirationTime),
+    [expirationTime, now]
+  );
 
   useEffect(() => {
     const token = getLocalStorage('accessToken');
@@ -121,11 +117,7 @@ export default function AuthProvider({ children }) {
 
     getMe()
       .then(({ me }) => {
-        setUser({
-          id: String(me.id),
-          name: me.name,
-          email: me.email || '',
-        });
+        setUser(me);
       })
       .catch((err) => {
         console.error(err);
