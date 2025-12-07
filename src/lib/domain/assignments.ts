@@ -1,16 +1,12 @@
+import { InProgressAssignmment } from '../types';
 import { Assignment, Person } from '@wca/helpers';
-
-export interface InProgressAssignmment {
-  registrantId: number;
-  assignment: Assignment;
-}
 
 /**
  * So that I don't have to remember the data format
  */
 export const createGroupAssignment = (
   registrantId: number,
-  activityId: any,
+  activityId: number,
   assignmentCode: string,
   stationNumber: number | null = null
 ): InProgressAssignmment => ({

@@ -5,13 +5,29 @@ import {
 } from '../../lib/domain/persons';
 import { mapIn, updateIn } from '../../lib/utils/utils';
 import { validateWcif } from '../../lib/wcif/validation';
+import {
+  AddPersonAssignmentsPayload,
+  BulkAddPersonAssignmentsPayload,
+  BulkRemovePersonAssignmentsPayload,
+  BulkUpsertPersonAssignmentsPayload,
+  RemovePersonAssignmentsPayload,
+  UpsertPersonAssignmentsPayload,
+} from '../actions';
+import { AppState } from '../initialState';
+import { Assignment } from '@wca/helpers';
 
-const determineErrors = (state) => ({
-  ...state,
-  errors: validateWcif(state.wcif),
-});
+const determineErrors = (state: AppState): AppState => {
+  if (!state.wcif) return state;
+  return {
+    ...state,
+    errors: validateWcif(state.wcif),
+  };
+};
 
-export const addPersonAssignments = (state, action) =>
+export const addPersonAssignments = (
+  state: AppState,
+  action: AddPersonAssignmentsPayload
+): AppState =>
   determineErrors({
     ...state,
     needToSave: true,
@@ -23,7 +39,10 @@ export const addPersonAssignments = (state, action) =>
     ),
   });
 
-export const removePersonAssignments = (state, action) =>
+export const removePersonAssignments = (
+  state: AppState,
+  action: RemovePersonAssignmentsPayload
+): AppState =>
   determineErrors({
     ...state,
     needToSave: true,
@@ -35,7 +54,10 @@ export const removePersonAssignments = (state, action) =>
     ),
   });
 
-export const upsertPersonAssignments = (state, action) =>
+export const upsertPersonAssignments = (
+  state: AppState,
+  action: UpsertPersonAssignmentsPayload
+): AppState =>
   determineErrors({
     ...state,
     needToSave: true,
@@ -53,7 +75,10 @@ export const upsertPersonAssignments = (state, action) =>
  * @param {{assignments: InProgressAssignmment[]}} action
  * @returns
  */
-export const bulkAddPersonAssignments = (state, action) =>
+export const bulkAddPersonAssignments = (
+  state: AppState,
+  action: BulkAddPersonAssignmentsPayload
+): AppState =>
   determineErrors({
     ...state,
     needToSave: true,
@@ -77,19 +102,22 @@ export const bulkAddPersonAssignments = (state, action) =>
  * Assume we're removing by default
  * Look for arguments to keep the assignment for the person
  */
-export const bulkRemovePersonAssignments = (state, action) =>
+export const bulkRemovePersonAssignments = (
+  state: AppState,
+  action: BulkRemovePersonAssignmentsPayload
+): AppState =>
   determineErrors({
     ...state,
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'persons']),
     wcif: mapIn(state.wcif, ['persons'], (person) => {
-      if (person.assignments.length === 0) {
+      if (person.assignments?.length === 0 || !person.assignments) {
         return person;
       }
 
       // Find arguments to keep assignment: that is, return true
       return updateIn(person, ['assignments'], (assignments) =>
-        assignments.filter((personAssignment) => {
+        assignments.filter((personAssignment: Assignment) => {
           const filtersApplicable = action.assignments.filter((a) => {
             const filterByRegistrantId = a.registrantId
               ? a.registrantId === person.registrantId
@@ -117,7 +145,10 @@ export const bulkRemovePersonAssignments = (state, action) =>
     }),
   });
 
-export const bulkUpsertPersonAssignments = (state, action) =>
+export const bulkUpsertPersonAssignments = (
+  state: AppState,
+  action: BulkUpsertPersonAssignmentsPayload
+): AppState =>
   determineErrors({
     ...state,
     needToSave: true,
@@ -126,8 +157,8 @@ export const bulkUpsertPersonAssignments = (state, action) =>
       const personAssignments = action.assignments
         .filter((a) => a.registrantId === person.registrantId)
         .map((a) => ({
-          activityId: a.activityId,
           ...a.assignment,
+          activityId: a.assignment.activityId,
         }));
 
       if (personAssignments.length > 0) {

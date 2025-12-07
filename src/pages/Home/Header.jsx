@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useAuth } from '../../providers/AuthProvider';
 import PeopleIcon from '@mui/icons-material/People';
 import { Avatar, Box, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
@@ -7,7 +6,8 @@ import Button from '@mui/material/Button';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
-import { useAuth } from '../../providers/AuthProvider';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
   title: {
@@ -50,7 +50,7 @@ const Header = () => {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt={user.name} src={user.avatar.thumb_url} />
+                <Avatar alt={user.name} src={user.avatar?.thumb_url} />
               </IconButton>
             </Tooltip>
             <Menu

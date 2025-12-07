@@ -121,7 +121,11 @@ export default function AuthProvider({ children }) {
 
     getMe()
       .then(({ me }) => {
-        setUser(me);
+        setUser({
+          id: String(me.id),
+          name: me.name,
+          email: me.email || '',
+        });
       })
       .catch((err) => {
         console.error(err);

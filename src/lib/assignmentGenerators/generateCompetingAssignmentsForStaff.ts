@@ -1,11 +1,7 @@
 import { ActivityWithParent, findGroupActivitiesByRound, parseActivityCode } from '../domain';
-import {
-  hasStaffAssignment,
-  InProgressAssignmment,
-  isStaffAssignment,
-  missingCompetitorAssignments,
-} from '../domain';
+import { hasStaffAssignment, isStaffAssignment, missingCompetitorAssignments } from '../domain';
 import { personsShouldBeInRound } from '../domain';
+import { InProgressAssignmment } from '../types';
 import { createGroupAssignment, previousGroupForActivity } from '../wcif';
 import { Competition, Event, Person } from '@wca/helpers';
 

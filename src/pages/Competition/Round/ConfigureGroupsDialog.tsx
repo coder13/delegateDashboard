@@ -11,7 +11,6 @@ import {
   Save as SaveIcon,
 } from '@mui/icons-material';
 import {
-  Box,
   Button,
   Dialog,
   DialogContent,
@@ -58,8 +57,8 @@ export const ConfigurableGroupList = ({
 
     const newGroups = filteredGroups.map((g, i) => ({
       ...g,
-      startTime: new Date(startDate.getTime() + (dateDiff / numberOfGroups) * i),
-      endTime: new Date(startDate.getTime() + (dateDiff / numberOfGroups) * (i + 1)),
+      startTime: new Date(startDate.getTime() + (dateDiff / numberOfGroups) * i).toISOString(),
+      endTime: new Date(startDate.getTime() + (dateDiff / numberOfGroups) * (i + 1)).toISOString(),
     }));
 
     dispatch(updateRoundChildActivities(roundActivity.id, newGroups));
@@ -122,8 +121,8 @@ export const ConfigurableGroupTable = ({
 
     const newGroups = filteredGroups.map((g, i) => ({
       ...g,
-      startTime: new Date(startDate.getTime() + (dateDiff / numberOfGroups) * i),
-      endTime: new Date(startDate.getTime() + (dateDiff / numberOfGroups) * (i + 1)),
+      startTime: new Date(startDate.getTime() + (dateDiff / numberOfGroups) * i).toISOString(),
+      endTime: new Date(startDate.getTime() + (dateDiff / numberOfGroups) * (i + 1)).toISOString(),
     }));
 
     dispatch(updateRoundChildActivities(roundActivity.id, newGroups));
@@ -229,8 +228,8 @@ export const ConfigurableGroupTable = ({
 
         if (isInEditMode) {
           return [
-            // @ts-ignore - React 18 type compatibility issue with @mui/x-data-grid v5
             <GridActionsCellItem
+              key={1}
               icon={<SaveIcon />}
               label="Save"
               sx={{
@@ -238,8 +237,8 @@ export const ConfigurableGroupTable = ({
               }}
               onClick={handleSaveClick(id)}
             />,
-            // @ts-ignore - React 18 type compatibility issue with @mui/x-data-grid v5
             <GridActionsCellItem
+              key={2}
               icon={<CancelIcon />}
               label="Cancel"
               className="textPrimary"
@@ -250,16 +249,16 @@ export const ConfigurableGroupTable = ({
         }
 
         return [
-          // @ts-ignore - React 18 type compatibility issue with @mui/x-data-grid v5
           <GridActionsCellItem
+            key={1}
             icon={<EditIcon />}
             label="Edit"
             className="textPrimary"
             onClick={handleEditClick(id)}
             color="inherit"
           />,
-          // @ts-ignore - React 18 type compatibility issue with @mui/x-data-grid v5
           <GridActionsCellItem
+            key={2}
             icon={<Delete />}
             label="Delete"
             onClick={handleDeleteClick(id)}

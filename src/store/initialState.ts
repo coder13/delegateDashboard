@@ -1,8 +1,20 @@
+import { ValidationError } from '../lib/wcif/validation';
 import { Competition } from '@wca/helpers';
+
+interface CompetitionSearchResult {
+  id: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  city: string;
+  country_iso2: string;
+}
 
 export interface AppState {
   anythingChanged: boolean;
   fetchingUser: boolean;
+  fetchingCompetitions?: boolean;
+  fetchingCompetitionsError?: Error;
   user: {
     id?: number;
     name?: string;
@@ -11,13 +23,13 @@ export interface AppState {
       thumb_url: string;
     };
   };
-  fetchingWCIF: false;
-  uploadingWCIF: false;
-  needToSave: false;
+  fetchingWCIF: boolean;
+  uploadingWCIF: boolean;
+  needToSave: boolean;
   changedKeys: Set<keyof Competition>;
   wcif: null | Competition;
-  competitions: [];
-  errors: [];
+  competitions: CompetitionSearchResult[];
+  errors: ValidationError[];
 }
 
 const INITIAL_STATE: AppState = {

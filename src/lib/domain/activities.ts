@@ -289,10 +289,7 @@ export const cumulativeGroupCount = (round) => {
 /**
  * Searches for an activity recursively and returns a new version of the activity
  */
-export const findAndReplaceActivity = (
-  where: Partial<Activity> & { id: string },
-  what: Partial<Activity>
-) => {
+export const findAndReplaceActivity = (where: Partial<Activity>, what: Partial<Activity>) => {
   return (activity: Activity): Activity => {
     if (activity.id === where.id) {
       return {

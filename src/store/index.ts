@@ -4,7 +4,13 @@ import { TypedUseSelectorHook, useSelector, useDispatch } from 'react-redux';
 import { createStore, applyMiddleware, compose, AnyAction } from 'redux';
 import thunkMiddleware, { ThunkDispatch } from 'redux-thunk';
 
-// @ts-ignore
+// Redux DevTools Extension - window property may not exist in production
+declare global {
+  interface Window {
+    __REDUX_DEVTOOLS_EXTENSION_COMPOSE__?: typeof compose;
+  }
+}
+
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 export const store = createStore(reducer, composeEnhancers(applyMiddleware(thunkMiddleware)));

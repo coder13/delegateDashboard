@@ -1,6 +1,12 @@
-import { findRoundActivitiesById, parseActivityCode } from '../domain';
-import { InProgressAssignmment, missingCompetitorAssignments } from '../domain';
-import { byPROrResult, isOrganizerOrDelegate, personsShouldBeInRound } from '../domain';
+import {
+  byPROrResult,
+  findRoundActivitiesById,
+  isOrganizerOrDelegate,
+  missingCompetitorAssignments,
+  parseActivityCode,
+  personsShouldBeInRound,
+} from '../domain';
+import { InProgressAssignmment } from '../types';
 import { byName } from '../utils';
 import { createGroupAssignment } from '../wcif';
 import { Activity, Competition, Event } from '@wca/helpers';

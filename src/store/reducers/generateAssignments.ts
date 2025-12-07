@@ -4,9 +4,12 @@ import {
   generateGroupAssignmentsForDelegatesAndOrganizers,
   generateJudgeAssignmentsFromCompetingAssignments,
 } from '../../lib/assignmentGenerators';
-import { InProgressAssignmment } from '../../lib/domain/assignments';
+import { InProgressAssignmment } from '../../lib/types';
+import { GenerateAssignmentsPayload } from '../actions';
+import { AppState } from '../initialState';
 import { bulkAddPersonAssignments } from './competitorAssignments';
-import { Competition } from '@wca/helpers';
+
+type AssignmentsReducer = ((a: InProgressAssignmment[]) => InProgressAssignmment[])[];
 
 /**
  * Fills in assignment gaps. Everyone should end up having a competitor assignment and staff assignment
@@ -17,20 +20,17 @@ import { Competition } from '@wca/helpers';
  *
  * 2. Then give out judging assignments to competitors without staff assignments
  */
-export function generateAssignments(
-  state: {
-    wcif: Competition;
-  },
-  action
-) {
+export function generateAssignments(state: AppState, action: GenerateAssignmentsPayload): AppState {
+  if (!state.wcif) return state;
+
   const initializedGenerators = [
     generateCompetingAssignmentsForStaff,
     generateGroupAssignmentsForDelegatesAndOrganizers,
     generateCompetingGroupActitivitesForEveryone,
     generateJudgeAssignmentsFromCompetingAssignments,
   ]
-    .map((generator) => generator(state.wcif, action.roundId))
-    .filter(Boolean) as ((a: InProgressAssignmment[]) => InProgressAssignmment[])[];
+    .map((generator) => generator(state.wcif!, action.roundId))
+    .filter(Boolean) as AssignmentsReducer;
 
   const newAssignments = initializedGenerators.reduce((accumulatingAssignments, generateFn) => {
     const generatedAssignments = generateFn(accumulatingAssignments);

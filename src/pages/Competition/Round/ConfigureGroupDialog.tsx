@@ -13,7 +13,7 @@ import {
   Typography,
 } from '@mui/material';
 import { activityCodeToName } from '@wca/helpers';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 const ConfigureGroupDialog = ({ open, onClose, activity }) => {

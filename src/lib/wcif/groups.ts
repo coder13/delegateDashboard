@@ -6,7 +6,7 @@ import {
   ActivityWithParent,
   findRooms,
 } from '../domain';
-import { InProgressAssignmment } from '../domain';
+import { InProgressAssignmment } from '../types';
 import { Activity, Assignment, Competition } from '@wca/helpers';
 
 /**
@@ -140,7 +140,7 @@ export const nextGroupForActivity = (activity: ActivityWithParent): Activity | u
  */
 export const createGroupAssignment = (
   registrantId: number,
-  activityId: any,
+  activityId: number,
   assignmentCode: string,
   stationNumber: number | null = null
 ): InProgressAssignmment => ({

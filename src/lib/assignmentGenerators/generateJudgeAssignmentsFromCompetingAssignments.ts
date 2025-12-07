@@ -2,10 +2,10 @@ import { findGroupActivitiesByRound, parseActivityCode } from '../domain';
 import {
   findCompetingAssignment,
   hasCompetitorAssignment,
-  InProgressAssignmment,
   missingStaffAssignments,
 } from '../domain';
 import { isOrganizerOrDelegate, personsShouldBeInRound } from '../domain';
+import { InProgressAssignmment } from '../types';
 import { createGroupAssignment, nextGroupForActivity } from '../wcif';
 import { Competition, Event } from '@wca/helpers';
 

@@ -31,10 +31,12 @@ export default function AddNonCompetingStaffDialog({
       addPerson({
         name: selectedUser?.name,
         wcaUserId: selectedUser?.id,
+        // @ts-expect-error we don't know the wca registration ID until the registration is created
         registration: {
           isCompeting: false,
           eventIds: [],
           administrativeNotes: 'Added with Delegate Dashboard',
+          status: 'accepted',
         },
         wcaId: selectedUser.wca_id,
         roles,
