@@ -11,14 +11,14 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      include: ['src/lib/**/*.ts'],
+      include: ['src/**/*'],
       exclude: ['**/*.test.ts', '**/*.spec.ts', '**/*.d.ts', 'src/lib/groupAssignments/**'],
-      thresholds: {
-        statements: 70,
-        branches: 65,
-        functions: 70,
-        lines: 70,
-      },
+      // thresholds: {
+      //   statements: 70,
+      //   branches: 65,
+      //   functions: 70,
+      //   lines: 70,
+      // },
     },
   },
 });

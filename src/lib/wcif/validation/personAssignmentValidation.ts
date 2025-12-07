@@ -1,4 +1,3 @@
-import type { Competition, Person } from '@wca/helpers';
 import {
   activitiesOverlap,
   findActivityById,
@@ -13,13 +12,12 @@ import {
   ConflictingAssignment,
   ValidationError,
 } from './types';
+import type { Competition, Person } from '@wca/helpers';
 
 /**
  * Validates that all person assignments reference existing activities
  */
-export const validatePersonAssignmentActivitiesExist = (
-  wcif: Competition
-): ValidationError[] => {
+export const validatePersonAssignmentActivitiesExist = (wcif: Competition): ValidationError[] => {
   const errors: ValidationError[] = [];
   const allActivityIds = findAllActivities(wcif).map((activity) => activity.id);
 
@@ -102,9 +100,7 @@ const findConflictingAssignmentsForPerson = (
 /**
  * Validates that person assignments don't have schedule conflicts
  */
-export const validatePersonAssignmentScheduleConflicts = (
-  wcif: Competition
-): ValidationError[] => {
+export const validatePersonAssignmentScheduleConflicts = (wcif: Competition): ValidationError[] => {
   const errors: ValidationError[] = [];
 
   acceptedRegistrations(wcif.persons).forEach((person) => {
@@ -136,6 +132,6 @@ export const validatePersonAssignmentScheduleConflicts = (
 export const validatePersonAssignments = (wcif: Competition): ValidationError[] => {
   const missingActivityErrors = validatePersonAssignmentActivitiesExist(wcif);
   const scheduleConflictErrors = validatePersonAssignmentScheduleConflicts(wcif);
-  
+
   return [...missingActivityErrors, ...scheduleConflictErrors];
 };

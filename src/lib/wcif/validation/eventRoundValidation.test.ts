@@ -1,5 +1,3 @@
-import { describe, it, expect } from 'vitest';
-import type { Competition, Event } from '@wca/helpers';
 import {
   validateEventHasRounds,
   validateAdvancementConditions,
@@ -11,6 +9,8 @@ import {
   NO_ROUNDS_FOR_ACTIVITY,
   NO_SCHEDULE_ACTIVITIES_FOR_ROUND,
 } from './types';
+import type { Competition, Event } from '@wca/helpers';
+import { describe, it, expect } from 'vitest';
 
 const mockWcif: Competition = {
   formatVersion: '1.0',
