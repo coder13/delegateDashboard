@@ -119,3 +119,40 @@ export const selectPersonsAssignedToActivitiyId = createSelector(
   (persons, activityId): Person[] =>
     persons.filter(({ assignments }) => assignments?.some((a) => a.activityId === activityId))
 );
+
+/**
+ * Return a filtered array of persons who are first-timers (no WCA ID)
+ */
+export const selectFirstTimers = createSelector(
+  selectAcceptedPersons,
+  (acceptedPersons): Person[] => acceptedPersons.filter((p) => !p.wcaId)
+);
+
+/**
+ * Return group activities for a specific round
+ * @example
+ * ```
+ * selectGroupActivitiesByRound(state, '333-r1')
+ * ```
+ */
+export const selectGroupActivitiesByRound = createSelector(
+  [selectWcif, (_: AppState, roundId: string) => roundId],
+  (wcif, roundId): Activity[] => {
+    if (!wcif) return [];
+
+    const findGroupActivities = (activities: Activity[]): Activity[] => {
+      return activities.flatMap((activity) => {
+        if (activity.activityCode === roundId && activity.childActivities) {
+          return activity.childActivities;
+        }
+        if (activity.childActivities) {
+          return findGroupActivities(activity.childActivities);
+        }
+        return [];
+      });
+    };
+
+    const rooms = findRooms(wcif);
+    return rooms.flatMap((room) => findGroupActivities(room.activities));
+  }
+);

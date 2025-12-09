@@ -13,7 +13,7 @@ import { mayMakeCutoff, mayMakeTimeLimit } from '../lib/domain/persons';
 import { formatTimeRange } from '../lib/utils/time';
 import { byName, renderResultByEventId } from '../lib/utils/utils';
 import { getExtensionData } from '../lib/wcif/extensions/wcif-extensions';
-import ConfigureAssignmentsDialog from '../pages/Competition/Round/ConfigureAssignmentsDialog';
+import ConfigureAssignmentsDialog from '../pages/Competition/Round/ConfigureAssignmentsDialog/ConfigureAssignmentsDialog';
 import ConfigureGroupCountsDialog from '../pages/Competition/Round/ConfigureGroupCountsDialog';
 import { ConfigureGroupsDialog } from '../pages/Competition/Round/ConfigureGroupsDialog';
 import ConfigureStationNumbersDialog from '../pages/Competition/Round/ConfigureStationNumbersDialog';

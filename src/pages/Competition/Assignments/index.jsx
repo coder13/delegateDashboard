@@ -1,8 +1,13 @@
 import EventSelector from '../../../components/EventSelector';
-import { findAllActivities, findRooms } from '../../../lib/domain/activities';
-import { acceptedRegistrations } from '../../../lib/domain/persons';
-import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
-import { useAppSelector } from '../../../store';
+import {
+  useBreadcrumbsEffect,
+  useMenuState,
+  useWcif,
+  useAcceptedPersons,
+  useWcifRooms,
+} from '../../../hooks';
+import { findAllActivities } from '../../../lib/domain/activities';
+import { useAppDispatch } from '../../../store';
 import { resetAllGroupAssignments } from '../../../store/actions';
 import { MoreVert } from '@mui/icons-material';
 import {
@@ -22,34 +27,27 @@ import {
 } from '@mui/material';
 import { flatten } from 'lodash';
 import { useConfirm } from 'material-ui-confirm';
-import React, { useEffect, useMemo, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useMemo, useState } from 'react';
 
 const AssignmentsPage = () => {
-  const wcif = useAppSelector((state) => state.wcif);
+  const wcif = useWcif();
+  const acceptedPersons = useAcceptedPersons();
   const eventIds = useMemo(() => wcif.events.map((e) => e.id), [wcif.events]);
-  const stages = useMemo(() => findRooms(wcif), [wcif]);
-  const dispatch = useDispatch();
-  const { setBreadcrumbs } = useBreadcrumbs();
+  const stages = useWcifRooms();
+  const dispatch = useAppDispatch();
   const confirm = useConfirm();
   const [eventFilter, setEventFilter] = useState(eventIds);
   const [stageFilter, setStageFilter] = useState(stages.map((stage) => stage.name));
-  const [anchorEl, setAnchorEl] = useState(null);
+  const { anchorEl, handleOpen, handleClose } = useMenuState();
 
-  useEffect(() => {
-    setBreadcrumbs([
-      {
-        text: 'Assignments',
-      },
-    ]);
-  }, [setBreadcrumbs]);
+  useBreadcrumbsEffect([{ text: 'Assignments' }]);
 
   const _allActivities = findAllActivities(wcif);
 
   const allPersonsAssignments = useMemo(
     () =>
       flatten(
-        acceptedRegistrations(wcif.persons).map((person) =>
+        acceptedPersons.map((person) =>
           person.assignments.map((assignment) => ({
             assignment,
             activity: _allActivities.find((a) => a.id === assignment.activityId),
@@ -57,7 +55,7 @@ const AssignmentsPage = () => {
           }))
         )
       ),
-    [_allActivities, wcif.persons]
+    [_allActivities, acceptedPersons]
   );
 
   const groupActivitiesByStage = useMemo(
@@ -127,13 +125,13 @@ const AssignmentsPage = () => {
             />
           </div>
           <div style={{ display: 'flex', flex: 1 }} />
-          <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} size="large">
+          <IconButton onClick={handleOpen} size="large">
             <MoreVert />
           </IconButton>
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
-            onClose={() => setAnchorEl(null)}
+            onClose={handleClose}
             anchorOrigin={{
               vertical: 'top',
               horizontal: 'left',
