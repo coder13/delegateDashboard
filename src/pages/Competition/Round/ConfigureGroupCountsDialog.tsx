@@ -1,5 +1,5 @@
 import { activityDuration } from '../../../lib/domain/activities';
-import { getExtensionData } from '../../../lib/wcif/extensions/wcif-extensions';
+import { getGroupsExtensionData } from '../../../lib/wcif/extensions';
 import { createGroupsAcrossStages } from '../../../lib/wcif/groups';
 import { useAppSelector } from '../../../store';
 import { updateRoundActivities, updateRoundExtensionData } from '../../../store/actions';
@@ -48,10 +48,18 @@ const ConfigureGroupCountsDialog = ({
       .filter((room) => room.activities.find((a) => a.activityCode === activityCode))
   );
   const dispatch = useDispatch();
+  const groupsExtData = getGroupsExtensionData(round);
   const [groupsData, setGroupsData] = useState<{
     groups: number | Record<number, number>;
     spreadGroupsAcrossAllStages?: boolean;
-  } | null>(getExtensionData('groups', round) as any);
+  } | null>(
+    groupsExtData && groupsExtData.groups !== undefined
+      ? {
+          groups: groupsExtData.groups,
+          spreadGroupsAcrossAllStages: groupsExtData.spreadGroupsAcrossAllStages,
+        }
+      : null
+  );
   const spreadGroupsAcrossAllStages = groupsData?.spreadGroupsAcrossAllStages ?? true;
   const actualCompetitors = useAppSelector((state) => selectPersonsShouldBeInRound(state)(round));
 
@@ -64,11 +72,12 @@ const ConfigureGroupCountsDialog = ({
 
   const reset = () => {
     if (round) {
-      const data = getExtensionData('groups', round) as {
-        groups: number | Record<number, number>;
-        spreadGroupsAcrossAllStages?: boolean;
-      } | null;
-      setGroupsData(data);
+      const data = getGroupsExtensionData(round);
+      setGroupsData(
+        data && data.groups !== undefined
+          ? { groups: data.groups, spreadGroupsAcrossAllStages: data.spreadGroupsAcrossAllStages }
+          : null
+      );
     }
   };
 

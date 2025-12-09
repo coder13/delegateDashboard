@@ -1,8 +1,11 @@
 import { findGroupActivitiesByRound, parseActivityCode } from '../../../lib/domain/activities';
 import { eventNameById, roundFormatById } from '../../../lib/domain/events';
 import { acceptedRegistrations } from '../../../lib/domain/persons';
-import { getGroupifierActivityConfig } from '../../../lib/wcif/extensions/groupifier';
-import { getExtensionData } from '../../../lib/wcif/extensions/wcif-extensions';
+import {
+  getGroupifierActivityConfig,
+  getRoomExtensionData,
+  getGroupExtensionData,
+} from '../../../lib/wcif/extensions';
 import { useAppSelector } from '../../../store';
 import { Button, Grid, Typography } from '@mui/material';
 import { formatCentiseconds } from '@wca/helpers';
@@ -44,8 +47,8 @@ const competingAssignmentToText = (activity) =>
   `${activity.parent.room.name[0]}${groupNumber(activity)}`;
 
 const getStageName = (room, activity) => {
-  const stages = getExtensionData('Room', room, 'org.cubingusa.natshelper.v1')?.stages;
-  const stageId = getExtensionData('Group', activity, 'org.cubingusa.natshelper.v1')?.stageId;
+  const stages = getRoomExtensionData(room)?.stages;
+  const stageId = getGroupExtensionData(activity)?.stageId;
 
   if (stages?.length && stageId !== undefined) {
     const stageName = stages.find((s) => s.id === stageId)?.name;

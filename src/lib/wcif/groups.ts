@@ -6,7 +6,7 @@ import {
 import type { ActivityWithParent } from '../domain/types';
 import { type InProgressAssignmment } from '../types';
 import { generateNextChildActivityId, findGroupActivitiesByRound, findRooms } from './activities';
-import { getExtensionData, type GroupsExtensionData } from './extensions/wcif-extensions';
+import { getGroupsExtensionData } from './extensions';
 import {
   type Activity,
   type Assignment,
@@ -55,7 +55,7 @@ export const createGroupActivity = (
  * @returns Total number of groups across all stages
  */
 export const cumulativeGroupCount = (round: Round) => {
-  const groupsData = getExtensionData<GroupsExtensionData>('groups', round);
+  const groupsData = getGroupsExtensionData(round);
   if (!groupsData || !groupsData.groups) return 1;
 
   if (groupsData.spreadGroupsAcrossAllStages) {

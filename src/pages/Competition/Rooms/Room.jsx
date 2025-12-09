@@ -1,7 +1,7 @@
 import { generateNextChildActivityId, parseActivityCode } from '../../../lib/domain/activities';
 import { advancingCompetitors } from '../../../lib/domain/formulas';
 import { acceptedRegistrations } from '../../../lib/domain/persons';
-import { getGroupData } from '../../../lib/wcif/extensions/wcif-extensions';
+import { getGroupData } from '../../../lib/wcif/extensions';
 import { useAppSelector } from '../../../store';
 import {
   updateRoundChildActivities,

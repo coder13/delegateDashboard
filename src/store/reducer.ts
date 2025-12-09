@@ -1,6 +1,10 @@
 import { findAndReplaceActivity } from '../lib/domain/activities';
 import { type ValidationError } from '../lib/wcif';
-import { setExtensionData } from '../lib/wcif/extensions/wcif-extensions';
+import {
+  setActivityConfigExtensionData,
+  setRoundConfigExtensionData,
+} from '../lib/wcif/extensions';
+import type { Extension } from '../lib/wcif/extensions/types';
 import { ActionType } from './actions';
 import type {
   Action,
@@ -160,7 +164,7 @@ const reducers: Record<string, ReducerFunction> = {
             ...room,
             activities: room.activities.map((activity: Activity) => {
               if (activity.id === action.activityId) {
-                return setExtensionData('activityConfig', activity, {
+                return setActivityConfigExtensionData(activity, {
                   groupCount: action.groupCount,
                 });
               }
@@ -318,7 +322,7 @@ const reducers: Record<string, ReducerFunction> = {
           ...event,
           rounds: event.rounds.map((round) => {
             if (round.id === action.activityCode) {
-              return setExtensionData('roundConfig', round, action.extensionData);
+              return setRoundConfigExtensionData(round, action.extensionData);
             }
 
             return round;
@@ -337,8 +341,10 @@ const reducers: Record<string, ReducerFunction> = {
       wcif: {
         ...state.wcif,
         extensions: [
-          ...state.wcif.extensions.filter((e) => e.id === extensionData.id),
-          extensionData,
+          ...state.wcif.extensions.filter(
+            (e) => (e as Extension).id !== (extensionData as Extension).id
+          ),
+          extensionData as Extension,
         ],
       },
     };

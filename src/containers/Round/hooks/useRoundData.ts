@@ -5,7 +5,7 @@ import {
   findAllActivities,
   roomByActivity,
 } from '../../../lib/wcif/activities';
-import { getExtensionData } from '../../../lib/wcif/extensions/wcif-extensions';
+import { getRoundConfig } from '../../../lib/wcif/extensions';
 import { useAppSelector } from '../../../store';
 import { type AppState } from '../../../store/initialState';
 import {
@@ -84,12 +84,7 @@ export const useRoundData = (activityCode: string, round: Round | undefined): Ro
     round ? selectPersonsHavingCompetitorAssignmentsForRound(state as AppState, round.id).length : 0
   );
 
-  const adamRoundConfig = round
-    ? (getExtensionData('RoundConfig', round, 'competitionScheduler') as {
-        groupCount?: number;
-        expectedRegistrations?: number;
-      } | null)
-    : null;
+  const adamRoundConfig = round ? getRoundConfig(round) ?? null : null;
 
   return {
     wcif,
