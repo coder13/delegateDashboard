@@ -1,4 +1,4 @@
-import RoundContainer from '../../../containers/RoundContainer';
+import RoundContainer from '../../../containers/Round/RoundContainer';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import { useAppSelector } from '../../../store';
 import { selectRoundById } from '../../../store/selectors';
