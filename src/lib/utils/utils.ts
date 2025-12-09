@@ -1,4 +1,9 @@
-import { AttemptResult, EventId, RankingType, formatCentiseconds } from '@wca/helpers';
+import {
+  type AttemptResult,
+  type EventId,
+  type RankingType,
+  formatCentiseconds,
+} from '@wca/helpers';
 
 /**
  * Returns a copy of the object with the value at the specified path transformed by the update function.
@@ -8,17 +13,14 @@ import { AttemptResult, EventId, RankingType, formatCentiseconds } from '@wca/he
  * @param {Function} updater
  * @returns {Object}
  */
-export const updateIn = (
-  object: any,
-  [property, ...properyChain]: string[],
-  updater: (value: any) => any
-): any =>
-  properyChain.length === 0
-    ? { ...object, [property]: updater(object[property]) }
-    : {
-        ...object,
-        [property]: updateIn(object[property], properyChain, updater),
-      };
+export const updateIn = <T extends object, S extends keyof T, U>(
+  object: T,
+  property: S,
+  updater: (value: T[S]) => U
+): T => ({
+  ...object,
+  [property]: updater(object[property]),
+});
 
 /**
  * Returns a copy of the object with the value at the specified path set to the given one.
@@ -28,22 +30,12 @@ export const updateIn = (
  * @param {*} value
  * @returns {Object}
  */
-export const setIn = (object: any, properyChain: string[], value: any) =>
-  updateIn(object, properyChain, () => value);
+export const setIn = <T extends object, S extends keyof T>(
+  object: T,
+  properyChain: S,
+  value: T[S]
+): T => updateIn(object, properyChain, () => value);
 
-/**
- * Returns a copy of the object with the value at the specified path merged with the given one.
- *
- * @param {Object} object
- * @param {Array} propertyChain
- * @param {Object} newValue
- * @returns {Object}
- */
-export const mergeIn = (object: any, properyChain: string[], newValue: any) =>
-  updateIn(object, properyChain, (currentValue: any) => ({
-    ...currentValue,
-    ...newValue,
-  }));
 
 /**
  * Returns a copy of the object with the array at the specified path mapped with the given function.
@@ -53,169 +45,35 @@ export const mergeIn = (object: any, properyChain: string[], newValue: any) =>
  * @param {Object} mapper
  * @returns {Object}
  */
-export const mapIn = (object: any, properyChain: string[], mapper: (item: any) => any) =>
-  updateIn(object, properyChain, (array: any) => array && array.map(mapper));
+export const mapIn = <T extends object, S extends keyof T, U>(
+  object: T,
+  properyChain: S,
+  mapper: (foo: T[S] extends Array<infer U> ? U : never) => U
+): T =>
+  updateIn(object, properyChain, (array) => (Array.isArray(array) ? array.map(mapper) : array));
 
-/**
- * Returns object's value at the specified path or the default value if it doesn't exist.
- *
- * @param {Object} object
- * @param {Array} propertyChain
- * @param {*} defaultValue
- * @returns {*}
- */
-export const getIn = (
-  object: any,
-  [property, ...propertyChain]: string[],
-  defaultValue: any = null
-): any =>
-  object
-    ? propertyChain.length === 0
-      ? object.hasOwnProperty(property)
-        ? object[property]
-        : defaultValue
-      : getIn(object[property], propertyChain, defaultValue)
-    : defaultValue;
-
-/**
- * Checks if the given value is an object.
- *
- * @param {*} value
- * @returns {boolean}
- */
-const isObject = (obj: any) => obj === Object(obj);
-
-/**
- * When given an object, deeply checks if it doesn't contain null values.
- * Otherwise, checks if the given value is not null.
- *
- * @param {*} value
- * @returns {boolean}
- */
-export const isPresentDeep = (value: any): boolean =>
-  isObject(value) ? Object.values(value).every(isPresentDeep) : value != null;
+// ============================================================================
+// DEPRECATED FUNCTIONS - Use native JS or lodash instead
+// ============================================================================
 
 /**
  * Pluralizes a word according to the given number.
  * When no plural form given, uses singular form with an 's' appended.
- *
- * @param {number} count
- * @param {string} singular
- * @param {string} plural
- * @returns {string}
  */
 export const pluralize = (count: number, singular: string, plural?: string) =>
   `${count} ${count === 1 ? singular : plural || singular + 's'}`;
 
 /**
+ * @deprecated Use inline function or Intl.PluralRules instead
  * Pluralizes a word according to the given number.
  * When no plural form given, uses singular form with an 's' appended.
- *
- * @param {number} count
- * @param {string} singular
- * @param {string} plural
- * @returns {string}
  */
 export const pluralizeWord = (count: number, singular: string, plural?: string) =>
   `${count === 1 ? singular : plural || singular + 's'}`;
 
-/**
- * Returns a new array with items summing up to 1, preserving elements proportionality.
- * When the given array is empty, returns an empty array.
- *
- * @param {Array} arr
- * @returns {Array}
- */
-export const scaleToOne = (arr: number[]) => {
-  if (arr.length === 0) return [];
-  const arrSum = sum(arr);
-  return arr.map((x) => (arrSum !== 0 ? x / arrSum : 1 / arr.length));
-};
-
-/**
- * Applies the given function to the elements and returns the first truthy value of these calls.
- *
- * @param {Array} arr
- * @returns {*}
- */
-export const firstResult = (arr: any[], fn: (x: any) => any) =>
-  arr.reduce((result: any, x: any) => result || fn(x), null);
-
-export const flatMap = (arr: any[], fn: (x: any) => any) =>
-  arr.reduce((xs: any, x: any) => xs.concat(fn(x)), []);
-
-export const flatten = (arr: any[]) => arr.reduce((xs: any, x: any) => xs.concat(x), []);
-
-/**
- *
- * @param {Array} arr - Array of elements
- * @param {*} fn - returns a value to group by
- * @returns
- */
-export const groupBy = (arr: any[], fn: (x: any) => string) =>
-  arr.reduce((obj, x) => updateIn(obj, [fn(x)], (xs: any) => (xs || []).concat(x)), {});
-
-export const zip = (...arrs: any[][]) =>
-  arrs.length === 0 ? [] : arrs[0].map((_, i) => arrs.map((arr) => arr[i]));
-
-export const findLast = (arr: any[], predicate: (x: any) => boolean) =>
-  arr.reduceRight(
-    (found, x) => (found !== undefined ? found : predicate(x) ? x : undefined),
-    undefined
-  );
-
-export const intersection = (xs: any[], ys: any[]) => xs.filter((x) => ys.includes(x));
-
-export const difference = (xs: any[], ys: any[]) => xs.filter((x) => !ys.includes(x));
-
-export const partition = (xs: any[], fn: (x: any) => boolean) => [
-  xs.filter(fn),
-  xs.filter((x) => !fn(x)),
-];
-
-const sortCompare = (x: any, y: any) => (x < y ? -1 : x > y ? 1 : 0);
-
-export const sortBy = (arr: any[], fn: (x: any) => any) =>
-  arr.slice().sort((x, y) => sortCompare(fn(x), fn(y)));
-
-export const sortByArray = (arr: any[], fn: (x: any) => any[]) => {
-  const values = new Map(arr.map((x) => [x, fn(x)])); /* Compute every value once. */
-  return arr
-    .slice()
-    .sort((x, y) =>
-      firstResult(zip(values.get(x) || [], values.get(y) || []), ([a, b]: [any, any]) =>
-        sortCompare(a, b)
-      )
-    );
-};
-
-export const chunk = (arr: any[], size: number): any[][] =>
-  arr.length <= size ? [arr] : [arr.slice(0, size), ...chunk(arr.slice(size), size)];
-
-export const times = (n: number, fn: (index: number) => any) =>
-  Array.from({ length: n }, (_, index) => fn(index));
-
-export const uniq = <T>(arr: T[]): T[] => [...new Set(arr)];
-
-export const pick = (obj: any, keys: string[]) =>
-  keys.reduce((newObj, key) => ({ ...newObj, [key]: obj[key] }), {});
-
-export const omit = <T extends object, K extends keyof T>(obj: T, ...keys: K[]): Omit<T, K> => {
-  const _ = { ...obj };
-  keys.forEach((key) => delete _[key]);
-  return _;
-};
-
-// Date utils
-
-export const inRange = (x: Date, start: Date, end: Date) =>
-  start.getTime() <= x.getTime() && x.getTime() <= end.getTime();
-
-export const addMilliseconds = (isoString: string, milliseconds: number) =>
-  new Date(new Date(isoString).getTime() + milliseconds).toISOString();
-
-export const isoTimeDiff = (first: string, second: string) =>
-  Math.abs(new Date(first).getTime() - new Date(second).getTime());
+// ============================================================================
+// KEEP THESE - Domain-specific helpers
+// ============================================================================
 
 export const shortTime = (isoString: string, timeZone = 'UTC') =>
   new Date(isoString).toLocaleTimeString('en-US', {
@@ -223,12 +81,6 @@ export const shortTime = (isoString: string, timeZone = 'UTC') =>
     hour: 'numeric',
     minute: 'numeric',
   });
-
-// Reduction utils
-
-export const sum = (arr: number[]) => arr.reduce((x, y) => x + y, 0);
-
-// Sorting utils
 
 export const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name);
 

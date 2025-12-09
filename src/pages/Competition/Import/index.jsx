@@ -8,6 +8,7 @@ import {
   balanceStartAndEndTimes,
 } from '../../../lib/importExport';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
+import { useAppSelector } from '../../../store';
 import { partialUpdateWCIF } from '../../../store/actions';
 import CSVPreview from './CSVPreview';
 import {
@@ -41,7 +42,6 @@ const ImportPage = () => {
   const { readString } = usePapaParse();
   const [file, setFile] = useState();
   const [CSVContents, setCSVContents] = useState();
-  const [CSVColumnMap, setCSVColumnMap] = useState();
   const [competitorAssignments, setCompetitorAssignments] = useState();
   const [missingGroupActivities, setMissingGroupActivities] = useState();
   const [assignmentGenerationError, setAssignmentGenerationError] = useState();
@@ -84,8 +84,6 @@ const ImportPage = () => {
                 columnMap[field] = mappedField;
               }
             });
-
-            setCSVColumnMap(columnMap);
 
             setCSVContents({
               ...results,
@@ -148,8 +146,6 @@ const ImportPage = () => {
       })
     );
   };
-
-  console.log(CSVColumnMap);
 
   return (
     <Grid container direction="column">

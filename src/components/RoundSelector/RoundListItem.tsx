@@ -3,7 +3,7 @@ import {
   findGroupActivitiesByRound,
   parseActivityCode,
 } from '../../lib/domain/activities';
-import { pluralize } from '../../lib/utils/utils';
+import { pluralize } from '../../lib/utils';
 import { useAppSelector } from '../../store';
 import {
   selectPersonsAssignedForRound,
@@ -12,7 +12,7 @@ import {
 } from '../../store/selectors';
 import '@cubing/icons';
 import { Collapse, ListItemAvatar, ListItemButton, ListItemText } from '@mui/material';
-import { activityCodeToName, Round } from '@wca/helpers';
+import { activityCodeToName, type Round } from '@wca/helpers';
 import { useEffect, useRef } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 

@@ -1,4 +1,4 @@
-import { parseActivityCode } from '../../lib/domain/activities';
+import { parseActivityCode } from '../../../lib/domain/activities';
 import { ListItemIcon, ListItemText } from '@mui/material';
 
 interface ActivityListItemProps {

@@ -1,6 +1,6 @@
 import Link from '../../../components/MaterialLink';
 import { acceptedRegistration, isOrganizerOrDelegate } from '../../../lib/domain/persons';
-import { pluralize } from '../../../lib/utils/utils';
+import { pluralize } from '../../../lib/utils';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import { useAppSelector } from '../../../store';
 import { togglePersonRole } from '../../../store/actions';

@@ -15,7 +15,7 @@ import {
   mayMakeTimeLimit,
   mayMakeCutoff,
 } from './persons';
-import { Person, Round, Result } from '@wca/helpers';
+import { type Person, type Round, type Result } from '@wca/helpers';
 import { describe, it, expect } from 'vitest';
 
 const createMockPerson = (overrides: Partial<Person> = {}): Person => ({

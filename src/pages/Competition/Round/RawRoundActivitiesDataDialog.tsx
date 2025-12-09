@@ -7,13 +7,13 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogProps,
+  type DialogProps,
   DialogTitle,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
-import { Activity, ActivityCode } from '@wca/helpers';
+import { type Activity, type ActivityCode } from '@wca/helpers';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
@@ -44,7 +44,7 @@ export const RawRoundActivitiesDataDialog = ({
   const roundActivities = useMemo(
     () =>
       rooms?.flatMap((room) => room.activities.filter((ra) => ra.activityCode === activityCode)),
-    [rooms]
+    [rooms, activityCode]
   );
 
   useEffect(() => {
@@ -67,7 +67,6 @@ export const RawRoundActivitiesDataDialog = ({
     const parsedJson = Object.keys(rawRoundActivitiesData).map((id) =>
       JSON.parse(rawRoundActivitiesData[+id])
     ) as Activity[];
-    console.log(45, parsedJson);
     dispatch(updateRoundActivities(parsedJson));
     onClose();
   };

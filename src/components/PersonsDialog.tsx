@@ -7,7 +7,7 @@ import {
   List,
   ListItem,
 } from '@mui/material';
-import { Person } from '@wca/helpers';
+import { type Person } from '@wca/helpers';
 
 const PersonsDialog = ({
   open,

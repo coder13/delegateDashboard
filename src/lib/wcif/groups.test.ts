@@ -1,3 +1,4 @@
+import type { ActivityWithParent, ActivityWithRoom } from '../domain';
 import {
   computeGroupSizes,
   computeGroupSizesForRoundId,
@@ -6,7 +7,7 @@ import {
   nextGroupForActivity,
   previousGroupForActivity,
 } from './groups';
-import { Activity, Competition } from '@wca/helpers';
+import type { Activity, Assignment, Competition, Person } from '@wca/helpers';
 import { describe, expect, it } from 'vitest';
 
 const baseRound: Activity = {
@@ -71,17 +72,21 @@ describe('group helpers', () => {
       { activityId: 2, assignmentCode: 'competitor' },
       { activityId: 2, assignmentCode: 'competitor' },
       { activityId: 3, assignmentCode: 'staff-judge' },
-    ] as any;
+    ] as Assignment[];
 
     const sizeResult = computeGroupSizes(assignments)({ id: 2 } as Activity);
     expect(sizeResult).toEqual({ activity: { id: 2 }, size: 2 });
   });
 
   it('links to the previous and next groups', () => {
-    const parent = { childActivities: [] } as any;
-    const group1 = { activityCode: '333-r1-g1', parent } as any;
-    const group2 = { activityCode: '333-r1-g2', parent } as any;
-    const group3 = { activityCode: '333-r1-g3', parent } as any;
+    // @ts-expect-error - ignoring missing properties for test
+    const parent: ActivityWithRoom = { childActivities: [] };
+    // @ts-expect-error - ignoring missing properties for test
+    const group1: ActivityWithParent = { activityCode: '333-r1-g1', parent };
+    // @ts-expect-error - ignoring missing properties for test
+    const group2: ActivityWithParent = { activityCode: '333-r1-g2', parent };
+    // @ts-expect-error - ignoring missing properties for test
+    const group3: ActivityWithParent = { activityCode: '333-r1-g3', parent };
     parent.childActivities = [group1, group2, group3];
 
     expect(previousGroupForActivity(group1)?.activityCode).toBe('333-r1-g3');
@@ -144,7 +149,7 @@ describe('group helpers', () => {
         { registrantId: 1, assignments: [{ activityId: 2, assignmentCode: 'competitor' }] },
         { registrantId: 2, assignments: [{ activityId: 3, assignmentCode: 'competitor' }] },
         { registrantId: 3, assignments: [{ activityId: 3, assignmentCode: 'staff-judge' }] },
-      ] as any,
+      ] as Person[],
     } as Competition;
 
     const groupSizes = computeGroupSizesForRoundId(wcif, '333-r1');

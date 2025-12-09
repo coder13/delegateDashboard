@@ -58,7 +58,15 @@ export default function DangerEdit() {
     if (scheduleData.changed) {
       dispatch(updateRawObj('schedule', JSON.parse(debouncedScheduleData)));
     }
-  }, [debouncedPersonsData]);
+  }, [
+    debouncedPersonsData,
+    debouncedEventsData,
+    debouncedScheduleData,
+    personsData.changed,
+    eventsData.changed,
+    scheduleData.changed,
+    dispatch,
+  ]);
 
   return (
     <div

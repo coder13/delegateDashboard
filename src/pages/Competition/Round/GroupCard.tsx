@@ -3,6 +3,7 @@ import {
   activityDuration,
   activityDurationString,
   parseActivityCode,
+  type ActivityWithParent,
 } from '../../../lib/domain/activities';
 import { mayMakeCutoff, mayMakeTimeLimit } from '../../../lib/domain/persons';
 import { useAppSelector } from '../../../store';
@@ -21,7 +22,7 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import { Activity, Assignment, formatCentiseconds, Person } from '@wca/helpers';
+import { type Activity, type Assignment, formatCentiseconds, type Person } from '@wca/helpers';
 import React, { useCallback, useMemo, useState } from 'react';
 
 interface PersonWithAssignment extends Person {
@@ -42,12 +43,18 @@ const GroupCard = ({ groupActivity }: GroupCardProps) => {
   const wcif = useAppSelector((state) => state.wcif);
   const personsAssigned = useAppSelector((state) =>
     selectPersonsAssignedToActivitiyId(state, groupActivity.id)
-  ).map(
-    (p): PersonWithAssignment => ({
+  ).map((p): PersonWithAssignment => {
+    const assignedActivity = p.assignments?.find((a) => a.activityId === groupActivity.id);
+
+    if (!assignedActivity) {
+      throw new Error('Person is missing assignment for activity');
+    }
+
+    return {
       ...p,
-      assignedActivity: p.assignments!.find((a) => a.activityId === groupActivity.id)!,
-    })
-  );
+      assignedActivity,
+    };
+  });
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [editGroupDialogOpen, setEditGroupDialogOpen] = useState(false);
@@ -105,12 +112,16 @@ const GroupCard = ({ groupActivity }: GroupCardProps) => {
         ? array
             .sort((a, b) => a.name.localeCompare(b.name))
             .map(({ registrantId, name, assignments }) => {
-              const assignment = assignments!.find((a) => a.activityId === groupActivity.id);
+              const assignment = assignments?.find((a) => a.activityId === groupActivity.id);
+
+              if (!assignment) {
+                return name;
+              }
 
               return (
                 <MaterialLink
                   key={registrantId || name}
-                  to={`/competitions/${wcif!.id}/persons/${registrantId}`}>
+                  to={`/competitions/${wcif?.id}/persons/${registrantId}`}>
                   {`${name}${assignment?.stationNumber ? ` (${assignment.stationNumber})` : ''}`}
                 </MaterialLink>
               );
@@ -136,7 +147,7 @@ const GroupCard = ({ groupActivity }: GroupCardProps) => {
     [competitors, staff]
   );
 
-  const roomName = (groupActivity as any).parent.room.name;
+  const roomName = (groupActivity as ActivityWithParent).parent.room.name;
 
   const personalRecords = useMemo(
     () =>

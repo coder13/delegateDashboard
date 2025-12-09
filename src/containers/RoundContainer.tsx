@@ -11,7 +11,7 @@ import {
 } from '../lib/domain/activities';
 import { mayMakeCutoff, mayMakeTimeLimit } from '../lib/domain/persons';
 import { formatTimeRange } from '../lib/utils/time';
-import { byName, pluralizeWord, renderResultByEventId } from '../lib/utils/utils';
+import { byName, renderResultByEventId } from '../lib/utils/utils';
 import { getExtensionData } from '../lib/wcif/extensions/wcif-extensions';
 import ConfigureAssignmentsDialog from '../pages/Competition/Round/ConfigureAssignmentsDialog';
 import ConfigureGroupCountsDialog from '../pages/Competition/Round/ConfigureGroupCountsDialog';
@@ -26,7 +26,7 @@ import {
   generateAssignments,
   updateRoundChildActivities,
 } from '../store/actions';
-import { AppState } from '../store/initialState';
+import { type AppState } from '../store/initialState';
 import {
   selectPersonsAssignedForRound,
   selectPersonsHavingCompetitorAssignmentsForRound,
@@ -56,6 +56,9 @@ import { type EventId, formatCentiseconds, type Person, type Round } from '@wca/
 import { useConfirm } from 'material-ui-confirm';
 import { useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
+
+const pluralizeWord = (count: number, singular: string, plural?: string) =>
+  count === 1 ? singular : plural || singular + 's';
 
 interface RoundContainerProps {
   roundId: string;

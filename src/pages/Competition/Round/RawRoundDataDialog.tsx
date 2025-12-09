@@ -6,12 +6,12 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogProps,
+  type DialogProps,
   DialogTitle,
   Stack,
   TextField,
 } from '@mui/material';
-import { ActivityCode, parseActivityCode } from '@wca/helpers';
+import { type ActivityCode, parseActivityCode } from '@wca/helpers';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 

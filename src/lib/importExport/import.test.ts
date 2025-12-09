@@ -6,10 +6,10 @@ import {
   findStaffingAssignments,
   generateAssignments,
   generateMissingGroupActivities,
-  ParsedAssignment,
+  type ParsedAssignment,
   upsertCompetitorAssignments,
 } from './import';
-import { Activity, Competition, Person } from '@wca/helpers';
+import { type Activity, type Competition, type Person } from '@wca/helpers';
 import { describe, expect, it } from 'vitest';
 
 const baseRound = (id: number, activityCode = '333-r1'): Activity => ({

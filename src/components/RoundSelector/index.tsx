@@ -11,9 +11,9 @@ import '@cubing/icons';
 import { Collapse, Divider, FormControlLabel, Switch } from '@mui/material';
 import List from '@mui/material/List';
 import ListSubheader from '@mui/material/ListSubheader';
-import { Theme } from '@mui/material/styles';
+import { type Theme } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
-import { Round } from '@wca/helpers';
+import { type Round } from '@wca/helpers';
 import React, { useEffect, useState } from 'react';
 import { TransitionGroup } from 'react-transition-group';
 

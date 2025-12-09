@@ -1,8 +1,8 @@
-import { AppState } from './initialState';
+import { type AppState } from './initialState';
 import reducer from './reducer';
-import { TypedUseSelectorHook, useSelector, useDispatch } from 'react-redux';
-import { createStore, applyMiddleware, compose, AnyAction, Reducer } from 'redux';
-import thunkMiddleware, { ThunkDispatch } from 'redux-thunk';
+import { type TypedUseSelectorHook, useSelector, useDispatch } from 'react-redux';
+import { createStore, applyMiddleware, compose, type AnyAction, type Reducer } from 'redux';
+import thunkMiddleware, { type ThunkDispatch } from 'redux-thunk';
 
 // Redux DevTools Extension - window property may not exist in production
 declare global {

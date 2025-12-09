@@ -1,6 +1,5 @@
 import { createGroupActivity, findAllActivities } from '../../../lib/domain/activities';
 import { formatTimeRange } from '../../../lib/utils/time';
-import { omit } from '../../../lib/utils/utils';
 import { useAppSelector, useAppDispatch } from '../../../store';
 import { updateRoundChildActivities } from '../../../store/actions';
 import {
@@ -26,17 +25,18 @@ import {
 import {
   DataGrid,
   GridActionsCellItem,
-  GridColDef,
-  GridEventListener,
+  type GridColDef,
+  type GridEventListener,
   GridRowEditStopReasons,
-  GridRowId,
-  GridRowModel,
+  type GridRowId,
+  type GridRowModel,
   GridRowModes,
-  GridRowModesModel,
+  type GridRowModesModel,
   GridToolbarContainer,
 } from '@mui/x-data-grid';
-import { Activity, activityCodeToName, parseActivityCode } from '@wca/helpers';
+import { type Activity, activityCodeToName, parseActivityCode } from '@wca/helpers';
 import { formatDuration } from 'date-fns';
+import { omit } from 'lodash';
 import React, { Fragment, useCallback } from 'react';
 
 export const ConfigurableGroupList = ({
@@ -48,7 +48,6 @@ export const ConfigurableGroupList = ({
 }) => {
   const dispatch = useAppDispatch();
   const handleDeleteGroup = (activity: Activity) => {
-    console.log('delete', activity);
     const filteredGroups = groups.filter((g) => g.id !== activity.id);
     const numberOfGroups = filteredGroups.length;
     const startDate = new Date(roundActivity.startTime);
@@ -112,7 +111,6 @@ export const ConfigurableGroupTable = ({
 }) => {
   const dispatch = useAppDispatch();
   const handleDeleteGroup = (activity: Activity) => {
-    console.log('delete', activity);
     const filteredGroups = groups.filter((g) => g.id !== activity.id);
     const numberOfGroups = filteredGroups.length;
     const startDate = new Date(roundActivity.startTime);
@@ -296,7 +294,17 @@ export const ConfigurableGroupTable = ({
   );
 };
 
-export const ConfigureGroupsDialog = ({ open, onClose, activityCode }: any) => {
+export interface ConfigureGroupsDialogProps {
+  open: boolean;
+  onClose: () => void;
+  activityCode: string;
+}
+
+export const ConfigureGroupsDialog = ({
+  open,
+  onClose,
+  activityCode,
+}: ConfigureGroupsDialogProps) => {
   const wcif = useAppSelector((state) => state.wcif);
   const dispatch = useAppDispatch();
 

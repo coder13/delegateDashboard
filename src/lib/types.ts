@@ -1,4 +1,4 @@
-import { Assignment } from '@wca/helpers';
+import { type Assignment } from '@wca/helpers';
 
 export interface InProgressAssignmment {
   registrantId: number;

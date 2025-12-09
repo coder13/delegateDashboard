@@ -1,12 +1,18 @@
 import { getUpcomingManageableCompetitions, getWcif, patchWcif } from '../lib/api';
 import { sortWcifEvents } from '../lib/domain/events';
-import { BulkInProgressAssignments } from '../lib/types';
-import { updateIn, pick } from '../lib/utils/utils';
-import { validateWcif, ValidationError } from '../lib/wcif/validation';
-import { AppState } from './initialState';
-import { Competition, Activity, Assignment, Person, Round } from '@wca/helpers';
+import { type BulkInProgressAssignments } from '../lib/types';
+import { validateWcif, type ValidationError } from '../lib/wcif/validation';
+import { type AppState } from './initialState';
+import {
+  type Competition,
+  type Activity,
+  type Assignment,
+  type Person,
+  type Round,
+} from '@wca/helpers';
 import type { Extension } from '@wca/helpers/lib/models/extension';
-import { Dispatch } from 'redux';
+import { pick } from 'lodash';
+import { type Dispatch } from 'redux';
 
 interface CompetitionSearchResult {
   id: string;
@@ -123,7 +129,10 @@ export const fetchWCIF = (competitionId: string) => async (dispatch: Dispatch) =
   try {
     const wcif = await getWcif(competitionId);
     /* Sort events, so that we don't need to remember about this everywhere. */
-    const updatedWcif = updateIn(wcif, ['events'], sortWcifEvents);
+    const updatedWcif = {
+      ...wcif,
+      events: sortWcifEvents(wcif.events || []),
+    };
 
     dispatch(updateWCIF(updatedWcif));
     dispatch(updateWcifErrors(validateWcif(updatedWcif)));

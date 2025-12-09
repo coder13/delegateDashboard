@@ -1,10 +1,9 @@
 import { findAndReplaceActivity } from '../lib/domain/activities';
-import { mapIn } from '../lib/utils/utils';
-import { ValidationError } from '../lib/wcif';
+import { type ValidationError } from '../lib/wcif';
 import { setExtensionData } from '../lib/wcif/extensions/wcif-extensions';
-import {
+import { ActionType } from './actions';
+import type {
   Action,
-  ActionType,
   AddPersonPayload,
   EditActivityPayload,
   FetchingWcifPayload,
@@ -22,9 +21,18 @@ import {
   UpdateWcifPayload,
   UploadingWcifPayload,
 } from './actions';
-import INITIAL_STATE, { AppState } from './initialState';
+import INITIAL_STATE, { type AppState } from './initialState';
 import * as Reducers from './reducers';
-import { Competition } from '@wca/helpers';
+import type {
+  Activity,
+  Room,
+  Venue,
+  Competition,
+  Person,
+  Assignment,
+  Round,
+  Event,
+} from '@wca/helpers';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ReducerFunction = (state: AppState, action: any) => AppState;
@@ -144,19 +152,24 @@ const reducers: Record<string, ReducerFunction> = {
       ...state,
       needToSave: true,
       changedKeys: new Set([...state.changedKeys, 'schedule']),
-      wcif: mapIn(state.wcif, ['schedule', 'venues'], (venue: any) =>
-        mapIn(venue, ['rooms'], (room: any) =>
-          mapIn(room, ['activities'], (activity: any) => {
-            if (activity.id === action.activityId) {
-              return setExtensionData('activityConfig', activity, {
-                groupCount: action.groupCount,
-              });
-            }
+      wcif: state.wcif && {
+        ...state.wcif,
+        venues: state.wcif.schedule.venues.map((venue: Venue) => ({
+          ...venue,
+          rooms: venue.rooms.map((room: Room) => ({
+            ...room,
+            activities: room.activities.map((activity: Activity) => {
+              if (activity.id === action.activityId) {
+                return setExtensionData('activityConfig', activity, {
+                  groupCount: action.groupCount,
+                });
+              }
 
-            return activity;
-          })
-        )
-      ),
+              return activity;
+            }),
+          })),
+        })),
+      },
     };
   },
   [ActionType.UPDATE_ROUND_CHILD_ACTIVITIES]: (
@@ -168,18 +181,33 @@ const reducers: Record<string, ReducerFunction> = {
       ...state,
       needToSave: true,
       changedKeys: new Set([...state.changedKeys, 'schedule']),
-      wcif: mapIn(state.wcif, ['schedule', 'venues'], (venue) =>
-        mapIn(venue, ['rooms'], (room) =>
-          mapIn(room, ['activities'], (activity) =>
-            activity.id === action.activityId
-              ? {
-                  ...activity,
-                  childActivities: action.childActivities,
-                }
-              : activity
-          )
-        )
-      ),
+      wcif: state.wcif && {
+        ...state.wcif,
+        persons: state.wcif.persons.map((person: Person) => ({
+          ...person,
+          assignments: person.assignments?.map((assignment: Assignment) => {
+            if (
+              assignment.activityId === action.activityId &&
+              action.childActivities.find((ca) => ca.id === assignment.activityId)
+            ) {
+              const childActivity = action.childActivities.find(
+                (ca) => ca.id === assignment.activityId
+              );
+
+              if (!childActivity) {
+                throw new Error('No child activity found for assignment ' + assignment.activityId);
+              }
+
+              return {
+                ...assignment,
+                activityId: childActivity.id,
+              };
+            }
+
+            return assignment;
+          }),
+        })),
+      },
     };
   },
   [ActionType.UPDATE_ROUND_ACTIVITIES]: (state, action: UpdateRoundActivitiesPayload) => {
@@ -188,15 +216,22 @@ const reducers: Record<string, ReducerFunction> = {
       ...state,
       needToSave: true,
       changedKeys: new Set([...state.changedKeys, 'schedule']),
-      wcif: mapIn(state.wcif, ['schedule', 'venues'], (venue: any) =>
-        mapIn(venue, ['rooms'], (room: any) =>
-          mapIn(
-            room,
-            ['activities'],
-            (activity: any) => action.activities.find((a) => a.id === activity.id) || activity
-          )
-        )
-      ),
+      wcif: state.wcif && {
+        ...state.wcif,
+        schedule: {
+          ...state.wcif.schedule,
+          venues: state.wcif.schedule.venues.map((venue) => ({
+            ...venue,
+            rooms: venue.rooms.map((room) => ({
+              ...room,
+              activities: room.activities.map((activity) => {
+                const updatedActivity = action.activities.find((a) => a.id === activity.id);
+                return updatedActivity || activity;
+              }),
+            })),
+          })),
+        },
+      },
     };
   },
   [ActionType.UPDATE_ROUND]: (state, action: UpdateRoundPayload) => {
@@ -205,11 +240,15 @@ const reducers: Record<string, ReducerFunction> = {
       ...state,
       needToSave: true,
       changedKeys: new Set([...state.changedKeys, 'events']),
-      wcif: mapIn(state.wcif, ['events'], (event) =>
-        mapIn(event, ['rounds'], (round) =>
-          round.id === action.roundId ? action.roundData : round
-        )
-      ),
+      wcif: state.wcif && {
+        ...state.wcif,
+        events: state.wcif.events.map((event: Event) => ({
+          ...event,
+          rounds: event.rounds.map((round: Round) =>
+            round.id === action.roundId ? action.roundData : round
+          ),
+        })),
+      },
     };
   },
   [ActionType.RESET_ALL_GROUP_ASSIGNMENTS]: (state) => {
@@ -218,10 +257,13 @@ const reducers: Record<string, ReducerFunction> = {
       ...state,
       needToSave: true,
       changedKeys: new Set([...state.changedKeys, 'persons']),
-      wcif: mapIn(state.wcif, ['persons'], (person: any) => ({
-        ...person,
-        assignments: [],
-      })),
+      wcif: {
+        ...state.wcif,
+        persons: state.wcif.persons.map((person: Person) => ({
+          ...person,
+          assignments: [],
+        })),
+      },
     };
   },
   [ActionType.GENERATE_ASSIGNMENTS]: Reducers.generateAssignments,
@@ -232,19 +274,23 @@ const reducers: Record<string, ReducerFunction> = {
       ...state,
       needToSave: true,
       changedKeys: new Set([...state.changedKeys, 'persons', 'schedule']),
-      wcif: {
+      wcif: state.wcif && {
         ...state.wcif,
-        schedule: mapIn(state.wcif.schedule, ['venues'], (venue: any) =>
-          mapIn(venue, ['rooms'], (room: any) => ({
-            ...room,
-            activities: room.activities.map(findAndReplaceActivity(where, what)),
-          }))
-        ),
+        schedule: {
+          ...state.wcif.schedule,
+          venues: state.wcif.schedule.venues.map((venue) => ({
+            ...venue,
+            rooms: venue.rooms.map((room) => ({
+              ...room,
+              activities: room.activities.map(findAndReplaceActivity(where, what)),
+            })),
+          })),
+        },
         persons:
           what.id !== undefined && where.id !== undefined && what.id !== where.id
-            ? state.wcif.persons.map((person: any) => ({
+            ? state.wcif.persons.map((person: Person) => ({
                 ...person,
-                assignments: person.assignments?.map((assignment: any) => {
+                assignments: person.assignments?.map((assignment: Assignment) => {
                   if (assignment.activityId === where.id) {
                     return {
                       ...assignment,
@@ -266,15 +312,19 @@ const reducers: Record<string, ReducerFunction> = {
       ...state,
       needToSave: true,
       changedKeys: new Set([...state.changedKeys, 'events']),
-      wcif: mapIn(state.wcif, ['events'], (event: any) =>
-        mapIn(event, ['rounds'], (round: any) => {
-          if (round.id === action.activityCode) {
-            return setExtensionData('groups', round, action.extensionData);
-          }
+      wcif: state.wcif && {
+        ...state.wcif,
+        events: state.wcif.events.map((event) => ({
+          ...event,
+          rounds: event.rounds.map((round) => {
+            if (round.id === action.activityCode) {
+              return setExtensionData('roundConfig', round, action.extensionData);
+            }
 
-          return round;
-        })
-      ),
+            return round;
+          }),
+        })),
+      },
     };
   },
   [ActionType.UPDATE_GLOBAL_EXTENSION]: (state, action: UpdateGlobalExtensionPayload) => {

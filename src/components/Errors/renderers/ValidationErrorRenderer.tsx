@@ -1,10 +1,10 @@
 import { activityDurationString } from '../../../lib/domain/activities';
-import { ValidationError } from '../../../lib/wcif/validation';
+import { type ValidationError } from '../../../lib/wcif/validation';
 import { useAppDispatch } from '../../../store';
 import { bulkRemovePersonAssignments } from '../../../store/actions';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Divider, IconButton, List, ListItem, ListItemText } from '@mui/material';
-import { Activity } from '@wca/helpers';
+import { type Activity } from '@wca/helpers';
 
 export interface ValidationErrorRendererProps {
   error: ValidationError;

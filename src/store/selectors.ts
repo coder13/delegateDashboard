@@ -5,8 +5,8 @@ import {
   findRooms,
 } from '../lib/domain/activities';
 import { acceptedRegistrations, personsShouldBeInRound } from '../lib/domain/persons';
-import { AppState } from './initialState';
-import { Activity, Event, Person, Round, Room } from '@wca/helpers';
+import { type AppState } from './initialState';
+import { type Activity, type Event, type Person, type Round, type Room } from '@wca/helpers';
 import { createSelector } from 'reselect';
 
 const selectWcif = (state: AppState) => state.wcif;

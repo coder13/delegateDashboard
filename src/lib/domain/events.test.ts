@@ -1,5 +1,5 @@
 import { eventNameById, shortEventNameById, roundFormatById, sortWcifEvents } from './events';
-import { Event } from '@wca/helpers';
+import { type Event } from '@wca/helpers';
 import { describe, it, expect } from 'vitest';
 
 describe('eventNameById', () => {

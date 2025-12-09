@@ -1,5 +1,5 @@
-import { sortBy } from '../utils';
-import { Event, EventId } from '@wca/helpers';
+import { type Event, type EventId } from '@wca/helpers';
+import { sortBy } from 'lodash';
 
 interface EventInfo {
   id: EventId;

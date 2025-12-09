@@ -1,7 +1,7 @@
-import { Outlet } from 'react-router-dom';
-import { Alert, AlertTitle, Box } from '@mui/material';
 import { useAuth } from '../providers/AuthProvider';
 import Footer from './Footer';
+import { Alert, AlertTitle, Box } from '@mui/material';
+import { Outlet } from 'react-router-dom';
 
 const App = () => {
   const { userFetchError } = useAuth();

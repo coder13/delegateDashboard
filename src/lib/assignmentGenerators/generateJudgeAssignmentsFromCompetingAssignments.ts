@@ -5,9 +5,9 @@ import {
   missingStaffAssignments,
 } from '../domain';
 import { isOrganizerOrDelegate, personsShouldBeInRound } from '../domain';
-import { InProgressAssignmment } from '../types';
+import { type InProgressAssignmment } from '../types';
 import { createGroupAssignment, nextGroupForActivity } from '../wcif';
-import { Competition, Event } from '@wca/helpers';
+import { type Competition, type Event } from '@wca/helpers';
 
 export const generateJudgeAssignmentsFromCompetingAssignments = (
   wcif: Competition,

@@ -1,5 +1,5 @@
-import { Activity } from '@wca/helpers';
-import { Extension } from '@wca/helpers/lib/models/extension';
+import { type Activity } from '@wca/helpers';
+import { type Extension } from '@wca/helpers/lib/models/extension';
 
 const DDNamespace = 'delegateDashboard';
 

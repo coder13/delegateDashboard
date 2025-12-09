@@ -1,4 +1,4 @@
-import { WcifError } from '../../lib/wcif';
+import { type WcifError } from '../../lib/wcif';
 import { ErrorDialog } from './ErrorDialog';
 import { Alert, AlertTitle, Button } from '@mui/material';
 import { Stack } from '@mui/system';

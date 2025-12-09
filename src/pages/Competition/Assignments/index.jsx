@@ -1,7 +1,6 @@
 import EventSelector from '../../../components/EventSelector';
 import { findAllActivities, findRooms } from '../../../lib/domain/activities';
 import { acceptedRegistrations } from '../../../lib/domain/persons';
-import { flatten } from '../../../lib/utils/utils';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import { useAppSelector } from '../../../store';
 import { resetAllGroupAssignments } from '../../../store/actions';
@@ -21,6 +20,7 @@ import {
   Paper,
   Typography,
 } from '@mui/material';
+import { flatten } from 'lodash';
 import { useConfirm } from 'material-ui-confirm';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';

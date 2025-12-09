@@ -1,5 +1,5 @@
-import Link, { LinkProps as MuiLinkProps } from '@mui/material/Link';
-import { Link as RouterLink, LinkProps as RouterLinkProps } from 'react-router-dom';
+import Link, { type LinkProps as MuiLinkProps } from '@mui/material/Link';
+import { Link as RouterLink, type LinkProps as RouterLinkProps } from 'react-router-dom';
 
 type MaterialLinkProps = Omit<MuiLinkProps, 'component'> &
   Omit<RouterLinkProps, 'to'> & {

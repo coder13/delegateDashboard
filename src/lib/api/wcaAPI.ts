@@ -1,13 +1,12 @@
-import { pick } from '../utils';
 import { getLocalStorage } from './localStorage';
-import { CompetitionSearchResult, WcaPerson, WcaUser } from './types';
+import { type CompetitionSearchResult, type WcaPerson, type WcaUser } from './types';
 import { WCA_ORIGIN } from './wca-env';
-import { Competition } from '@wca/helpers';
+import { type Competition } from '@wca/helpers';
+import { pick } from 'lodash';
 
 const wcaAccessToken = (): string | null => getLocalStorage('accessToken');
 
 export const getMe = (): Promise<{ me: WcaUser }> => {
-  console.log('Access Token:', wcaAccessToken());
   return wcaApiFetch(`/me`);
 };
 

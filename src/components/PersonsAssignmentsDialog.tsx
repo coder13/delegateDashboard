@@ -13,8 +13,8 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { Person } from '@wca/helpers';
-import { useCallback } from 'react';
+import { type Person } from '@wca/helpers';
+import { useCallback, useMemo } from 'react';
 
 interface PersonsAssignmentsDialogProps {
   open: boolean;
@@ -31,7 +31,10 @@ const PersonsAssignmentsDialog = ({
 }: PersonsAssignmentsDialogProps) => {
   const wcif = useAppSelector((state) => state.wcif);
 
-  const groupActivities = wcif ? findGroupActivitiesByRound(wcif, roundId) : [];
+  const groupActivities = useMemo(
+    () => (wcif ? findGroupActivitiesByRound(wcif, roundId) : []),
+    [wcif, roundId]
+  );
 
   const personAssignmentsInRound = useCallback(
     (person: Person) =>

@@ -1,9 +1,9 @@
-import { ActivityWithParent, findGroupActivitiesByRound, parseActivityCode } from '../domain';
+import { type ActivityWithParent, findGroupActivitiesByRound, parseActivityCode } from '../domain';
 import { hasStaffAssignment, isStaffAssignment, missingCompetitorAssignments } from '../domain';
 import { personsShouldBeInRound } from '../domain';
-import { InProgressAssignmment } from '../types';
+import { type InProgressAssignmment } from '../types';
 import { createGroupAssignment, previousGroupForActivity } from '../wcif';
-import { Competition, Event, Person } from '@wca/helpers';
+import { type Competition, type Event, type Person } from '@wca/helpers';
 
 /**
  * Determines the soonest group that this person is assigned

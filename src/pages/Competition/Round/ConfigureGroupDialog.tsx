@@ -12,11 +12,17 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { activityCodeToName } from '@wca/helpers';
+import { type Activity, activityCodeToName } from '@wca/helpers';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-const ConfigureGroupDialog = ({ open, onClose, activity }: any) => {
+export interface ConfigureGroupDialogProps {
+  open: boolean;
+  onClose: () => void;
+  activity: Activity;
+}
+
+const ConfigureGroupDialog = ({ open, onClose, activity }: ConfigureGroupDialogProps) => {
   const wcif = useAppSelector((state) => state.wcif);
   const dispatch = useDispatch();
   const { eventId, roundNumber, ...rest } = parseActivityCode(activity.activityCode) as {
@@ -34,7 +40,7 @@ const ConfigureGroupDialog = ({ open, onClose, activity }: any) => {
     if (groupNumber && !isNaN(groupNumber) && groupNumber > 0) {
       setName(activityCodeToName(newActivityCode));
     }
-  }, [setName, groupNumber]);
+  }, [setName, groupNumber, newActivityCode]);
 
   const handleSave = () => {
     if (!id) {

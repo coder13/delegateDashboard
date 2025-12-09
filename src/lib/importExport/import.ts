@@ -8,9 +8,17 @@ import {
   generateNextChildActivityId,
   parseActivityCode,
 } from '../domain';
-import { groupBy, mapIn } from '../utils';
+import { updateIn } from '../utils';
 import { createGroupAssignment } from '../wcif';
-import { Activity, Assignment, Competition, EventId, Person, Room } from '@wca/helpers';
+import {
+  type Activity,
+  type Assignment,
+  type Competition,
+  type EventId,
+  type Person,
+  type Room,
+} from '@wca/helpers';
+import { groupBy } from 'lodash';
 
 export interface CsvRow extends Record<string, string> {
   email: string;
@@ -496,42 +504,52 @@ export const balanceStartAndEndTimes = (
   wcif: Competition,
   missingActivities: { activityCode: string; roomId: number }[]
 ): Competition => {
-  return mapIn(wcif, ['schedule', 'venues'], (venue: any) =>
-    mapIn(venue, ['rooms'], (room: any) => {
-      return mapIn(room, ['activities'], (activity: Activity) => {
-        const groupCount = activity.childActivities.length;
-        if (!groupCount) {
-          return activity;
-        }
-
-        const roundStartDate = new Date(activity.startTime);
-        const roundEndDate = new Date(activity.endTime);
-        const dateDiff = roundEndDate.getTime() - roundStartDate.getTime();
-        const timePerGroup = dateDiff / groupCount;
-
-        return mapIn(activity, ['childActivities'], (childActivity: Activity) => {
-          const missingActivity = missingActivities.find(
-            (missing) =>
-              missing.activityCode === childActivity.activityCode && missing.roomId === room.id
-          );
-
-          if (!missingActivity) {
-            return childActivity;
+  return updateIn(wcif, 'schedule', (schedule) => ({
+    ...schedule,
+    venues: schedule.venues.map((venue) => ({
+      ...venue,
+      rooms: venue.rooms.map((room) => ({
+        ...room,
+        activities: room.activities.map((activity) => {
+          const groupCount = activity.childActivities.length;
+          if (!groupCount) {
+            return activity;
           }
 
-          const groupNumber = parseActivityCode(childActivity.activityCode).groupNumber ?? 1;
+          const roundStartDate = new Date(activity.startTime);
+          const roundEndDate = new Date(activity.endTime);
+          const dateDiff = roundEndDate.getTime() - roundStartDate.getTime();
+          const timePerGroup = dateDiff / groupCount;
 
           return {
-            ...childActivity,
-            startTime: new Date(
-              roundStartDate.getTime() + timePerGroup * (groupNumber - 1)
-            ).toISOString(),
-            endTime: new Date(roundStartDate.getTime() + timePerGroup * groupNumber).toISOString(),
+            ...activity,
+            childActivities: activity.childActivities.map((childActivity) => {
+              const missingActivity = missingActivities.find(
+                (missing) =>
+                  missing.activityCode === childActivity.activityCode && missing.roomId === room.id
+              );
+
+              if (!missingActivity) {
+                return childActivity;
+              }
+
+              const groupNumber = parseActivityCode(childActivity.activityCode).groupNumber ?? 1;
+
+              return {
+                ...childActivity,
+                startTime: new Date(
+                  roundStartDate.getTime() + timePerGroup * (groupNumber - 1)
+                ).toISOString(),
+                endTime: new Date(
+                  roundStartDate.getTime() + timePerGroup * groupNumber
+                ).toISOString(),
+              };
+            }),
           };
-        });
-      });
-    })
-  );
+        }),
+      })),
+    })),
+  }));
 };
 
 export const upsertCompetitorAssignments = (

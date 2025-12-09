@@ -6,10 +6,10 @@ import {
   parseActivityCode,
   personsShouldBeInRound,
 } from '../domain';
-import { InProgressAssignmment } from '../types';
+import { type InProgressAssignmment } from '../types';
 import { byName } from '../utils';
 import { createGroupAssignment } from '../wcif';
-import { Activity, Competition, Event } from '@wca/helpers';
+import { type Activity, type Competition, type Event } from '@wca/helpers';
 
 export const generateGroupAssignmentsForDelegatesAndOrganizers = (
   wcif: Competition,

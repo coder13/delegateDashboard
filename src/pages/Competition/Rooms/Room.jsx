@@ -26,7 +26,7 @@ import { useConfirm } from 'material-ui-confirm';
 import React, { useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   card: ({ room }) => ({
     border: room ? `2px solid ${room.color}` : 'none',
   }),
@@ -39,7 +39,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 // TODO: Redesign this data import flow
-const Room = ({ venue, room }) => {
+const Room = ({ room }) => {
   const classes = useStyles({ room });
   const dispatch = useDispatch();
   const confirm = useConfirm();

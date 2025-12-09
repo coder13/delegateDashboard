@@ -25,23 +25,18 @@ export default function CheckFirstTimerDialog({ open, onClose, person }) {
   const [personSearch, setPersonSearch] = useState(null);
   const [loadingPersonSearch, setLoadingPersonSearch] = useState(false);
 
-  const fetchPersonDetails = useCallback(
-    async (registrantId) => {
-      setLoadingPersonSearch(true);
-      const data = await searchPersons(person.name);
-      setPersonSearch(data);
-      setLoadingPersonSearch(false);
-    },
-    [person]
-  );
+  const fetchPersonDetails = useCallback(async () => {
+    setLoadingPersonSearch(true);
+    const data = await searchPersons(person.name);
+    setPersonSearch(data);
+    setLoadingPersonSearch(false);
+  }, [person]);
 
   useEffect(() => {
     if (person?.registrantId) {
       fetchPersonDetails(person.registrantId);
     }
   }, [fetchPersonDetails, person]);
-
-  console.log(personSearch);
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">

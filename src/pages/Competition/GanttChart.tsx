@@ -1,7 +1,7 @@
 import Assignments from '../../config/assignments';
 import { findRooms } from '../../lib/domain/activities';
 import { acceptedRegistration } from '../../lib/domain/persons';
-import { byName, uniq } from '../../lib/utils/utils';
+import { byName } from '../../lib/utils/utils';
 import { useAppSelector } from '../../store';
 import { EmojiPeople } from '@mui/icons-material';
 import {
@@ -19,14 +19,13 @@ import {
   TableRow,
   Tooltip,
 } from '@mui/material';
+import { uniq } from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export default function GanttChart() {
   const wcif = useAppSelector((state) => state.wcif);
   const persons = wcif?.persons.filter(acceptedRegistration).sort(byName) ?? [];
   const [selectedRounds, setSelectedRounds] = useState<string[]>([]);
-
-  console.log(18, selectedRounds);
 
   const roundActivities =
     wcif &&
@@ -42,7 +41,7 @@ export default function GanttChart() {
       [...new Set(roundActivities?.map((activity) => activity.activityCode) ?? [])].filter(
         (activityCode) => !activityCode.startsWith('other')
       ),
-    [wcif]
+    [wcif, roundActivities]
   );
 
   useEffect(() => {
@@ -58,7 +57,7 @@ export default function GanttChart() {
         );
       })
     );
-  }, [roundActivityCodes]);
+  }, [roundActivityCodes, persons, groups]);
 
   const toggleRound = useCallback(
     (roundId: string) => () => {
@@ -75,7 +74,7 @@ export default function GanttChart() {
     return uniq(
       roundActivities?.flatMap((ra) => ra.childActivities.map((ca) => ca.activityCode)) ?? []
     );
-  }, []);
+  }, [roundActivities]);
 
   return (
     <Grid container>
@@ -155,6 +154,7 @@ export default function GanttChart() {
                       if (!possibleAssignment) {
                         return (
                           <TableCell
+                            key={`${person.registrantId}-${groupActivityCode}-empty`}
                             sx={(theme) => ({
                               width: '1em',
                               height: '1em',

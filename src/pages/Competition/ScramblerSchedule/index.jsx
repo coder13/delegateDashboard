@@ -6,7 +6,6 @@ import {
   parseActivityCode,
   findRooms,
 } from '../../../lib/domain/activities';
-import { flatMap, groupBy } from '../../../lib/utils/utils';
 import { useAppSelector } from '../../../store';
 import {
   FormControl,
@@ -20,6 +19,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
+import { flatMap, groupBy } from 'lodash';
 import { useCallback, useMemo, useState } from 'react';
 
 const DaysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];

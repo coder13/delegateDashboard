@@ -1,5 +1,5 @@
-import { ValidationError } from '../lib/wcif/validation';
-import { Competition } from '@wca/helpers';
+import { type ValidationError } from '../lib/wcif/validation';
+import { type Competition } from '@wca/helpers';
 
 interface CompetitionSearchResult {
   id: string;

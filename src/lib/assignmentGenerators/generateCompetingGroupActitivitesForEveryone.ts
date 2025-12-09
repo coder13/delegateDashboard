@@ -1,10 +1,10 @@
 import { findGroupActivitiesByRound, parseActivityCode } from '../domain';
 import { isCompetitorAssignment, missingCompetitorAssignments } from '../domain';
 import { byPROrResult, personsShouldBeInRound } from '../domain';
-import { InProgressAssignmment } from '../types';
+import { type InProgressAssignmment } from '../types';
 import { byName } from '../utils';
 import { createGroupAssignment } from '../wcif';
-import { Competition, Event } from '@wca/helpers';
+import { type Competition, type Event } from '@wca/helpers';
 
 export const generateCompetingGroupActitivitesForEveryone = (
   wcif: Competition,

@@ -21,7 +21,7 @@ import {
 import { DataGrid, GridToolbarContainer } from '@mui/x-data-grid';
 import { formatCentiseconds } from '@wca/helpers';
 import type { Activity, Assignment, Person, Room } from '@wca/helpers';
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 
 const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }: any) => {
@@ -31,9 +31,12 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }: any) => 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
-  const getActivityFromId = (id: number) => {
-    return wcif ? findActivityById(wcif, id) : null;
-  };
+  const getActivityFromId = useCallback(
+    (id: number) => {
+      return wcif ? findActivityById(wcif, id) : null;
+    },
+    [wcif]
+  );
 
   const personsAssigned = useAppSelector((state) =>
     selectPersonsAssignedForRound(state, activityCode)
@@ -43,96 +46,97 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }: any) => 
 
   const event = wcif?.events.find((e) => e.id === eventId);
 
-  const personsAssignedToCompeteOrJudge = useMemo(
-    () =>
-      personsAssigned
-        .flatMap((p) => {
-          type ExtendedAssignment = Assignment & {
-            activity: Activity;
-            room: Room | undefined;
-            groupNumber: number | undefined;
-          };
+  const personsAssignedToCompeteOrJudge = useMemo(() => {
+    if (!wcif) {
+      return [];
+    }
 
-          const assigments: ExtendedAssignment[] = p
-            .assignments!.map((a) => {
-              const activity = getActivityFromId(a.activityId);
+    return personsAssigned
+      .flatMap((p) => {
+        type ExtendedAssignment = Assignment & {
+          activity: Activity;
+          room: Room | undefined;
+          groupNumber: number | undefined;
+        };
 
-              if (!activity?.activityCode) {
-                return null;
-              }
+        const assigments: ExtendedAssignment[] | undefined = p.assignments
+          ?.map((a) => {
+            const activity = getActivityFromId(a.activityId);
 
-              return {
-                ...a,
-                activity,
-                room: roomByActivity(wcif!, a.activityId),
-                groupNumber: parseActivityCode(activity.activityCode).groupNumber,
-              };
-            })
-            .filter(
-              (a): a is ExtendedAssignment =>
-                a !== null && activityCodeIsChild(activityCode, a.activity.activityCode)
-            );
+            if (!activity?.activityCode) {
+              return null;
+            }
 
-          const competitorAssignment = assigments.find(
-            ({ assignmentCode }) => assignmentCode === 'competitor'
+            return {
+              ...a,
+              activity,
+              room: roomByActivity(wcif, a.activityId),
+              groupNumber: parseActivityCode(activity.activityCode).groupNumber,
+            };
+          })
+          .filter(
+            (a): a is ExtendedAssignment =>
+              a !== null && activityCodeIsChild(activityCode, a.activity.activityCode)
           );
 
-          const judgeAssignment = assigments.find(({ assignmentCode }) =>
-            assignmentCode.includes('judge')
-          );
+        const competitorAssignment = assigments?.find(
+          ({ assignmentCode }) => assignmentCode === 'competitor'
+        );
 
-          type PersonWithAssignment = Person & {
-            assignment: ExtendedAssignment;
-            seedResult?: ReturnType<typeof getSeedResult>;
-          };
+        const judgeAssignment = assigments?.find(({ assignmentCode }) =>
+          assignmentCode.includes('judge')
+        );
 
-          const a: PersonWithAssignment[] = [];
+        type PersonWithAssignment = Person & {
+          assignment: ExtendedAssignment;
+          seedResult?: ReturnType<typeof getSeedResult>;
+        };
 
-          if (competitorAssignment) {
-            a.push({
-              ...p,
-              assignment: competitorAssignment,
-              seedResult: getSeedResult(wcif!, activityCode, p),
-            });
-          }
+        const a: PersonWithAssignment[] = [];
 
-          if (judgeAssignment) {
-            a.push({
-              ...p,
-              assignment: judgeAssignment,
-            });
-          }
+        if (competitorAssignment) {
+          a.push({
+            ...p,
+            assignment: competitorAssignment,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            seedResult: getSeedResult(wcif!, activityCode, p),
+          });
+        }
 
-          return a;
+        if (judgeAssignment) {
+          a.push({
+            ...p,
+            assignment: judgeAssignment,
+          });
+        }
 
-          // return {
-          //   ...p,
-          //   seedResult: getSeedResult(wcif, activityCode, p),
-          //   assignment: p.assignments
-          //     .map((a) => {
-          //       const activity = getActivityFromId(a.activityId);
+        return a;
 
-          //       if (!activity?.activityCode) {
-          //         return a;
-          //       }
-
-          //       return {
-          //         ...a,
-          //         activity,
-          //         room: roomByActivity(wcif, a.activityId),
-          //         groupNumber: parseActivityCode(activity.activityCode).groupNumber,
-          //       };
-          //     })
-          //     .find(
-          //       ({ assignmentCode, activity }) =>
-          //         ['competitor', 'staff-judge'].includes(assignmentCode) &&
-          //         activityCodeIsChild(activityCode, activity.activityCode)
-          //     ),
-          // };
-        })
-        .filter((p) => Boolean(p.assignment)),
-    [activityCode, getActivityFromId, personsAssigned, wcif]
-  ).sort((a, b) => {
+        // return {
+        //   ...p,
+        //   seedResult: getSeedResult(wcif, activityCode, p),
+        //   assignment: p.assignments
+        //     .map((a) => {
+        //       const activity = getActivityFromId(a.activityId);
+        //       if (!activity?.activityCode) {
+        //         return a;
+        //       }
+        //       return {
+        //         ...a,
+        //         activity,
+        //         room: roomByActivity(wcif, a.activityId),
+        //         groupNumber: parseActivityCode(activity.activityCode).groupNumber,
+        //       };
+        //     })
+        //     .find(
+        //       ({ assignmentCode, activity }) =>
+        //         ['competitor', 'staff-judge'].includes(assignmentCode) &&
+        //         activityCodeIsChild(activityCode, activity.activityCode)
+        //     ),
+        // };
+      })
+      .filter((p) => Boolean(p.assignment));
+  }, [activityCode, getActivityFromId, personsAssigned, wcif]).sort((a, b) => {
     if (
       a.assignment.assignmentCode &&
       b.assignment.assignmentCode &&
@@ -148,8 +152,6 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }: any) => 
 
     return byPROrResult(event!, roundNumber ?? 1)(a, b);
   });
-
-  console.log(personsAssignedToCompeteOrJudge);
 
   const rows = personsAssignedToCompeteOrJudge.map(({ assignment, seedResult, ...person }) => ({
     id: person.registrantId,
@@ -278,7 +280,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }: any) => 
           rows={rows}
           columns={columns}
           slots={{ toolbar: Toolbar }}
-          slotProps={{ toolbar: { p: 2 as any } }}
+          slotProps={{ toolbar: { p: 2 } }}
           ref={dataGridRef}
           getRowId={(row) => row.assignmentCode + row.id}
           onCellEditStop={handleCellEditStop}

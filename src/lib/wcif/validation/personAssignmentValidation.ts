@@ -5,14 +5,16 @@ import {
   roomByActivity,
 } from '../../domain';
 import { acceptedRegistrations } from '../../domain';
-import { pluralizeWord } from '../../utils';
 import {
   MISSING_ACTIVITY_FOR_PERSON_ASSIGNMENT,
   PERSON_ASSIGNMENT_SCHEDULE_CONFLICT,
-  ConflictingAssignment,
-  ValidationError,
+  type ConflictingAssignment,
+  type ValidationError,
 } from './types';
 import type { Competition, Person } from '@wca/helpers';
+
+const pluralizeWord = (count: number, singular: string, plural?: string) =>
+  count === 1 ? singular : plural || singular + 's';
 
 /**
  * Validates that all person assignments reference existing activities

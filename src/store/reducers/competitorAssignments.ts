@@ -6,15 +6,15 @@ import {
 import { mapIn, updateIn } from '../../lib/utils/utils';
 import { validateWcif } from '../../lib/wcif/validation';
 import {
-  AddPersonAssignmentsPayload,
-  BulkAddPersonAssignmentsPayload,
-  BulkRemovePersonAssignmentsPayload,
-  BulkUpsertPersonAssignmentsPayload,
-  RemovePersonAssignmentsPayload,
-  UpsertPersonAssignmentsPayload,
+  type AddPersonAssignmentsPayload,
+  type BulkAddPersonAssignmentsPayload,
+  type BulkRemovePersonAssignmentsPayload,
+  type BulkUpsertPersonAssignmentsPayload,
+  type RemovePersonAssignmentsPayload,
+  type UpsertPersonAssignmentsPayload,
 } from '../actions';
-import { AppState } from '../initialState';
-import { Assignment } from '@wca/helpers';
+import { type AppState } from '../initialState';
+import type { Assignment, Person } from '@wca/helpers';
 
 const determineErrors = (state: AppState): AppState => {
   if (!state.wcif) return state;
@@ -32,11 +32,13 @@ export const addPersonAssignments = (
     ...state,
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'persons']),
-    wcif: mapIn(state.wcif, ['persons'], (person) =>
-      person.registrantId === action.registrantId
-        ? addAssignmentsToPerson(person, action.assignments)
-        : person
-    ),
+    wcif: state.wcif
+      ? mapIn(state.wcif, 'persons', (person) =>
+          person.registrantId === action.registrantId
+            ? addAssignmentsToPerson(person, action.assignments)
+            : person
+        )
+      : state.wcif,
   });
 
 export const removePersonAssignments = (
@@ -47,11 +49,13 @@ export const removePersonAssignments = (
     ...state,
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'persons']),
-    wcif: mapIn(state.wcif, ['persons'], (person: any) =>
-      person.registrantId === action.registrantId
-        ? removeAssignmentsFromPerson(person, action.activityId)
-        : person
-    ),
+    wcif:
+      state.wcif &&
+      mapIn(state.wcif, 'persons', (person) =>
+        person.registrantId === action.registrantId
+          ? removeAssignmentsFromPerson(person, action.activityId)
+          : person
+      ),
   });
 
 export const upsertPersonAssignments = (
@@ -62,12 +66,13 @@ export const upsertPersonAssignments = (
     ...state,
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'persons']),
-    wcif: mapIn(state.wcif, ['persons'], (person: any) =>
-      person.registrantId === action.registrantId
-        ? upsertAssignmentsOnPerson(person, action.assignments)
-        : person
-    ),
-    ...state.wcif,
+    wcif:
+      state.wcif &&
+      mapIn(state.wcif, 'persons', (person) =>
+        person.registrantId === action.registrantId
+          ? upsertAssignmentsOnPerson(person, action.assignments)
+          : person
+      ),
   });
 
 /**
@@ -83,19 +88,21 @@ export const bulkAddPersonAssignments = (
     ...state,
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'persons']),
-    wcif: mapIn(state.wcif, ['persons'], (person: any) => {
-      const personAssignments = action.assignments
-        .filter((a) => a.registrantId === person.registrantId)
-        .map((a) => ({
-          ...a.assignment,
-        }));
+    wcif:
+      state.wcif &&
+      mapIn(state.wcif, 'persons', (person) => {
+        const personAssignments = action.assignments
+          .filter((a) => a.registrantId === person.registrantId)
+          .map((a) => ({
+            ...a.assignment,
+          }));
 
-      if (personAssignments.length > 0) {
-        return addAssignmentsToPerson(person, personAssignments);
-      }
+        if (personAssignments.length > 0) {
+          return addAssignmentsToPerson(person, personAssignments);
+        }
 
-      return person;
-    }),
+        return person;
+      }),
   });
 
 /**
@@ -110,39 +117,41 @@ export const bulkRemovePersonAssignments = (
     ...state,
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'persons']),
-    wcif: mapIn(state.wcif, ['persons'], (person: any) => {
-      if (person.assignments?.length === 0 || !person.assignments) {
-        return person;
-      }
+    wcif:
+      state.wcif &&
+      mapIn(state.wcif, 'persons', (person) => {
+        if (person.assignments?.length === 0 || !person.assignments) {
+          return person;
+        }
 
-      // Find arguments to keep assignment: that is, return true
-      return updateIn(person, ['assignments'], (assignments: any) =>
-        assignments.filter((personAssignment: Assignment) => {
-          const filtersApplicable = action.assignments.filter((a) => {
-            const filterByRegistrantId = a.registrantId
-              ? a.registrantId === person.registrantId
-              : null;
-            const filterByActivityId = a.activityId
-              ? a.activityId === personAssignment.activityId
-              : null;
-            const filterByAssignmentCode = a.assignmentCode
-              ? a.assignmentCode === personAssignment.assignmentCode
-              : null;
+        // Find arguments to keep assignment: that is, return true
+        return updateIn(person, 'assignments', (assignments) =>
+          assignments?.filter((personAssignment: Assignment) => {
+            const filtersApplicable = action.assignments.filter((a) => {
+              const filterByRegistrantId = a.registrantId
+                ? a.registrantId === person.registrantId
+                : null;
+              const filterByActivityId = a.activityId
+                ? a.activityId === personAssignment.activityId
+                : null;
+              const filterByAssignmentCode = a.assignmentCode
+                ? a.assignmentCode === personAssignment.assignmentCode
+                : null;
 
-            // return true if any filter is applicable
-            // We are looking for at least 1 false. If so, return no applicable filters
-            return !(
-              filterByRegistrantId === false ||
-              filterByActivityId === false ||
-              filterByAssignmentCode === false
-            ); // note do actually want these values to be "false" and not "null"
-          });
+              // return true if any filter is applicable
+              // We are looking for at least 1 false. If so, return no applicable filters
+              return !(
+                filterByRegistrantId === false ||
+                filterByActivityId === false ||
+                filterByAssignmentCode === false
+              ); // note do actually want these values to be "false" and not "null"
+            });
 
-          // At least 1 filter is filtering them out
-          return filtersApplicable.length === 0;
-        })
-      );
-    }),
+            // At least 1 filter is filtering them out
+            return filtersApplicable.length === 0;
+          })
+        );
+      }),
   });
 
 export const bulkUpsertPersonAssignments = (
@@ -153,18 +162,20 @@ export const bulkUpsertPersonAssignments = (
     ...state,
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'persons']),
-    wcif: mapIn(state.wcif, ['persons'], (person: any) => {
-      const personAssignments = action.assignments
-        .filter((a) => a.registrantId === person.registrantId)
-        .map((a) => ({
-          ...a.assignment,
-          activityId: a.assignment.activityId,
-        }));
+    wcif:
+      state.wcif &&
+      mapIn(state.wcif, 'persons', (person: Person) => {
+        const personAssignments = action.assignments
+          .filter((a) => a.registrantId === person.registrantId)
+          .map((a) => ({
+            ...a.assignment,
+            activityId: a.assignment.activityId,
+          }));
 
-      if (personAssignments.length > 0) {
-        return upsertAssignmentsOnPerson(person, personAssignments);
-      }
+        if (personAssignments.length > 0) {
+          return upsertAssignmentsOnPerson(person, personAssignments);
+        }
 
-      return person;
-    }),
+        return person;
+      }),
   });

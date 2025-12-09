@@ -1,11 +1,12 @@
 // Shows a Table Cell for configuring an assignment
 import { AssignmentsMap } from '../../../config/assignments';
-import { TableCell } from '@mui/material';
+import { type Color, TableCell } from '@mui/material';
 import { styled } from '@mui/system';
+import type { AssignmentCode } from '@wca/helpers';
 import React from 'react';
 
 interface TableButtonProps {
-  assignmentColor?: Record<number, string>;
+  assignmentColor?: Color;
 }
 
 const TableButton = styled(TableCell, {
@@ -31,7 +32,7 @@ const TableButton = styled(TableCell, {
 );
 
 interface TableAssignmentCellProps {
-  value?: string;
+  value?: AssignmentCode;
   onClick: () => void;
 }
 
@@ -53,8 +54,8 @@ function TableAssignmentCell({ value, onClick }: TableAssignmentCellProps) {
         e.bubbles = false;
         onClick();
       }}
-      assignmentColor={value ? (AssignmentsMap as any)[value]?.color : undefined}>
-      {value && (AssignmentsMap as any)[value]?.letter}
+      assignmentColor={value ? AssignmentsMap[value]?.color : undefined}>
+      {value && AssignmentsMap[value]?.letter}
     </TableButton>
   );
 }

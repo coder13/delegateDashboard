@@ -1,16 +1,7 @@
-import CommandPromptDialog from '../components/CommandPromptDialog';
-import { useAuth } from './AuthProvider';
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-
-interface CommandPromptContextProps {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-}
-
-const CommandPromptContext = createContext<CommandPromptContextProps>({
-  open: false,
-  setOpen: () => {},
-});
+import { CommandPromptDialog } from '../../components/CommandPromptDialog/CommandPromptDialog';
+import { useAuth } from '../AuthProvider';
+import { CommandPromptContext } from './CommandPromptContext';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function CommandPromptProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -50,5 +41,3 @@ export default function CommandPromptProvider({ children }: { children: React.Re
     </CommandPromptContext.Provider>
   );
 }
-
-export const useCommandPrompt = () => useContext(CommandPromptContext);

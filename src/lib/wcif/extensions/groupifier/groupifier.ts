@@ -1,4 +1,4 @@
-import { Extension } from '@wca/helpers/lib/models/extension';
+import { type Extension } from '@wca/helpers/lib/models/extension';
 
 const GROUPIFIER_NAMESPACE = 'groupifier';
 const GROUPIFIER_SPEC_URL = 'https://github.com/cubingusa/natshelper/blob/main/specification.md';

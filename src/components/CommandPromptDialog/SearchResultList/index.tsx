@@ -1,12 +1,9 @@
+import type { SearchResultItem } from '../types';
 import SearchResultListItem from './SearchResultListItem';
 import { List } from '@mui/material';
 
 interface SearchResult {
-  item: {
-    id?: string | number;
-    class: 'person' | 'activity' | 'competition';
-    [key: string]: unknown;
-  };
+  item: SearchResultItem;
 }
 
 interface SearchResultListProps {

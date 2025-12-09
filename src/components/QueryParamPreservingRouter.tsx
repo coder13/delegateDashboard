@@ -1,6 +1,6 @@
 import { preserveQueryParams, createLocationObject } from '../lib/utils/history';
-import { BrowserHistory, createBrowserHistory } from 'history';
-import { Action, Location } from 'history';
+import { type BrowserHistory, createBrowserHistory } from 'history';
+import { type Action, type Location } from 'history';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Router } from 'react-router-dom';
 

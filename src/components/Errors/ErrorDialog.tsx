@@ -1,4 +1,4 @@
-import { ValidationError, ValidationErrorType, WcifError } from '../../lib/wcif/validation';
+import { type ValidationError, type ValidationErrorType, type WcifError } from '../../lib/wcif/validation';
 import { ValidationErrorRenderer } from './renderers/ValidationErrorRenderer';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 

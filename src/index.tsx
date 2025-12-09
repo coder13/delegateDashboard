@@ -1,8 +1,8 @@
 import App from './App';
 import './assets/index.css';
 import QueryParamPreservingRouter from './components/QueryParamPreservingRouter';
-import AuthProvider from './providers/AuthProvider';
-import CommandPromptProvider from './providers/CommandPromptProvider';
+import { AuthProvider } from './providers/AuthProvider';
+import CommandPromptProvider from './providers/CommandPromptProvider/CommandPromptProvider';
 import reportWebVitals from './reportWebVitals';
 import { store } from './store';
 import theme from './theme';

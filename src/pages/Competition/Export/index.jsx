@@ -1,13 +1,13 @@
 import { findGroupActivitiesByRound, parseActivityCode } from '../../../lib/domain/activities';
 import { eventNameById, roundFormatById } from '../../../lib/domain/events';
 import { acceptedRegistrations } from '../../../lib/domain/persons';
-import { flatten } from '../../../lib/utils/utils';
 import { getGroupifierActivityConfig } from '../../../lib/wcif/extensions/groupifier';
 import { getExtensionData } from '../../../lib/wcif/extensions/wcif-extensions';
 import { useAppSelector } from '../../../store';
 import { Button, Grid, Typography } from '@mui/material';
 import { formatCentiseconds } from '@wca/helpers';
 import { ExportToCsv } from 'export-to-csv';
+import { flatten } from 'lodash';
 import { useCallback } from 'react';
 
 const advancementConditionToText = ({ type, level }) => {

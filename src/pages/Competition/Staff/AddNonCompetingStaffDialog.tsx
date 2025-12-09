@@ -1,8 +1,8 @@
-import PersonSearchField, { User } from '../../../components/PersonSearchField';
+import PersonSearchField, { type User } from '../../../components/PersonSearchField';
 import RoleSelect from '../../../components/RoleSelect';
 import { addPerson } from '../../../store/actions';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider } from '@mui/material';
-import { Role } from '@wca/helpers/lib/models/role';
+import { type Role } from '@wca/helpers/lib/models/role';
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
@@ -26,7 +26,6 @@ export default function AddNonCompetingStaffDialog({
       return;
     }
 
-    console.log(roles);
     dispatch(
       addPerson({
         name: selectedUser?.name,
@@ -43,7 +42,7 @@ export default function AddNonCompetingStaffDialog({
       })
     );
     onClose();
-  }, [roles, selectedUser]);
+  }, [roles, selectedUser, dispatch, onClose]);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>

@@ -22,8 +22,17 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import { type Activity, type Round } from '@wca/helpers';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
+
+export interface ConfigureGroupCountsDialogProps {
+  open: boolean;
+  onClose: () => void;
+  activityCode: string;
+  round: Round;
+  roundActivities: Activity[];
+}
 
 const ConfigureGroupCountsDialog = ({
   open,
@@ -31,7 +40,7 @@ const ConfigureGroupCountsDialog = ({
   activityCode,
   round,
   roundActivities,
-}: any) => {
+}: ConfigureGroupCountsDialogProps) => {
   const wcif = useAppSelector((state) => state.wcif);
   const rooms = useAppSelector((state) =>
     state.wcif?.schedule.venues
@@ -52,8 +61,6 @@ const ConfigureGroupCountsDialog = ({
 
   const { groups: groupCount = 0 } = groupsData || {};
   const multipleStages = roundActivities.length > 1;
-
-  console.log(37, groupsData);
 
   const reset = () => {
     if (round) {
@@ -80,7 +87,6 @@ const ConfigureGroupCountsDialog = ({
         groups: number | Record<number, number>;
       }
     );
-    console.log(newRoundActivities);
     dispatch(updateRoundActivities(newRoundActivities));
 
     reset();
@@ -99,7 +105,6 @@ const ConfigureGroupCountsDialog = ({
   };
 
   const handleGroupsChangeMultipleRooms = (e: React.ChangeEvent<HTMLInputElement>, room: any) => {
-    console.log(e.target.value, room);
     setGroupsData({
       ...groupsData,
       groups: {

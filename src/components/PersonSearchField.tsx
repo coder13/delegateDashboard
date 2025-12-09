@@ -64,7 +64,7 @@ export default function PersonSearchField({
     if (!open) {
       setOptions([]);
     }
-  }, [open]);
+  }, []);
 
   useEffect(() => {
     let active = true;

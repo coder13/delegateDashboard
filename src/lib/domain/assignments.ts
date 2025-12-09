@@ -1,5 +1,5 @@
-import { InProgressAssignmment } from '../types';
-import { Assignment, Person } from '@wca/helpers';
+import { type InProgressAssignmment } from '../types';
+import { type Assignment, type Person } from '@wca/helpers';
 
 /**
  * So that I don't have to remember the data format
@@ -88,7 +88,7 @@ export const filterAssignments =
               .map(({ assignment }) => assignment)
           : []),
         ...(groupIds && person.assignments
-          ? person.assignments?.filter((a) => groupIds.includes(+a.activityId) && test(a))
+          ? person.assignments.filter((a) => groupIds.includes(+a.activityId) && test(a))
           : []),
       ];
     }

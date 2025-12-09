@@ -5,7 +5,7 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 const useStyles = makeStyles((theme) => ({
   paper: {

@@ -3,7 +3,7 @@
 interface Location {
   pathname?: string;
   search?: string;
-  state?: any;
+  state?: unknown;
 }
 
 interface History {
@@ -20,6 +20,6 @@ export const preserveQueryParams = (history: History, location: Location): Locat
   return location;
 };
 
-export const createLocationObject = (path: string | Location, state?: any): Location => {
+export const createLocationObject = (path: string | Location, state?: unknown): Location => {
   return typeof path === 'string' ? { pathname: path, state } : path;
 };

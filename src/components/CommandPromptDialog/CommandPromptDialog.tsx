@@ -2,7 +2,8 @@ import useDebounce from '../../hooks/useDebounce';
 import { findAllActivities } from '../../lib/domain/activities';
 import { acceptedRegistrations } from '../../lib/domain/persons';
 import { useAppSelector } from '../../store';
-import SearchResultList from '../SearchResultList';
+import SearchResultList from './SearchResultList';
+import { SearchResult } from './types';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
@@ -12,7 +13,7 @@ import {
   InputBase,
   Paper,
 } from '@mui/material';
-import { useTheme, Theme } from '@mui/material/styles';
+import { useTheme, type Theme } from '@mui/material/styles';
 import Fuse from 'fuse.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -23,22 +24,12 @@ const options = {
   includeScore: true,
 };
 
-interface SearchResult {
-  item: {
-    class: 'person' | 'activity' | 'competition';
-    id?: number | string;
-    activityCode?: string;
-    [key: string]: unknown;
-  };
-  score?: number;
-}
-
-interface CommandPromptDialogProps {
+export interface CommandPromptDialogProps {
   open: boolean;
   onClose: () => void;
 }
 
-function CommandPromptDialog({ open, onClose }: CommandPromptDialogProps) {
+export function CommandPromptDialog({ open, onClose }: CommandPromptDialogProps) {
   const wcif = useAppSelector((state) => state.wcif);
   const competitions = useAppSelector((state) => state.competitions);
   const [currentCompetitionId, setCurrentCompetitionId] = useState(wcif?.id);
@@ -205,7 +196,9 @@ function CommandPromptDialog({ open, onClose }: CommandPromptDialogProps) {
               inputRef={(input) => input && input.focus()}
               value={command}
               onChange={(e) => {
-                open && setCommand(e.target.value);
+                if (open) {
+                  setCommand(e.target.value);
+                }
               }}
               placeholder={
                 currentCompetitionId
@@ -249,5 +242,3 @@ function CommandPromptDialog({ open, onClose }: CommandPromptDialogProps) {
     </ClickAwayListener>
   );
 }
-
-export default CommandPromptDialog;

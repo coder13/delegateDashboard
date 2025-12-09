@@ -3,8 +3,8 @@ import Assignments from '../../../config/assignments';
 import {
   parseActivityCode,
   activityCodeToName,
-  ActivityWithParent,
-  ActivityWithRoom,
+  type ActivityWithParent,
+  type ActivityWithRoom,
 } from '../../../lib/domain/activities';
 import { roundFormatById } from '../../../lib/domain/events';
 import {
@@ -15,18 +15,15 @@ import {
   registeredForEvent,
   shouldBeInRound,
 } from '../../../lib/domain/persons';
-import { parseCompetitorAssignment } from '../../../lib/importExport';
-import { flatten } from '../../../lib/utils/utils';
 import {
   getGroupifierActivityConfig,
   setGroupifierActivityConfig,
 } from '../../../lib/wcif/extensions/groupifier';
-import { useAppSelector } from '../../../store';
+import { useAppDispatch, useAppSelector } from '../../../store';
 import {
   upsertPersonAssignments,
   removePersonAssignments,
   bulkRemovePersonAssignments,
-  bulkAddPersonAssignments,
   editActivity,
 } from '../../../store/actions';
 import { selectWcifRooms } from '../../../store/selectors';
@@ -65,18 +62,17 @@ import { grey, red, yellow } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 import { useTheme } from '@mui/system';
 import {
-  Assignment,
-  AttemptResult,
-  EventId,
-  Person,
-  Round,
+  type Activity,
+  type AttemptResult,
+  type EventId,
+  type Person,
+  type Round,
   formatCentiseconds,
 } from '@wca/helpers';
 import clsx from 'clsx';
+import { flatten } from 'lodash';
 import { useConfirm } from 'material-ui-confirm';
-import PapaParse from 'papaparse';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch } from 'react-redux';
 
 const useStyles = makeStyles(() => ({
   firstTimer: {
@@ -159,7 +155,7 @@ const ConfigureAssignmentsDialog = ({
   const classes = useStyles();
   const wcifRooms = useAppSelector((state) => selectWcifRooms(state));
 
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const confirm = useConfirm();
@@ -181,8 +177,8 @@ const ConfigureAssignmentsDialog = ({
   const groupsRooms = useMemo(
     () =>
       wcifRooms.filter((room) =>
-        flatten(room.activities.map((activity: any) => activity.childActivities)).some(
-          (activity: any) => groups.find((g) => g.id === activity.id)
+        flatten(room.activities.map((activity: Activity) => activity.childActivities)).some(
+          (activity: Activity) => groups.find((g) => g.id === activity.id)
         )
       ),
     [groups, wcifRooms]
@@ -302,185 +298,31 @@ const ConfigureAssignmentsDialog = ({
     });
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.ctrlKey) {
-      return;
-    }
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.ctrlKey) {
+        return;
+      }
 
-    const assignment = Assignments.find((a) => a.key === e.key);
-    if (assignment) {
-      setPaintingAssignmentCode(assignment.id);
-    }
+      const assignment = Assignments.find((a) => a.key === e.key);
+      if (assignment) {
+        setPaintingAssignmentCode(assignment.id);
+      }
 
-    if (e.key === 'a') {
-      setShowAllCompetitors(!showAllCompetitors);
-    }
-  };
-
-  const onPaste = useCallback((e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const clipboardData = e.clipboardData;
-    if (!clipboardData) {
-      return;
-    }
-    const data = clipboardData.getData('text');
-    if (!data) {
-      return;
-    }
-
-    const parsedData = PapaParse.parse<{
-      id: string;
-      g?: string;
-      group?: string;
-      h?: string;
-      helping?: string;
-      staff?: string;
-    }>(data, {
-      header: true,
-      skipEmptyLines: true,
-      transformHeader: (header) => header.trim().toLowerCase(),
-      worker: false,
-    });
-
-    if (!parsedData?.data) {
-      return;
-    }
-
-    confirm({
-      title: 'Are you sure',
-      description: 'Are you sure you want to overwrite existing data?',
-    })
-      .then(() => {
-        const competitorGroupSizes: Record<number, number> = {};
-        const staffGroupSizes: Record<string, Record<number, number>> = {};
-
-        const assignments = parsedData.data
-          .filter((row) => {
-            return !!row.id;
-          })
-          .flatMap((row) => {
-            const a: Array<{
-              activityId: number;
-              registrantId: number;
-              assignment: Assignment;
-            }> = [];
-            const competitorGroupData = row.g || row.group;
-
-            if (!competitorGroupData) {
-              return;
-            }
-
-            const parsed = parseCompetitorAssignment(competitorGroupData);
-
-            if (!parsed) {
-              return;
-            }
-
-            const room = parsed.stage
-              ? groupsRooms.find(
-                  (r) => r.name[0].toLowerCase() === (parsed.stage as string).toLowerCase()
-                )
-              : undefined;
-
-            const competitorGroupActivities = groups
-              .filter(
-                (g) =>
-                  parseActivityCode(g.activityCode).groupNumber === parsed.groupNumber &&
-                  (room ? (g.parent as ActivityWithRoom).room.id === room.id : true)
-              )
-              .map((activity) => ({
-                g: activity,
-                score: competitorGroupSizes[activity.id] || 0,
-              }))
-              .sort((a, b) => a.score - b.score);
-
-            const competitorGroupActivity = competitorGroupActivities[0].g;
-
-            competitorGroupSizes[competitorGroupActivity.id] =
-              (competitorGroupSizes[competitorGroupActivity.id] || 0) + 1;
-
-            a.push({
-              activityId: competitorGroupActivity.id,
-              registrantId: +row.id,
-              assignment: {
-                assignmentCode: 'competitor',
-                stationNumber: null,
-                activityId: competitorGroupActivity.id,
-              },
-            });
-
-            const helpingGroup = row.h || row.helping || row.staff;
-            if (helpingGroup) {
-              const assignmentLetter = helpingGroup[0].toLowerCase();
-              const staffGroupNumber = helpingGroup[1];
-              const assignmentCode = Assignments.find(
-                (assignment) => assignment.key.toLowerCase() === assignmentLetter
-              )?.id;
-
-              if (!assignmentCode) {
-                return;
-              }
-
-              const staffGroupActivities = groups
-                .filter((g) => {
-                  const parsedActivityCode = parseActivityCode(g.activityCode);
-                  return parsedActivityCode.groupNumber?.toString() === staffGroupNumber;
-                })
-                .map((g) => ({
-                  g,
-                  score: staffGroupSizes?.[assignmentCode]?.[g.id] || 0,
-                }))
-                .sort((a, b) => a.score - b.score);
-
-              const staffGroupActivity = staffGroupActivities[0].g;
-
-              if (!staffGroupSizes[assignmentCode]) {
-                staffGroupSizes[assignmentCode] = {};
-              }
-
-              staffGroupSizes[assignmentCode][staffGroupActivity.id] =
-                (staffGroupSizes?.[assignmentCode]?.[staffGroupActivity.id] || 0) + 1;
-
-              a.push({
-                activityId: staffGroupActivity.id,
-                registrantId: +row.id,
-                assignment: {
-                  assignmentCode,
-                  stationNumber: null,
-                  activityId: staffGroupActivity.id,
-                },
-              });
-            }
-
-            return a;
-          })
-          .filter(Boolean) as Array<{
-          activityId: number;
-          registrantId: number;
-          assignment: Assignment;
-        }>;
-
-        if (assignments.length === 0) {
-          console.error('No assignments found');
-        }
-
-        dispatch(
-          bulkRemovePersonAssignments(assignments.map((i) => ({ registrantId: i.registrantId })))
-        );
-        dispatch(bulkAddPersonAssignments(assignments));
-      })
-      .catch((e) => {
-        console.error(e);
-      });
-  }, []);
+      if (e.key === 'a') {
+        setShowAllCompetitors(!showAllCompetitors);
+      }
+    },
+    [showAllCompetitors]
+  );
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown as any);
+    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown as any);
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [onPaste]);
+  }, [handleKeyDown]);
 
   // Array of wcaUserIds
   const featuredCompetitors = useMemo(
@@ -508,7 +350,6 @@ const ConfigureAssignmentsDialog = ({
       const activityFeaturedCompetitors =
         getGroupifierActivityConfig(competingActivity)?.featuredCompetitorWcaUserIds || [];
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { parent: _, ...competingActivityWithoutRoom } =
         competingActivity as ActivityWithParent;
 

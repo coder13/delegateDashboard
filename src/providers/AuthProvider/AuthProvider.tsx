@@ -5,9 +5,10 @@ import {
   WCA_ORIGIN,
   WCA_OAUTH_CLIENT_ID,
   getMe,
-} from '../lib/api';
-import { WcaUser } from '../lib/api/types';
-import { useState, useEffect, createContext, useContext, useCallback, useMemo } from 'react';
+} from '../../lib/api';
+import { type WcaUser } from '../../lib/api/types';
+import { AuthContext } from './AuthContext';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 /**
@@ -20,23 +21,7 @@ const oauthRedirectUri = () => {
   return stagingParam ? `${appUri}?staging=true` : appUri;
 };
 
-interface IAuthContext {
-  user: WcaUser | null;
-  signIn: () => void;
-  signOut: () => void;
-  signedIn: () => boolean;
-  userFetchError?: Error;
-}
-
-const AuthContext = createContext<IAuthContext>({
-  user: null,
-  signIn: () => {},
-  signOut: () => {},
-  signedIn: () => false,
-  userFetchError: undefined,
-});
-
-export default function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [accessToken, setAccessToken] = useState(getLocalStorage('accessToken'));
   const [expirationTime, setExpirationTime] = useState(() => {
     const expirationTime = getLocalStorage('expirationTime');
@@ -123,7 +108,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         console.error(err);
         setUserFetchError(err);
       });
-  }, [accessToken]);
+  }, [accessToken, expired, user]);
 
   const signIn = () => {
     const params = new URLSearchParams({
@@ -146,5 +131,3 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
-
-export const useAuth = () => useContext(AuthContext);

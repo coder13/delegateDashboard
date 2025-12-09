@@ -2,7 +2,10 @@ import { Errors } from '../../components/Errors';
 import { DrawerHeader, DrawerLinks, drawerWidth, Header } from '../../components/Header';
 import MaterialLink from '../../components/MaterialLink';
 import { getLocalStorage, setLocalStorage } from '../../lib/api';
-import BreadcrumbsProvider, { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
+import BreadcrumbsProvider, {
+  useBreadcrumbs,
+  type Breadcrumb,
+} from '../../providers/BreadcrumbsProvider';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { fetchWCIF, uploadCurrentWCIFChanges } from '../../store/actions';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -36,7 +39,7 @@ const BreadCrumbsGridItem = () => {
         <MaterialLink to={`/competitions/${competitionId}`}>
           {wcif?.name || competitionId}
         </MaterialLink>
-        {breadcrumbs.map((breadcrumb) =>
+        {breadcrumbs.map((breadcrumb: Breadcrumb) =>
           breadcrumb.to ? (
             <MaterialLink key={breadcrumb.text} to={breadcrumb.to}>
               {breadcrumb.text}

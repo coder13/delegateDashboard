@@ -1,17 +1,14 @@
 import { parseActivityCode } from './activities';
-import { roundFormatById } from './events';
 import {
-  Activity,
-  Assignment,
-  AttemptResult,
-  Competition,
-  Event,
-  EventId,
-  Person,
-  PersonalBest,
-  RankingType,
-  Result,
-  Round,
+  type Activity,
+  type Assignment,
+  type Event,
+  type EventId,
+  type Person,
+  type PersonalBest,
+  type RankingType,
+  type Result,
+  type Round,
 } from '@wca/helpers';
 
 /**
@@ -171,80 +168,6 @@ export const byPROrResult =
     return byResult(previousRound.results)(personA, personB);
   };
 
-export const findResultFromRound = (
-  wcif: Competition,
-  roundActivityCode: string,
-  personId: number
-) => {
-  const { eventId } = parseActivityCode(roundActivityCode);
-
-  const event = wcif.events.find((e) => e.id === eventId);
-  const round = event?.rounds?.find((r) => r.id === roundActivityCode);
-
-  if (!round) {
-    return;
-  }
-
-  const { format, results } = round;
-  const roundFormat = roundFormatById(format);
-  const result = results?.find((r) => r.personId === personId);
-
-  if (!result || !roundFormat) {
-    return;
-  }
-
-  return {
-    average: roundFormat.rankingResult === 'average' ? result.average : undefined,
-    single: result.best,
-  };
-};
-
-/**
- * Returns the seed result for a person based on the round
- * Will be an average if it exists if not a single
- * @param {*} wcif
- * @param {*} activityCode
- * @returns
- */
-export const getSeedResult = (
-  wcif: Competition,
-  activityCode: string,
-  person: Person
-):
-  | {
-      average?: AttemptResult;
-      single?: AttemptResult;
-    }
-  | undefined => {
-  const { eventId, roundNumber } = parseActivityCode(activityCode);
-
-  if (!roundNumber) {
-    return;
-  }
-
-  const roundId = `${eventId}-r${roundNumber}`;
-  const event = wcif.events.find((e) => e.id === eventId);
-  const round = event?.rounds?.find((r) => r.id === roundId);
-  const roundFormat = roundFormatById(round?.format);
-
-  if (!roundFormat) {
-    return;
-  }
-
-  // if activity is round 1, then return pr result
-  if (roundNumber === 1) {
-    const average = findPR(person.personalBests || [], eventId, 'average');
-    const single = findPR(person.personalBests || [], eventId, 'single');
-
-    return {
-      average: average?.best,
-      single: single?.best,
-    };
-  }
-
-  return findResultFromRound(wcif, `${eventId}-r${roundNumber - 1}`, person.registrantId);
-};
-
 export const addAssignmentsToPerson = (person: Person, assignments: Assignment[]) => {
   return {
     ...person,
@@ -313,3 +236,6 @@ export const mayMakeCutoff = (eventId: EventId, round?: Round, persons?: Person[
     }) || []
   );
 };
+
+// Re-export WCIF person functions for backward compatibility
+export { findResultFromRound, getSeedResult, type SeedResult } from '../wcif/persons';

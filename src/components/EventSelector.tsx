@@ -1,6 +1,6 @@
 import { IconButton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { EventId } from '@wca/helpers';
+import { type EventId } from '@wca/helpers';
 import clsx from 'clsx';
 
 const useStyles = makeStyles(() => ({

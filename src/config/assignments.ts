@@ -1,8 +1,9 @@
-import { Color } from '@mui/material';
+import { type Color } from '@mui/material';
 import { blue, deepPurple, green, grey, pink, purple, red, yellow } from '@mui/material/colors';
+import { type AssignmentCode } from '@wca/helpers';
 
 const Assignments: Array<{
-  id: string;
+  id: AssignmentCode;
   name: string;
   color: Color;
   key: string;
@@ -73,12 +74,13 @@ const Assignments: Array<{
   },
 ];
 
-export const AssignmentsMap = Assignments.reduce(
-  (map, assignment) => ({
-    ...map,
-    [assignment.id]: assignment,
-  }),
-  {}
-);
+export const AssignmentsMap: Record<AssignmentCode, (typeof Assignments)[number]> =
+  Assignments.reduce(
+    (map, assignment) => ({
+      ...map,
+      [assignment.id]: assignment,
+    }),
+    {}
+  );
 
 export default Assignments;

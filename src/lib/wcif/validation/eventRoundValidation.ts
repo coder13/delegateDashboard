@@ -1,12 +1,12 @@
 import { activityCodeToName, findAllRoundActivities } from '../../domain';
-import { flatMap } from '../../utils';
 import {
   MISSING_ADVANCEMENT_CONDITION,
   NO_ROUNDS_FOR_ACTIVITY,
   NO_SCHEDULE_ACTIVITIES_FOR_ROUND,
-  ValidationError,
+  type ValidationError,
 } from './types';
 import type { Competition, Event } from '@wca/helpers';
+import { flatMap } from 'lodash';
 
 /**
  * Validates that an event has at least one round configured

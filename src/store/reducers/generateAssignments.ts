@@ -4,9 +4,9 @@ import {
   generateGroupAssignmentsForDelegatesAndOrganizers,
   generateJudgeAssignmentsFromCompetingAssignments,
 } from '../../lib/assignmentGenerators';
-import { InProgressAssignmment } from '../../lib/types';
-import { GenerateAssignmentsPayload } from '../actions';
-import { AppState } from '../initialState';
+import { type InProgressAssignmment } from '../../lib/types';
+import { type GenerateAssignmentsPayload } from '../actions';
+import { type AppState } from '../initialState';
 import { bulkAddPersonAssignments } from './competitorAssignments';
 
 type AssignmentsReducer = ((a: InProgressAssignmment[]) => InProgressAssignmment[])[];
@@ -34,11 +34,8 @@ export function generateAssignments(state: AppState, action: GenerateAssignments
 
   const newAssignments = initializedGenerators.reduce((accumulatingAssignments, generateFn) => {
     const generatedAssignments = generateFn(accumulatingAssignments);
-    console.log('generatedAssignments', generatedAssignments);
     return [...accumulatingAssignments, ...generatedAssignments];
   }, [] as InProgressAssignmment[]);
-
-  console.log('Generating new assignmments', newAssignments);
 
   return bulkAddPersonAssignments(state, {
     assignments: newAssignments,

@@ -22,8 +22,8 @@ describe('wca env helpers', () => {
   });
 
   it('falls back to environment variables when staging is absent', async () => {
-    process.env.VITE_WCA_ORIGIN = 'https://prod.example';
-    process.env.VITE_WCA_OAUTH_CLIENT_ID = 'prod-client';
+    vi.stubEnv('VITE_WCA_ORIGIN', 'https://prod.example');
+    vi.stubEnv('VITE_WCA_OAUTH_CLIENT_ID', 'prod-client');
     setLocationSearch('');
 
     const env = await import('./wca-env');

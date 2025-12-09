@@ -22,8 +22,6 @@ const usePageTracking = (trackingCode: string) => {
   useEffect(() => {
     if (initialized) {
       ReactGA.pageview(location.pathname + location.search);
-    } else {
-      console.log('Would have logged pageview for', location);
     }
   }, [initialized, location]);
 };
