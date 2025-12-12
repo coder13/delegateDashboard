@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "VITE_GIT_SHA=`git rev-parse --short HEAD` GENERATE_SOURCEMAP=false vite",
-    "build": "VITE_GIT_SHA=`git rev-parse --short HEAD` tsc && vite build",
+    "dev": "GENERATE_SOURCEMAP=false vite",
+    "build": "tsc && vite build",
     "lint": "eslint ./",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
