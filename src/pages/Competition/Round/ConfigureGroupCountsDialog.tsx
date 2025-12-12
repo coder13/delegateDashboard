@@ -182,10 +182,10 @@ const ConfigureGroupCountsDialog = ({
                 </FormHelperText>
               </FormControl>
               <Typography>
-                There will be max group sizes of {Math.ceil(roundSize / (groupCountNumber || 1))} (
+                There will be max group sizes of {Math.ceil(roundSize / (groupCountNumber || 1))}
                 {multipleStages && (
                   <>
-                    {Math.ceil(roundSize / roundActivities.length / (groupCountNumber || 1))} per
+                    ({Math.ceil(roundSize / roundActivities.length / (groupCountNumber || 1))} per
                     stage)
                   </>
                 )}
