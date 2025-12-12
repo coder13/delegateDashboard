@@ -123,6 +123,20 @@ const ConfigureGroupCountsDialog = ({
     });
   };
 
+  const handleSpreadGroupsChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setGroupsData({
+      ...groupsData,
+      spreadGroupsAcrossAllStages: e.target.checked,
+      groups: e.target.checked
+        ? 1
+        : {
+            ...(rooms?.reduce((acc, room) => {
+              acc[room.id] = 1;
+              return acc;
+            }, {} as Record<number, number>) || {}),
+          },
+    });
+
   const roundSize = actualCompetitors.length;
   const activityMinutes = roundActivities[0] ? activityDuration(roundActivities[0]) / 60000 : 0;
 
@@ -147,20 +161,7 @@ const ConfigureGroupCountsDialog = ({
               control={
                 <Checkbox
                   checked={spreadGroupsAcrossAllStages}
-                  onChange={(e) =>
-                    setGroupsData({
-                      ...groupsData,
-                      spreadGroupsAcrossAllStages: e.target.checked,
-                      groups: e.target.checked
-                        ? 1
-                        : {
-                            ...(rooms?.reduce((acc, room) => {
-                              acc[room.id] = 1;
-                              return acc;
-                            }, {} as Record<number, number>) || {}),
-                          },
-                    })
-                  }
+                  onChange={handleSpreadGroupsChange}
                 />
               }
               label="Spread Groups Across All Stages"
@@ -181,19 +182,32 @@ const ConfigureGroupCountsDialog = ({
                   These groups will be spread across all stages.
                 </FormHelperText>
               </FormControl>
-              <Typography>
-                There will be max group sizes of {Math.ceil(roundSize / (groupCountNumber || 1))}
-                {multipleStages && (
-                  <>
-                    ({Math.ceil(roundSize / roundActivities.length / (groupCountNumber || 1))} per
-                    stage)
-                  </>
-                )}
-              </Typography>
-              <Typography>
-                There will be an average group duration of{' '}
-                {Math.round(activityMinutes / (groupCountNumber || 1))} Minutes
-              </Typography>
+              <Box sx={{ mt: 2 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <tbody>
+                    <tr>
+                      <td style={{ fontWeight: 500 }}>Max group size:</td>
+                      <td>
+                        {Math.ceil(roundSize / (groupCountNumber || 1))}
+                        {multipleStages && (
+                          <>
+                            {' '}
+                            (
+                            {Math.ceil(
+                              roundSize / roundActivities.length / (groupCountNumber || 1)
+                            )}{' '}
+                            per stage)
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={{ fontWeight: 500 }}>Average group duration:</td>
+                      <td>{Math.round(activityMinutes / (groupCountNumber || 1))} minutes</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </Box>
             </>
           )}
           {!spreadGroupsAcrossAllStages && (
@@ -244,21 +258,37 @@ const ConfigureGroupCountsDialog = ({
                   );
                 })}
               </Stack>
-              <Typography>With a combined total of {cumulativeGroupCount} groups:</Typography>
-              <Typography>
-                There will be max group sizes of{' '}
-                {Math.ceil(roundSize / (cumulativeGroupCount || 1))} (
-                {multipleStages && (
-                  <>
-                    {Math.ceil(roundSize / roundActivities.length / (cumulativeGroupCount || 1))}{' '}
-                    per stage)
-                  </>
-                )}
-              </Typography>
-              <Typography>
-                There will be an average group duration of{' '}
-                {Math.round(activityMinutes / (cumulativeGroupCount || 1))} Minutes
-              </Typography>
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                  Combined total of {cumulativeGroupCount} groups:
+                </Typography>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <tbody>
+                    <tr>
+                      <td style={{ padding: '8px', fontWeight: 500 }}>Max group size:</td>
+                      <td style={{ padding: '8px' }}>
+                        {Math.ceil(roundSize / (cumulativeGroupCount || 1))}
+                        {multipleStages && (
+                          <>
+                            {' '}
+                            (
+                            {Math.ceil(
+                              roundSize / roundActivities.length / (cumulativeGroupCount || 1)
+                            )}{' '}
+                            per stage)
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '8px', fontWeight: 500 }}>Average group duration:</td>
+                      <td style={{ padding: '8px' }}>
+                        {Math.round(activityMinutes / (cumulativeGroupCount || 1))} minutes
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </Box>
             </>
           )}
         </FormGroup>
