@@ -18,6 +18,7 @@ export const generateJudgeAssignmentsFromCompetingAssignments = (
   const round = event.rounds?.find((r) => r.id === roundActivityCode);
   const groups = findGroupActivitiesByRound(wcif, roundActivityCode);
   const groupIds = groups.map((g) => g.id);
+  const hasMultipleGroups = groupIds.length > 1;
 
   if (!event || !round || !roundNumber) {
     console.error('Error finding round', roundActivityCode);
@@ -26,6 +27,10 @@ export const generateJudgeAssignmentsFromCompetingAssignments = (
   }
 
   return (assignments: InProgressAssignmment[]): InProgressAssignmment[] => {
+    if (!hasMultipleGroups) {
+      return [];
+    }
+
     const personFilterContext = { assignments, groupIds };
 
     const persons = personsShouldBeInRound(round)(wcif.persons)

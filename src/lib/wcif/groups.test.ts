@@ -20,7 +20,18 @@ const baseRound: Activity = {
   extensions: [],
 };
 
-const buildWcif = (roundActivities: Activity[]): Competition => ({
+const laterRound: Activity = {
+  ...baseRound,
+  id: 2,
+  name: '333 Round 2',
+  activityCode: '333-r2',
+  startTime: '2024-01-01T11:00:00Z',
+  endTime: '2024-01-01T12:00:00Z',
+};
+
+const buildWcifWithRooms = (
+  rooms: Array<{ id: number; name?: string; activities: Activity[] }>
+): Competition => ({
   schedule: {
     startDate: '2024-01-01',
     numberOfDays: 1,
@@ -33,15 +44,13 @@ const buildWcif = (roundActivities: Activity[]): Competition => ({
         countryIso2: 'US',
         timezone: 'America/New_York',
         extensions: [],
-        rooms: [
-          {
-            id: 10,
-            name: 'Main Room',
-            activities: roundActivities,
-            color: '#000',
-            extensions: [],
-          },
-        ],
+        rooms: rooms.map(({ id, name, activities }) => ({
+          id,
+          name: name ?? `Room ${id}`,
+          activities,
+          color: '#000',
+          extensions: [],
+        })),
       },
     ],
   },
@@ -54,6 +63,9 @@ const buildWcif = (roundActivities: Activity[]): Competition => ({
   competitorLimit: null,
   extensions: [],
 });
+
+const buildWcif = (roundActivities: Activity[]): Competition =>
+  buildWcifWithRooms([{ id: 10, name: 'Main Room', activities: roundActivities }]);
 
 describe('group helpers', () => {
   it('creates group assignments', () => {
@@ -106,6 +118,27 @@ describe('group helpers', () => {
     expect(roundWithGroups.childActivities?.[1].startTime).toBe('2024-01-01T10:30:00.000Z');
   });
 
+  it('splits round durations evenly and increments activity ids across multiple stages', () => {
+    const wcif = buildWcif([baseRound, laterRound]);
+    const [firstRound, secondRound] = createGroupsAcrossStages(wcif, [baseRound, laterRound], {
+      spreadGroupsAcrossAllStages: true,
+      groups: 3,
+    });
+
+    expect(firstRound.childActivities?.map((a) => a.id)).toEqual([3, 4, 5]);
+    expect(secondRound.childActivities?.map((a) => a.id)).toEqual([6, 7, 8]);
+    expect(firstRound.childActivities?.map((a) => a.startTime)).toEqual([
+      '2024-01-01T10:00:00.000Z',
+      '2024-01-01T10:20:00.000Z',
+      '2024-01-01T10:40:00.000Z',
+    ]);
+    expect(firstRound.childActivities?.map((a) => a.endTime)).toEqual([
+      '2024-01-01T10:20:00.000Z',
+      '2024-01-01T10:40:00.000Z',
+      '2024-01-01T11:00:00.000Z',
+    ]);
+  });
+
   it('creates groups per room when not spreading across stages', () => {
     const wcif = buildWcif([baseRound]);
     const [roundWithGroups] = createGroupsAcrossStages(wcif, [baseRound], {
@@ -117,6 +150,39 @@ describe('group helpers', () => {
       '333-r1-g1',
       '333-r1-g2',
     ]);
+  });
+
+  it('uses per-room group counts when not spreading across stages', () => {
+    const roomOneRound = { ...baseRound };
+    const roomTwoRound: Activity = {
+      ...baseRound,
+      id: 3,
+      name: '444 Round 1',
+      activityCode: '444-r1',
+    };
+
+    const wcif = buildWcifWithRooms([
+      { id: 10, activities: [roomOneRound] },
+      { id: 11, activities: [roomTwoRound] },
+    ]);
+
+    const [mainRoomRound, sideRoomRound] = createGroupsAcrossStages(
+      wcif,
+      [roomOneRound, roomTwoRound],
+      {
+        spreadGroupsAcrossAllStages: false,
+        groups: { 10: 1, 11: 3 },
+      }
+    );
+
+    expect(mainRoomRound.childActivities?.map((a) => a.activityCode)).toEqual(['333-r1-g1']);
+    expect(sideRoomRound.childActivities?.map((a) => a.activityCode)).toEqual([
+      '444-r1-g1',
+      '444-r1-g2',
+      '444-r1-g3',
+    ]);
+    expect(sideRoomRound.childActivities?.[1].startTime).toBe('2024-01-01T10:20:00.000Z');
+    expect(sideRoomRound.childActivities?.[2].endTime).toBe('2024-01-01T11:00:00.000Z');
   });
 
   it('calculates group sizes for a round id', () => {
