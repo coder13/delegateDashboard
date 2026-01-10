@@ -15,13 +15,19 @@ const linkStyle = {
   },
 };
 
+const gitSha = import.meta.env.VITE_GIT_SHA;
+
 const links = [
   { text: 'GitHub', url: 'https://github.com/coder13/delegateDashboard' },
   { text: 'Contact', url: 'mailto:choover11@gmail.com' },
-  {
-    text: `${import.meta.env.VITE_GIT_SHA}`,
-    url: `https://github.com/coder13/delegateDashboard/commit/${import.meta.env.VITE_GIT_SHA}`,
-  },
+  ...(gitSha
+    ? [
+        {
+          text: gitSha,
+          url: `https://github.com/coder13/delegateDashboard/commit/${gitSha}`,
+        },
+      ]
+    : []),
 ];
 
 const Footer = () => {
