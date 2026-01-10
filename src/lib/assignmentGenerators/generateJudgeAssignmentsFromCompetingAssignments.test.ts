@@ -34,12 +34,20 @@ const createGroupActivities = (count: number): Activity[] =>
     extensions: [],
   }));
 
-const competitor = (registrantId: number, competingActivityId: number): Person => ({
-  registrantId,
-  name: `Competitor ${registrantId}`,
-  assignments: [{ assignmentCode: 'competitor', activityId: competingActivityId }],
-  registration: { status: 'accepted', eventIds: ['333'] },
-});
+const competitor = (registrantId: number, competingActivityId: number): Person =>
+  ({
+    registrantId,
+    name: `Competitor ${registrantId}`,
+    assignments: [
+      { assignmentCode: 'competitor', activityId: competingActivityId, stationNumber: null },
+    ],
+    registration: {
+      status: 'accepted',
+      eventIds: ['333'],
+      wcaRegistrationId: registrantId,
+      isCompeting: true,
+    },
+  } as unknown as Person);
 
 const buildCompetition = (groupCount: number, persons: Person[]): Competition => {
   const groups = createGroupActivities(groupCount);

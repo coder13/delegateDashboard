@@ -5,7 +5,7 @@ import {
   findAllActivities,
   roomByActivity,
 } from '../../../lib/wcif/activities';
-import { getRoundConfig } from '../../../lib/wcif/extensions';
+import { getRoundConfig } from '../../../lib/wcif/extensions/competitionScheduler';
 import { useAppSelector } from '../../../store';
 import { type AppState } from '../../../store/initialState';
 import {
