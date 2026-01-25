@@ -3,6 +3,7 @@ import { roundFormatById } from '../../../../lib/domain/events';
 import { acceptedRegistration, isOrganizerOrDelegate } from '../../../../lib/domain/persons';
 import TableAssignmentCell from '../TableAssignmentCell';
 import StaffAssignmentsSummary from './StaffAssignmentsSummary';
+import { formatSeedResult } from './formatSeedResult';
 import type { PersonWithSeedResult, Room } from './types';
 import { EmojiPeople } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
@@ -10,7 +11,6 @@ import { Checkbox, TableCell, TableRow, Tooltip } from '@mui/material';
 import { grey, red, yellow } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 import type { EventId, Person, Round } from '@wca/helpers';
-import { formatCentiseconds } from '@wca/helpers';
 import clsx from 'clsx';
 
 const useStyles = makeStyles(() => ({
@@ -64,8 +64,7 @@ const PersonAssignmentRow = ({
   const rankingResult =
     roundFormat === 'average' ? person.seedResult?.average : person.seedResult?.single;
 
-  const formattedRankingResult =
-    rankingResult && !isNaN(rankingResult) && formatCentiseconds(rankingResult);
+  const formattedRankingResult = formatSeedResult(eventId, roundFormat, rankingResult);
 
   const totalStaffAssignments =
     person?.assignments
