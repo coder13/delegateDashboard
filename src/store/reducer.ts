@@ -8,18 +8,15 @@ import type { Extension } from '../lib/wcif/extensions/types';
 import { ActionType } from './actions';
 import type {
   Action,
-  AddPersonPayload,
   EditActivityPayload,
   FetchingWcifPayload,
   PartialUpdateWcifPayload,
   ReduxAction,
   SetCompetitionsPayload,
-  TogglePersonRolePayload,
   UpdateGlobalExtensionPayload,
   UpdateGroupCountPayload,
   UpdateRawObjPayload,
   UpdateRoundActivitiesPayload,
-  UpdateRoundChildActivitiesPayload,
   UpdateRoundExtensionDataPayload,
   UpdateRoundPayload,
   UpdateWcifPayload,
@@ -27,6 +24,7 @@ import type {
 } from './actions';
 import INITIAL_STATE, { type AppState } from './initialState';
 import * as Reducers from './reducers';
+import { updateRoundActivities, updateRoundChildActivities } from './reducers/roundActivities';
 import type {
   Activity,
   Room,
@@ -104,44 +102,8 @@ const reducers: Record<string, ReducerFunction> = {
     };
   },
   // Editing person data
-  [ActionType.TOGGLE_PERSON_ROLE]: (state, action: TogglePersonRolePayload) => {
-    if (!('registrantId' in action && 'roleId' in action) || !state.wcif) return state;
-    return {
-      ...state,
-      needToSave: true,
-      changedKeys: new Set([...state.changedKeys, 'persons']),
-      wcif: {
-        ...state.wcif,
-        persons: state.wcif.persons.map((person) => {
-          if (person.registrantId === action.registrantId) {
-            const currentRoles = person.roles || [];
-            return {
-              ...person,
-              roles:
-                currentRoles.indexOf(action.roleId) > -1
-                  ? currentRoles.filter((role) => role !== action.roleId)
-                  : [...currentRoles, action.roleId],
-            };
-          }
-          return person;
-        }),
-      },
-    };
-  },
-  [ActionType.ADD_PERSON]: (state, action: AddPersonPayload) => {
-    if (!('person' in action) || !state.wcif) return state;
-    const { person } = action;
-
-    return {
-      ...state,
-      needToSave: true,
-      changedKeys: new Set([...state.changedKeys, 'persons']),
-      wcif: {
-        ...state.wcif,
-        persons: [...state.wcif.persons.filter((i) => i.wcaUserId !== person.wcaUserId), person],
-      },
-    };
-  },
+  [ActionType.TOGGLE_PERSON_ROLE]: Reducers.togglePersonRole,
+  [ActionType.ADD_PERSON]: Reducers.addPerson,
   // Editing assignments
   [ActionType.ADD_PERSON_ASSIGNMENTS]: Reducers.addPersonAssignments,
   [ActionType.REMOVE_PERSON_ASSIGNMENTS]: Reducers.removePersonAssignments,
@@ -176,68 +138,8 @@ const reducers: Record<string, ReducerFunction> = {
       },
     };
   },
-  [ActionType.UPDATE_ROUND_CHILD_ACTIVITIES]: (
-    state,
-    action: UpdateRoundChildActivitiesPayload
-  ) => {
-    if (!('activityId' in action && 'childActivities' in action) || !state.wcif) return state;
-    return {
-      ...state,
-      needToSave: true,
-      changedKeys: new Set([...state.changedKeys, 'schedule']),
-      wcif: state.wcif && {
-        ...state.wcif,
-        persons: state.wcif.persons.map((person: Person) => ({
-          ...person,
-          assignments: person.assignments?.map((assignment: Assignment) => {
-            if (
-              assignment.activityId === action.activityId &&
-              action.childActivities.find((ca) => ca.id === assignment.activityId)
-            ) {
-              const childActivity = action.childActivities.find(
-                (ca) => ca.id === assignment.activityId
-              );
-
-              if (!childActivity) {
-                throw new Error('No child activity found for assignment ' + assignment.activityId);
-              }
-
-              return {
-                ...assignment,
-                activityId: childActivity.id,
-              };
-            }
-
-            return assignment;
-          }),
-        })),
-      },
-    };
-  },
-  [ActionType.UPDATE_ROUND_ACTIVITIES]: (state, action: UpdateRoundActivitiesPayload) => {
-    if (!('activities' in action) || !state.wcif) return state;
-    return {
-      ...state,
-      needToSave: true,
-      changedKeys: new Set([...state.changedKeys, 'schedule']),
-      wcif: state.wcif && {
-        ...state.wcif,
-        schedule: {
-          ...state.wcif.schedule,
-          venues: state.wcif.schedule.venues.map((venue) => ({
-            ...venue,
-            rooms: venue.rooms.map((room) => ({
-              ...room,
-              activities: room.activities.map((activity) => {
-                const updatedActivity = action.activities.find((a) => a.id === activity.id);
-                return updatedActivity || activity;
-              }),
-            })),
-          })),
-        },
-      },
-    };
-  },
+  [ActionType.UPDATE_ROUND_CHILD_ACTIVITIES]: updateRoundChildActivities,
+  [ActionType.UPDATE_ROUND_ACTIVITIES]: updateRoundActivities,
   [ActionType.UPDATE_ROUND]: (state, action: UpdateRoundPayload) => {
     if (!('roundId' in action && 'roundData' in action) || !state.wcif) return state;
     return {
