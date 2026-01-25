@@ -1,7 +1,7 @@
 import CompetitionSummary from '../../components/CompetitionSummaryCard';
 import RoundSelectorPage from '../../components/RoundSelector';
 import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
-import { Grid } from '@mui/material';
+import Grid from '@mui/material/GridLegacy';
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 

@@ -26,7 +26,7 @@ import {
   Menu,
   MenuItem,
 } from '@mui/material';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/GridLegacy';
 import Typography from '@mui/material/Typography';
 import { type Activity, formatCentiseconds, parseActivityCode } from '@wca/helpers';
 import { useCallback, useMemo } from 'react';

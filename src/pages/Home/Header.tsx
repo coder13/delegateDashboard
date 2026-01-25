@@ -5,28 +5,10 @@ import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import { type Theme } from '@mui/material/styles';
-import { makeStyles } from '@mui/styles';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const useStyles = makeStyles((theme: Theme) => ({
-  title: {
-    flexGrow: 1,
-  },
-  titleLink: {
-    color: 'inherit',
-    textDecoration: 'none',
-  },
-  titleIcon: {
-    fontSize: '1.5em',
-    verticalAlign: 'middle',
-    marginRight: theme.spacing(1),
-  },
-}));
-
 const Header = () => {
-  const classes = useStyles();
   const { user, signIn, signOut } = useAuth();
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
 
@@ -41,9 +23,9 @@ const Header = () => {
   return (
     <AppBar position="static" color="primary">
       <Toolbar>
-        <Typography variant="h6" className={classes.title}>
-          <Link to="/" className={classes.titleLink}>
-            <PeopleIcon className={classes.titleIcon} />
+        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          <Link to="/" style={{ color: 'inherit', textDecoration: 'none', display: 'inline-flex' }}>
+            <PeopleIcon sx={{ fontSize: '1.5em', verticalAlign: 'middle', mr: 1 }} />
             Delegate Dashboard
           </Link>
         </Typography>

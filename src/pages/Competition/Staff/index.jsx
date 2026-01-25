@@ -23,11 +23,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableFooter from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import grey from '@mui/material/colors/grey';
-import red from '@mui/material/colors/red';
-import yellow from '@mui/material/colors/yellow';
-import { makeStyles } from '@mui/styles';
-import clsx from 'clsx';
+import { grey, red, yellow } from '@mui/material/colors';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -47,45 +43,9 @@ const ROLES = [
   // },
 ];
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-    flexDirection: 'Column',
-    flex: 1,
-    width: '100%',
-  },
-  paper: {
-    width: '100%',
-    padding: theme.spacing(2),
-  },
-  bold: {
-    fontWeight: 600,
-  },
-  firstTimer: {
-    backgroundColor: grey[50],
-    '&$hover:hover': {
-      backgroundColor: grey[100],
-    },
-  },
-  delegateOrOrganizer: {
-    backgroundColor: yellow[50],
-    '&$hover:hover': {
-      backgroundColor: yellow[100],
-    },
-  },
-  disabled: {
-    backgroundColor: red[50],
-    '&$hover:hover': {
-      backgroundColor: red[100],
-    },
-  },
-  hover: {},
-}));
-
 const Staff = () => {
   const wcif = useAppSelector((state) => state.wcif);
   const { competitionId } = useParams();
-  const classes = useStyles();
   const dispatch = useDispatch();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [competitorSort, setCompetitorSort] = useState('name');
@@ -126,6 +86,24 @@ const Staff = () => {
     }
   };
 
+  const boldCellSx = { fontWeight: 600 };
+  const getRowSx = (person) => {
+    const isAccepted = acceptedRegistration(person);
+    if (!isAccepted) {
+      return { backgroundColor: red[50], '&:hover': { backgroundColor: red[100] } };
+    }
+
+    if (isOrganizerOrDelegate(person)) {
+      return { backgroundColor: yellow[50], '&:hover': { backgroundColor: yellow[100] } };
+    }
+
+    if (!person.wcaId) {
+      return { backgroundColor: grey[50], '&:hover': { backgroundColor: grey[100] } };
+    }
+
+    return undefined;
+  };
+
   return (
     <>
       <Box sx={{ display: 'flex' }}>
@@ -149,11 +127,11 @@ const Staff = () => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell className={classes.bold}>Name</TableCell>
-              <TableCell className={classes.bold}>WCA ID</TableCell>
-              <TableCell className={classes.bold}>DOB</TableCell>
+              <TableCell sx={boldCellSx}>Name</TableCell>
+              <TableCell sx={boldCellSx}>WCA ID</TableCell>
+              <TableCell sx={boldCellSx}>DOB</TableCell>
               <TableCell
-                className={classes.bold}
+                sx={boldCellSx}
                 colSpan={ROLES.length + 2}
                 style={{
                   textAlign: 'center',
@@ -162,13 +140,13 @@ const Staff = () => {
               </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className={classes.bold} />
-              <TableCell className={classes.bold} />
-              <TableCell className={classes.bold} />
-              <TableCell className={classes.bold}>Delegate</TableCell>
-              <TableCell className={classes.bold}>Organizer</TableCell>
+              <TableCell sx={boldCellSx} />
+              <TableCell sx={boldCellSx} />
+              <TableCell sx={boldCellSx} />
+              <TableCell sx={boldCellSx}>Delegate</TableCell>
+              <TableCell sx={boldCellSx}>Organizer</TableCell>
               {ROLES.map((role) => (
-                <TableCell key={role.id} className={classes.bold}>
+                <TableCell key={role.id} sx={boldCellSx}>
                   {role.name}
                 </TableCell>
               ))}
@@ -192,18 +170,7 @@ const Staff = () => {
                 return 0;
               })
               .map((person) => (
-                <TableRow
-                  key={person.wcaUserId}
-                  hover
-                  className={clsx({
-                    [classes.firstTimer]: acceptedRegistration(person) && !person.wcaId,
-                    [classes.delegateOrOrganizer]:
-                      acceptedRegistration(person) && isOrganizerOrDelegate(person),
-                    [classes.disabled]: !acceptedRegistration(person),
-                  })}
-                  classes={{
-                    hover: classes.hover,
-                  }}>
+                <TableRow key={person.wcaUserId} hover sx={getRowSx(person)}>
                   <TableCell>
                     <Link to={`/competitions/${competitionId}/persons/${person.registrantId}`}>
                       {person.name}
@@ -240,13 +207,13 @@ const Staff = () => {
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell className={classes.bold}>
+              <TableCell sx={boldCellSx}>
                 {acceptedPersons.filter((person) => person.roles.length > 0).length}
                 {' / '}
                 {wcif.persons.filter(acceptedRegistration).length}
                 {' Staff'}
               </TableCell>
-              <TableCell className={classes.bold}>
+              <TableCell sx={boldCellSx}>
                 {pluralize(
                   wcif.persons.filter(acceptedRegistration).filter((person) => !person.wcaId)
                     .length,
@@ -254,18 +221,18 @@ const Staff = () => {
                 )}
               </TableCell>
               <TableCell />
-              <TableCell className={classes.bold}>
+              <TableCell sx={boldCellSx}>
                 {
                   acceptedPersons.filter((person) =>
                     person.roles.some((r) => r.includes('delegate'))
                   ).length
                 }
               </TableCell>
-              <TableCell className={classes.bold}>
+              <TableCell sx={boldCellSx}>
                 {acceptedPersons.filter((person) => person.roles.includes('organizer')).length}
               </TableCell>
               {ROLES.map((role) => (
-                <TableCell key={role.id} className={classes.bold}>
+                <TableCell key={role.id} sx={boldCellSx}>
                   {
                     wcif.persons
                       .filter(acceptedRegistration)

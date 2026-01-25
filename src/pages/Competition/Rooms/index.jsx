@@ -4,21 +4,11 @@ import Room from './Room';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/styles';
 import { useEffect } from 'react';
 
-const useStyles = makeStyles((theme) => ({
-  paper: {
-    width: '100%',
-    padding: theme.spacing(2),
-  },
-}));
-
 const Venue = ({ venue }) => {
-  const classes = useStyles();
-
   return (
-    <Grid key={venue.id} item component={Paper} className={classes.paper} elevation={4}>
+    <Grid key={venue.id} item component={Paper} elevation={4} sx={{ width: '100%', p: 2 }}>
       <Grid item>
         <Typography variant="h5" paragraph>
           {venue.name}

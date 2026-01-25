@@ -2,7 +2,7 @@ import { findActivityById } from '../../../lib/domain/activities';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import { useAppSelector } from '../../../store';
 import { Card, CardContent, CardHeader } from '@mui/material';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/GridLegacy';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';

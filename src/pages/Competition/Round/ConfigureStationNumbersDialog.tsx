@@ -18,11 +18,35 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { DataGrid, GridToolbarContainer } from '@mui/x-data-grid';
+import { DataGrid, type GridColDef, GridToolbarContainer } from '@mui/x-data-grid';
 import { formatCentiseconds } from '@wca/helpers';
 import type { Activity, Assignment, Person, Room } from '@wca/helpers';
 import { useCallback, useMemo, useRef } from 'react';
 import { useDispatch } from 'react-redux';
+
+type ExtendedAssignment = Assignment & {
+  activity: Activity;
+  room: Room | undefined;
+  groupNumber: number | undefined;
+};
+
+type SeedResult = ReturnType<typeof getSeedResult>;
+
+type PersonWithAssignment = Person & {
+  assignment: ExtendedAssignment;
+  seedResult?: SeedResult;
+};
+
+type StationRow = {
+  id: number;
+  assignment: ExtendedAssignment;
+  assignmentCode: string;
+  name: string;
+  seedResult?: SeedResult;
+  roomName: string;
+  groupNumber: number | undefined;
+  stationNumber: number | null;
+};
 
 const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }: any) => {
   const wcif = useAppSelector((state) => state.wcif);
@@ -53,12 +77,6 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }: any) => 
 
     return personsAssigned
       .flatMap((p) => {
-        type ExtendedAssignment = Assignment & {
-          activity: Activity;
-          room: Room | undefined;
-          groupNumber: number | undefined;
-        };
-
         const assigments: ExtendedAssignment[] | undefined = p.assignments
           ?.map((a) => {
             const activity = getActivityFromId(a.activityId);
@@ -86,11 +104,6 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }: any) => 
         const judgeAssignment = assigments?.find(({ assignmentCode }) =>
           assignmentCode.includes('judge')
         );
-
-        type PersonWithAssignment = Person & {
-          assignment: ExtendedAssignment;
-          seedResult?: ReturnType<typeof getSeedResult>;
-        };
 
         const a: PersonWithAssignment[] = [];
 
@@ -153,18 +166,20 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }: any) => 
     return byPROrResult(event!, roundNumber ?? 1)(a, b);
   });
 
-  const rows = personsAssignedToCompeteOrJudge.map(({ assignment, seedResult, ...person }) => ({
-    id: person.registrantId,
-    assignment: assignment,
-    assignmentCode: assignment.assignmentCode,
-    name: person.name,
-    seedResult,
-    roomName: assignment.room?.name || '',
-    groupNumber: assignment.groupNumber,
-    stationNumber: assignment.stationNumber,
-  }));
+  const rows: StationRow[] = personsAssignedToCompeteOrJudge.map(
+    ({ assignment, seedResult, ...person }) => ({
+      id: person.registrantId,
+      assignment: assignment,
+      assignmentCode: assignment.assignmentCode,
+      name: person.name,
+      seedResult,
+      roomName: assignment.room?.name || '',
+      groupNumber: assignment.groupNumber,
+      stationNumber: assignment.stationNumber,
+    })
+  );
 
-  const columns = [
+  const columns: GridColDef<StationRow>[] = [
     { field: 'name', headerName: 'Name', flex: 1, editable: false },
     { field: 'assignmentCode', headerName: 'AssignmentCode', flex: 1, editable: false },
     { field: 'roomName', headerName: 'Room', flex: 0.75, hideable: true, editable: false },
@@ -174,10 +189,15 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }: any) => 
       headerName: 'Seed',
       flex: 0.5,
       editable: false,
-      valueFormatter: ({ value }: { value: any }) =>
-        value?.rankingResult ? formatCentiseconds(value.rankingResult) : '-',
-      sortComparator: (a: any, b: any) =>
-        (b?.ranking || Number.MAX_SAFE_INTEGER) - (a?.ranking || Number.MAX_SAFE_INTEGER),
+      valueFormatter: (value: SeedResult | undefined) => {
+        const result = value?.average ?? value?.single;
+        return result ? formatCentiseconds(result) : '-';
+      },
+      sortComparator: (a?: SeedResult, b?: SeedResult) => {
+        const aValue = a?.average ?? a?.single ?? Number.MAX_SAFE_INTEGER;
+        const bValue = b?.average ?? b?.single ?? Number.MAX_SAFE_INTEGER;
+        return aValue - bValue;
+      },
       type: 'number',
     },
     {
@@ -252,7 +272,7 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }: any) => 
   };
 
   const Toolbar = () => (
-    <GridToolbarContainer>
+    <GridToolbarContainer sx={{ p: 2 }}>
       <Button
         sx={{ m: 1 }}
         variant="contained"
@@ -280,7 +300,6 @@ const ConfigureStationNumbersDialog = ({ open, onClose, activityCode }: any) => 
           rows={rows}
           columns={columns}
           slots={{ toolbar: Toolbar }}
-          slotProps={{ toolbar: { p: 2 } }}
           ref={dataGridRef}
           getRowId={(row) => row.assignmentCode + row.id}
           onCellEditStop={handleCellEditStop}

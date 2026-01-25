@@ -13,7 +13,7 @@ import { useRoundActions } from './hooks/useRoundActions';
 import { useRoundData } from './hooks/useRoundData';
 import { useRoundDialogs } from './hooks/useRoundDialogs';
 import { Alert, Typography } from '@mui/material';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/GridLegacy';
 import { type Round } from '@wca/helpers';
 import { ConfirmProvider } from 'material-ui-confirm';
 

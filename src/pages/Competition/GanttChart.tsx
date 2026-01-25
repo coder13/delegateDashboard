@@ -10,7 +10,6 @@ import {
   FormControlLabel,
   FormGroup,
   FormLabel,
-  Grid,
   Table,
   TableBody,
   TableCell,
@@ -19,6 +18,7 @@ import {
   TableRow,
   Tooltip,
 } from '@mui/material';
+import Grid from '@mui/material/GridLegacy';
 import { uniq } from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 

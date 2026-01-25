@@ -18,10 +18,10 @@ import {
   Container,
   Divider,
   Drawer,
-  Grid,
   IconButton,
   Typography,
 } from '@mui/material';
+import Grid from '@mui/material/GridLegacy';
 import { styled } from '@mui/system';
 import { useSnackbar } from 'notistack';
 import { useCallback, useEffect, useState } from 'react';

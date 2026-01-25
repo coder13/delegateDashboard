@@ -11,33 +11,9 @@ import '@cubing/icons';
 import { Collapse, Divider, FormControlLabel, Switch } from '@mui/material';
 import List from '@mui/material/List';
 import ListSubheader from '@mui/material/ListSubheader';
-import { type Theme } from '@mui/material/styles';
-import { makeStyles } from '@mui/styles';
 import { type Round } from '@wca/helpers';
 import React, { useEffect, useState } from 'react';
 import { TransitionGroup } from 'react-transition-group';
-
-const useStyles = makeStyles((theme: Theme) => ({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    width: '100%',
-    backgroundColor: theme.palette.background.paper,
-    marginTop: '1em',
-  },
-  paper: {
-    width: '100%',
-    padding: theme.spacing(2),
-  },
-  listSection: {
-    backgroundColor: 'inherit',
-  },
-  ul: {
-    backgroundColor: 'inherit',
-    padding: 0,
-  },
-}));
 
 interface RoundSelectorProps {
   competitionId: string;
@@ -46,7 +22,6 @@ interface RoundSelectorProps {
 
 const RoundSelector = ({ onSelected }: RoundSelectorProps) => {
   const wcif = useAppSelector((state) => state.wcif);
-  const classes = useStyles();
   const { open: commandPromptOpen } = useCommandPrompt();
 
   const [showAllRounds, setShowAllRounds] = useState(false);
@@ -129,7 +104,15 @@ const RoundSelector = ({ onSelected }: RoundSelectorProps) => {
         onChange={(_, checked) => setShowAllRounds(checked)}
       />
       <Divider />
-      <List className={classes.root}>
+      <List
+        sx={(theme) => ({
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          width: '100%',
+          backgroundColor: theme.palette.background.paper,
+          mt: 2,
+        })}>
         {wcif.events.map((event) => {
           const roundsForEvent = rounds.filter((round) => round.id.split('-')[0] === event.id);
 

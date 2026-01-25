@@ -9,30 +9,7 @@ import { EmojiPeople } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import { Checkbox, TableCell, TableRow, Tooltip } from '@mui/material';
 import { grey, red, yellow } from '@mui/material/colors';
-import { makeStyles } from '@mui/styles';
 import type { EventId, Person, Round } from '@wca/helpers';
-import clsx from 'clsx';
-
-const useStyles = makeStyles(() => ({
-  firstTimer: {
-    backgroundColor: grey[50],
-    '&:hover': {
-      backgroundColor: grey[100],
-    },
-  },
-  delegateOrOrganizer: {
-    backgroundColor: yellow[50],
-    '&:hover': {
-      backgroundColor: yellow[100],
-    },
-  },
-  disabled: {
-    backgroundColor: red[50],
-    '&:hover': {
-      backgroundColor: red[100],
-    },
-  },
-}));
 
 interface PersonAssignmentRowProps {
   person: PersonWithSeedResult;
@@ -57,8 +34,6 @@ const PersonAssignmentRow = ({
   handleUpdateAssignmentForPerson,
   toggleFeaturedCompetitor,
 }: PersonAssignmentRowProps) => {
-  const classes = useStyles();
-
   const roundFormat = roundFormatById(round.format)?.rankingResult || 'single';
 
   const rankingResult =
@@ -82,17 +57,17 @@ const PersonAssignmentRow = ({
     Math.floor((Date.now() - new Date(person.birthdate).getTime()) / 1000 / 60 / 60 / 24 / 365.25);
 
   const isFeatured = featuredCompetitors.includes(person.wcaUserId);
+  const isAccepted = acceptedRegistration(person);
+  const rowSx = !isAccepted
+    ? { backgroundColor: red[50], '&:hover': { backgroundColor: red[100] } }
+    : isOrganizerOrDelegate(person)
+    ? { backgroundColor: yellow[50], '&:hover': { backgroundColor: yellow[100] } }
+    : !person.wcaId
+    ? { backgroundColor: grey[50], '&:hover': { backgroundColor: grey[100] } }
+    : undefined;
 
   return (
-    <TableRow
-      hover
-      key={person.registrantId}
-      className={clsx({
-        [classes.firstTimer]: acceptedRegistration(person) && !person.wcaId,
-        [classes.delegateOrOrganizer]:
-          acceptedRegistration(person) && isOrganizerOrDelegate(person),
-        [classes.disabled]: !acceptedRegistration(person),
-      })}>
+    <TableRow hover key={person.registrantId} sx={rowSx}>
       <TableCell>{person?.seedResult?.ranking}</TableCell>
       <TableCell>
         {person.name}{' '}

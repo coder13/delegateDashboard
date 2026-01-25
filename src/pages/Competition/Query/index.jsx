@@ -18,8 +18,7 @@ import {
 } from '@mui/material';
 import { blue, green, red, yellow } from '@mui/material/colors';
 import { Box } from '@mui/system';
-import { TreeItem } from '@mui/x-tree-view/TreeItem';
-import { TreeView } from '@mui/x-tree-view/TreeView';
+import { SimpleTreeView, TreeItem } from '@mui/x-tree-view';
 import jp from 'jsonpath';
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -86,17 +85,33 @@ function renderLabel(key, node) {
   }
 }
 
+const treeItemSlots = {
+  collapseIcon: ExpandMoreIcon,
+  expandIcon: ChevronRightIcon,
+};
+
 const renderTree = (key, node, parent) => {
   // Checks if node is object and *not* null or undefined
   if (node && typeof node === 'object') {
     return (
-      <TreeItem key={parent + key} nodeId={parent + key} label={renderLabel(key, node)}>
+      <TreeItem
+        key={parent + key}
+        nodeId={parent + key}
+        label={renderLabel(key, node)}
+        slots={treeItemSlots}>
         {Object.keys(node).map((_key) => renderTree(_key, node[_key], parent + key))}
       </TreeItem>
     );
   }
 
-  return <TreeItem key={parent + key} nodeId={parent + key} label={renderLabel(key, node)} />;
+  return (
+    <TreeItem
+      key={parent + key}
+      nodeId={parent + key}
+      label={renderLabel(key, node)}
+      slots={treeItemSlots}
+    />
+  );
 };
 const QueryPage = () => {
   const navigate = useNavigate();
@@ -232,14 +247,11 @@ const QueryPage = () => {
       )}
 
       <Box sx={{ display: 'flex', flex: 1, padding: 1 }}>
-        <TreeView
-          style={{}}
-          defaultCollapseIcon={<ExpandMoreIcon />}
-          defaultExpandIcon={<ChevronRightIcon />}>
+        <SimpleTreeView style={{}}>
           {debouncedInput
             ? renderTree(debouncedInput, results.length === 1 ? results[0] : results)
             : renderTree('wcif', wcif)}
-        </TreeView>
+        </SimpleTreeView>
       </Box>
     </Grid>
   );

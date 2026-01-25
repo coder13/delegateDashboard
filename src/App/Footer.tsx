@@ -1,9 +1,9 @@
 import { WCA_ORIGIN } from '../lib/api';
 import { Divider } from '@mui/material';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/GridLegacy';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
-import grey from '@mui/material/colors/grey';
+import { grey } from '@mui/material/colors';
 
 const linkStyle = {
   verticalAlign: 'middle',

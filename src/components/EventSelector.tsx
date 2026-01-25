@@ -1,21 +1,5 @@
 import { IconButton } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import { type EventId } from '@wca/helpers';
-import clsx from 'clsx';
-
-const useStyles = makeStyles(() => ({
-  root: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  iconButtonOn: {
-    color: 'blue',
-  },
-  iconButtonOff: {
-    color: 'gray',
-  },
-}));
 
 interface EventSelectorProps {
   eventIds: EventId[];
@@ -30,17 +14,25 @@ interface EventSelectorProps {
  * Shows a list of events and allows the user to checkbox select the events
  */
 const EventSelector = ({ eventIds, value, onChange, styleOverrides }: EventSelectorProps) => {
-  const classes = useStyles();
   return (
-    <div className={classes.root} style={styleOverrides?.root}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        ...styleOverrides?.root,
+      }}>
       {eventIds.map((eventId) => (
         <IconButton
           key={eventId}
-          className={clsx(
-            `cubing-icon event-${eventId}`,
-            value.indexOf(eventId) > -1 ? classes.iconButtonOn : classes.iconButtonOff
-          )}
+          className={`cubing-icon event-${eventId}`}
           style={{ fontSize: '1.5em' }}
+          sx={(theme) => ({
+            color:
+              value.indexOf(eventId) > -1
+                ? theme.palette.primary.main
+                : theme.palette.text.disabled,
+          })}
           onClick={() => {
             if (value.indexOf(eventId) > -1) {
               // toggle off

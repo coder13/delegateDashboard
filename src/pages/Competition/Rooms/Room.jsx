@@ -21,26 +21,12 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { makeStyles } from '@mui/styles';
 import { useConfirm } from 'material-ui-confirm';
 import React, { useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 
-const useStyles = makeStyles(() => ({
-  card: ({ room }) => ({
-    border: room ? `2px solid ${room.color}` : 'none',
-  }),
-  field: {
-    marginRight: '1em',
-  },
-  bold: {
-    fontWeight: 600,
-  },
-}));
-
 // TODO: Redesign this data import flow
 const Room = ({ room }) => {
-  const classes = useStyles({ room });
   const dispatch = useDispatch();
   const confirm = useConfirm();
   const wcif = useAppSelector((state) => state.wcif);
@@ -107,7 +93,7 @@ const Room = ({ room }) => {
   };
 
   return (
-    <Card className={classes.card}>
+    <Card sx={{ border: room ? `2px solid ${room.color}` : 'none' }}>
       <Menu
         id="room-menu"
         anchorEl={anchorEl}
@@ -138,14 +124,14 @@ const Room = ({ room }) => {
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell className={classes.bold}>Event</TableCell>
-                <TableCell className={classes.bold}>Round</TableCell>
-                <TableCell className={classes.bold}>Estimated Competitors</TableCell>
-                <TableCell className={classes.bold}>Scramble Set Count</TableCell>
-                <TableCell className={classes.bold}>Estimated Groups</TableCell>
-                <TableCell className={classes.bold}>Estimated Max Group Size</TableCell>
-                <TableCell className={classes.bold}>Competitors In Round</TableCell>
-                <TableCell className={classes.bold}>Groups</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Event</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Round</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Estimated Competitors</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Scramble Set Count</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Estimated Groups</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Estimated Max Group Size</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Competitors In Round</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Groups</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

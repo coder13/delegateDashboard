@@ -14,7 +14,6 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Grid,
   IconButton,
   Input,
   List,
@@ -22,6 +21,7 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
+import Grid from '@mui/material/GridLegacy';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -29,7 +29,6 @@ import {
   type GridEventListener,
   GridRowEditStopReasons,
   type GridRowId,
-  type GridRowModel,
   GridRowModes,
   type GridRowModesModel,
   GridToolbarContainer,
@@ -156,19 +155,19 @@ export const ConfigurableGroupTable = ({
     });
   };
 
-  const processRowUpdate = (
-    newRow: GridRowModel<Activity & { duration: number }>
-  ): Activity & { duration: number } => {
+  type GroupRow = Activity & { actions?: string; duration: number; timeFrame?: string };
+
+  const processRowUpdate = (newRow: GroupRow): GroupRow => {
     const newEndTimestamp = new Date(newRow.startTime).getTime() + newRow.duration * 60 * 1000;
     const newEndTime = new Date(newEndTimestamp);
 
-    const newGroup: Activity & { duration: number } = {
+    const newGroup: GroupRow = {
       ...omit(newRow, 'duration'),
       endTime: newEndTime.toISOString(),
       duration: newRow.duration,
     };
     // the following group should have it's start Time increased based on the new endTime
-    const groupAfter = groups.find((g) => g.startTime > newRow.startTime) as Activity;
+    const groupAfter = groups.find((g) => g.startTime > newRow.startTime);
 
     const newGroupAfter = groupAfter
       ? {
@@ -192,7 +191,12 @@ export const ConfigurableGroupTable = ({
     return newGroup;
   };
 
-  const columns: GridColDef<Activity>[] = [
+  const rows: GroupRow[] = groups.map((group) => ({
+    ...group,
+    duration: (new Date(group.endTime).getTime() - new Date(group.startTime).getTime()) / 1000 / 60,
+  }));
+
+  const columns: GridColDef<GroupRow>[] = [
     {
       field: 'name',
       headerName: 'Name',
@@ -204,7 +208,7 @@ export const ConfigurableGroupTable = ({
       headerName: 'Time Frame',
       flex: 1,
       editable: false,
-      valueGetter: ({ row }) => `${formatTimeRange(row.startTime, row.endTime)}`,
+      valueGetter: (_, row) => `${formatTimeRange(row.startTime, row.endTime)}`,
     },
     {
       field: 'duration',
@@ -214,7 +218,7 @@ export const ConfigurableGroupTable = ({
       align: 'left',
       headerAlign: 'left',
       editable: true,
-      valueGetter: ({ row }) => {
+      valueGetter: (_, row) => {
         const duration = new Date(row.endTime).getTime() - new Date(row.startTime).getTime();
         const minutes = duration / 1000 / 60;
         return minutes;
@@ -235,10 +239,8 @@ export const ConfigurableGroupTable = ({
               key={1}
               icon={<SaveIcon />}
               label="Save"
-              sx={{
-                color: 'primary.main',
-              }}
               onClick={handleSaveClick(id)}
+              color="primary"
             />,
             <GridActionsCellItem
               key={2}
@@ -272,24 +274,24 @@ export const ConfigurableGroupTable = ({
     },
   ];
 
+  const Toolbar = () => (
+    <GridToolbarContainer>
+      <Button color="primary" startIcon={<AddIcon />} onClick={addGroup}>
+        Add Group
+      </Button>
+    </GridToolbarContainer>
+  );
+
   return (
     <DataGrid
       autoHeight
-      rows={groups as Array<Activity & { duration: number }>}
-      columns={columns as GridColDef<Activity & { duration: number }>[]}
+      rows={rows}
+      columns={columns}
       editMode="row"
       rowModesModel={rowModesModel}
       onRowEditStop={handleRowEditStop}
       processRowUpdate={processRowUpdate}
-      components={{
-        Toolbar: () => (
-          <GridToolbarContainer>
-            <Button color="primary" startIcon={<AddIcon />} onClick={addGroup}>
-              Add Group
-            </Button>
-          </GridToolbarContainer>
-        ),
-      }}
+      slots={{ toolbar: Toolbar }}
     />
   );
 };
