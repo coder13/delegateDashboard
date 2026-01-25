@@ -4,11 +4,14 @@ import {
   computeGroupSizesForRoundId,
   createGroupAssignment,
   createGroupsAcrossStages,
+  cumulativeGroupCount,
   nextGroupForActivity,
   previousGroupForActivity,
 } from './groups';
 import type { Activity, Assignment, Competition, Person } from '@wca/helpers';
 import { describe, expect, it } from 'vitest';
+import { setGroupsExtensionData } from './extensions/delegateDashboard';
+import { buildRound } from '../../store/reducers/_tests_/helpers';
 
 const baseRound: Activity = {
   id: 1,
@@ -232,5 +235,76 @@ describe('group helpers', () => {
       { activity: expect.objectContaining({ id: 2 }), size: 1 },
       { activity: expect.objectContaining({ id: 3 }), size: 1 },
     ]);
+  });
+
+  it('throws when a round activity has no room', () => {
+    const wcif = buildWcifWithRooms([{ id: 10, activities: [] }]);
+
+    expect(() =>
+      createGroupsAcrossStages(wcif, [baseRound], {
+        spreadGroupsAcrossAllStages: false,
+        groups: { 10: 2 },
+      })
+    ).toThrow('No room found for activity 333 Round 1');
+  });
+
+  it('throws when per-room group counts are missing', () => {
+    const wcif = buildWcif([baseRound]);
+
+    expect(() =>
+      createGroupsAcrossStages(wcif, [baseRound], {
+        spreadGroupsAcrossAllStages: false,
+        groups: { 11: 2 },
+      })
+    ).toThrow('No group count found for room Main Room');
+  });
+
+  it('returns undefined when previous group has no parent children', () => {
+    // @ts-expect-error - ignoring missing properties for test
+    const parent: ActivityWithRoom = { childActivities: undefined };
+    // @ts-expect-error - ignoring missing properties for test
+    const group: ActivityWithParent = { activityCode: '333-r1-g1', parent };
+
+    expect(previousGroupForActivity(group)).toBeUndefined();
+  });
+
+  it('returns undefined when next group has no parent children', () => {
+    // @ts-expect-error - ignoring missing properties for test
+    const parent: ActivityWithRoom = { childActivities: undefined };
+    // @ts-expect-error - ignoring missing properties for test
+    const group: ActivityWithParent = { activityCode: '333-r1-g1', parent };
+
+    expect(nextGroupForActivity(group)).toBeUndefined();
+  });
+
+  it('computes cumulative group counts from round extension data', () => {
+    const roundWithDefault = buildRound({ extensions: [] });
+    const roundWithSpread = setGroupsExtensionData(roundWithDefault, {
+      spreadGroupsAcrossAllStages: true,
+      groups: 4,
+    });
+    const roundWithPerRoom = setGroupsExtensionData(roundWithDefault, {
+      spreadGroupsAcrossAllStages: false,
+      groups: { 10: 2, 11: 3 },
+    });
+
+    expect(cumulativeGroupCount(roundWithDefault)).toBe(1);
+    expect(cumulativeGroupCount(roundWithSpread)).toBe(4);
+    expect(cumulativeGroupCount(roundWithPerRoom)).toBe(5);
+  });
+
+  it('falls back to 1 when group extension shape is unexpected', () => {
+    const baseRoundData = buildRound({ extensions: [] });
+    const roundWithSpreadObject = setGroupsExtensionData(baseRoundData, {
+      spreadGroupsAcrossAllStages: true,
+      groups: { 10: 2 },
+    });
+    const roundWithPerRoomNumber = setGroupsExtensionData(baseRoundData, {
+      spreadGroupsAcrossAllStages: false,
+      groups: 2,
+    });
+
+    expect(cumulativeGroupCount(roundWithSpreadObject)).toBe(1);
+    expect(cumulativeGroupCount(roundWithPerRoomNumber)).toBe(1);
   });
 });

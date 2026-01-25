@@ -1,8 +1,10 @@
 import INITIAL_STATE, { type AppState } from '../../initialState';
-import type { Activity, Competition, Person } from '@wca/helpers';
+import type { Activity, Competition, Event, Person, Round } from '@wca/helpers';
 
 type ActivityOverrides = Partial<Activity>;
 type PersonOverrides = Partial<Person>;
+type RoundOverrides = Partial<Round>;
+type EventOverrides = Partial<Event>;
 
 export const buildActivity = (overrides: ActivityOverrides = {}): Activity => ({
   id: 1,
@@ -81,6 +83,36 @@ export const buildWcif = (activities: Activity[], persons: Person[] = []): Compe
     onTheSpotRegistration: false,
     useWcaRegistration: false,
   },
+});
+
+export const buildRound = (overrides: RoundOverrides = {}): Round => ({
+  id: '333-r1',
+  format: 'a',
+  timeLimit: null,
+  cutoff: null,
+  advancementCondition: null,
+  results: [],
+  scrambleSetCount: 1,
+  extensions: [],
+  ...overrides,
+});
+
+export const buildEvent = (overrides: EventOverrides = {}): Event => ({
+  id: '333',
+  rounds: [buildRound()],
+  competitorLimit: null,
+  qualification: null,
+  extensions: [],
+  ...overrides,
+});
+
+export const buildWcifWithEvents = (
+  activities: Activity[],
+  events: Event[],
+  persons: Person[] = []
+): Competition => ({
+  ...buildWcif(activities, persons),
+  events,
 });
 
 export const buildState = (wcif: Competition | null): AppState => ({

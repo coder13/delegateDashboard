@@ -1,7 +1,7 @@
 import { updateRoundActivities, updateRoundChildActivities } from './../roundActivities';
-import type { Activity, Assignment, Person } from '@wca/helpers';
+import type { Assignment } from '@wca/helpers';
 import { describe, expect, it } from 'vitest';
-import { buildState, buildWcif } from './helpers';
+import { buildActivity, buildPerson, buildState, buildWcif } from './helpers';
 
 describe('roundActivities reducers', () => {
   it('updateRoundActivities returns original state when wcif is missing', () => {
@@ -12,28 +12,9 @@ describe('roundActivities reducers', () => {
   });
 
   it('updateRoundActivities updates matching activities and marks schedule as changed', () => {
-    const activityOne: Activity = {
-      id: 1,
-      name: 'Round 1',
-      activityCode: '333-r1',
-      startTime: '2024-01-01T10:00:00Z',
-      endTime: '2024-01-01T11:00:00Z',
-      childActivities: [],
-      extensions: [],
-    };
-    const activityTwo: Activity = {
-      id: 2,
-      name: 'Round 2',
-      activityCode: '333-r2',
-      startTime: '2024-01-01T11:00:00Z',
-      endTime: '2024-01-01T12:00:00Z',
-      childActivities: [],
-      extensions: [],
-    };
-    const updatedActivityTwo: Activity = {
-      ...activityTwo,
-      name: 'Round 2 Updated',
-    };
+    const activityOne = buildActivity({ id: 1, name: 'Round 1', activityCode: '333-r1' });
+    const activityTwo = buildActivity({ id: 2, name: 'Round 2', activityCode: '333-r2' });
+    const updatedActivityTwo = { ...activityTwo, name: 'Round 2 Updated' };
     const state = buildState(buildWcif([activityOne, activityTwo]));
 
     const nextState = updateRoundActivities(state, { activities: [updatedActivityTwo] });
@@ -46,38 +27,16 @@ describe('roundActivities reducers', () => {
   });
 
   it('updateRoundChildActivities updates child activities and keeps other assignments intact', () => {
-    const parentActivity: Activity = {
-      id: 10,
-      name: 'Round 1',
-      activityCode: '333-r1',
-      startTime: '2024-01-01T10:00:00Z',
-      endTime: '2024-01-01T11:00:00Z',
-      childActivities: [],
-      extensions: [],
-    };
-    const childActivity: Activity = {
-      id: 99,
-      name: 'Group 1',
-      activityCode: '333-r1-g1',
-      startTime: '2024-01-01T10:00:00Z',
-      endTime: '2024-01-01T10:30:00Z',
-      childActivities: [],
-      extensions: [],
-    };
+    const parentActivity = buildActivity({ id: 10, name: 'Round 1', activityCode: '333-r1' });
+    const childActivity = buildActivity({ id: 99, name: 'Group 1', activityCode: '333-r1-g1' });
     const unrelatedAssignment: Assignment = {
       activityId: 42,
       assignmentCode: 'competitor',
       stationNumber: null,
     };
-    const person: Person = {
-      name: 'Test Person',
+    const person = buildPerson({
       registrantId: 1,
-      wcaUserId: 1,
-      wcaId: '2024TEST01',
-      countryIso2: 'US',
-      gender: 'm',
-      birthdate: '2000-01-01',
-      email: 'test@example.com',
+      assignments: [unrelatedAssignment],
       registration: {
         status: 'accepted',
         eventIds: [],
@@ -85,12 +44,7 @@ describe('roundActivities reducers', () => {
         comments: undefined,
         wcaRegistrationId: 1,
       },
-      assignments: [unrelatedAssignment],
-      roles: [],
-      personalBests: [],
-      extensions: [],
-      avatar: null,
-    };
+    });
     const state = buildState(buildWcif([parentActivity], [person]));
 
     const nextState = updateRoundChildActivities(state, {
@@ -107,38 +61,16 @@ describe('roundActivities reducers', () => {
   });
 
   it('updateRoundChildActivities creates new assignment object when assignment matches child id', () => {
-    const parentActivity: Activity = {
-      id: 77,
-      name: 'Round 1',
-      activityCode: '333-r1',
-      startTime: '2024-01-01T10:00:00Z',
-      endTime: '2024-01-01T11:00:00Z',
-      childActivities: [],
-      extensions: [],
-    };
-    const matchingChild: Activity = {
-      id: 77,
-      name: 'Group 1',
-      activityCode: '333-r1-g1',
-      startTime: '2024-01-01T10:00:00Z',
-      endTime: '2024-01-01T10:30:00Z',
-      childActivities: [],
-      extensions: [],
-    };
+    const parentActivity = buildActivity({ id: 77, name: 'Round 1', activityCode: '333-r1' });
+    const matchingChild = buildActivity({ id: 77, name: 'Group 1', activityCode: '333-r1-g1' });
     const matchingAssignment: Assignment = {
       activityId: 77,
       assignmentCode: 'competitor',
       stationNumber: null,
     };
-    const person: Person = {
-      name: 'Test Person',
+    const person = buildPerson({
       registrantId: 2,
-      wcaUserId: 2,
-      wcaId: '2024TEST02',
-      countryIso2: 'US',
-      gender: 'f',
-      birthdate: '2000-01-01',
-      email: 'test2@example.com',
+      assignments: [matchingAssignment],
       registration: {
         status: 'accepted',
         eventIds: [],
@@ -146,12 +78,7 @@ describe('roundActivities reducers', () => {
         comments: undefined,
         wcaRegistrationId: 2,
       },
-      assignments: [matchingAssignment],
-      roles: [],
-      personalBests: [],
-      extensions: [],
-      avatar: null,
-    };
+    });
     const state = buildState(buildWcif([parentActivity], [person]));
 
     const nextState = updateRoundChildActivities(state, {

@@ -133,4 +133,73 @@ describe('generateJudgeAssignmentsFromCompetingAssignments', () => {
       },
     ]);
   });
+
+  it('skips assignments when competing activity is not found in groups', () => {
+    const persons = [competitor(1, 2)];
+    const wcif = buildCompetition(2, persons);
+    const generator = generateJudgeAssignmentsFromCompetingAssignments(wcif, '333-r1');
+
+    const generatedAssignments = generator
+      ? generator([
+          {
+            registrantId: 1,
+            assignment: { assignmentCode: 'competitor', activityId: 999, stationNumber: null },
+          },
+        ])
+      : [];
+
+    expect(generatedAssignments).toEqual([]);
+  });
+
+  it('returns undefined when the round is missing', () => {
+    const wcif = buildCompetition(2, [competitor(1, 2)]);
+    const updatedWcif: Competition = {
+      ...wcif,
+      events: [
+        {
+          ...wcif.events[0],
+          rounds: [{ ...round, id: '333-r2' }],
+        },
+      ],
+    };
+
+    const generator = generateJudgeAssignmentsFromCompetingAssignments(updatedWcif, '333-r1');
+
+    expect(generator).toBeUndefined();
+  });
+
+  it('skips assignments when the next group cannot be computed', () => {
+    const oddGroup: Activity = {
+      id: 2,
+      name: 'Odd Group',
+      activityCode: '333-r1',
+      startTime: '2024-01-01T10:00:00Z',
+      endTime: '2024-01-01T11:00:00Z',
+      childActivities: [],
+      extensions: [],
+    };
+    const baseWcif = buildCompetition(1, [competitor(1, 2)]);
+    const wcif: Competition = {
+      ...baseWcif,
+      schedule: {
+        ...baseWcif.schedule,
+        venues: [
+          {
+            ...baseWcif.schedule.venues[0],
+            rooms: [
+              {
+                ...baseWcif.schedule.venues[0].rooms[0],
+                activities: [{ ...roundActivity, childActivities: [oddGroup] }],
+              },
+            ],
+          },
+        ],
+      },
+    };
+
+    const generator = generateJudgeAssignmentsFromCompetingAssignments(wcif, '333-r1');
+    const generatedAssignments = generator ? generator([]) : [];
+
+    expect(generatedAssignments).toEqual([]);
+  });
 });
