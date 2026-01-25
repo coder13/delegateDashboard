@@ -16,7 +16,6 @@ import type {
   UpdateGlobalExtensionPayload,
   UpdateGroupCountPayload,
   UpdateRawObjPayload,
-  UpdateRoundActivitiesPayload,
   UpdateRoundExtensionDataPayload,
   UpdateRoundPayload,
   UpdateWcifPayload,

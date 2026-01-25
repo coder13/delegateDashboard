@@ -7,7 +7,7 @@
     "dev": "VITE_GIT_SHA=`git rev-parse --short HEAD` GENERATE_SOURCEMAP=false vite",
     "build": "VITE_GIT_SHA=`git rev-parse --short HEAD` tsc && vite build",
     "lint": "eslint ./",
-    "type-check": "tsc --noEmit",
+    "check:type": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
