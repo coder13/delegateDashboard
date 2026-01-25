@@ -69,8 +69,17 @@ const mockWcif: Competition = {
       },
     ],
   },
+  series: [],
   competitorLimit: 100,
   extensions: [],
+  registrationInfo: {
+    openTime: '2024-01-01T00:00:00Z',
+    closeTime: '2024-01-02T00:00:00Z',
+    baseEntryFee: 0,
+    currencyCode: 'USD',
+    onTheSpotRegistration: false,
+    useWcaRegistration: false,
+  },
 };
 
 const createPerson = (overrides: Partial<Person> = {}): Person => ({

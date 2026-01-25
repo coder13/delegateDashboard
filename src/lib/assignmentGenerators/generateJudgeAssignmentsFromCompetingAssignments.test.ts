@@ -47,7 +47,7 @@ const competitor = (registrantId: number, competingActivityId: number): Person =
       wcaRegistrationId: registrantId,
       isCompeting: true,
     },
-  } as unknown as Person);
+  }) as unknown as Person;
 
 const buildCompetition = (groupCount: number, persons: Person[]): Competition => {
   const groups = createGroupActivities(groupCount);
@@ -91,8 +91,17 @@ const buildCompetition = (groupCount: number, persons: Person[]): Competition =>
         },
       ],
     },
+    series: [],
     competitorLimit: null,
     extensions: [],
+    registrationInfo: {
+      openTime: '2024-01-01T00:00:00Z',
+      closeTime: '2024-01-02T00:00:00Z',
+      baseEntryFee: 0,
+      currencyCode: 'USD',
+      onTheSpotRegistration: false,
+      useWcaRegistration: false,
+    },
   };
 };
 

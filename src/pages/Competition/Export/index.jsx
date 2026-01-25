@@ -9,7 +9,7 @@ import {
 import { useAppSelector } from '../../../store';
 import { Button, Grid, Typography } from '@mui/material';
 import { formatCentiseconds } from '@wca/helpers';
-import { ExportToCsv } from 'export-to-csv';
+import { download, generateCsv, mkConfig } from 'export-to-csv';
 import { flatten } from 'lodash';
 import { useCallback } from 'react';
 
@@ -34,9 +34,17 @@ const advancementConditionToText = ({ type, level }) => {
 
 const csvOptions = {
   fieldSeparator: ',',
-  quoteStrings: '"',
-  showLabels: true,
+  quoteStrings: true,
+  quoteCharacter: '"',
+  showColumnHeaders: true,
 };
+
+const buildCsvConfig = (filename, headers) =>
+  mkConfig({
+    ...csvOptions,
+    filename,
+    columnHeaders: headers,
+  });
 
 const groupNumber = ({ activityCode }) => parseActivityCode(activityCode)?.groupNumber;
 
@@ -109,32 +117,28 @@ const ExportPage = () => {
     );
     const headers = ['registrantId', 'name', 'wcaId', 'role', 'country_iso', ...assignmentHeaders];
 
-    const data = [];
-    acceptedRegistrations(wcif.persons)
+    const data = acceptedRegistrations(wcif.persons)
       .sort((a, b) => a.name.localeCompare(b.name))
-      .forEach((person) => {
-        const assignmentData = [
-          person.registrantId,
-          person.name,
-          person.wcaId,
-          person.roles.filter((role) => role.indexOf('staff') === -1).join(','),
-          person.countryIso2,
-        ];
+      .map((person) => {
         const assignments = assignmentsToObj(person);
+        const row = {
+          registrantId: person.registrantId,
+          name: person.name,
+          wcaId: person.wcaId,
+          role: person.roles.filter((role) => role.indexOf('staff') === -1).join(','),
+          country_iso: person.countryIso2,
+        };
+
         assignmentHeaders.forEach((assignmentKey) => {
-          assignmentData.push(assignments[assignmentKey]);
+          row[assignmentKey] = assignments[assignmentKey];
         });
 
-        data.push(assignmentData);
+        return row;
       });
 
-    const csvExporter = new ExportToCsv({
-      ...csvOptions,
-      filename: `${wcif.id}_nametags`,
-      headers: headers,
-    });
-
-    csvExporter.generateCsv(data);
+    const csvConfig = buildCsvConfig(`${wcif.id}_nametags`, headers);
+    const csv = generateCsv(csvConfig)(data);
+    download(csvConfig)(csv);
   };
 
   const onExportNametagsForPublisherData = () => {
@@ -175,7 +179,11 @@ const ExportPage = () => {
         i++;
 
         if (i === 6) {
-          data.push(buffer);
+          const row = {};
+          headers.forEach((header, index) => {
+            row[header] = buffer[index] ?? '';
+          });
+          data.push(row);
           buffer = [];
           i = 0;
         }
@@ -186,16 +194,16 @@ const ExportPage = () => {
         buffer.push('');
       }
 
-      data.push(buffer);
+      const row = {};
+      headers.forEach((header, index) => {
+        row[header] = buffer[index] ?? '';
+      });
+      data.push(row);
     }
 
-    const csvExporter = new ExportToCsv({
-      ...csvOptions,
-      filename: `${wcif.id}_nametags`,
-      headers: headers,
-    });
-
-    csvExporter.generateCsv(data);
+    const csvConfig = buildCsvConfig(`${wcif.id}_nametags`, headers);
+    const csv = generateCsv(csvConfig)(data);
+    download(csvConfig)(csv);
   };
 
   const onExportScorecardData = () => {
@@ -261,39 +269,31 @@ const ExportPage = () => {
       });
     });
 
-    const csvExporter = new ExportToCsv({
-      ...csvOptions,
-      filename: `${wcif.id}_scorecards`,
-      headers: [
-        'id',
-        'wca_id',
-        'competition_name',
-        'event_name',
-        'round_number',
-        'group_name',
-        'stage',
-        'group_number',
-        'full_name',
-        'dnf_time',
-        'cutoff_time',
-        'round_format',
-        'advancement_condition',
-        'today_date',
-        'time',
-        'stream',
-      ],
-    });
+    const headers = [
+      'id',
+      'wca_id',
+      'competition_name',
+      'event_name',
+      'round_number',
+      'group_name',
+      'stage',
+      'group_number',
+      'full_name',
+      'dnf_time',
+      'cutoff_time',
+      'round_format',
+      'advancement_condition',
+      'today_date',
+      'time',
+      'stream',
+    ];
 
-    csvExporter.generateCsv(scorecards);
+    const csvConfig = buildCsvConfig(`${wcif.id}_scorecards`, headers);
+    const csv = generateCsv(csvConfig)(scorecards);
+    download(csvConfig)(csv);
   };
 
   const onExportRegistrations = () => {
-    const csvExporter = new ExportToCsv({
-      ...csvOptions,
-      filename: `${wcif.id}_registrations`,
-      headers: ['id', 'name', 'email', 'wca_id', 'country_id'],
-    });
-
     const registrations = acceptedRegistrations(wcif.persons).map((person) => ({
       id: person.registrantId,
       name: person.name,
@@ -302,7 +302,10 @@ const ExportPage = () => {
       country_id: person.countryIso2,
     }));
 
-    csvExporter.generateCsv(registrations);
+    const headers = ['id', 'name', 'email', 'wca_id', 'country_id'];
+    const csvConfig = buildCsvConfig(`${wcif.id}_registrations`, headers);
+    const csv = generateCsv(csvConfig)(registrations);
+    download(csvConfig)(csv);
   };
 
   return (

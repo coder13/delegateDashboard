@@ -55,6 +55,7 @@ const buildCompetition = (rooms: any[], persons: Person[]): Competition => ({
       },
     ],
   },
+  series: [],
   persons,
   events: [
     {
@@ -76,6 +77,14 @@ const buildCompetition = (rooms: any[], persons: Person[]): Competition => ({
       extensions: [],
     },
   ],
+  registrationInfo: {
+    openTime: '2024-01-01T00:00:00Z',
+    closeTime: '2024-01-02T00:00:00Z',
+    baseEntryFee: 0,
+    currencyCode: 'USD',
+    onTheSpotRegistration: false,
+    useWcaRegistration: false,
+  },
 });
 
 const competitor = (overrides: Partial<Person>): Person => ({

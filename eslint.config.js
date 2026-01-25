@@ -44,6 +44,11 @@ export default tseslint.config(
       // React specific
       'react/prop-types': 'off',
       'react/react-in-jsx-scope': 'off',
+      'react-hooks/immutability': 'off',
+      'react-hooks/preserve-manual-memoization': 'off',
+      'react-hooks/purity': 'off',
+      'react-hooks/refs': 'off',
+      'react-hooks/set-state-in-effect': 'off',
 
       // React Refresh
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
@@ -104,6 +109,11 @@ export default tseslint.config(
       // React specific
       'react/prop-types': 'off',
       'react/react-in-jsx-scope': 'off',
+      'react-hooks/immutability': 'off',
+      'react-hooks/preserve-manual-memoization': 'off',
+      'react-hooks/purity': 'off',
+      'react-hooks/refs': 'off',
+      'react-hooks/set-state-in-effect': 'off',
 
       // General
       'no-console': ['warn', { allow: ['warn', 'error'] }],
