@@ -16,7 +16,7 @@
     "prettier": "prettier \"src/**/*.js\" --write"
   },
   "dependencies": {
-    "@codemirror/lang-json": "^6.0.1",
+    "@codemirror/lang-json": "6.0.2",
     "@cubing/icons": "^1.0.6",
     "@emotion/react": "^11.8.1",
     "@emotion/styled": "^11.8.1",
@@ -38,7 +38,7 @@
     "clsx": "^1.1.1",
     "country-flag-icons": "^1.5.7",
     "date-fns": "^2.30.0",
-    "eslint-plugin-react": "7.37.4",
+    "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "5.0.0",
     "export-to-csv": "^0.2.1",
     "fuse.js": "^6.6.2",
@@ -71,12 +71,12 @@
   },
   "devDependencies": {
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
-    "@eslint/js": "9.39.1",
+    "@eslint/js": "9.39.2",
     "@trivago/prettier-plugin-sort-imports": "^3.2.0",
     "@types/lodash": "^4.17.21",
     "@vitest/coverage-v8": "^4.0.15",
     "@vitest/ui": "^4.0.15",
-    "eslint": "9.39.1",
+    "eslint": "9.39.2",
     "eslint-plugin-react-refresh": "0.4.16",
     "globals": "15.14.0",
     "husky": "^8.0.1",
