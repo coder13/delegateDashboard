@@ -1,0 +1,18 @@
+[
+  {
+    "person": {
+      "id": 9001,
+      "name": "Jamie Example",
+      "wca_id": "2024JAM01",
+      "url": "https://www.worldcubeassociation.org/persons/2024JAM01",
+      "avatar": {
+        "thumb_url": "https://example.com/avatar.png"
+      },
+      "country": {
+        "name": "United States"
+      },
+      "gender": "f"
+    },
+    "competition_count": 3
+  }
+]

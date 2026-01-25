@@ -1,0 +1,16 @@
+[
+  {
+    "id": "TestComp2026",
+    "name": "Test Competition 2026",
+    "start_date": "2026-01-20",
+    "end_date": "2026-01-20",
+    "country_iso2": "US"
+  },
+  {
+    "id": "MultiStageComp2026",
+    "name": "Multi-Stage Competition 2026",
+    "start_date": "2026-02-15",
+    "end_date": "2026-02-15",
+    "country_iso2": "US"
+  }
+]

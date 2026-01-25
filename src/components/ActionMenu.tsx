@@ -1,6 +1,6 @@
-import { MoreVert } from "@mui/icons-material";
-import { IconButton, Menu, MenuItem } from "@mui/material";
-import { useState } from "react";
+import { MoreVert } from '@mui/icons-material';
+import { IconButton, Menu, MenuItem } from '@mui/material';
+import { useState } from 'react';
 
 interface Item {
   label: string;
@@ -8,10 +8,10 @@ interface Item {
 }
 
 interface ActionMenuProps {
-  items: Item[]
+  items: Item[];
 }
 
-export default function ActionMenu({items}: ActionMenuProps) {
+export default function ActionMenu({ items }: ActionMenuProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const open = Boolean(anchorEl);
@@ -26,7 +26,7 @@ export default function ActionMenu({items}: ActionMenuProps) {
 
   return (
     <>
-      <IconButton onClick={handleClick}>
+      <IconButton onClick={handleClick} aria-label="Action Menu">
         <MoreVert />
       </IconButton>
       <Menu
@@ -36,17 +36,18 @@ export default function ActionMenu({items}: ActionMenuProps) {
         onClose={handleClose}
         MenuListProps={{
           'aria-labelledby': 'basic-button',
-        }}
-      >
+        }}>
         {items.map((item) => (
-          <MenuItem key={item.label} onClick={() => {
-            item.onClick();
-            handleClose()
-          }}>
+          <MenuItem
+            key={item.label}
+            onClick={() => {
+              item.onClick();
+              handleClose();
+            }}>
             {item.label}
           </MenuItem>
         ))}
       </Menu>
     </>
-  )
+  );
 }
