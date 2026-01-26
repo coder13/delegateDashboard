@@ -399,8 +399,9 @@ export const determineStageForAssignments = (
       (activity) => (activity as Activity & { parent?: Activity & { room: Room } }).parent?.room
     );
 
-    if (stageCountsByActivityCode.has(assignment.activityCode)) {
-      const counts = stageCountsByActivityCode.get(assignment.activityCode)!;
+    const existingCounts = stageCountsByActivityCode.get(assignment.activityCode);
+    if (existingCounts) {
+      const counts = existingCounts;
 
       const roomSizes = rooms
         .filter((room): room is Room => !!room)
@@ -564,7 +565,15 @@ export const upsertCompetitorAssignments = (
       return;
     }
     person.assignments = person.assignments ?? [];
-    const activity = activityByActivityCode(wcif, assignment.roomId!, assignment.activityCode);
+
+    if (!assignment.roomId) {
+      return;
+    }
+
+    const activity = activityByActivityCode(wcif, assignment.roomId, assignment.activityCode);
+    if (!activity) {
+      return;
+    }
 
     const newAssignment = createGroupAssignment(
       person.registrantId,

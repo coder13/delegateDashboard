@@ -1,5 +1,10 @@
 import { getLocalStorage } from './localStorage';
-import { type CompetitionSearchResult, type WcaPerson, type WcaUser } from './types';
+import {
+  type CompetitionSearchResult,
+  type WcaPerson,
+  type WcaPersonSearchResult,
+  type WcaUser,
+} from './types';
 import { WCA_ORIGIN } from './wca-env';
 import { type Competition } from '@wca/helpers';
 import { pick } from 'lodash';
@@ -62,7 +67,7 @@ export const saveWcifChanges = (
   return patchWcif(newWcif.id, pick(newWcif, keysDiff));
 };
 
-export const searchPersons = (query: string): Promise<WcaPerson[]> =>
+export const searchPersons = (query: string): Promise<WcaPersonSearchResult[]> =>
   wcaApiFetch(`/persons?q=${query}`);
 
 export const getPerson = (personId: number): Promise<WcaPerson> =>
@@ -74,7 +79,7 @@ export const searchUsers = (query: string): Promise<{ result: WcaUser[] }> =>
 export const getUser = (userId: number): Promise<{ user: WcaUser }> =>
   wcaApiFetch(`/users/${userId}`);
 
-export const wcaApiFetch = async <T = any>(
+export const wcaApiFetch = async <T = unknown>(
   path: string,
   fetchOptions: RequestInit = {}
 ): Promise<T> => {

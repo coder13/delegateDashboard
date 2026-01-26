@@ -1,5 +1,5 @@
 import { type WcifError } from '../../lib/wcif';
-import { ErrorDialog } from './ErrorDialog';
+import { ErrorDialog } from '../../dialogs/ErrorDialog';
 import { Alert, AlertTitle, Button } from '@mui/material';
 import { Stack } from '@mui/system';
 import { useState } from 'react';

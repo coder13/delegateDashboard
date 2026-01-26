@@ -11,6 +11,7 @@ export default tseslint.config(
       'dist',
       'build',
       'coverage',
+      'e2e',
       'node_modules',
       '*.config.js',
       '*.config.ts',

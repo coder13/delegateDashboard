@@ -12,8 +12,9 @@ const ParseActivityCodeCache = new Map<string, ActivityCode>();
  * @returns Parsed activity code object
  */
 export const parseActivityCode = (activityCode: string): ActivityCode => {
-  if (ParseActivityCodeCache.has(activityCode)) {
-    return ParseActivityCodeCache.get(activityCode)!;
+  const cached = ParseActivityCodeCache.get(activityCode);
+  if (cached) {
+    return cached;
   }
 
   const [, e, r, g, a] = activityCode.match(/(\w+)(?:-r(\d+))?(?:-g(\d+))?(?:-a(\d+))?/) || [];

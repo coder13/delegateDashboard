@@ -15,6 +15,7 @@ import { Collapse, ListItemAvatar, ListItemButton, ListItemText } from '@mui/mat
 import { activityCodeToName, type Round } from '@wca/helpers';
 import { useEffect, useRef } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import type { AppState } from '../../store/initialState';
 
 interface RoundListItemProps {
   activityCode: string;
@@ -33,13 +34,13 @@ function RoundListItem({ activityCode, round, selected, ...props }: RoundListIte
   const personsSelector = useAppSelector(selectPersonsShouldBeInRound);
   const personsShouldBeInRoundCount = personsSelector(round).length;
 
-  const personsAssignedCount = useAppSelector((state) =>
-    (selectPersonsAssignedForRound as any)(state, round.id)
+  const personsAssignedCount = useAppSelector((state: AppState) =>
+    selectPersonsAssignedForRound(state, round.id)
   ).length;
 
-  const personsAssignedWithCompetitorAssignmentCount = useAppSelector(
-    (state) => (selectPersonsHavingCompetitorAssignmentsForRound as any)(state, round.id).length
-  );
+  const personsAssignedWithCompetitorAssignmentCount = useAppSelector((state: AppState) =>
+    selectPersonsHavingCompetitorAssignmentsForRound(state, round.id)
+  ).length;
 
   const _cumulativeGroupCount = cumulativeGroupCount(round);
 

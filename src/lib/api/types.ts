@@ -18,6 +18,26 @@ export interface WcaPerson {
   countryIso2: string;
 }
 
+export interface WcaPersonSearchResult {
+  person: {
+    id: number;
+    name: string;
+    wca_id?: string;
+    url: string;
+    avatar: {
+      url?: string;
+      thumb_url: string;
+    };
+    country?: {
+      name: string;
+    };
+    country_iso2?: string;
+    gender?: string;
+    email?: string;
+  };
+  competition_count: number;
+}
+
 export interface CompetitionSearchResult {
   id: string;
   name: string;

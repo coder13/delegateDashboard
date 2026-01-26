@@ -1,4 +1,4 @@
-import { CommandPromptDialog } from '../../components/CommandPromptDialog/CommandPromptDialog';
+import { CommandPromptDialog } from '../../dialogs/CommandPromptDialog/CommandPromptDialog';
 import { useAuth } from '../AuthProvider';
 import { CommandPromptContext } from './CommandPromptContext';
 import { useCallback, useEffect, useState } from 'react';

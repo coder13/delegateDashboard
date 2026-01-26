@@ -1,4 +1,3 @@
-export { default as Layout } from './Layout';
 export { default as Home } from './Home';
 export { default as Staff } from './Staff';
 export { default as Rooms } from './Rooms';

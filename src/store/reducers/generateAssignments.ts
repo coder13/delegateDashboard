@@ -23,13 +23,15 @@ type AssignmentsReducer = ((a: InProgressAssignmment[]) => InProgressAssignmment
 export function generateAssignments(state: AppState, action: GenerateAssignmentsPayload): AppState {
   if (!state.wcif) return state;
 
+  const wcif = state.wcif;
+
   const initializedGenerators = [
     generateCompetingAssignmentsForStaff,
     generateGroupAssignmentsForDelegatesAndOrganizers,
     generateCompetingGroupActitivitesForEveryone,
     generateJudgeAssignmentsFromCompetingAssignments,
   ]
-    .map((generator) => generator(state.wcif!, action.roundId))
+    .map((generator) => generator(wcif, action.roundId))
     .filter(Boolean) as AssignmentsReducer;
 
   const newAssignments = initializedGenerators.reduce((accumulatingAssignments, generateFn) => {

@@ -2,7 +2,7 @@ import mca_logo from '../../assets/mca_logo.png';
 import sec_logo from '../../assets/sec_logo.png';
 import wcc_logo from '../../assets/wcc_logo.png';
 import { useAuth } from '../../providers/AuthProvider';
-import CompetitionList from '../CompetitionList';
+import CompetitionList from '../../components/CompetitionList';
 import Header from './Header';
 import { Button, Container, Divider, Typography } from '@mui/material';
 

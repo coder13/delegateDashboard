@@ -2,6 +2,8 @@
 
 See `spec.md` for feature behavior and product details.
 
+We use yarn, not npm
+
 ## Project Structure
 
 ```
@@ -75,6 +77,7 @@ Safe to ignore during build:
 
 ## Writing Tests
 
+- Tests go in their own _tests_ folder in the same folder as the code being tested.
 - Add or update tests when changing behavior.
 - Tests use Vitest + React Testing Library.
 - Prefer existing test data builders before creating inline fixtures.
