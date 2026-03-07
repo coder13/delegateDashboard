@@ -1,4 +1,10 @@
-import { eventNameById, shortEventNameById, roundFormatById, sortWcifEvents } from './events';
+import {
+  eventNameById,
+  shortEventNameById,
+  roundFormatById,
+  roundFormatShortById,
+  sortWcifEvents,
+} from './events';
 import { type Event } from '@wca/helpers';
 import { describe, it, expect } from 'vitest';
 
@@ -93,6 +99,20 @@ describe('roundFormatById', () => {
 
   it('returns undefined when undefined is passed', () => {
     expect(roundFormatById(undefined)).toBeUndefined();
+  });
+});
+
+describe('roundFormatShortById', () => {
+  it('returns short code for known format IDs', () => {
+    expect(roundFormatShortById('a')).toBe('ao5');
+  });
+
+  it('falls back to raw format ID for unknown formats', () => {
+    expect(roundFormatShortById('5')).toBe('5');
+  });
+
+  it('returns empty string for undefined format', () => {
+    expect(roundFormatShortById(undefined)).toBe('');
   });
 });
 

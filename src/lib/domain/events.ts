@@ -59,3 +59,8 @@ const roundFormats: RoundFormat[] = [
 
 export const roundFormatById = (id: string | undefined): RoundFormat | undefined =>
   id ? roundFormats.find((roundFormat) => roundFormat.id === id) : undefined;
+
+export const roundFormatShortById = (id: string | undefined): string => {
+  const roundFormat = roundFormatById(id);
+  return roundFormat ? roundFormat.short : id ?? '';
+};

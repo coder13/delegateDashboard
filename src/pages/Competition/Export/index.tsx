@@ -1,5 +1,5 @@
 import { findGroupActivitiesByRound, parseActivityCode } from '../../../lib/domain/activities';
-import { eventNameById, roundFormatById } from '../../../lib/domain/events';
+import { eventNameById, roundFormatShortById } from '../../../lib/domain/events';
 import { acceptedRegistrations } from '../../../lib/domain/persons';
 import { type ActivityWithParent } from '../../../lib/domain/types';
 import {
@@ -255,7 +255,7 @@ const ExportPage = () => {
           cutoff_time: round.cutoff
             ? `1 or 2 < ${formatCentiseconds(round.cutoff.attemptResult)}`
             : '',
-          round_format: roundFormatById(round.format)?.short ?? '',
+          round_format: roundFormatShortById(round.format),
           advancement_condition: round.advancementCondition
             ? advancementConditionToText(round.advancementCondition)
             : '',
