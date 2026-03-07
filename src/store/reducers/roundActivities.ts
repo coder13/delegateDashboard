@@ -19,13 +19,13 @@ export const updateRoundChildActivities = (
   const childActivityIdsByCode = new Map(
     action.childActivities.map((childActivity) => [childActivity.activityCode, childActivity.id])
   );
-  const replacementChildActivityIdsByPreviousId = new Map(
+  const replacementChildActivityIdsByPreviousId = new Map<number, number>(
     (existingParentActivity?.childActivities ?? [])
       .map((childActivity) => [
         childActivity.id,
         childActivityIdsByCode.get(childActivity.activityCode),
-      ])
-      .filter(([, nextChildActivityId]) => !!nextChildActivityId)
+      ] as const)
+      .filter((entry): entry is readonly [number, number] => entry[1] !== undefined)
   );
 
   return {
