@@ -1,6 +1,7 @@
 import {
   allChildActivities,
   activityByActivityCode,
+  activityCodeIsChild,
   createGroupActivity,
   events,
   findAllActivities,
@@ -314,7 +315,7 @@ export const determineMissingGroupActivities = (
   const missingActivities: { activityCode: string; roomId: number }[] = [];
   const stages = findRooms(wcif).map((room) => ({
     room,
-    activities: allChildActivities(room as unknown as Activity),
+    activities: room.activities.flatMap((activity) => allChildActivities(activity)),
   }));
 
   assignments
@@ -393,10 +394,18 @@ export const determineStageForAssignments = (
     }
 
     const activitiesForCode = activities.filter((activity) =>
-      activity.activityCode.startsWith(assignment.activityCode)
+      activityCodeIsChild(assignment.activityCode, activity.activityCode)
     );
-    const rooms = activitiesForCode.map(
-      (activity) => (activity as Activity & { parent?: Activity & { room: Room } }).parent?.room
+    const rooms = Array.from(
+      new Map(
+        activitiesForCode
+          .map(
+            (activity) =>
+              (activity as Activity & { parent?: Activity & { room: Room } }).parent?.room
+          )
+          .filter((room): room is Room => !!room)
+          .map((room) => [room.id, room])
+      ).values()
     );
 
     const existingCounts = stageCountsByActivityCode.get(assignment.activityCode);
@@ -404,7 +413,6 @@ export const determineStageForAssignments = (
       const counts = existingCounts;
 
       const roomSizes = rooms
-        .filter((room): room is Room => !!room)
         .map((room) => ({
           roomId: room.id,
           size: counts[room.id] ?? 0,
@@ -423,11 +431,9 @@ export const determineStageForAssignments = (
       };
     } else {
       const counts: Record<number, number> = {};
-      rooms
-        .filter((room): room is Room => !!room)
-        .forEach((room) => {
-          counts[room.id] = 0;
-        });
+      rooms.forEach((room) => {
+        counts[room.id] = 0;
+      });
 
       if (!rooms[0]) {
         return assignment;
@@ -469,9 +475,7 @@ export const generateMissingGroupActivities = (
       const venue = schedule.venues.find((v) => v.rooms.some((room) => room.id === roomId));
       const room = venue?.rooms.find((room) => room.id === roomId);
 
-      const roundActivity = room?.activities.find((activity) =>
-        activity.activityCode.startsWith(eventRound)
-      );
+      const roundActivity = room?.activities.find((activity) => activity.activityCode === eventRound);
 
       if (!roundActivity) {
         throw new Error(`Could not find round activity ${eventRound} in room ${roomId}`);

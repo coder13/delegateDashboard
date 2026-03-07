@@ -269,6 +269,58 @@ describe('import helpers', () => {
     expect(stagedAssignments[1].roomId).toBe(10);
   });
 
+  it('does not report existing groups as missing during import', () => {
+    const round = {
+      ...baseRound(1),
+      childActivities: [groupActivity(2, '333-r1-g1'), groupActivity(3, '333-r1-g2')],
+    };
+    const room = { id: 10, name: 'Main Stage', activities: [round], color: '#000' };
+    const wcif = buildCompetition([room], [competitor({})]);
+
+    const assignments: ParsedAssignment[] = [
+      {
+        registrantId: 1,
+        eventId: '333',
+        groupNumber: 2,
+        activityCode: '333-r1-g2',
+        assignmentCode: 'competitor',
+        roomId: 10,
+      },
+    ];
+
+    expect(determineMissingGroupActivities(wcif, assignments)).toEqual([]);
+  });
+
+  it('matches staff assignment stages by exact activity code instead of string prefix', () => {
+    const roundOneRoomA = {
+      ...baseRound(1),
+      childActivities: [groupActivity(2, '333-r1-g10')],
+    };
+    const roundOneRoomB = {
+      ...baseRound(3),
+      childActivities: [groupActivity(4, '333-r1-g1')],
+    };
+    const wcif = buildCompetition(
+      [
+        { id: 10, name: 'A Stage', activities: [roundOneRoomA], color: '#000' },
+        { id: 11, name: 'B Stage', activities: [roundOneRoomB], color: '#111' },
+      ],
+      [competitor({})]
+    );
+
+    const [stagedAssignment] = determineStageForAssignments(wcif, [
+      {
+        registrantId: 1,
+        eventId: '333',
+        groupNumber: 1,
+        activityCode: '333-r1-g1',
+        assignmentCode: 'staff-judge',
+      },
+    ]);
+
+    expect(stagedAssignment.roomId).toBe(11);
+  });
+
   it('creates and balances missing group activities', () => {
     const round = { ...baseRound(1), childActivities: [] };
     const room = { id: 10, name: 'Main Stage', activities: [round], color: '#000' };
@@ -291,6 +343,24 @@ describe('import helpers', () => {
     expect(firstGroup.startTime).toBe('2024-01-01T10:00:00.000Z');
     expect(secondGroup.startTime).toBe('2024-01-01T10:30:00.000Z');
     expect(secondGroup.endTime).toBe('2024-01-01T11:00:00.000Z');
+  });
+
+  it('adds missing groups to the exact round instead of matching a longer round prefix', () => {
+    const room = {
+      id: 10,
+      name: 'Main Stage',
+      color: '#000',
+      activities: [baseRound(1, '333-r1'), baseRound(2, '333-r10')],
+    };
+    const wcif = buildCompetition([room], [competitor({})]);
+
+    const withGroups = generateMissingGroupActivities(wcif, [{ activityCode: '333-r1-g1', roomId: 10 }]);
+
+    expect(withGroups.schedule.venues[0].rooms[0].activities[0].childActivities).toHaveLength(1);
+    expect(withGroups.schedule.venues[0].rooms[0].activities[0].childActivities[0].activityCode).toBe(
+      '333-r1-g1'
+    );
+    expect(withGroups.schedule.venues[0].rooms[0].activities[1].childActivities).toHaveLength(0);
   });
 
   it('upserts competitor assignments without duplication', () => {
@@ -321,5 +391,46 @@ describe('import helpers', () => {
 
     expect(updated.persons[0].assignments).toHaveLength(1);
     expect(updated.persons[0].assignments?.[0].assignmentCode).toBe('competitor');
+  });
+
+  it('ignores assignments for registrants that are not present in the WCIF', () => {
+    const groups = [groupActivity(2, '333-r1-g1')];
+    const round = { ...baseRound(1), childActivities: groups };
+    const room = { id: 10, name: 'Main Stage', activities: [round], color: '#000' };
+    const person = competitor({ assignments: [] });
+    const wcif = buildCompetition([room], [person]);
+
+    const updated = upsertCompetitorAssignments(wcif, [
+      {
+        registrantId: 999,
+        eventId: '333',
+        groupNumber: 1,
+        activityCode: '333-r1-g1',
+        assignmentCode: 'competitor',
+        roomId: 10,
+      },
+    ]);
+
+    expect(updated.persons[0].assignments).toEqual([]);
+  });
+
+  it('ignores assignments that do not resolve to a specific room', () => {
+    const groups = [groupActivity(2, '333-r1-g1')];
+    const round = { ...baseRound(1), childActivities: groups };
+    const room = { id: 10, name: 'Main Stage', activities: [round], color: '#000' };
+    const person = competitor({ assignments: [] });
+    const wcif = buildCompetition([room], [person]);
+
+    const updated = upsertCompetitorAssignments(wcif, [
+      {
+        registrantId: 1,
+        eventId: '333',
+        groupNumber: 1,
+        activityCode: '333-r1-g1',
+        assignmentCode: 'competitor',
+      },
+    ]);
+
+    expect(updated.persons[0].assignments).toEqual([]);
   });
 });

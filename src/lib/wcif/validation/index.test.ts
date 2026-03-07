@@ -3,6 +3,7 @@ import {
   MISSING_ADVANCEMENT_CONDITION,
   NO_ROUNDS_FOR_ACTIVITY,
   MISSING_ACTIVITY_FOR_PERSON_ASSIGNMENT,
+  NO_SCHEDULE_ACTIVITIES_FOR_ROUND,
   PERSON_ASSIGNMENT_SCHEDULE_CONFLICT,
 } from './types';
 import type { Competition } from '@wca/helpers';
@@ -365,6 +366,72 @@ describe('validateWcif', () => {
 
     const conflictErrors = errors.filter((e) => e.type === PERSON_ASSIGNMENT_SCHEDULE_CONFLICT);
     expect(conflictErrors.length).toBeGreaterThan(0);
+  });
+
+  it('does not treat round 10 as satisfying round 1 schedule validation', () => {
+    const wcif: Competition = {
+      ...mockWcif,
+      events: [
+        {
+          id: '333',
+          rounds: [
+            {
+              id: '333-r1',
+              format: 'a',
+              timeLimit: null,
+              cutoff: null,
+              advancementCondition: null,
+              results: [],
+              scrambleSetCount: 1,
+              extensions: [],
+            },
+          ],
+          competitorLimit: null,
+          qualification: null,
+          extensions: [],
+        },
+      ],
+      schedule: {
+        startDate: '2024-01-01',
+        numberOfDays: 1,
+        venues: [
+          {
+            id: 1,
+            name: 'Venue 1',
+            latitudeMicrodegrees: 0,
+            longitudeMicrodegrees: 0,
+            countryIso2: 'US',
+            timezone: 'America/New_York',
+            rooms: [
+              {
+                id: 1,
+                name: 'Room 1',
+                color: '#000000',
+                activities: [
+                  {
+                    id: 10,
+                    name: '3x3 Round 10',
+                    activityCode: '333-r10',
+                    startTime: '2024-01-01T09:00:00.000Z',
+                    endTime: '2024-01-01T10:00:00.000Z',
+                    childActivities: [],
+                    extensions: [],
+                  },
+                ],
+                extensions: [],
+              },
+            ],
+            extensions: [],
+          },
+        ],
+      },
+    };
+
+    const errors = validateWcif(wcif);
+
+    expect(errors).toEqual(
+      expect.arrayContaining([expect.objectContaining({ type: NO_SCHEDULE_ACTIVITIES_FOR_ROUND })])
+    );
   });
 
   it('should filter out falsy values', () => {

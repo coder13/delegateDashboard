@@ -70,8 +70,9 @@ Delegate Dashboard is a web application for managing WCA (World Cube Association
 
 ## Import and Export
 
-- Import supports CSV uploads for competitor and staff assignments.
+- Import supports CSV uploads for Round 1 competitor and staff assignments.
 - CSV must include one row per person, keyed by email, with event columns and optional staff columns.
+- Later rounds are out of scope for this import flow and must not be imported with this feature.
 - CSV data is validated before import; validation errors block assignment generation.
 - Import flow:
   1. Upload CSV.

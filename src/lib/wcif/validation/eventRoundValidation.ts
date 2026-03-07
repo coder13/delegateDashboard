@@ -56,9 +56,7 @@ export const validateRoundsHaveScheduleActivities = (
   const allRoundActivities = findAllRoundActivities(wcif);
 
   return flatMap(event.rounds, (round) => {
-    const hasScheduleActivity = allRoundActivities.some((activity) =>
-      activity.activityCode.startsWith(round.id)
-    );
+    const hasScheduleActivity = allRoundActivities.some((activity) => activity.activityCode === round.id);
 
     return hasScheduleActivity
       ? []

@@ -188,16 +188,18 @@ const ImportPage = () => {
           <AccordionSummary>
             <Typography>Preliminary Information</Typography>
           </AccordionSummary>
-          <AccordionDetails>
-            <Typography variant="body1">
-              The following are instructions on how to properly format data to import it into
-              delegate dashboard and thus, the WCA website.
-              <br />
-              The first item to note is that whatever CSV you upload must have 1 row per person,
-              identified by their email.
-              <br />
-              You must also have a column for each event containing a competitor&aposs competing
-              group.
+            <AccordionDetails>
+              <Typography variant="body1">
+                The following are instructions on how to properly format data to import it into
+                delegate dashboard and thus, the WCA website.
+                <br />
+                This import flow only supports Round 1 assignments. Do not use it for later rounds.
+                <br />
+                The first item to note is that whatever CSV you upload must have 1 row per person,
+                identified by their email.
+                <br />
+                You must also have a column for each event containing a competitor&aposs competing
+                group.
               <br />
               {`If you wish to specify staffing assignments, you will also include those. This column
               name can have any format so long as it includes the event Id but is not only the
@@ -301,7 +303,8 @@ const ImportPage = () => {
             <Typography>
               Please confirm that the data you have uploaded is correct.
               <br />
-              If it is, click the button below to import it into delegate dashboard.
+              If it is, click the button below to import it into delegate dashboard. This only
+              generates and imports Round 1 assignments.
             </Typography>
             <Typography>{CSVContents.data.length} people found</Typography>
             <Button

@@ -60,11 +60,12 @@ describe('roundActivities reducers', () => {
     expect(nextAssignments[0]).toBe(unrelatedAssignment);
   });
 
-  it('updateRoundChildActivities creates new assignment object when assignment matches child id', () => {
+  it('updateRoundChildActivities remaps assignments when a child activity is replaced with a new id', () => {
     const parentActivity = buildActivity({ id: 77, name: 'Round 1', activityCode: '333-r1' });
+    const existingChild = buildActivity({ id: 55, name: 'Group 1', activityCode: '333-r1-g1' });
     const matchingChild = buildActivity({ id: 77, name: 'Group 1', activityCode: '333-r1-g1' });
     const matchingAssignment: Assignment = {
-      activityId: 77,
+      activityId: 55,
       assignmentCode: 'competitor',
       stationNumber: null,
     };
@@ -79,7 +80,7 @@ describe('roundActivities reducers', () => {
         wcaRegistrationId: 2,
       },
     });
-    const state = buildState(buildWcif([parentActivity], [person]));
+    const state = buildState(buildWcif([{ ...parentActivity, childActivities: [existingChild] }], [person]));
 
     const nextState = updateRoundChildActivities(state, {
       activityId: parentActivity.id,

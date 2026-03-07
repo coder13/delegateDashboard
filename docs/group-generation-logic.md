@@ -57,6 +57,7 @@ Key code references:
 ### Import flow: generate missing group activities
 
 CSV import can reference group activities that do not exist yet. The import flow detects missing groups and creates them.
+This import flow is intended for Round 1 only. Later rounds are not supported by the CSV importer.
 
 Flow:
 

@@ -3,11 +3,31 @@ import type { UpdateRoundActivitiesPayload, UpdateRoundChildActivitiesPayload } 
 import type { AppState } from '../initialState';
 import type { Assignment, Person } from '@wca/helpers';
 
+/**
+ * Updates the child activities of a round activity and also updates the assignments of the persons accordingly
+ */
 export const updateRoundChildActivities = (
   state: AppState,
   action: UpdateRoundChildActivitiesPayload
 ): AppState => {
   if (!('activityId' in action && 'childActivities' in action) || !state.wcif) return state;
+  const existingParentActivity = state.wcif.schedule.venues
+    .flatMap((venue) => venue.rooms)
+    .flatMap((room) => room.activities)
+    .find((activity) => activity.id === action.activityId);
+
+  const childActivityIdsByCode = new Map(
+    action.childActivities.map((childActivity) => [childActivity.activityCode, childActivity.id])
+  );
+  const replacementChildActivityIdsByPreviousId = new Map(
+    (existingParentActivity?.childActivities ?? [])
+      .map((childActivity) => [
+        childActivity.id,
+        childActivityIdsByCode.get(childActivity.activityCode),
+      ])
+      .filter(([, nextChildActivityId]) => !!nextChildActivityId)
+  );
+
   return {
     ...state,
     needToSave: true,
@@ -29,25 +49,15 @@ export const updateRoundChildActivities = (
       persons: state.wcif.persons.map((person: Person) => ({
         ...person,
         assignments: person.assignments?.map((assignment: Assignment) => {
-          if (
-            assignment.activityId === action.activityId &&
-            action.childActivities.find((ca) => ca.id === assignment.activityId)
-          ) {
-            const childActivity = action.childActivities.find(
-              (ca) => ca.id === assignment.activityId
-            );
-
-            if (!childActivity) {
-              throw new Error('No child activity found for assignment ' + assignment.activityId);
-            }
-
-            return {
-              ...assignment,
-              activityId: childActivity.id,
-            };
-          }
-
-          return assignment;
+          const nextChildActivityId = replacementChildActivityIdsByPreviousId.get(
+            assignment.activityId
+          );
+          return nextChildActivityId
+            ? {
+                ...assignment,
+                activityId: nextChildActivityId,
+              }
+            : assignment;
         }),
       })),
     },
