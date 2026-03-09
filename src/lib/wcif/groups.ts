@@ -1,0 +1,238 @@
+import {
+  parseActivityCode,
+  createActivityCode,
+  activityCodeToName,
+} from '../domain/activities/activityCode';
+import type { ActivityWithParent } from '../domain/types';
+import { type InProgressAssignmment } from '../types';
+import { generateNextChildActivityId, findGroupActivitiesByRound, findRooms } from './activities';
+import { getGroupsExtensionData } from './extensions';
+import {
+  type Activity,
+  type Assignment,
+  type Competition,
+  type Person,
+  type Round,
+} from '@wca/helpers';
+
+/**
+ * Creates a new group activity for a round
+ * @param id - The new activity ID
+ * @param roundActivity - The parent round activity
+ * @param groupNumber - The group number
+ * @param startTime - The group start time
+ * @param endTime - The group end time
+ * @returns New group activity
+ */
+export const createGroupActivity = (
+  id: number,
+  roundActivity: Activity,
+  groupNumber: number,
+  startTime: string,
+  endTime: string
+): Activity => {
+  const parsedRoundActivityCode = parseActivityCode(roundActivity.activityCode);
+
+  const newActivityCode = createActivityCode({
+    ...parsedRoundActivityCode,
+    groupNumber,
+  });
+
+  return {
+    id: id,
+    name: activityCodeToName(newActivityCode),
+    activityCode: newActivityCode,
+    startTime: startTime || roundActivity.startTime,
+    endTime: endTime || roundActivity.endTime,
+    childActivities: [],
+    extensions: [],
+  };
+};
+
+/**
+ * Calculates the cumulative group count for a round based on its extension data
+ * @param round - The round to calculate group count for
+ * @returns Total number of groups across all stages
+ */
+export const cumulativeGroupCount = (round: Round) => {
+  const groupsData = getGroupsExtensionData(round);
+  if (!groupsData || !groupsData.groups) return 1;
+
+  if (groupsData.spreadGroupsAcrossAllStages) {
+    return typeof groupsData.groups === 'number' ? groupsData.groups : 1;
+  } else {
+    return typeof groupsData.groups === 'object'
+      ? Object.values(groupsData.groups).reduce((acc, groupCount) => acc + groupCount, 0)
+      : 1;
+  }
+};
+
+/**
+ * Takes WCIF to compute the initial startActivityId.
+ * Then increments startActivityId as it generates groups across all stages
+ * @returns {[RoundActivity]} Returns updated roundActivities
+ */
+export const createGroupsAcrossStages = (
+  wcif: Competition,
+  roundActivities: Activity[],
+  groupsData: {
+    spreadGroupsAcrossAllStages: boolean;
+    groups: number | Record<number, number>;
+  }
+) => {
+  let startActivityId = generateNextChildActivityId(wcif);
+
+  if (groupsData.spreadGroupsAcrossAllStages) {
+    const groupCount = groupsData.groups as number;
+
+    return roundActivities.map((roundActivity) => {
+      const startDate = new Date(roundActivity.startTime);
+      const endDate = new Date(roundActivity.endTime);
+      const dateDiff = endDate.getTime() - startDate.getTime();
+      const timePerGroup = dateDiff / groupCount;
+
+      const childActivities: Activity[] = [];
+      for (let i = 0; i < groupCount; i++) {
+        childActivities.push(
+          createGroupActivity(
+            startActivityId,
+            roundActivity,
+            i + 1,
+            new Date(startDate.getTime() + timePerGroup * i).toISOString(),
+            new Date(startDate.getTime() + timePerGroup * (i + 1)).toISOString()
+          )
+        );
+
+        startActivityId++;
+      }
+
+      return {
+        ...roundActivity,
+        childActivities,
+      };
+    });
+  } else {
+    const rooms = findRooms(wcif);
+    return roundActivities.map((roundActivity) => {
+      const room = rooms.find((room) => room.activities.find((ra) => ra.id === roundActivity.id));
+      if (!room) {
+        throw new Error('No room found for activity ' + roundActivity.name);
+      }
+
+      const groupCount = (
+        typeof groupsData.groups === 'object' ? groupsData.groups[room.id] : groupsData.groups
+      ) as number;
+
+      if (!groupCount) {
+        throw new Error('No group count found for room ' + room.name);
+      }
+
+      const startDate = new Date(roundActivity.startTime);
+      const endDate = new Date(roundActivity.endTime);
+      const dateDiff = endDate.getTime() - startDate.getTime();
+      const timePerGroup = dateDiff / groupCount;
+
+      const childActivities: Activity[] = [];
+      for (let i = 0; i < groupCount; i++) {
+        childActivities.push(
+          createGroupActivity(
+            startActivityId,
+            roundActivity,
+            i + 1,
+            new Date(startDate.getTime() + timePerGroup * i).toISOString(),
+            new Date(startDate.getTime() + timePerGroup * (i + 1)).toISOString()
+          )
+        );
+
+        startActivityId++;
+      }
+
+      return {
+        ...roundActivity,
+        childActivities,
+      };
+    });
+  }
+};
+
+/**
+ * @param {activity} activity - A modified activity that includes a parent reference
+ */
+export const previousGroupForActivity = (
+  activity: ActivityWithParent
+): ActivityWithParent | undefined => {
+  const groups = activity.parent.childActivities as ActivityWithParent[];
+  if (!groups) {
+    return;
+  }
+
+  const groupCount = groups.length;
+  const { groupNumber = 0 } = parseActivityCode(activity.activityCode);
+
+  const previousGroupNumber = ((groupNumber - 2 + groupCount) % groupCount) + 1;
+  const previousGroup = groups.find(
+    (g) => parseActivityCode(g.activityCode).groupNumber === previousGroupNumber
+  );
+  return previousGroup;
+};
+
+/**
+ * @param {activity} activity - A modified activity that includes a parent reference
+ */
+export const nextGroupForActivity = (activity: ActivityWithParent): Activity | undefined => {
+  const groups = activity.parent.childActivities;
+  if (!groups) {
+    return;
+  }
+
+  const { groupNumber = 0 } = parseActivityCode(activity.activityCode);
+  const nextGroupNumber = (groupNumber % groups.length) + 1;
+  const nextGroup = groups.find(
+    (g) => parseActivityCode(g.activityCode).groupNumber === nextGroupNumber
+  );
+  return nextGroup;
+};
+
+/**
+ * So that I don't have to remember the data format
+ */
+export const createGroupAssignment = (
+  registrantId: number,
+  activityId: number,
+  assignmentCode: string,
+  stationNumber: number | null = null
+): InProgressAssignmment => ({
+  registrantId: registrantId,
+  assignment: {
+    assignmentCode,
+    activityId,
+    stationNumber,
+  },
+});
+
+export const computeGroupSizes = (assignments: Assignment[]) => (activity: Activity) => ({
+  activity: activity,
+  size: assignments.filter(
+    ({ activityId, assignmentCode }) =>
+      +activityId === activity.id && assignmentCode === 'competitor'
+  ).length,
+});
+
+/**
+ * computes group sizes for each group defined by the roundId
+ * @param {WCCIF} wcif
+ * @param {string} roundId
+ * @returns
+ */
+export const computeGroupSizesForRoundId = (wcif: Competition, roundId: string) => {
+  const groups = findGroupActivitiesByRound(wcif, roundId);
+  return groups.map((group) => ({
+    activity: group,
+    size: wcif.persons.filter(
+      (p: Person) =>
+        p.assignments?.filter(
+          (a: Assignment) => a.activityId === group.id && a.assignmentCode === 'competitor'
+        ).length ?? 0 > 0
+    ).length,
+  }));
+};

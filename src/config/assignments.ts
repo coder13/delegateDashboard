@@ -1,84 +1,86 @@
-import { Color } from '@mui/material';
+import { type Color } from '@mui/material';
 import { blue, deepPurple, green, grey, pink, purple, red, yellow } from '@mui/material/colors';
+import { type AssignmentCode } from '@wca/helpers';
 
-export const Assignments: Array<{
-  id: string;
+const Assignments: Array<{
+  id: AssignmentCode;
   name: string;
   color: Color;
   key: string;
   letter: string;
 }> = [
-    {
-      id: 'competitor',
-      name: 'Competitor',
-      color: green,
-      key: 'c',
-      letter: 'C',
-    },
-    {
-      id: 'staff-scrambler',
-      name: 'Scrambler',
-      color: yellow,
-      key: 's',
-      letter: 'S',
-    },
-    {
-      id: 'staff-runner',
-      name: 'Runner',
-      color: red,
-      key: 'r',
-      letter: 'R',
-    },
-    {
-      id: 'staff-judge',
-      name: 'Judge',
-      color: blue,
-      key: 'j',
-      letter: 'J',
-    },
-    {
-      id: 'staff-delegate',
-      name: 'Delegate',
-      color: purple,
-      key: 'd',
-      letter: 'D',
-    },
-    {
-      id: 'staff-stagelead',
-      name: 'Stage Lead',
-      color: deepPurple,
-      key: 'l',
-      letter: 'L',
-    },
-    {
-      id: 'staff-announcer',
-      name: 'Announcer',
-      color: pink,
-      key: 'a',
-      letter: 'A',
-    },
-    {
-      id: 'staff-dataentry',
-      name: 'Data Entry',
-      color: grey,
-      key: 'e',
-      letter: 'DA',
-    },
-    {
-      id: 'staff-other',
-      name: 'Other',
-      color: grey,
-      key: 'o',
-      letter: 'O',
-    },
-  ];
+  {
+    id: 'competitor',
+    name: 'Competitor',
+    color: green,
+    key: 'c',
+    letter: 'C',
+  },
+  {
+    id: 'staff-scrambler',
+    name: 'Scrambler',
+    color: yellow,
+    key: 's',
+    letter: 'S',
+  },
+  {
+    id: 'staff-runner',
+    name: 'Runner',
+    color: red,
+    key: 'r',
+    letter: 'R',
+  },
+  {
+    id: 'staff-judge',
+    name: 'Judge',
+    color: blue,
+    key: 'j',
+    letter: 'J',
+  },
+  {
+    id: 'staff-delegate',
+    name: 'Delegate',
+    color: purple,
+    key: 'd',
+    letter: 'D',
+  },
+  {
+    id: 'staff-stagelead',
+    name: 'Stage Lead',
+    color: deepPurple,
+    key: 'l',
+    letter: 'L',
+  },
+  {
+    id: 'staff-announcer',
+    name: 'Announcer',
+    color: pink,
+    key: 'a',
+    letter: 'A',
+  },
+  {
+    id: 'staff-dataentry',
+    name: 'Data Entry',
+    color: grey,
+    key: 'e',
+    letter: 'DA',
+  },
+  {
+    id: 'staff-other',
+    name: 'Other',
+    color: grey,
+    key: 'o',
+    letter: 'O',
+  },
+];
 
-export const AssignmentsMap = Assignments.reduce(
-  (map, assignment) => ({
-    ...map,
-    [assignment.id]: assignment,
-  }),
-  {}
-);
+export const AssignmentsMap: Record<AssignmentCode, (typeof Assignments)[number]> =
+  Assignments.reduce(
+    (map, assignment) => ({
+      ...map,
+      [assignment.id]: assignment,
+    }),
+    {}
+  );
 
 export default Assignments;

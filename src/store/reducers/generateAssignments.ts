@@ -1,69 +1,45 @@
-import { Competition } from '@wca/helpers';
-import { Generators, Generator, Constraints } from 'wca-group-generators';
-import { findRoundActivitiesById } from '../../lib/activities';
-import { createGroupsAcrossStages } from '../../lib/groups';
-import { hydrateStep } from '../../lib/recipes';
-import { mapIn } from '../../lib/utils';
+import {
+  generateCompetingAssignmentsForStaff,
+  generateCompetingGroupActitivitesForEveryone,
+  generateGroupAssignmentsForDelegatesAndOrganizers,
+  generateJudgeAssignmentsFromCompetingAssignments,
+} from '../../lib/assignmentGenerators';
+import { type InProgressAssignmment } from '../../lib/types';
+import { type GenerateAssignmentsPayload } from '../actions';
+import { type AppState } from '../initialState';
+import { bulkAddPersonAssignments } from './competitorAssignments';
 
-export function generateAssignments(state: { wcif: Competition }, action) {
-  const wcif = action.recipe.steps.reduce((wcif, step) => {
-    if (step.type === 'assignments') {
-      const generator = Generators[step.props.generator] as Generator;
+type AssignmentsReducer = ((a: InProgressAssignmment[]) => InProgressAssignmment[])[];
 
-      if (!generator) {
-        throw new Error(`Generator ${step.props.generator} not found`);
-      }
-      const hydratedStep = hydrateStep(wcif, action.roundId, step);
+/**
+ * Fills in assignment gaps. Everyone should end up having a competitor assignment and staff assignment
+ * 1. Start with giving out competitor assignments.
+ *   1a Start with assigning competitor assignments to people who are already assigned to staff
+ *   1b Assign organizers and delegates their competing assignments, don't assign  staff assignments
+ *   1c Then hand out competitor assignments to people who are not assigned to staff
+ *
+ * 2. Then give out judging assignments to competitors without staff assignments
+ */
+export function generateAssignments(state: AppState, action: GenerateAssignmentsPayload): AppState {
+  if (!state.wcif) return state;
 
-      const constraints =
-        hydratedStep.props.constraints.map((c) => {
-          if (!Constraints[c.constraint]) {
-            throw new Error(`Constraint ${c.constraint} not found`);
-          }
+  const wcif = state.wcif;
 
-          return {
-            constraint: Constraints[c.constraint],
-            weight: c.weight,
-            options: c.options,
-          };
-        }) || [];
+  const initializedGenerators = [
+    generateCompetingAssignmentsForStaff,
+    generateGroupAssignmentsForDelegatesAndOrganizers,
+    generateCompetingGroupActitivitesForEveryone,
+    generateJudgeAssignmentsFromCompetingAssignments,
+  ]
+    .map((generator) => generator(wcif, action.roundId))
+    .filter(Boolean) as AssignmentsReducer;
 
-      console.log(31, step.id, hydratedStep.props.cluster);
+  const newAssignments = initializedGenerators.reduce((accumulatingAssignments, generateFn) => {
+    const generatedAssignments = generateFn(accumulatingAssignments);
+    return [...accumulatingAssignments, ...generatedAssignments];
+  }, [] as InProgressAssignmment[]);
 
-      return generator.execute({
-        wcif,
-        ...hydratedStep.props,
-        constraints,
-        roundId: action.roundId,
-      });
-    } else if (step.type === 'groups') {
-      const roundActivities = findRoundActivitiesById(wcif, action.roundId);
-      const roundActivitiesWithGroups = createGroupsAcrossStages(wcif, roundActivities, {
-        spreadGroupsAcrossAllStages: true,
-        groups: step.props.count,
-      });
-
-      return {
-        ...wcif,
-        schedule: mapIn(wcif.schedule, ['venues'], (venue) =>
-          mapIn(venue, ['rooms'], (room) =>
-            mapIn(room, ['activities'], (activity) =>
-              roundActivitiesWithGroups.find((roundActivity) => roundActivity.id === activity.id)
-                ? roundActivitiesWithGroups.find(
-                    (roundActivity) => roundActivity.id === activity.id
-                  )
-                : activity
-            )
-          )
-        ),
-      };
-    }
-
-    return wcif;
-  }, state.wcif);
-
-  return {
-    ...state,
-    wcif,
-  };
+  return bulkAddPersonAssignments(state, {
+    assignments: newAssignments,
+  });
 }

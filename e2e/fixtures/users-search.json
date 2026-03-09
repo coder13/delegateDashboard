@@ -1,0 +1,9 @@
+{
+  "result": [
+    {
+      "id": 5001,
+      "name": "Search User",
+      "email": "search.user@example.com"
+    }
+  ]
+}

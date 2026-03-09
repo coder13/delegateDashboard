@@ -7,7 +7,7 @@ import {
   Link,
   MenuItem,
   Select,
-  SelectChangeEvent,
+  type SelectChangeEvent,
   Stack,
 } from '@mui/material';
 import { useAppSelector } from '../../../store';

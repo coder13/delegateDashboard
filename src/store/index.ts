@@ -1,16 +1,27 @@
-import { TypedUseSelectorHook, useSelector } from 'react-redux';
-import { createStore, applyMiddleware, compose } from 'redux';
-import thunkMiddleware from 'redux-thunk';
-import { AppState } from './initialState';
+import { type AppState } from './initialState';
 import reducer from './reducer';
+import { type TypedUseSelectorHook, useSelector, useDispatch } from 'react-redux';
+import { createStore, applyMiddleware, compose, type AnyAction, type Reducer } from 'redux';
+import { thunk, type ThunkDispatch } from 'redux-thunk';
 
-const composeEnhancer = compose;
+// Redux DevTools Extension - window property may not exist in production
+declare global {
+  interface Window {
+    __REDUX_DEVTOOLS_EXTENSION_COMPOSE__?: typeof compose;
+  }
+}
 
-export const store = createStore(reducer, composeEnhancer(applyMiddleware(thunkMiddleware)));
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+
+export const store = createStore(
+  reducer as Reducer<AppState, AnyAction>,
+  composeEnhancers(applyMiddleware(thunk))
+);
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<typeof store.getState>;
-// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
-export type AppDispatch = typeof store.dispatch;
+// Configure AppDispatch to support thunk actions
+export type AppDispatch = ThunkDispatch<RootState, unknown, AnyAction>;
 
 export const useAppSelector: TypedUseSelectorHook<AppState> = useSelector;
+export const useAppDispatch: () => AppDispatch = useDispatch;

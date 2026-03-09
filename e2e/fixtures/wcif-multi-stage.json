@@ -1,0 +1,96 @@
+{
+  "id": "MultiStageComp2026",
+  "name": "Multi-Stage Competition 2026",
+  "schedule": {
+    "startDate": "2026-02-15",
+    "numberOfDays": 1,
+    "venues": [
+      {
+        "id": 1,
+        "name": "Main Venue",
+        "latitudeMicrodegrees": 0,
+        "longitudeMicrodegrees": 0,
+        "countryIso2": "US",
+        "timezone": "UTC",
+        "rooms": [
+          {
+            "id": 1,
+            "name": "Main Room",
+            "color": "#ffffff",
+            "activities": [
+              {
+                "id": 100,
+                "name": "3x3x3 Cube, Round 1",
+                "activityCode": "333-r1",
+                "startTime": "2026-02-15T09:00:00Z",
+                "endTime": "2026-02-15T10:00:00Z",
+                "childActivities": [],
+                "extensions": []
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "name": "Side Room",
+            "color": "#ffffff",
+            "activities": [
+              {
+                "id": 200,
+                "name": "3x3x3 Cube, Round 1",
+                "activityCode": "333-r1",
+                "startTime": "2026-02-15T09:00:00Z",
+                "endTime": "2026-02-15T10:00:00Z",
+                "childActivities": [],
+                "extensions": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "events": [
+    {
+      "id": "333",
+      "rounds": [
+        {
+          "id": "333-r1",
+          "format": "a",
+          "timeLimit": null,
+          "cutoff": null,
+          "advancementCondition": null,
+          "results": [],
+          "extensions": []
+        }
+      ]
+    }
+  ],
+  "persons": [
+    {
+      "registrantId": 1,
+      "name": "Alex Example",
+      "wcaId": "2020ALEX01",
+      "countryIso2": "US",
+      "registration": {
+        "status": "accepted",
+        "eventIds": ["333"]
+      },
+      "assignments": []
+    },
+    {
+      "registrantId": 2,
+      "name": "Jamie Example",
+      "wcaId": null,
+      "countryIso2": "US",
+      "gender": "f",
+      "birthdate": "2011-05-01",
+      "email": "jamie@example.com",
+      "registration": {
+        "status": "accepted",
+        "eventIds": ["333"]
+      },
+      "assignments": []
+    }
+  ],
+  "extensions": []
+}
