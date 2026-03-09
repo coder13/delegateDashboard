@@ -94,9 +94,10 @@ export const getBaseCluster = (
   roundId: string
 ) => {
   switch (base) {
-    case 'personsInRound':
+    case 'personsInRound': {
       const round = wcif.events.flatMap((e) => e.rounds).find((r) => r.id === roundId) as Round;
       return personsShouldBeInRound(round)(acceptedRegistrations(wcif.persons));
+    }
     default:
       return wcif.persons;
   }
@@ -136,7 +137,7 @@ export const getCluster = (wcif: Competition, cluster: ClusterDefinition, roundI
       throw new Error(`Filter ${key} not found`);
     }
 
-    // @ts-ignore
+    // @ts-expect-error filter typing depends on filter key/value pair
     return acc.filter(filter(value, activityIds));
   }, baseCluster);
 

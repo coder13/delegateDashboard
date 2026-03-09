@@ -266,6 +266,7 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
         if (isInEditMode) {
           return [
             <GridActionsCellItem
+              key={`save-${id}`}
               icon={<Save />}
               label="Save"
               sx={{
@@ -274,6 +275,7 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
               onClick={handleSaveClick(id)}
             />,
             <GridActionsCellItem
+              key={`cancel-${id}`}
               icon={<Cancel />}
               label="Cancel"
               className="textPrimary"
@@ -285,6 +287,7 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
 
         return [
           <GridActionsCellItem
+            key={`edit-${id}`}
             icon={<Edit />}
             label="Edit"
             className="textPrimary"
@@ -292,6 +295,7 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
             color="inherit"
           />,
           <GridActionsCellItem
+            key={`delete-${id}`}
             icon={<Delete />}
             label="Delete"
             onClick={handleDeleteClick(id)}
@@ -343,7 +347,7 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
                 <FormHelperText>{generatorDef?.description ?? ''}</FormHelperText>
               </FormControl>
               {Object.keys(generatorDef?.optionsDef ?? {}).map((optionKey) => (
-                <FormControl variant="outlined" sx={{ m: 1, flex: 1 }}>
+                <FormControl key={optionKey} variant="outlined" sx={{ m: 1, flex: 1 }}>
                   <InputLabel id={`generator-${optionKey}-label`}>{optionKey}</InputLabel>
                   {generatorDef.optionsDef[optionKey].type === 'select' && (
                     <Select
@@ -358,7 +362,9 @@ export const EditStepDialog = ({ onClose, step, round }: EditStepDialogProps) =>
                         }))
                       }>
                       {generatorDef.optionsDef[optionKey].values.map((option) => (
-                        <MenuItem value={option}>{option}</MenuItem>
+                        <MenuItem key={option} value={option}>
+                          {option}
+                        </MenuItem>
                       ))}
                     </Select>
                   )}
