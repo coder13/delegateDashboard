@@ -102,7 +102,8 @@ export const uploadCurrentWCIFChanges = (cb) => (dispatch, getState) => {
     return;
   }
 
-  const changes = pick(wcif, Array.from(changedKeys));
+  const keysForPatch = ["formatVersion", ...Array.from(changedKeys)];
+    const changes = pick(wcif, keysForPatch);
 
   dispatch(updateUploading(true));
   patchWcif(competitionId, changes)
