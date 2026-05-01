@@ -23,6 +23,8 @@ describe('roundActivities reducers', () => {
     expect(nextState.needToSave).toBe(true);
     expect(nextState.changedKeys.has('schedule')).toBe(true);
     expect(nextActivities[0]).toBe(activityOne);
+    // The updated activity is returned as a new object (extraneous props are stripped), so use toEqual
+    expect(nextActivities[1]).not.toBe(updatedActivityTwo);
     expect(nextActivities[1]).toEqual(updatedActivityTwo);
   });
 
