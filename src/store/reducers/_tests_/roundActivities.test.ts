@@ -23,7 +23,21 @@ describe('roundActivities reducers', () => {
     expect(nextState.needToSave).toBe(true);
     expect(nextState.changedKeys.has('schedule')).toBe(true);
     expect(nextActivities[0]).toBe(activityOne);
-    expect(nextActivities[1]).toBe(updatedActivityTwo);
+    expect(nextActivities[1]).toEqual(updatedActivityTwo);
+  });
+
+  it('updateRoundActivities strips extraneous properties (e.g. room) from stored activities', () => {
+    const activityOne = buildActivity({ id: 1, name: 'Round 1', activityCode: '333-r1' });
+    const room = { id: 10, name: 'Room A', color: '#000', extensions: [], activities: [activityOne] };
+    // Simulate ActivityWithRoom: an activity with an extra `room` reference attached internally
+    const activityWithRoom = { ...activityOne, name: 'Round 1 Updated', room };
+    const state = buildState(buildWcif([activityOne]));
+
+    const nextState = updateRoundActivities(state, { activities: [activityWithRoom] });
+
+    const nextActivity = nextState.wcif?.schedule.venues[0].rooms[0].activities[0];
+    expect(nextActivity).not.toHaveProperty('room');
+    expect(nextActivity).toEqual(expect.objectContaining({ id: 1, name: 'Round 1 Updated' }));
   });
 
   it('updateRoundChildActivities updates child activities and keeps other assignments intact', () => {

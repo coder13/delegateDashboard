@@ -1,7 +1,7 @@
 import { mapIn } from '../../lib/utils';
 import type { UpdateRoundActivitiesPayload, UpdateRoundChildActivitiesPayload } from '../actions';
 import type { AppState } from '../initialState';
-import type { Assignment, Person } from '@wca/helpers';
+import type { Activity, Assignment, Person } from '@wca/helpers';
 
 /**
  * Updates the child activities of a round activity and also updates the assignments of the persons accordingly
@@ -83,7 +83,13 @@ export const updateRoundActivities = (
             ...room,
             activities: room.activities.map((activity) => {
               const updatedActivity = action.activities.find((a) => a.id === activity.id);
-              return updatedActivity || activity;
+              if (!updatedActivity) return activity;
+              // Strip extraneous properties (e.g. `room`) that may be present from internal use
+              // but are not valid WCIF schema properties
+              const { room: _room, ...wcifActivity } = updatedActivity as Activity & {
+                room?: unknown;
+              };
+              return wcifActivity as Activity;
             }),
           })),
         })),
