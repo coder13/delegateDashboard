@@ -1,9 +1,9 @@
 import {
   earliestStartTimeForRound,
   hasDistributedAttempts,
-  parseActivityCode,
 } from '../../lib/domain/activities';
 import { eventNameById } from '../../lib/domain/events';
+import { isAlwaysVisibleRound } from '../../lib/wcif/rounds';
 import { useCommandPrompt } from '../../providers/CommandPromptProvider';
 import { useAppSelector } from '../../store';
 import RoundListItem from './RoundListItem';
@@ -29,11 +29,15 @@ const RoundSelector = ({ onSelected }: RoundSelectorProps) => {
 
   const attemptCountForRound = (round: Round) => (round.format === 'm' ? 3 : +round.format);
 
-  const shouldShowRound = (round: Round) => {
+  const shouldShowRound = (eventId: string, round: Round) => {
     if (!wcif) return false;
 
-    const { roundNumber } = parseActivityCode(round.id);
-    if (roundNumber === 1 || showAllRounds) {
+    const event = wcif.events.find((candidate) => candidate.id === eventId);
+    if (!event) {
+      return false;
+    }
+
+    if (showAllRounds || isAlwaysVisibleRound(event, round)) {
       return true;
     }
 
@@ -51,9 +55,8 @@ const RoundSelector = ({ onSelected }: RoundSelectorProps) => {
 
   const rounds = wcif
     ? wcif.events
-        .map((e) => e.rounds)
+        .map((e) => e.rounds.filter((round) => shouldShowRound(e.id, round)))
         .flat()
-        .filter(shouldShowRound)
     : [];
 
   const roundIds = rounds.flatMap((r) => {
