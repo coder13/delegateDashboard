@@ -64,7 +64,7 @@ describe('formatAdvancementCondition', () => {
 });
 
 describe('getAdvancementConditionForRound', () => {
-  it('returns true when a linked source round has downstream participation conditions', () => {
+  it('returns true when a round has a v2 participation ruleset', () => {
     const event = buildEvent({
       id: 'clock',
       rounds: [
@@ -106,6 +106,7 @@ describe('getAdvancementConditionForRound', () => {
 
     expect(getAdvancementConditionForRound(event, 'clock-r1')).toBe(true);
     expect(getAdvancementConditionForRound(event, 'clock-r2')).toBe(true);
+    expect(getAdvancementConditionForRound(event, 'clock-r3')).toBe(true);
   });
 });
 
