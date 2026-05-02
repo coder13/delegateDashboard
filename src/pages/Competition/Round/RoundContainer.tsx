@@ -7,6 +7,8 @@ import ConfigureStationNumbersDialog from '../../../dialogs/ConfigureStationNumb
 import { RawRoundActivitiesDataDialog } from '../../../dialogs/RawRoundActivitiesDataDialog';
 import { RawRoundDataDialog } from '../../../dialogs/RawRoundDataDialog';
 import { RoundActionButtons } from '../../../components/RoundActionButtons';
+import { activityCodeToName } from '../../../lib/domain/activities';
+import { getDualRoundDetails } from '../../../lib/wcif/rounds';
 import { useRoundActions } from './hooks/useRoundActions';
 import { useRoundData } from './hooks/useRoundData';
 import { useRoundDialogs } from './hooks/useRoundDialogs';
@@ -15,6 +17,7 @@ import NormalRoundView from './NormalRoundView';
 import { getRoundConfigExtensionData } from '../../../lib/wcif/extensions/delegateDashboard/delegateDashboard';
 import { useAppDispatch } from '../../../store';
 import { runRecipe as runRecipeAction, updateRoundExtensionData } from '../../../store/actions';
+import { Alert } from '@mui/material';
 import { type Round } from '@wca/helpers';
 import { ConfirmProvider } from 'material-ui-confirm';
 import { useState } from 'react';
@@ -56,6 +59,8 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
     roundActivities,
   });
 
+  const event = wcif?.events.find((candidate) => candidate.id === eventId);
+  const dualRoundDetails = event ? getDualRoundDetails(event, round.id) : null;
   const existingRoundConfig = getRoundConfigExtensionData(round);
   const existingRecipe = existingRoundConfig?.recipe as { id?: string } | undefined;
   const [recipeId, setRecipeId] = useState<string>(existingRecipe?.id ?? 'pnw');
@@ -164,6 +169,13 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
 
   return (
     <ConfirmProvider>
+      {dualRoundDetails && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          This event is configured as dual rounds.{' '}
+          {dualRoundDetails.linkedRoundIds.map(activityCodeToName).join(' and ')} feed into{' '}
+          {activityCodeToName(dualRoundDetails.targetRoundId)}.
+        </Alert>
+      )}
       {isDistributedAttemptRoundLevel ? (
         <DistributedAttemptRoundView
           activityCode={activityCode}
