@@ -1,6 +1,13 @@
 import { parseActivityCode } from '../domain/activities';
 import { type AdvancementCondition, type Event, type ParticipationRuleset, type Round } from '@wca/helpers';
 
+export interface DualRoundDetails {
+  linkedRoundIds: string[];
+  targetRoundId: string;
+  isSourceRound: boolean;
+  isTargetRound: boolean;
+}
+
 const hasLegacyAdvancementCondition = (
   round: Round
 ): round is Round & { advancementCondition: AdvancementCondition } =>
@@ -54,4 +61,37 @@ export const getAdvancementConditionForRound = (
   });
 
   return nextRound ? getDerivedAdvancementCondition(nextRound) : null;
+};
+
+export const getDualRoundDetails = (
+  event: Event,
+  roundId: string
+): DualRoundDetails | null => {
+  for (const candidate of event.rounds) {
+    const participationSource = getParticipationRuleset(candidate)?.participationSource;
+
+    if (participationSource?.type !== 'linkedRounds' || participationSource.roundIds.length < 2) {
+      continue;
+    }
+
+    if (candidate.id === roundId) {
+      return {
+        linkedRoundIds: participationSource.roundIds,
+        targetRoundId: candidate.id,
+        isSourceRound: false,
+        isTargetRound: true,
+      };
+    }
+
+    if (participationSource.roundIds.includes(roundId)) {
+      return {
+        linkedRoundIds: participationSource.roundIds,
+        targetRoundId: candidate.id,
+        isSourceRound: true,
+        isTargetRound: false,
+      };
+    }
+  }
+
+  return null;
 };

@@ -9,6 +9,8 @@ import { RawRoundActivitiesDataDialog } from '../../../dialogs/RawRoundActivitie
 import { RawRoundDataDialog } from '../../../dialogs/RawRoundDataDialog';
 import { RoundActionButtons } from '../../../components/RoundActionButtons';
 import { RoundStatisticsCard } from '../../../components/RoundStatisticsCard';
+import { activityCodeToName } from '../../../lib/domain/activities';
+import { getDualRoundDetails } from '../../../lib/wcif/rounds';
 import { useRoundActions } from './hooks/useRoundActions';
 import { useRoundData } from './hooks/useRoundData';
 import { useRoundDialogs } from './hooks/useRoundDialogs';
@@ -44,6 +46,8 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
     groups,
     roundActivities,
   });
+  const event = wcif?.events.find((candidate) => candidate.id === eventId);
+  const dualRoundDetails = event ? getDualRoundDetails(event, round.id) : null;
 
   if (roundActivities.length === 0) {
     return (
@@ -74,6 +78,15 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
             </Alert>
           )}
         </Grid>
+        {dualRoundDetails && (
+          <Grid item>
+            <Alert severity="info">
+              This event is configured as dual rounds.{' '}
+              {dualRoundDetails.linkedRoundIds.map(activityCodeToName).join(' and ')} feed into{' '}
+              {activityCodeToName(dualRoundDetails.targetRoundId)}.
+            </Alert>
+          </Grid>
+        )}
         <Grid item>
           <RoundStatisticsCard
             activityCode={activityCode}
