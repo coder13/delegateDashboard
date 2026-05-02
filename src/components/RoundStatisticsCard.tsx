@@ -65,6 +65,8 @@ export const RoundStatisticsCard = ({
   linkedRounds = [],
   competitionId,
 }: RoundStatisticsCardProps) => {
+  const event = wcif?.events.find((candidate) => candidate.id === eventId) ?? null;
+
   return (
     <Card>
       <CardHeader
@@ -198,6 +200,7 @@ export const RoundStatisticsCard = ({
         </TableBody>
       </Table>
       <RoundLimitInfo
+        event={event}
         round={round}
         eventId={eventId}
         personsShouldBeInRound={personsShouldBeInRound}

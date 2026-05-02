@@ -1,5 +1,5 @@
 import { parseActivityCode } from '../domain/activities';
-import { type AdvancementCondition, type Event, type ParticipationRuleset, type Round } from '@wca/helpers';
+import { formatCentiseconds, type AdvancementCondition, type Event, type ParticipationRuleset, type Round } from '@wca/helpers';
 
 export interface DualRoundDetails {
   linkedRoundIds: string[];
@@ -39,6 +39,27 @@ export const getDerivedAdvancementCondition = (
     type: participationSource.resultCondition.type,
     level: participationSource.resultCondition.value,
   };
+};
+
+export const formatAdvancementCondition = ({ type, level }: AdvancementCondition): string => {
+  switch (type) {
+    case 'ranking':
+      return `Top ${level}`;
+    case 'percent':
+      return `Top ${level}%`;
+    case 'attemptResult':
+      if (level === -2) {
+        return '> DNS';
+      }
+
+      if (level === -1) {
+        return '> DNF';
+      }
+
+      return `< ${formatCentiseconds(level)}`;
+    default:
+      return '';
+  }
 };
 
 export const getAdvancementConditionForRound = (
@@ -83,6 +104,60 @@ export const getDisplayAdvancementConditionForRound = (
   });
 
   return nextRound ? getDerivedAdvancementCondition(nextRound) : null;
+};
+
+const formatShortRoundLabel = (roundId: string): string => {
+  const { roundNumber } = parseActivityCode(roundId);
+  return roundNumber ? `R${roundNumber}` : roundId;
+};
+
+const formatLongRoundLabel = (roundId: string): string => {
+  const { roundNumber } = parseActivityCode(roundId);
+  return roundNumber ? `round ${roundNumber}` : roundId;
+};
+
+const findLinkedTargetRound = (event: Event, roundId: string): Round | undefined =>
+  event.rounds.find((candidate) => {
+    const participationSource = getParticipationRuleset(candidate)?.participationSource;
+    return participationSource?.type === 'linkedRounds' && participationSource.roundIds.includes(roundId);
+  });
+
+export const getParticipationConditionTextForRound = (
+  event: Event,
+  roundId: string
+): string | null => {
+  const round = event.rounds.find((candidate) => candidate.id === roundId);
+
+  if (!round) {
+    return null;
+  }
+
+  const participationSource = getParticipationRuleset(round)?.participationSource;
+
+  if (participationSource?.type === 'linkedRounds') {
+    const sourceRounds = participationSource.roundIds.map(formatShortRoundLabel).join(' & ');
+    return `${formatAdvancementCondition({
+      type: participationSource.resultCondition.type,
+      level: participationSource.resultCondition.value,
+    })} from dual rounds ${sourceRounds} to ${formatLongRoundLabel(round.id)}`;
+  }
+
+  if (hasLegacyAdvancementCondition(round)) {
+    const currentRoundIndex = event.rounds.findIndex((candidate) => candidate.id === roundId);
+    const nextRound = currentRoundIndex >= 0 ? event.rounds[currentRoundIndex + 1] : undefined;
+
+    return nextRound
+      ? `${formatAdvancementCondition(round.advancementCondition)} to ${formatLongRoundLabel(nextRound.id)}`
+      : null;
+  }
+
+  const linkedTargetRound = findLinkedTargetRound(event, roundId);
+
+  if (!linkedTargetRound) {
+    return null;
+  }
+
+  return getParticipationConditionTextForRound(event, linkedTargetRound.id);
 };
 
 export const getDualRoundDetails = (

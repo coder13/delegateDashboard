@@ -1,15 +1,21 @@
 import { mayMakeCutoff, mayMakeTimeLimit } from '../lib/domain/persons';
+import { getParticipationConditionTextForRound } from '../lib/wcif/rounds';
 import { renderResultByEventId } from '../lib/utils/utils';
 import { Box, Divider, Tooltip, Typography } from '@mui/material';
-import { type EventId, formatCentiseconds, type Person, type Round } from '@wca/helpers';
+import { type Event, type EventId, formatCentiseconds, type Person, type Round } from '@wca/helpers';
 
 interface RoundLimitInfoProps {
+  event: Event | null;
   round: Round;
   eventId: string;
   personsShouldBeInRound: Person[];
 }
 
-export const RoundLimitInfo = ({ round, eventId, personsShouldBeInRound }: RoundLimitInfoProps) => {
+export const RoundLimitInfo = ({ event, round, eventId, personsShouldBeInRound }: RoundLimitInfoProps) => {
+  const participationConditionText = event
+    ? getParticipationConditionTextForRound(event, round.id)
+    : null;
+
   return (
     <Box sx={{ display: 'flex' }}>
       {round.timeLimit && (
@@ -25,7 +31,7 @@ export const RoundLimitInfo = ({ round, eventId, personsShouldBeInRound }: Round
           </Box>
         </Tooltip>
       )}
-      <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+      {round.timeLimit && round.cutoff && <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />}
       {round.cutoff && (
         <Tooltip title="Defined by the number of people who have a PR average under the cutoff">
           <Box sx={{ px: 3, py: 1 }}>
@@ -41,6 +47,14 @@ export const RoundLimitInfo = ({ round, eventId, personsShouldBeInRound }: Round
             )}
           </Box>
         </Tooltip>
+      )}
+      {participationConditionText && (
+        <>
+          {(round.timeLimit || round.cutoff) && <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />}
+          <Box sx={{ px: 3, py: 1 }}>
+            <Typography>Participation: {participationConditionText}</Typography>
+          </Box>
+        </>
       )}
     </Box>
   );
