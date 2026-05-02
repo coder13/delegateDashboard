@@ -204,6 +204,36 @@ describe('shouldBeInRound', () => {
     const test = shouldBeInRound(round);
     expect(test(createMockPerson())).toBe(false);
   });
+
+  it('uses registration for linked registration rounds beyond round 1', () => {
+    const round: Round = {
+      id: 'clock-r2',
+      format: 'a',
+      timeLimit: null,
+      cutoff: null,
+      advancementCondition: null,
+      scrambleSetCount: 1,
+      results: [],
+      participationRuleset: {
+        participationSource: {
+          type: 'registrations',
+        },
+        reservedPlaces: null,
+      },
+      extensions: [],
+    };
+
+    const test = shouldBeInRound(round);
+    const personRegistered = createMockPerson({
+      registration: { ...createMockPerson().registration!, eventIds: ['clock'] },
+    });
+    const personNotRegistered = createMockPerson({
+      registration: { ...createMockPerson().registration!, eventIds: ['333'] },
+    });
+
+    expect(test(personRegistered)).toBe(true);
+    expect(test(personNotRegistered)).toBe(false);
+  });
 });
 
 describe('personsShouldBeInRound', () => {

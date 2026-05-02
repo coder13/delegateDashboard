@@ -11,6 +11,7 @@ import { useAppSelector } from '../../../store';
 import { Button, Typography } from '@mui/material';
 import {
   type Activity,
+  type AdvancementCondition,
   type Assignment,
   type Event,
   type Person,
@@ -22,15 +23,11 @@ import { download, generateCsv, mkConfig } from 'export-to-csv';
 import { flatten } from 'lodash';
 import { useCallback } from 'react';
 import Grid from '@mui/material/GridLegacy';
-
-type AdvancementConditionLike = {
-  type: 'ranking' | 'percent' | 'attemptResult';
-  level: number;
-};
+import { getAdvancementConditionForRound } from '../../../lib/wcif/rounds';
 
 type AssignmentWithActivity = Assignment & { activity: ActivityWithParent };
 
-const advancementConditionToText = ({ type, level }: AdvancementConditionLike): string => {
+const advancementConditionToText = ({ type, level }: AdvancementCondition): string => {
   switch (type) {
     case 'ranking':
       return `Top ${level}`;
@@ -256,9 +253,10 @@ const ExportPage = () => {
             ? `1 or 2 < ${formatCentiseconds(round.cutoff.attemptResult)}`
             : '',
           round_format: roundFormatShortById(round.format),
-          advancement_condition: round.advancementCondition
-            ? advancementConditionToText(round.advancementCondition)
-            : '',
+          advancement_condition: (() => {
+            const advancementCondition = getAdvancementConditionForRound(event, round.id);
+            return advancementCondition ? advancementConditionToText(advancementCondition) : '';
+          })(),
           round_number: parseActivityCode(round.id)?.roundNumber ?? '',
         };
 
