@@ -27,7 +27,6 @@ interface RoundContainerProps {
 
 const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContainerProps) => {
   const dialogs = useRoundDialogs();
-
   const {
     wcif,
     personsShouldBeInRound,
@@ -40,15 +39,17 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
     adamRoundConfig,
     isDistributedAttemptRoundLevel,
     distributedAttemptGroups,
+    linkedRoundIds,
   } = useRoundData(activityCode, round);
-
   const {
     handleGenerateAssignments,
     handleAssignToRoundAttempt,
     handleResetAttemptAssignments,
     handleResetAll,
     handleResetNonScrambling,
+    handleCopyAssignments,
   } = useRoundActions({
+    wcif,
     round,
     activityCode,
     groups,
@@ -57,16 +58,13 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
 
   const event = wcif?.events.find((candidate) => candidate.id === eventId);
   const dualRoundDetails = event ? getDualRoundDetails(event, round.id) : null;
+  const linkedRounds = linkedRoundIds.map((linkedRoundId) => ({
+    roundId: linkedRoundId,
+    onCopyAssignments:
+      linkedRoundId === round.id ? undefined : () => handleCopyAssignments(linkedRoundId, round.id),
+  }));
   if (roundActivities.length === 0) {
-    return (
-      <div>
-        No Group Activities found. <br />
-      </div>
-    );
-  }
-
-  if (!round) {
-    return null;
+    return <div>No Group Activities found.</div>;
   }
 
   const actionButtons = (
@@ -88,8 +86,57 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
     />
   );
 
-  const commonDialogs = (
-    <>
+  return (
+    <ConfirmProvider>
+      {dualRoundDetails && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          This event is configured as dual rounds.{' '}
+          {dualRoundDetails.linkedRoundIds.map(activityCodeToName).join(' and ')} feed into{' '}
+          {activityCodeToName(dualRoundDetails.targetRoundId)}.
+        </Alert>
+      )}
+      {isDistributedAttemptRoundLevel ? (
+        <DistributedAttemptRoundView
+          activityCode={activityCode}
+          round={round}
+          eventId={eventId}
+          personsShouldBeInRound={personsShouldBeInRound}
+          personsAssigned={personsAssigned}
+          personsAssignedWithCompetitorAssignmentCount={
+            personsAssignedWithCompetitorAssignmentCount
+          }
+          wcif={wcif}
+          onOpenRawRoundData={() => dialogs.rawRoundData.setOpen(true)}
+          onOpenRawActivitiesData={() => dialogs.rawRoundActivitiesData.setOpen(true)}
+          onOpenPersonsDialog={dialogs.personsDialog.open}
+          onOpenPersonsAssignmentsDialog={() => dialogs.personsAssignments.setOpen(true)}
+          actionButtons={actionButtons}
+          adamRoundConfig={adamRoundConfig}
+          distributedAttemptGroups={distributedAttemptGroups}
+        />
+      ) : (
+        <NormalRoundView
+          activityCode={activityCode}
+          roundActivities={roundActivities}
+          round={round}
+          eventId={eventId}
+          personsShouldBeInRound={personsShouldBeInRound}
+          personsAssigned={personsAssigned}
+          personsAssignedWithCompetitorAssignmentCount={
+            personsAssignedWithCompetitorAssignmentCount
+          }
+          wcif={wcif}
+          onOpenRawRoundData={() => dialogs.rawRoundData.setOpen(true)}
+          onOpenRawActivitiesData={() => dialogs.rawRoundActivitiesData.setOpen(true)}
+          onOpenPersonsDialog={dialogs.personsDialog.open}
+          onOpenPersonsAssignmentsDialog={() => dialogs.personsAssignments.setOpen(true)}
+          actionButtons={actionButtons}
+          adamRoundConfig={adamRoundConfig}
+          sortedGroups={sortedGroups}
+          competitionId={wcif?.id}
+          linkedRounds={linkedRounds}
+        />
+      )}
       <ConfigureAssignmentsDialog
         open={dialogs.configureAssignments.open}
         onClose={() => dialogs.configureAssignments.setOpen(false)}
@@ -140,59 +187,6 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
         onClose={() => dialogs.rawRoundActivitiesData.setOpen(false)}
         activityCode={activityCode}
       />
-    </>
-  );
-
-  return (
-    <ConfirmProvider>
-      {dualRoundDetails && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          This event is configured as dual rounds.{' '}
-          {dualRoundDetails.linkedRoundIds.map(activityCodeToName).join(' and ')} feed into{' '}
-          {activityCodeToName(dualRoundDetails.targetRoundId)}.
-        </Alert>
-      )}
-      {isDistributedAttemptRoundLevel ? (
-        <DistributedAttemptRoundView
-          activityCode={activityCode}
-          round={round}
-          eventId={eventId}
-          personsShouldBeInRound={personsShouldBeInRound}
-          personsAssigned={personsAssigned}
-          personsAssignedWithCompetitorAssignmentCount={
-            personsAssignedWithCompetitorAssignmentCount
-          }
-          wcif={wcif}
-          onOpenRawRoundData={() => dialogs.rawRoundData.setOpen(true)}
-          onOpenRawActivitiesData={() => dialogs.rawRoundActivitiesData.setOpen(true)}
-          onOpenPersonsDialog={dialogs.personsDialog.open}
-          onOpenPersonsAssignmentsDialog={() => dialogs.personsAssignments.setOpen(true)}
-          actionButtons={actionButtons}
-          adamRoundConfig={adamRoundConfig}
-          distributedAttemptGroups={distributedAttemptGroups}
-        />
-      ) : (
-        <NormalRoundView
-          activityCode={activityCode}
-          roundActivities={roundActivities}
-          round={round}
-          eventId={eventId}
-          personsShouldBeInRound={personsShouldBeInRound}
-          personsAssigned={personsAssigned}
-          personsAssignedWithCompetitorAssignmentCount={
-            personsAssignedWithCompetitorAssignmentCount
-          }
-          wcif={wcif}
-          onOpenRawRoundData={() => dialogs.rawRoundData.setOpen(true)}
-          onOpenRawActivitiesData={() => dialogs.rawRoundActivitiesData.setOpen(true)}
-          onOpenPersonsDialog={dialogs.personsDialog.open}
-          onOpenPersonsAssignmentsDialog={() => dialogs.personsAssignments.setOpen(true)}
-          actionButtons={actionButtons}
-          adamRoundConfig={adamRoundConfig}
-          sortedGroups={sortedGroups}
-        />
-      )}
-      {commonDialogs}
     </ConfirmProvider>
   );
 };
