@@ -227,6 +227,54 @@ describe('validateAdvancementConditions', () => {
     expect(errors).toHaveLength(0);
   });
 
+  it('should accept registration participation rulesets for non-final rounds', () => {
+    const event: Event = {
+      id: 'sq1',
+      rounds: [
+        {
+          id: 'sq1-r1',
+          format: 'a',
+          timeLimit: {
+            centiseconds: 12000,
+            cumulativeRoundIds: [],
+          },
+          cutoff: {
+            numberOfAttempts: 2,
+            attemptResult: 6000,
+          },
+          advancementCondition: null,
+          results: [],
+          scrambleSetCount: 2,
+          linkedRounds: null,
+          participationRuleset: {
+            participationSource: {
+              type: 'registrations',
+            },
+            reservedPlaces: null,
+          },
+          extensions: [],
+        },
+        {
+          id: 'sq1-r2',
+          format: 'a',
+          timeLimit: null,
+          cutoff: null,
+          advancementCondition: null,
+          results: [],
+          scrambleSetCount: 1,
+          extensions: [],
+        },
+      ],
+      competitorLimit: null,
+      qualification: null,
+      extensions: [],
+    };
+
+    const errors = validateAdvancementConditions(event);
+
+    expect(errors).toHaveLength(0);
+  });
+
   it('should return no errors for event with single round', () => {
     const event: Event = {
       id: '333',

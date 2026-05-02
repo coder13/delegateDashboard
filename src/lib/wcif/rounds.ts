@@ -84,12 +84,7 @@ export const getAdvancementConditionForRound = (
     return true;
   }
 
-  const nextRound = event.rounds.find((candidate) => {
-    const participationSource = getParticipationRuleset(candidate)?.participationSource;
-    return participationSource?.type === 'linkedRounds' && participationSource.roundIds.includes(roundId);
-  });
-
-  return Boolean(nextRound);
+  return getParticipationRuleset(round) !== null;
 };
 
 export const getDisplayAdvancementConditionForRound = (
