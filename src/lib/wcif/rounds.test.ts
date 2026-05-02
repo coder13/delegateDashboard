@@ -56,6 +56,11 @@ describe('formatAdvancementCondition', () => {
     expect(formatAdvancementCondition({ type: 'ranking', level: 14 })).toBe('Top 14');
     expect(formatAdvancementCondition({ type: 'percent', level: 40 })).toBe('Top 40%');
   });
+
+  it('returns an empty string for missing advancement conditions', () => {
+    expect(formatAdvancementCondition(null)).toBe('');
+    expect(formatAdvancementCondition(undefined)).toBe('');
+  });
 });
 
 describe('getAdvancementConditionForRound', () => {
