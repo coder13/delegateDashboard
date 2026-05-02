@@ -5,6 +5,7 @@ import {
   getDerivedAdvancementCondition,
   getDualRoundDetails,
   getParticipationConditionTextForRound,
+  getParticipationSourceTextForRound,
   usesRegistrationParticipation,
 } from './rounds';
 import { buildEvent, buildRound } from '../../store/reducers/_tests_/helpers';
@@ -287,8 +288,74 @@ describe('getParticipationConditionTextForRound', () => {
     expect(getParticipationConditionTextForRound(event, 'clock-r1')).toBe(
       'Top 40% from dual rounds R1 & R2 to round 3'
     );
-    expect(getParticipationConditionTextForRound(event, 'clock-r3')).toBe(
-      'Top 40% from dual rounds R1 & R2 to round 3'
+    expect(getParticipationConditionTextForRound(event, 'clock-r3')).toBeNull();
+  });
+});
+
+describe('getParticipationSourceTextForRound', () => {
+  it('formats registration participation for first rounds', () => {
+    const event = buildEvent({
+      id: 'sq1',
+      rounds: [
+        buildRound({
+          id: 'sq1-r1',
+          participationRuleset: {
+            participationSource: {
+              type: 'registrations',
+            },
+            reservedPlaces: null,
+          },
+        }),
+      ],
+    });
+
+    expect(getParticipationSourceTextForRound(event, 'sq1-r1')).toBe(
+      'Open to all registered competitors'
+    );
+  });
+
+  it('formats dual-round participation source for target rounds', () => {
+    const event = buildEvent({
+      id: 'clock',
+      rounds: [
+        buildRound({
+          id: 'clock-r1',
+          participationRuleset: {
+            participationSource: {
+              type: 'registrations',
+            },
+            reservedPlaces: null,
+          },
+        }),
+        buildRound({
+          id: 'clock-r2',
+          participationRuleset: {
+            participationSource: {
+              type: 'registrations',
+            },
+            reservedPlaces: null,
+          },
+        }),
+        buildRound({
+          id: 'clock-r3',
+          participationRuleset: {
+            participationSource: {
+              type: 'linkedRounds',
+              roundIds: ['clock-r1', 'clock-r2'],
+              resultCondition: {
+                type: 'percent',
+                scope: 'average',
+                value: 40,
+              },
+            },
+            reservedPlaces: null,
+          },
+        }),
+      ],
+    });
+
+    expect(getParticipationSourceTextForRound(event, 'clock-r3')).toBe(
+      'Top 40% from dual rounds R1 & R2'
     );
   });
 });
