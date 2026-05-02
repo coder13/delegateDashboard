@@ -44,6 +44,28 @@ export const getDerivedAdvancementCondition = (
 export const getAdvancementConditionForRound = (
   event: Event,
   roundId: string
+): boolean => {
+  const round = event.rounds.find((candidate) => candidate.id === roundId);
+
+  if (!round) {
+    return false;
+  }
+
+  if (hasLegacyAdvancementCondition(round)) {
+    return true;
+  }
+
+  const nextRound = event.rounds.find((candidate) => {
+    const participationSource = getParticipationRuleset(candidate)?.participationSource;
+    return participationSource?.type === 'linkedRounds' && participationSource.roundIds.includes(roundId);
+  });
+
+  return Boolean(nextRound);
+};
+
+export const getDisplayAdvancementConditionForRound = (
+  event: Event,
+  roundId: string
 ): AdvancementCondition | null => {
   const round = event.rounds.find((candidate) => candidate.id === roundId);
 

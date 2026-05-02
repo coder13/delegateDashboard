@@ -23,7 +23,7 @@ import { download, generateCsv, mkConfig } from 'export-to-csv';
 import { flatten } from 'lodash';
 import { useCallback } from 'react';
 import Grid from '@mui/material/GridLegacy';
-import { getAdvancementConditionForRound } from '../../../lib/wcif/rounds';
+import { getDisplayAdvancementConditionForRound } from '../../../lib/wcif/rounds';
 
 type AssignmentWithActivity = Assignment & { activity: ActivityWithParent };
 
@@ -254,7 +254,7 @@ const ExportPage = () => {
             : '',
           round_format: roundFormatShortById(round.format),
           advancement_condition: (() => {
-            const advancementCondition = getAdvancementConditionForRound(event, round.id);
+            const advancementCondition = getDisplayAdvancementConditionForRound(event, round.id);
             return advancementCondition ? advancementConditionToText(advancementCondition) : '';
           })(),
           round_number: parseActivityCode(round.id)?.roundNumber ?? '',
