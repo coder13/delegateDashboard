@@ -4,6 +4,7 @@ import {
   getDisplayAdvancementConditionForRound,
   getDerivedAdvancementCondition,
   getDualRoundDetails,
+  getNextRoundParticipationTextForRound,
   getParticipationConditionTextForRound,
   getParticipationSourceTextForRound,
   usesRegistrationParticipation,
@@ -242,7 +243,7 @@ describe('getParticipationConditionTextForRound', () => {
       ],
     });
 
-    expect(getParticipationConditionTextForRound(event, '333-r1')).toBe('Top 14 to round 2');
+    expect(getParticipationConditionTextForRound(event, '333-r1')).toBe('Top 14 to next round');
   });
 
   it('formats dual-round participation text for linked source and target rounds', () => {
@@ -314,6 +315,40 @@ describe('getParticipationSourceTextForRound', () => {
     );
   });
 
+  it('formats v2 single-round participation source for downstream rounds', () => {
+    const event = buildEvent({
+      id: 'sq1',
+      rounds: [
+        buildRound({
+          id: 'sq1-r1',
+          participationRuleset: {
+            participationSource: {
+              type: 'registrations',
+            },
+            reservedPlaces: null,
+          },
+        }),
+        buildRound({
+          id: 'sq1-r2',
+          participationRuleset: {
+            participationSource: {
+              type: 'round',
+              roundId: 'sq1-r1',
+              resultCondition: {
+                type: 'ranking',
+                scope: 'average',
+                value: 6,
+              },
+            },
+            reservedPlaces: null,
+          },
+        }),
+      ],
+    });
+
+    expect(getParticipationSourceTextForRound(event, 'sq1-r2')).toBe('Top 6 from previous round');
+  });
+
   it('formats dual-round participation source for target rounds', () => {
     const event = buildEvent({
       id: 'clock',
@@ -354,7 +389,123 @@ describe('getParticipationSourceTextForRound', () => {
       ],
     });
 
-    expect(getParticipationSourceTextForRound(event, 'clock-r3')).toBe(
+    expect(getParticipationSourceTextForRound(event, 'clock-r3')).toBe('Top 40% from dual rounds R1 & R2');
+  });
+
+  it('formats legacy participation source for downstream rounds', () => {
+    const event = buildEvent({
+      id: 'sq1',
+      rounds: [
+        buildRound({
+          id: 'sq1-r1',
+          advancementCondition: { type: 'ranking', level: 14 },
+        }),
+        buildRound({ id: 'sq1-r2' }),
+      ],
+    });
+
+    expect(getParticipationSourceTextForRound(event, 'sq1-r2')).toBe('Top 14 from previous round');
+  });
+});
+
+describe('getNextRoundParticipationTextForRound', () => {
+  it('returns the downstream round participation for legacy rounds', () => {
+    const event = buildEvent({
+      id: 'sq1',
+      rounds: [
+        buildRound({
+          id: 'sq1-r1',
+          advancementCondition: { type: 'ranking', level: 14 },
+        }),
+        buildRound({ id: 'sq1-r2' }),
+      ],
+    });
+
+    expect(getNextRoundParticipationTextForRound(event, 'sq1-r1')).toBe(
+      'Top 14 from previous round'
+    );
+  });
+
+  it('returns the downstream round participation for v2 single-round progression', () => {
+    const event = buildEvent({
+      id: 'sq1',
+      rounds: [
+        buildRound({
+          id: 'sq1-r1',
+          participationRuleset: {
+            participationSource: {
+              type: 'registrations',
+            },
+            reservedPlaces: null,
+          },
+        }),
+        buildRound({
+          id: 'sq1-r2',
+          participationRuleset: {
+            participationSource: {
+              type: 'round',
+              roundId: 'sq1-r1',
+              resultCondition: {
+                type: 'ranking',
+                scope: 'average',
+                value: 6,
+              },
+            },
+            reservedPlaces: null,
+          },
+        }),
+      ],
+    });
+
+    expect(getNextRoundParticipationTextForRound(event, 'sq1-r1')).toBe(
+      'Top 6 from previous round'
+    );
+  });
+
+  it('returns the shared seeded round participation for dual-round source rounds', () => {
+    const event = buildEvent({
+      id: 'clock',
+      rounds: [
+        buildRound({
+          id: 'clock-r1',
+          participationRuleset: {
+            participationSource: {
+              type: 'registrations',
+            },
+            reservedPlaces: null,
+          },
+        }),
+        buildRound({
+          id: 'clock-r2',
+          participationRuleset: {
+            participationSource: {
+              type: 'registrations',
+            },
+            reservedPlaces: null,
+          },
+        }),
+        buildRound({
+          id: 'clock-r3',
+          participationRuleset: {
+            participationSource: {
+              type: 'linkedRounds',
+              roundIds: ['clock-r1', 'clock-r2'],
+              resultCondition: {
+                type: 'percent',
+                scope: 'average',
+                value: 40,
+              },
+            },
+            reservedPlaces: null,
+          },
+        }),
+      ],
+    });
+
+    expect(getNextRoundParticipationTextForRound(event, 'clock-r1')).toBe(
+      'Top 40% from dual rounds R1 & R2'
+    );
+    expect(getNextRoundParticipationTextForRound(event, 'clock-r2')).toBe(
       'Top 40% from dual rounds R1 & R2'
     );
   });
