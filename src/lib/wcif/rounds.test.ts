@@ -1,5 +1,6 @@
 import {
   getAdvancementConditionForRound,
+  getDisplayAdvancementConditionForRound,
   getDerivedAdvancementCondition,
   getDualRoundDetails,
   usesRegistrationParticipation,
@@ -49,6 +50,52 @@ describe('getDerivedAdvancementCondition', () => {
 });
 
 describe('getAdvancementConditionForRound', () => {
+  it('returns true when a linked source round has downstream participation conditions', () => {
+    const event = buildEvent({
+      id: 'clock',
+      rounds: [
+        buildRound({
+          id: 'clock-r1',
+          participationRuleset: {
+            participationSource: {
+              type: 'registrations',
+            },
+            reservedPlaces: null,
+          },
+        }),
+        buildRound({
+          id: 'clock-r2',
+          participationRuleset: {
+            participationSource: {
+              type: 'registrations',
+            },
+            reservedPlaces: null,
+          },
+        }),
+        buildRound({
+          id: 'clock-r3',
+          participationRuleset: {
+            participationSource: {
+              type: 'linkedRounds',
+              roundIds: ['clock-r1', 'clock-r2'],
+              resultCondition: {
+                type: 'percent',
+                scope: 'average',
+                value: 75,
+              },
+            },
+            reservedPlaces: null,
+          },
+        }),
+      ],
+    });
+
+    expect(getAdvancementConditionForRound(event, 'clock-r1')).toBe(true);
+    expect(getAdvancementConditionForRound(event, 'clock-r2')).toBe(true);
+  });
+});
+
+describe('getDisplayAdvancementConditionForRound', () => {
   it('derives advancement for linked source rounds from the target round participation ruleset', () => {
     const event = buildEvent({
       id: 'clock',
@@ -89,11 +136,11 @@ describe('getAdvancementConditionForRound', () => {
       ],
     });
 
-    expect(getAdvancementConditionForRound(event, 'clock-r1')).toEqual({
+    expect(getDisplayAdvancementConditionForRound(event, 'clock-r1')).toEqual({
       type: 'percent',
       level: 75,
     });
-    expect(getAdvancementConditionForRound(event, 'clock-r2')).toEqual({
+    expect(getDisplayAdvancementConditionForRound(event, 'clock-r2')).toEqual({
       type: 'percent',
       level: 75,
     });
