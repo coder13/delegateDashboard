@@ -117,3 +117,14 @@ export const getDualRoundDetails = (
 
   return null;
 };
+
+export const isAlwaysVisibleRound = (event: Event, round: Round): boolean => {
+  const { roundNumber } = parseActivityCode(round.id);
+
+  if (roundNumber === 1) {
+    return true;
+  }
+
+  const dualRoundDetails = getDualRoundDetails(event, round.id);
+  return Boolean(dualRoundDetails?.isSourceRound && usesRegistrationParticipation(round));
+};

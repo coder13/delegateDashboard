@@ -5,6 +5,9 @@ import userEvent from '@testing-library/user-event';
 import type { AppState } from '../../../store/initialState';
 
 const useAppSelector = vi.fn();
+const { earliestStartTimeForRoundMock } = vi.hoisted(() => ({
+  earliestStartTimeForRoundMock: vi.fn(() => new Date('2020-01-01T00:00:00Z')),
+}));
 
 vi.mock('../../../store', () => ({
   useAppSelector: (...args: unknown[]) => useAppSelector(...args),
@@ -21,7 +24,7 @@ vi.mock('../../../lib/domain/activities', async () => {
 
   return {
     ...actual,
-    earliestStartTimeForRound: vi.fn(() => new Date('2020-01-01T00:00:00Z')),
+    earliestStartTimeForRound: earliestStartTimeForRoundMock,
   };
 });
 
@@ -84,5 +87,75 @@ describe('RoundSelector', () => {
     await userEvent.click(toggle);
 
     expect(toggle).toBeChecked();
+  });
+
+  it('shows linked dual-round source rounds even before they start', () => {
+    earliestStartTimeForRoundMock.mockReturnValueOnce(new Date('3020-01-01T00:00:00Z'));
+    earliestStartTimeForRoundMock.mockReturnValueOnce(new Date('3020-01-01T00:00:00Z'));
+    earliestStartTimeForRoundMock.mockReturnValueOnce(new Date('3020-01-01T00:00:00Z'));
+
+    const wcif = {
+      id: 'TestComp',
+      events: [
+        {
+          id: 'clock',
+          rounds: [
+            {
+              id: 'clock-r1',
+              format: 'a',
+              results: [],
+              timeLimit: null,
+              cutoff: null,
+              participationRuleset: {
+                participationSource: { type: 'registrations' },
+                reservedPlaces: null,
+              },
+              extensions: [],
+            },
+            {
+              id: 'clock-r2',
+              format: 'a',
+              results: [],
+              timeLimit: null,
+              cutoff: null,
+              participationRuleset: {
+                participationSource: { type: 'registrations' },
+                reservedPlaces: null,
+              },
+              extensions: [],
+            },
+            {
+              id: 'clock-r3',
+              format: 'a',
+              results: [],
+              timeLimit: null,
+              cutoff: null,
+              participationRuleset: {
+                participationSource: {
+                  type: 'linkedRounds',
+                  roundIds: ['clock-r1', 'clock-r2'],
+                  resultCondition: { type: 'percent', scope: 'average', value: 75 },
+                },
+                reservedPlaces: null,
+              },
+              extensions: [],
+            },
+          ],
+        },
+      ],
+    };
+
+    const state = { wcif } as unknown as AppState;
+    useAppSelector.mockImplementation((selector: (state: AppState) => unknown) => selector(state));
+
+    const { getAllByTestId } = renderWithProviders(
+      <RoundSelector competitionId="TestComp" onSelected={() => undefined} />
+    );
+
+    expect(getAllByTestId('round-item')).toHaveLength(2);
+    expect(getAllByTestId('round-item').map((item) => item.getAttribute('data-code'))).toEqual([
+      'clock-r1',
+      'clock-r2',
+    ]);
   });
 });
