@@ -5,6 +5,7 @@ import {
   NO_SCHEDULE_ACTIVITIES_FOR_ROUND,
   type ValidationError,
 } from './types';
+import { getAdvancementConditionForRound } from '../rounds';
 import type { Competition, Event } from '@wca/helpers';
 import { flatMap } from 'lodash';
 
@@ -30,7 +31,7 @@ export const validateEventHasRounds = (event: Event): ValidationError | null => 
  */
 export const validateAdvancementConditions = (event: Event): ValidationError[] => {
   return flatMap(event.rounds.slice(0, -1), (round) =>
-    round.advancementCondition
+    getAdvancementConditionForRound(event, round.id)
       ? []
       : [
           {
