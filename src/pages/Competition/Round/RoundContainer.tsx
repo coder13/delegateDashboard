@@ -7,11 +7,14 @@ import ConfigureStationNumbersDialog from '../../../dialogs/ConfigureStationNumb
 import { RawRoundActivitiesDataDialog } from '../../../dialogs/RawRoundActivitiesDataDialog';
 import { RawRoundDataDialog } from '../../../dialogs/RawRoundDataDialog';
 import { RoundActionButtons } from '../../../components/RoundActionButtons';
+import { activityCodeToName } from '../../../lib/domain/activities';
+import { getDualRoundDetails } from '../../../lib/wcif/rounds';
 import { useRoundActions } from './hooks/useRoundActions';
 import { useRoundData } from './hooks/useRoundData';
 import { useRoundDialogs } from './hooks/useRoundDialogs';
 import DistributedAttemptRoundView from './DistributedAttemptRoundView';
 import NormalRoundView from './NormalRoundView';
+import { Alert } from '@mui/material';
 import { type Round } from '@wca/helpers';
 import { ConfirmProvider } from 'material-ui-confirm';
 
@@ -52,6 +55,8 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
     roundActivities,
   });
 
+  const event = wcif?.events.find((candidate) => candidate.id === eventId);
+  const dualRoundDetails = event ? getDualRoundDetails(event, round.id) : null;
   if (roundActivities.length === 0) {
     return (
       <div>
@@ -140,6 +145,13 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
 
   return (
     <ConfirmProvider>
+      {dualRoundDetails && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          This event is configured as dual rounds.{' '}
+          {dualRoundDetails.linkedRoundIds.map(activityCodeToName).join(' and ')} feed into{' '}
+          {activityCodeToName(dualRoundDetails.targetRoundId)}.
+        </Alert>
+      )}
       {isDistributedAttemptRoundLevel ? (
         <DistributedAttemptRoundView
           activityCode={activityCode}
