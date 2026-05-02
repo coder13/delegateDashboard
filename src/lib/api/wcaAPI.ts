@@ -10,6 +10,8 @@ import { type Competition } from '@wca/helpers';
 import { pick } from 'lodash';
 
 const wcaAccessToken = (): string | null => getLocalStorage('accessToken');
+const WCIF_VERSION = '2';
+const wcifPath = (competitionId: string) => `/competitions/${competitionId}/wcif/version/${WCIF_VERSION}`;
 
 export const getMe = (): Promise<{ me: WcaUser }> => {
   return wcaApiFetch(`/me`);
@@ -45,13 +47,13 @@ export const getPastManageableCompetitions = (): Promise<CompetitionSearchResult
 };
 
 export const getWcif = (competitionId: string): Promise<Competition> =>
-  wcaApiFetch(`/competitions/${competitionId}/wcif`);
+  wcaApiFetch(wcifPath(competitionId));
 
 export const patchWcif = (
   competitionId: string,
   wcif: Partial<Competition>
 ): Promise<Competition> =>
-  wcaApiFetch(`/competitions/${competitionId}/wcif`, {
+  wcaApiFetch(wcifPath(competitionId), {
     method: 'PATCH',
     body: JSON.stringify(wcif),
   });
