@@ -11,7 +11,7 @@ export interface DualRoundDetails {
 const hasLegacyAdvancementCondition = (
   round: Round
 ): round is Round & { advancementCondition: AdvancementCondition } =>
-  round.advancementCondition !== null;
+  round.advancementCondition != null;
 
 export const getParticipationRuleset = (round: Round): ParticipationRuleset | null =>
   round.participationRuleset ?? null;
@@ -41,7 +41,15 @@ export const getDerivedAdvancementCondition = (
   };
 };
 
-export const formatAdvancementCondition = ({ type, level }: AdvancementCondition): string => {
+export const formatAdvancementCondition = (
+  advancementCondition: AdvancementCondition | null | undefined
+): string => {
+  if (!advancementCondition) {
+    return '';
+  }
+
+  const { type, level } = advancementCondition;
+
   switch (type) {
     case 'ranking':
       return `Top ${level}`;
@@ -145,9 +153,10 @@ export const getParticipationConditionTextForRound = (
   if (hasLegacyAdvancementCondition(round)) {
     const currentRoundIndex = event.rounds.findIndex((candidate) => candidate.id === roundId);
     const nextRound = currentRoundIndex >= 0 ? event.rounds[currentRoundIndex + 1] : undefined;
+    const advancementText = formatAdvancementCondition(round.advancementCondition);
 
-    return nextRound
-      ? `${formatAdvancementCondition(round.advancementCondition)} to ${formatLongRoundLabel(nextRound.id)}`
+    return nextRound && advancementText
+      ? `${advancementText} to ${formatLongRoundLabel(nextRound.id)}`
       : null;
   }
 
