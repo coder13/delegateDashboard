@@ -1,5 +1,8 @@
 import { mayMakeCutoff, mayMakeTimeLimit } from '../lib/domain/persons';
-import { getParticipationConditionTextForRound } from '../lib/wcif/rounds';
+import {
+  getParticipationConditionTextForRound,
+  getParticipationSourceTextForRound,
+} from '../lib/wcif/rounds';
 import { renderResultByEventId } from '../lib/utils/utils';
 import { Box, Divider, Tooltip, Typography } from '@mui/material';
 import { type Event, type EventId, formatCentiseconds, type Person, type Round } from '@wca/helpers';
@@ -12,6 +15,7 @@ interface RoundLimitInfoProps {
 }
 
 export const RoundLimitInfo = ({ event, round, eventId, personsShouldBeInRound }: RoundLimitInfoProps) => {
+  const participationSourceText = event ? getParticipationSourceTextForRound(event, round.id) : null;
   const participationConditionText = event
     ? getParticipationConditionTextForRound(event, round.id)
     : null;
@@ -48,11 +52,21 @@ export const RoundLimitInfo = ({ event, round, eventId, personsShouldBeInRound }
           </Box>
         </Tooltip>
       )}
-      {participationConditionText && (
+      {participationSourceText && (
         <>
           {(round.timeLimit || round.cutoff) && <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />}
           <Box sx={{ px: 3, py: 1 }}>
-            <Typography>Participation: {participationConditionText}</Typography>
+            <Typography>Participation Source: {participationSourceText}</Typography>
+          </Box>
+        </>
+      )}
+      {participationConditionText && (
+        <>
+          {(round.timeLimit || round.cutoff || participationSourceText) && (
+            <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+          )}
+          <Box sx={{ px: 3, py: 1 }}>
+            <Typography>Next Round: {participationConditionText}</Typography>
           </Box>
         </>
       )}
