@@ -6,12 +6,15 @@ import { byName } from '../lib/utils/utils';
 import { cumulativeGroupCount } from '../lib/wcif/groups';
 import { RoundLimitInfo } from './RoundLimitInfo';
 import {
+  Button,
   Card,
+  CardContent,
   CardActions,
   CardHeader,
   Divider,
   List,
   ListItemButton,
+  ListItemText,
   ListSubheader,
   Table,
   TableBody,
@@ -22,6 +25,7 @@ import {
 } from '@mui/material';
 import { type Competition, type Person, type Round } from '@wca/helpers';
 import { type ReactNode } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 
 interface RoundStatisticsCardProps {
   activityCode: string;
@@ -37,6 +41,11 @@ interface RoundStatisticsCardProps {
   onOpenPersonsDialog: (title: string, persons: Person[]) => void;
   onOpenPersonsAssignmentsDialog: () => void;
   actionButtons: ReactNode;
+  linkedRounds?: Array<{
+    roundId: string;
+    onCopyAssignments?: () => void;
+  }>;
+  competitionId?: string;
 }
 
 export const RoundStatisticsCard = ({
@@ -53,7 +62,11 @@ export const RoundStatisticsCard = ({
   onOpenPersonsDialog,
   onOpenPersonsAssignmentsDialog,
   actionButtons,
+  linkedRounds = [],
+  competitionId,
 }: RoundStatisticsCardProps) => {
+  const event = wcif?.events.find((candidate) => candidate.id === eventId) ?? null;
+
   return (
     <Card>
       <CardHeader
@@ -73,6 +86,45 @@ export const RoundStatisticsCard = ({
           />
         }
       />
+      {linkedRounds.length > 0 && (
+        <>
+          <CardContent sx={{ pt: 0 }}>
+            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              Linked Rounds
+            </Typography>
+            <List dense disablePadding>
+              {linkedRounds.map(({ roundId, onCopyAssignments }) => (
+                <ListItemButton
+                  key={roundId}
+                  selected={roundId === activityCode}
+                  disabled={!competitionId || roundId === activityCode}
+                  component={competitionId && roundId !== activityCode ? RouterLink : 'div'}
+                  to={
+                    competitionId && roundId !== activityCode
+                      ? `/competitions/${competitionId}/events/${roundId}`
+                      : undefined
+                  }
+                  sx={{ borderRadius: 1 }}>
+                  <ListItemText primary={activityCodeToName(roundId)} />
+                  {onCopyAssignments && (
+                    <Button
+                      size="small"
+                      variant="text"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        onCopyAssignments();
+                      }}>
+                      Copy assignments to this round
+                    </Button>
+                  )}
+                </ListItemButton>
+              ))}
+            </List>
+          </CardContent>
+          <Divider />
+        </>
+      )}
       <List dense subheader={<ListSubheader id="stages">Stages</ListSubheader>}>
         {roundActivities.map(({ id, startTime, endTime, room }) => (
           <ListItemButton key={id}>
@@ -148,6 +200,7 @@ export const RoundStatisticsCard = ({
         </TableBody>
       </Table>
       <RoundLimitInfo
+        event={event}
         round={round}
         eventId={eventId}
         personsShouldBeInRound={personsShouldBeInRound}

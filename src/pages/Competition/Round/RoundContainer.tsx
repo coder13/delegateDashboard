@@ -37,13 +37,20 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
     personsAssignedToCompete,
     personsAssignedWithCompetitorAssignmentCount,
     adamRoundConfig,
+    linkedRoundIds,
   } = useRoundData(activityCode, round);
 
-  const { handleGenerateAssignments, handleResetAll, handleResetNonScrambling } = useRoundActions({
+  const { handleGenerateAssignments, handleResetAll, handleResetNonScrambling, handleCopyAssignments } = useRoundActions({
+    wcif,
     round,
     groups,
     roundActivities,
   });
+  const linkedRounds = linkedRoundIds.map((linkedRoundId) => ({
+    roundId: linkedRoundId,
+    onCopyAssignments:
+      linkedRoundId === round.id ? undefined : () => handleCopyAssignments(linkedRoundId, round.id),
+  }));
 
   if (roundActivities.length === 0) {
     return (
@@ -90,6 +97,8 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
             onOpenRawActivitiesData={() => dialogs.rawRoundActivitiesData.setOpen(true)}
             onOpenPersonsDialog={dialogs.personsDialog.open}
             onOpenPersonsAssignmentsDialog={() => dialogs.personsAssignments.setOpen(true)}
+            competitionId={wcif?.id}
+            linkedRounds={linkedRounds}
             actionButtons={
               <RoundActionButtons
                 groups={groups}

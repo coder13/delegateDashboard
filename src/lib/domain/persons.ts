@@ -10,6 +10,7 @@ import {
   type Result,
   type Round,
 } from '@wca/helpers';
+import { usesRegistrationParticipation } from '../wcif/rounds';
 
 /**
  * @param {Person} person
@@ -48,7 +49,7 @@ export const shouldBeInRound = (round: Round) => {
 
   const { eventId, roundNumber } = parseActivityCode(round.id);
 
-  if (roundNumber === 1) {
+  if (usesRegistrationParticipation(round) || roundNumber === 1) {
     return (person: Person) => acceptedRegistration(person) && registeredForEvent(eventId)(person);
   } else {
     // WCA Live will be the single source of truth for who's in the next round

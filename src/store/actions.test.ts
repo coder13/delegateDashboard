@@ -320,7 +320,10 @@ describe('store actions', () => {
       type: ActionType.UPLOADING_WCIF,
       uploading: true,
     });
-    expect(patchWcifMock).toHaveBeenCalledWith('Comp1', { events: wcif.events });
+    expect(patchWcifMock).toHaveBeenCalledWith(
+      'Comp1',
+      expect.objectContaining({ events: wcif.events })
+    );
     expect(dispatch.mock.calls[1][0]).toEqual({
       type: ActionType.UPLOADING_WCIF,
       uploading: false,

@@ -1,5 +1,7 @@
+import { parseActivityCode } from '../../../../lib/domain/activities';
 import { byGroupNumber } from '../../../../lib/domain/activities/activityUtils';
 import { type ActivityWithParent, type ActivityWithRoom } from '../../../../lib/domain/types';
+import { getDualRoundDetails } from '../../../../lib/wcif/rounds';
 import {
   allChildActivities,
   findAllActivities,
@@ -29,10 +31,16 @@ interface RoundDataResult {
     groupCount?: number;
     expectedRegistrations?: number;
   } | null;
+  linkedRoundIds: string[];
+  targetRoundId: string | null;
+  isDualRoundSourceRound: boolean;
 }
 
 export const useRoundData = (activityCode: string, round: Round | undefined): RoundDataResult => {
   const wcif = useAppSelector((state) => state.wcif);
+  const eventId = round ? parseActivityCode(round.id).eventId : undefined;
+  const event = eventId ? wcif?.events.find((candidate) => candidate.id === eventId) : undefined;
+  const dualRoundDetails = event && round ? getDualRoundDetails(event, round.id) : null;
 
   const personsShouldBeInRound = useAppSelector((state) =>
     round ? selectPersonsShouldBeInRound(state)(round) : []
@@ -96,5 +104,8 @@ export const useRoundData = (activityCode: string, round: Round | undefined): Ro
     personsAssignedToCompete,
     personsAssignedWithCompetitorAssignmentCount,
     adamRoundConfig,
+    linkedRoundIds: dualRoundDetails?.linkedRoundIds ?? [],
+    targetRoundId: dualRoundDetails?.targetRoundId ?? null,
+    isDualRoundSourceRound: dualRoundDetails?.isSourceRound ?? false,
   };
 };

@@ -22,32 +22,9 @@ import { download, generateCsv, mkConfig } from 'export-to-csv';
 import { flatten } from 'lodash';
 import { useCallback } from 'react';
 import Grid from '@mui/material/GridLegacy';
-
-type AdvancementConditionLike = {
-  type: 'ranking' | 'percent' | 'attemptResult';
-  level: number;
-};
+import { formatAdvancementCondition, getDisplayAdvancementConditionForRound } from '../../../lib/wcif/rounds';
 
 type AssignmentWithActivity = Assignment & { activity: ActivityWithParent };
-
-const advancementConditionToText = ({ type, level }: AdvancementConditionLike): string => {
-  switch (type) {
-    case 'ranking':
-      return `Top ${level}`;
-    case 'percent':
-      return `Top ${level}%`;
-    case 'attemptResult':
-      if (level === -2) {
-        return '> DNS';
-      } else if (level === -1) {
-        return '> DNF';
-      } else {
-        return `< ${formatCentiseconds(level)}`;
-      }
-    default:
-      return '';
-  }
-};
 
 const csvOptions = {
   fieldSeparator: ',',
@@ -256,9 +233,10 @@ const ExportPage = () => {
             ? `1 or 2 < ${formatCentiseconds(round.cutoff.attemptResult)}`
             : '',
           round_format: roundFormatShortById(round.format),
-          advancement_condition: round.advancementCondition
-            ? advancementConditionToText(round.advancementCondition)
-            : '',
+          advancement_condition: (() => {
+            const advancementCondition = getDisplayAdvancementConditionForRound(event, round.id);
+            return advancementCondition ? formatAdvancementCondition(advancementCondition) : '';
+          })(),
           round_number: parseActivityCode(round.id)?.roundNumber ?? '',
         };
 

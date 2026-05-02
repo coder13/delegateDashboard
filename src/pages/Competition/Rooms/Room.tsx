@@ -2,6 +2,7 @@ import { generateNextChildActivityId, parseActivityCode } from '../../../lib/dom
 import { advancingCompetitors } from '../../../lib/domain/formulas';
 import { acceptedRegistrations } from '../../../lib/domain/persons';
 import { getGroupData } from '../../../lib/wcif/extensions';
+import { getParticipationRuleset } from '../../../lib/wcif/rounds';
 import { useAppSelector } from '../../../store';
 import {
   updateRoundChildActivities,
@@ -162,17 +163,19 @@ const Room = ({ room }: RoomProps) => {
                     return null;
                   }
 
-                  const previousRound = roundNumber > 1 ? event.rounds[roundNumber - 2] : null;
-                  const advancementCondition = previousRound?.advancementCondition;
+                  const participationSource = getParticipationRuleset(round)?.participationSource;
 
                   const estimatedCompetitors =
-                    roundNumber === 1
+                    participationSource?.type === 'registrations' || roundNumber === 1
                       ? (eventRegistrationCounts[eventId] ?? 0)
-                      : advancementCondition &&
-                          (advancementCondition.type === 'percent' ||
-                            advancementCondition.type === 'ranking')
+                      : participationSource?.type === 'linkedRounds' &&
+                          (participationSource.resultCondition.type === 'percent' ||
+                            participationSource.resultCondition.type === 'ranking')
                         ? advancingCompetitors(
-                            advancementCondition as { type: 'percent' | 'ranking'; level: number },
+                            {
+                              type: participationSource.resultCondition.type,
+                              level: participationSource.resultCondition.value,
+                            },
                             eventRegistrationCounts[eventId] ?? 0
                           )
                         : 0;
