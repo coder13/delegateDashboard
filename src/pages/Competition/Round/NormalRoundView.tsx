@@ -28,6 +28,11 @@ interface NormalRoundViewProps {
   } | null;
   groups: ActivityWithParent[];
   sortedGroups: Activity[];
+  competitionId?: string;
+  linkedRounds?: Array<{
+    roundId: string;
+    onCopyAssignments?: () => void;
+  }>;
 }
 
 /**
@@ -51,6 +56,8 @@ const NormalRoundView = ({
   adamRoundConfig,
   groups,
   sortedGroups,
+  competitionId,
+  linkedRounds,
 }: NormalRoundViewProps) => {
   const pluralizeWord = (count: number, singular: string, plural?: string) =>
     count === 1 ? singular : plural || singular + 's';
@@ -84,6 +91,8 @@ const NormalRoundView = ({
           onOpenPersonsDialog={onOpenPersonsDialog}
           onOpenPersonsAssignmentsDialog={onOpenPersonsAssignmentsDialog}
           actionButtons={actionButtons}
+          competitionId={competitionId}
+          linkedRounds={linkedRounds}
         />
       </Grid>
 

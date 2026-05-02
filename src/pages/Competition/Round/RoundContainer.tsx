@@ -32,7 +32,6 @@ interface RoundContainerProps {
 const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContainerProps) => {
   const dialogs = useRoundDialogs();
   const dispatch = useAppDispatch();
-
   const {
     wcif,
     personsShouldBeInRound,
@@ -45,14 +44,16 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
     adamRoundConfig,
     isDistributedAttemptRoundLevel,
     distributedAttemptGroups,
+    linkedRoundIds,
   } = useRoundData(activityCode, round);
-
   const {
     handleAssignToRoundAttempt,
     handleResetAttemptAssignments,
     handleResetAll,
     handleResetNonScrambling,
+    handleCopyAssignments,
   } = useRoundActions({
+    wcif,
     round,
     activityCode,
     groups,
@@ -61,6 +62,11 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
 
   const event = wcif?.events.find((candidate) => candidate.id === eventId);
   const dualRoundDetails = event ? getDualRoundDetails(event, round.id) : null;
+  const linkedRounds = linkedRoundIds.map((linkedRoundId) => ({
+    roundId: linkedRoundId,
+    onCopyAssignments:
+      linkedRoundId === round.id ? undefined : () => handleCopyAssignments(linkedRoundId, round.id),
+  }));
   const existingRoundConfig = getRoundConfigExtensionData(round);
   const existingRecipe = existingRoundConfig?.recipe as { id?: string } | undefined;
   const [recipeId, setRecipeId] = useState<string>(existingRecipe?.id ?? 'pnw');
@@ -80,15 +86,7 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
   };
 
   if (roundActivities.length === 0) {
-    return (
-      <div>
-        No Group Activities found. <br />
-      </div>
-    );
-  }
-
-  if (!round) {
-    return null;
+    return <div>No Group Activities found.</div>;
   }
 
   const actionButtons = (
@@ -110,61 +108,6 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
       onConfigureGroupCounts={() => dialogs.configureGroupCounts.setOpen(true)}
       isDistributedAttemptRoundLevel={isDistributedAttemptRoundLevel}
     />
-  );
-
-  const commonDialogs = (
-    <>
-      <ConfigureAssignmentsDialog
-        open={dialogs.configureAssignments.open}
-        onClose={() => dialogs.configureAssignments.setOpen(false)}
-        round={round}
-        activityCode={activityCode}
-        groups={groups}
-        isDistributedAttemptRoundLevel={isDistributedAttemptRoundLevel}
-        distributedAttemptGroups={distributedAttemptGroups}
-      />
-      <ConfigureGroupCountsDialog
-        open={dialogs.configureGroupCounts.open}
-        onClose={() => dialogs.configureGroupCounts.setOpen(false)}
-        activityCode={activityCode}
-        round={round}
-        roundActivities={roundActivities}
-      />
-      {dialogs.configureStationNumbers.activityCode && (
-        <ConfigureStationNumbersDialog
-          open={Boolean(dialogs.configureStationNumbers.activityCode)}
-          onClose={() => dialogs.configureStationNumbers.setActivityCode(false)}
-          activityCode={dialogs.configureStationNumbers.activityCode}
-        />
-      )}
-      <PersonsDialog
-        open={dialogs.personsDialog.state.open}
-        persons={dialogs.personsDialog.state.persons}
-        title={dialogs.personsDialog.state.title || ''}
-        onClose={dialogs.personsDialog.close}
-      />
-      <PersonsAssignmentsDialog
-        open={dialogs.personsAssignments.open}
-        persons={personsShouldBeInRound}
-        roundId={round.id}
-        onClose={() => dialogs.personsAssignments.setOpen(false)}
-      />
-      <ConfigureGroupsDialog
-        open={dialogs.configureGroups.open}
-        onClose={() => dialogs.configureGroups.setOpen(false)}
-        activityCode={activityCode}
-      />
-      <RawRoundDataDialog
-        open={dialogs.rawRoundData.open}
-        onClose={() => dialogs.rawRoundData.setOpen(false)}
-        roundId={roundId}
-      />
-      <RawRoundActivitiesDataDialog
-        open={dialogs.rawRoundActivitiesData.open}
-        onClose={() => dialogs.rawRoundActivitiesData.setOpen(false)}
-        activityCode={activityCode}
-      />
-    </>
   );
 
   return (
@@ -215,9 +158,60 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
           adamRoundConfig={adamRoundConfig}
           groups={groups}
           sortedGroups={sortedGroups}
+          competitionId={wcif?.id}
+          linkedRounds={linkedRounds}
         />
       )}
-      {commonDialogs}
+      <ConfigureAssignmentsDialog
+        open={dialogs.configureAssignments.open}
+        onClose={() => dialogs.configureAssignments.setOpen(false)}
+        round={round}
+        activityCode={activityCode}
+        groups={groups}
+        isDistributedAttemptRoundLevel={isDistributedAttemptRoundLevel}
+        distributedAttemptGroups={distributedAttemptGroups}
+      />
+      <ConfigureGroupCountsDialog
+        open={dialogs.configureGroupCounts.open}
+        onClose={() => dialogs.configureGroupCounts.setOpen(false)}
+        activityCode={activityCode}
+        round={round}
+        roundActivities={roundActivities}
+      />
+      {dialogs.configureStationNumbers.activityCode && (
+        <ConfigureStationNumbersDialog
+          open={Boolean(dialogs.configureStationNumbers.activityCode)}
+          onClose={() => dialogs.configureStationNumbers.setActivityCode(false)}
+          activityCode={dialogs.configureStationNumbers.activityCode}
+        />
+      )}
+      <PersonsDialog
+        open={dialogs.personsDialog.state.open}
+        persons={dialogs.personsDialog.state.persons}
+        title={dialogs.personsDialog.state.title || ''}
+        onClose={dialogs.personsDialog.close}
+      />
+      <PersonsAssignmentsDialog
+        open={dialogs.personsAssignments.open}
+        persons={personsShouldBeInRound}
+        roundId={round.id}
+        onClose={() => dialogs.personsAssignments.setOpen(false)}
+      />
+      <ConfigureGroupsDialog
+        open={dialogs.configureGroups.open}
+        onClose={() => dialogs.configureGroups.setOpen(false)}
+        activityCode={activityCode}
+      />
+      <RawRoundDataDialog
+        open={dialogs.rawRoundData.open}
+        onClose={() => dialogs.rawRoundData.setOpen(false)}
+        roundId={roundId}
+      />
+      <RawRoundActivitiesDataDialog
+        open={dialogs.rawRoundActivitiesData.open}
+        onClose={() => dialogs.rawRoundActivitiesData.setOpen(false)}
+        activityCode={activityCode}
+      />
     </ConfirmProvider>
   );
 };
