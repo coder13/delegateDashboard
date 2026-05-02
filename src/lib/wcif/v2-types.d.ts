@@ -17,9 +17,16 @@ declare module '@wca/helpers' {
     resultCondition: ParticipationResultCondition;
   }
 
+  export interface RoundParticipationSource {
+    type: 'round';
+    roundId: string;
+    resultCondition: ParticipationResultCondition;
+  }
+
   export type ParticipationSource =
     | RegistrationsParticipationSource
-    | LinkedRoundsParticipationSource;
+    | LinkedRoundsParticipationSource
+    | RoundParticipationSource;
 
   export interface ParticipationRuleset {
     participationSource: ParticipationSource;
