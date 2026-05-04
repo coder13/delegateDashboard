@@ -238,6 +238,88 @@ describe('validateRoundsHaveScheduleActivities', () => {
     expect(errors[0].data.activityCode).toBe('333-r1');
   });
 
+  it('should return no errors for distributed-attempt events (FMC) when attempt activities are scheduled', () => {
+    const event: Event = {
+      id: '333fm',
+      rounds: [
+        {
+          id: '333fm-r1',
+          format: '3',
+          timeLimit: null,
+          cutoff: null,
+          advancementCondition: null,
+          results: [],
+          scrambleSetCount: 1,
+          extensions: [],
+        },
+      ],
+      competitorLimit: null,
+      qualification: null,
+      extensions: [],
+    };
+
+    const wcif: Competition = {
+      ...mockWcif,
+      events: [event],
+      schedule: {
+        startDate: '2024-01-01',
+        numberOfDays: 1,
+        venues: [
+          {
+            id: 1,
+            name: 'Venue 1',
+            latitudeMicrodegrees: 0,
+            longitudeMicrodegrees: 0,
+            countryIso2: 'US',
+            timezone: 'America/New_York',
+            rooms: [
+              {
+                id: 1,
+                name: 'Room 1',
+                color: '#000000',
+                activities: [
+                  {
+                    id: 1,
+                    name: 'FMC Attempt 1',
+                    activityCode: '333fm-r1-a1',
+                    startTime: '2024-01-01T09:00:00.000Z',
+                    endTime: '2024-01-01T10:00:00.000Z',
+                    childActivities: [],
+                    extensions: [],
+                  },
+                  {
+                    id: 2,
+                    name: 'FMC Attempt 2',
+                    activityCode: '333fm-r1-a2',
+                    startTime: '2024-01-01T11:00:00.000Z',
+                    endTime: '2024-01-01T12:00:00.000Z',
+                    childActivities: [],
+                    extensions: [],
+                  },
+                  {
+                    id: 3,
+                    name: 'FMC Attempt 3',
+                    activityCode: '333fm-r1-a3',
+                    startTime: '2024-01-01T13:00:00.000Z',
+                    endTime: '2024-01-01T14:00:00.000Z',
+                    childActivities: [],
+                    extensions: [],
+                  },
+                ],
+                extensions: [],
+              },
+            ],
+            extensions: [],
+          },
+        ],
+      },
+    };
+
+    const errors = validateRoundsHaveScheduleActivities(wcif, event);
+
+    expect(errors).toHaveLength(0);
+  });
+
   it('should return no errors when rounds have schedule activities', () => {
     const event: Event = {
       id: '333',
