@@ -175,12 +175,6 @@ const ConfigureAssignmentsDialog = ({
     [dispatch, distributedAttemptGroups]
   );
 
-  useEffect(() => {
-    if (isDistributedAttemptRoundLevel) {
-      setShowAllCompetitors(true);
-    }
-  }, [isDistributedAttemptRoundLevel]);
-
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.ctrlKey) {
       return;
