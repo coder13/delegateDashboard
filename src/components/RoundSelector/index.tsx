@@ -131,25 +131,27 @@ const RoundSelector = ({ onSelected }: RoundSelectorProps) => {
               <TransitionGroup>
                 {!hasDistributedAttempts(event.id)
                   ? roundsForEvent.map((round) => (
-                      <RoundListItem
-                        key={round.id}
-                        activityCode={round.id}
-                        round={round}
-                        selected={round.id === selectedId}
-                        in
-                      />
+                       <RoundListItem
+                         key={round.id}
+                         activityCode={round.id}
+                         round={round}
+                         nestingLevel={0}
+                         selected={round.id === selectedId}
+                         in
+                       />
                     ))
                   : roundsForEvent.flatMap((round) => {
                       const attempts = new Array(attemptCountForRound(round)).fill(0);
 
                       const roundListItem = (
-                        <RoundListItem
-                          key={round.id}
-                          activityCode={round.id}
-                          round={round}
-                          selected={round.id === selectedId}
-                          in
-                        />
+                         <RoundListItem
+                           key={round.id}
+                           activityCode={round.id}
+                           round={round}
+                           nestingLevel={0}
+                           selected={round.id === selectedId}
+                           in
+                         />
                       );
 
                       const attemptListItems = attempts.map((_, index) => {
@@ -160,6 +162,7 @@ const RoundSelector = ({ onSelected }: RoundSelectorProps) => {
                             key={attemptActivityCode}
                             activityCode={attemptActivityCode}
                             round={round}
+                            nestingLevel={1}
                             selected={attemptActivityCode === selectedId}
                             in
                           />

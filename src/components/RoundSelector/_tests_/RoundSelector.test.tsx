@@ -26,8 +26,21 @@ vi.mock('../../../lib/domain/activities', async () => {
 });
 
 vi.mock('../RoundListItem', () => ({
-  default: ({ activityCode, selected }: { activityCode: string; selected: boolean }) => (
-    <div data-testid="round-item" data-selected={selected} data-code={activityCode} />
+  default: ({
+    activityCode,
+    selected,
+    nestingLevel,
+  }: {
+    activityCode: string;
+    selected: boolean;
+    nestingLevel?: number;
+  }) => (
+    <div
+      data-testid="round-item"
+      data-selected={selected}
+      data-code={activityCode}
+      data-nesting={nestingLevel ?? 0}
+    />
   ),
 }));
 
@@ -105,7 +118,11 @@ describe('RoundSelector', () => {
     );
 
     const activityCodes = getAllByTestId('round-item').map((item) => item.getAttribute('data-code'));
+    const nestingLevels = getAllByTestId('round-item').map((item) =>
+      item.getAttribute('data-nesting')
+    );
 
     expect(activityCodes).toEqual(['333fm-r1', '333fm-r1-a1', '333fm-r1-a2', '333fm-r1-a3']);
+    expect(nestingLevels).toEqual(['0', '1', '1', '1']);
   });
 });

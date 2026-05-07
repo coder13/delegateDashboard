@@ -24,9 +24,9 @@ describe('RoundActionButtons', () => {
       <RoundActionButtons {...baseProps} isDistributedAttemptRoundLevel />
     );
 
-    expect(getByText('Configure Attempt Assignments')).toBeInTheDocument();
-    expect(getByText('Generate Attempt Assignments (All Attempts)')).toBeInTheDocument();
-    expect(getByText('Reset Attempt Assignments')).toBeInTheDocument();
+    expect(getByText('Configure Round Attempt Assignments')).toBeInTheDocument();
+    expect(getByText('Assign Competitors to Round (All Attempts)')).toBeInTheDocument();
+    expect(getByText('Clear Round Attempt Assignments')).toBeInTheDocument();
     expect(queryByText('Configure Group Counts')).not.toBeInTheDocument();
   });
 });

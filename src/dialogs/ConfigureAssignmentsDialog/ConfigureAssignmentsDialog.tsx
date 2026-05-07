@@ -70,7 +70,7 @@ const ConfigureAssignmentsDialog = ({
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
-  const [showAllCompetitors, setShowAllCompetitors] = useState(false);
+  const [showAllCompetitors, setShowAllCompetitors] = useState(isDistributedAttemptRoundLevel);
   const [paintingAssignmentCode, setPaintingAssignmentCode] = useState('staff-scrambler');
   const [competitorSort, setCompetitorSort] = useState<CompetitorSort>('speed');
   const [showCompetitorsNotInRound, setShowCompetitorsNotInRound] = useState(false);
@@ -174,6 +174,12 @@ const ConfigureAssignmentsDialog = ({
     },
     [dispatch, distributedAttemptGroups]
   );
+
+  useEffect(() => {
+    if (isDistributedAttemptRoundLevel) {
+      setShowAllCompetitors(true);
+    }
+  }, [isDistributedAttemptRoundLevel]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.ctrlKey) {

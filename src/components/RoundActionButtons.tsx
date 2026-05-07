@@ -43,11 +43,11 @@ export const RoundActionButtons = ({
   if (isDistributedAttemptRoundLevel) {
     return (
       <>
-        <Button onClick={onConfigureAssignments}>Configure Attempt Assignments</Button>
-        <Button onClick={onAssignToRoundAttempt}>Generate Attempt Assignments (All Attempts)</Button>
+        <Button onClick={onConfigureAssignments}>Configure Round Attempt Assignments</Button>
+        <Button onClick={onAssignToRoundAttempt}>Assign Competitors to Round (All Attempts)</Button>
         <Box sx={{ display: 'flex', flex: 1 }} />
         <Button color="error" onClick={onResetAttemptAssignments}>
-          Reset Attempt Assignments
+          Clear Round Attempt Assignments
         </Button>
       </>
     );
