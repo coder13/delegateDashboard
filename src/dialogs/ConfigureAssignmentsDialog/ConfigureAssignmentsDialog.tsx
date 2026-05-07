@@ -1,7 +1,17 @@
 import Assignments from '../../config/assignments';
-import { parseActivityCode, activityCodeToName } from '../../lib/domain/activities';
+import TableAssignmentCell from '../../components/TableAssignmentCell';
+import {
+  activityCodeToName,
+  hasDistributedAttempts,
+  parseActivityCode,
+} from '../../lib/domain/activities';
 import type { ActivityWithParent } from '../../lib/domain/activities';
 import { useAppDispatch, useAppSelector } from '../../store';
+import {
+  bulkRemovePersonAssignments,
+  generateRoundAttemptAssignments,
+  upsertPersonAssignments,
+} from '../../store/actions';
 import { selectWcifRooms } from '../../store/selectors';
 import AssignmentsTableHeader from './AssignmentsTableHeader';
 import AssignmentsToolbar from './AssignmentsToolbar';
@@ -13,12 +23,17 @@ import type { CompetitorSort } from './types';
 import {
   Box,
   Button,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Stack,
   Table,
   TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   Typography,
   useMediaQuery,
 } from '@mui/material';
@@ -33,12 +48,19 @@ const ConfigureAssignmentsDialog = ({
   round,
   activityCode,
   groups,
+  isDistributedAttemptRoundLevel,
+  distributedAttemptGroups,
 }: {
   open: boolean;
   onClose: () => void;
   round: Round;
   activityCode: string;
   groups: ActivityWithParent[];
+  isDistributedAttemptRoundLevel: boolean;
+  distributedAttemptGroups: Array<{
+    attemptNumber: number;
+    activities: ActivityWithParent[];
+  }>;
 }) => {
   const wcif = useAppSelector((state) => state.wcif);
   const { eventId, roundNumber } = parseActivityCode(activityCode) as {
@@ -90,6 +112,78 @@ const ConfigureAssignmentsDialog = ({
     handleResetAssignments,
   } = useAssignmentHandlers(persons, groups, paintingAssignmentCode, dispatch);
 
+  const isRoundLevelDistributedAttempts =
+    isDistributedAttemptRoundLevel &&
+    hasDistributedAttempts(activityCode) &&
+    parseActivityCode(activityCode).attemptNumber === undefined;
+
+  const getCompetitorAssignmentForPersonActivity = useCallback(
+    (registrantId: number, activityId: number) =>
+      persons
+        .find((p) => p.registrantId === registrantId)
+        ?.assignments?.find((a) => a.activityId === activityId && a.assignmentCode === 'competitor'),
+    [persons]
+  );
+
+  const toggleCompetitorAssignmentForPersonAttemptActivity = useCallback(
+    (registrantId: number, activityId: number) => () => {
+      const existing = getCompetitorAssignmentForPersonActivity(registrantId, activityId);
+
+      if (existing) {
+        dispatch(
+          bulkRemovePersonAssignments([
+            {
+              registrantId,
+              activityId,
+              assignmentCode: 'competitor',
+            },
+          ])
+        );
+        return;
+      }
+
+      dispatch(
+        upsertPersonAssignments(registrantId, [
+          {
+            activityId,
+            assignmentCode: 'competitor',
+            stationNumber: null,
+          },
+        ])
+      );
+    },
+    [dispatch, getCompetitorAssignmentForPersonActivity]
+  );
+
+  const assignAllToAttempt = useCallback(
+    (attemptNumber: number) => {
+      dispatch(generateRoundAttemptAssignments(`${round.id}-a${attemptNumber}`));
+    },
+    [dispatch, round.id]
+  );
+
+  const clearAttemptAssignments = useCallback(
+    (attemptNumber: number) => {
+      const activityIds = distributedAttemptGroups
+        .find((group) => group.attemptNumber === attemptNumber)
+        ?.activities.map((activity) => activity.id);
+
+      if (!activityIds?.length) {
+        return;
+      }
+
+      dispatch(
+        bulkRemovePersonAssignments(
+          activityIds.map((activityId) => ({
+            activityId,
+            assignmentCode: 'competitor',
+          }))
+        )
+      );
+    },
+    [dispatch, distributedAttemptGroups]
+  );
+
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.ctrlKey) {
       return;
@@ -123,41 +217,145 @@ const ConfigureAssignmentsDialog = ({
         Configuring Assignments For {activityCodeToName(activityCode)}
       </DialogTitle>
       <DialogContent style={{ padding: 0 }}>
-        <AssignmentsToolbar
-          paintingAssignmentCode={paintingAssignmentCode}
-          setPaintingAssignmentCode={setPaintingAssignmentCode}
-          competitorSort={competitorSort}
-          setCompetitorSort={setCompetitorSort}
-          showAllCompetitors={showAllCompetitors}
-          setShowAllCompetitors={setShowAllCompetitors}
-          showCompetitorsNotInRound={showCompetitorsNotInRound}
-          setShowCompetitorsNotInRound={setShowCompetitorsNotInRound}
-          onResetAssignments={handleResetAssignments}
-        />
+        {isRoundLevelDistributedAttempts ? (
+          <>
+            <Stack direction="row" gap={1} sx={{ p: 2, flexWrap: 'wrap' }}>
+              {distributedAttemptGroups.map((attemptGroup) => (
+                <Box key={attemptGroup.attemptNumber} sx={{ display: 'flex', gap: 1 }}>
+                  <Chip
+                    label={`Attempt ${attemptGroup.attemptNumber}`}
+                    color="primary"
+                    variant="outlined"
+                  />
+                  <Button
+                    size="small"
+                    onClick={() => assignAllToAttempt(attemptGroup.attemptNumber)}>
+                    Assign All
+                  </Button>
+                  <Button
+                    size="small"
+                    color="error"
+                    onClick={() => clearAttemptAssignments(attemptGroup.attemptNumber)}>
+                    Clear
+                  </Button>
+                </Box>
+              ))}
+            </Stack>
+            <Table stickyHeader size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell style={{ width: '1em' }}>#</TableCell>
+                  <TableCell style={{ width: '20%' }}>Name</TableCell>
+                  <TableCell style={{ width: '1em' }}>Age</TableCell>
+                  <TableCell style={{ width: '1em', textAlign: 'center' }}>Seed Result</TableCell>
+                  <TableCell style={{ width: '1em', textAlign: 'center' }}>Registered</TableCell>
+                  {distributedAttemptGroups.map((attemptGroup) => (
+                    <TableCell
+                      key={`attempt-${attemptGroup.attemptNumber}`}
+                      style={{ textAlign: 'center' }}
+                      colSpan={attemptGroup.activities.length}>
+                      Attempt {attemptGroup.attemptNumber}
+                    </TableCell>
+                  ))}
+                  <TableCell style={{ width: '1em' }}>Stream</TableCell>
+                  <TableCell style={{ width: '1em' }}>Total Staff Assignments</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell></TableCell>
+                  <TableCell></TableCell>
+                  <TableCell></TableCell>
+                  <TableCell></TableCell>
+                  <TableCell></TableCell>
+                  {distributedAttemptGroups.flatMap((attemptGroup) =>
+                    attemptGroup.activities.map((activity) => {
+                      const parentRoomName =
+                        typeof activity.parent === 'object' && 'room' in activity.parent
+                          ? activity.parent.room.name
+                          : '';
+                      return (
+                        <TableCell key={activity.id} style={{ textAlign: 'center', width: '1em' }}>
+                          {parentRoomName}
+                        </TableCell>
+                      );
+                    })
+                  )}
+                  <TableCell></TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {persons?.map((person) => (
+                  <PersonAssignmentRow
+                    key={person.registrantId}
+                    person={person}
+                    eventId={eventId}
+                    groups={[]}
+                    groupsRooms={[]}
+                    round={round}
+                    featuredCompetitors={featuredCompetitors}
+                    getAssignmentCodeForPersonGroup={() => undefined}
+                    handleUpdateAssignmentForPerson={() => () => undefined}
+                    toggleFeaturedCompetitor={toggleFeaturedCompetitor}
+                    additionalAssignmentCells={distributedAttemptGroups.flatMap((attemptGroup) =>
+                      attemptGroup.activities.map((activity) => (
+                        <TableAssignmentCell
+                          key={`${person.registrantId}-${activity.id}`}
+                          value={
+                            getCompetitorAssignmentForPersonActivity(person.registrantId, activity.id)
+                              ? 'competitor'
+                              : undefined
+                          }
+                          onClick={toggleCompetitorAssignmentForPersonAttemptActivity(
+                            person.registrantId,
+                            activity.id
+                          )}
+                        />
+                      ))
+                    )}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </>
+        ) : (
+          <>
+            <AssignmentsToolbar
+              paintingAssignmentCode={paintingAssignmentCode}
+              setPaintingAssignmentCode={setPaintingAssignmentCode}
+              competitorSort={competitorSort}
+              setCompetitorSort={setCompetitorSort}
+              showAllCompetitors={showAllCompetitors}
+              setShowAllCompetitors={setShowAllCompetitors}
+              showCompetitorsNotInRound={showCompetitorsNotInRound}
+              setShowCompetitorsNotInRound={setShowCompetitorsNotInRound}
+              onResetAssignments={handleResetAssignments}
+            />
 
-        <Table stickyHeader size="small">
-          <AssignmentsTableHeader
-            groupsRooms={groupsRooms}
-            groups={groups}
-            activityCode={activityCode}
-          />
-          <TableBody>
-            {persons?.map((person) => (
-              <PersonAssignmentRow
-                key={person.registrantId}
-                person={person}
-                eventId={eventId}
-                groups={groups}
+            <Table stickyHeader size="small">
+              <AssignmentsTableHeader
                 groupsRooms={groupsRooms}
-                round={round}
-                featuredCompetitors={featuredCompetitors}
-                getAssignmentCodeForPersonGroup={getAssignmentCodeForPersonGroup}
-                handleUpdateAssignmentForPerson={handleUpdateAssignmentForPerson}
-                toggleFeaturedCompetitor={toggleFeaturedCompetitor}
+                groups={groups}
+                activityCode={activityCode}
               />
-            ))}
-          </TableBody>
-        </Table>
+              <TableBody>
+                {persons?.map((person) => (
+                  <PersonAssignmentRow
+                    key={person.registrantId}
+                    person={person}
+                    eventId={eventId}
+                    groups={groups}
+                    groupsRooms={groupsRooms}
+                    round={round}
+                    featuredCompetitors={featuredCompetitors}
+                    getAssignmentCodeForPersonGroup={getAssignmentCodeForPersonGroup}
+                    handleUpdateAssignmentForPerson={handleUpdateAssignmentForPerson}
+                    toggleFeaturedCompetitor={toggleFeaturedCompetitor}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </>
+        )}
       </DialogContent>
       <DialogActions>
         <Box sx={{ display: 'flex', flexDirection: 'row' }}>

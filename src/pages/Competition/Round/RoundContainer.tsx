@@ -37,6 +37,8 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
     personsAssignedToCompete,
     personsAssignedWithCompetitorAssignmentCount,
     adamRoundConfig,
+    isDistributedAttemptRoundLevel,
+    distributedAttemptGroups,
   } = useRoundData(activityCode, round);
 
   const {
@@ -114,6 +116,7 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
                 onResetAll={handleResetAll}
                 onResetNonScrambling={handleResetNonScrambling}
                 onConfigureGroupCounts={() => dialogs.configureGroupCounts.setOpen(true)}
+                isDistributedAttemptRoundLevel={isDistributedAttemptRoundLevel}
               />
             }
           />
@@ -142,6 +145,8 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
           round={round}
           activityCode={activityCode}
           groups={groups}
+          isDistributedAttemptRoundLevel={isDistributedAttemptRoundLevel}
+          distributedAttemptGroups={distributedAttemptGroups}
         />
         <ConfigureGroupCountsDialog
           open={dialogs.configureGroupCounts.open}

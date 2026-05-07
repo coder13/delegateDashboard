@@ -1,3 +1,7 @@
+import {
+  hasDistributedAttempts,
+  parseActivityCode,
+} from '../../../../lib/domain/activities/activityCode';
 import { byGroupNumber } from '../../../../lib/domain/activities/activityUtils';
 import { type ActivityWithParent, type ActivityWithRoom } from '../../../../lib/domain/types';
 import {
@@ -29,6 +33,11 @@ interface RoundDataResult {
     groupCount?: number;
     expectedRegistrations?: number;
   } | null;
+  isDistributedAttemptRoundLevel: boolean;
+  distributedAttemptGroups: Array<{
+    attemptNumber: number;
+    activities: ActivityWithParent[];
+  }>;
 }
 
 export const useRoundData = (activityCode: string, round: Round | undefined): RoundDataResult => {
@@ -55,6 +64,44 @@ export const useRoundData = (activityCode: string, round: Round | undefined): Ro
     : [];
 
   const groups = roundActivities.flatMap((roundActivity) => allChildActivities(roundActivity));
+  const parsedActivityCode = parseActivityCode(activityCode);
+  const isDistributedAttemptRoundLevel =
+    hasDistributedAttempts(activityCode) && parsedActivityCode.attemptNumber === undefined;
+
+  const distributedAttemptGroups = useMemo(() => {
+    if (!isDistributedAttemptRoundLevel) {
+      return [];
+    }
+
+    const groupedByAttempt = groups.reduce<
+      Record<number, { attemptNumber: number; activities: ActivityWithParent[] }>
+    >((acc, activity) => {
+      const { attemptNumber } = parseActivityCode(activity.activityCode);
+      if (!attemptNumber) {
+        return acc;
+      }
+
+      if (!acc[attemptNumber]) {
+        acc[attemptNumber] = { attemptNumber, activities: [] };
+      }
+
+      acc[attemptNumber].activities.push(activity);
+      return acc;
+    }, {});
+
+    return Object.values(groupedByAttempt)
+      .map((group) => ({
+        ...group,
+        activities: [...group.activities].sort((a, b) => {
+          const roomNameA =
+            typeof a.parent === 'object' && 'room' in a.parent ? a.parent.room.name : '';
+          const roomNameB =
+            typeof b.parent === 'object' && 'room' in b.parent ? b.parent.room.name : '';
+          return roomNameA.localeCompare(roomNameB) || a.id - b.id;
+        }),
+      }))
+      .sort((a, b) => a.attemptNumber - b.attemptNumber);
+  }, [groups, isDistributedAttemptRoundLevel]);
 
   const sortedGroups = useMemo(
     () =>
@@ -96,5 +143,7 @@ export const useRoundData = (activityCode: string, round: Round | undefined): Ro
     personsAssignedToCompete,
     personsAssignedWithCompetitorAssignmentCount,
     adamRoundConfig,
+    isDistributedAttemptRoundLevel,
+    distributedAttemptGroups,
   };
 };

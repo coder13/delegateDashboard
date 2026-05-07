@@ -1,3 +1,4 @@
+import { parseActivityCode } from '../../../../lib/domain/activities';
 import { type ActivityWithParent, type ActivityWithRoom } from '../../../../lib/domain/types';
 import {
   bulkRemovePersonAssignments,
@@ -32,8 +33,25 @@ export const useRoundActions = ({
   }, [dispatch, round]);
 
   const handleAssignToRoundAttempt = useCallback(() => {
-    dispatch(generateRoundAttemptAssignments(activityCode));
-  }, [dispatch, activityCode]);
+    const { attemptNumber } = parseActivityCode(activityCode);
+
+    if (attemptNumber !== undefined) {
+      dispatch(generateRoundAttemptAssignments(activityCode));
+      return;
+    }
+
+    const attemptCodes = Array.from(
+      new Set(
+        groups
+          .map((activity) => activity.activityCode)
+          .filter((code) => parseActivityCode(code).attemptNumber !== undefined)
+      )
+    );
+
+    attemptCodes.forEach((code) => {
+      dispatch(generateRoundAttemptAssignments(code));
+    });
+  }, [dispatch, activityCode, groups]);
 
   const handleResetAttemptAssignments = useCallback(() => {
     confirm({
@@ -42,10 +60,22 @@ export const useRoundActions = ({
       cancellationText: 'No',
     })
       .then(() => {
+        const { attemptNumber } = parseActivityCode(activityCode);
+        const activityIdsToReset =
+          attemptNumber !== undefined
+            ? roundActivities.map((roundActivity) => roundActivity.id)
+            : groups
+                .filter((group) => parseActivityCode(group.activityCode).attemptNumber !== undefined)
+                .map((group) => group.id);
+
+        if (activityIdsToReset.length === 0) {
+          return;
+        }
+
         dispatch(
           bulkRemovePersonAssignments(
-            roundActivities.map((roundActivity) => ({
-              activityId: roundActivity.id,
+            activityIdsToReset.map((activityId) => ({
+              activityId,
               assignmentCode: 'competitor',
             }))
           )
@@ -54,7 +84,7 @@ export const useRoundActions = ({
       .catch((e) => {
         console.error(e);
       });
-  }, [confirm, dispatch, roundActivities]);
+  }, [activityCode, confirm, dispatch, groups, roundActivities]);
 
   const handleResetAll = useCallback(() => {
     confirm({

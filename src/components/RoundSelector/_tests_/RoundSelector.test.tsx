@@ -85,4 +85,27 @@ describe('RoundSelector', () => {
 
     expect(toggle).toBeChecked();
   });
+
+  it('renders round-level entry plus attempts for distributed-attempt events', () => {
+    const wcif = {
+      id: 'TestComp',
+      events: [
+        {
+          id: '333fm',
+          rounds: [{ id: '333fm-r1', format: '3', results: [], timeLimit: null, cutoff: null }],
+        },
+      ],
+    };
+
+    const state = { wcif } as unknown as AppState;
+    useAppSelector.mockImplementation((selector: (state: AppState) => unknown) => selector(state));
+
+    const { getAllByTestId } = renderWithProviders(
+      <RoundSelector competitionId="TestComp" onSelected={() => undefined} />
+    );
+
+    const activityCodes = getAllByTestId('round-item').map((item) => item.getAttribute('data-code'));
+
+    expect(activityCodes).toEqual(['333fm-r1', '333fm-r1-a1', '333fm-r1-a2', '333fm-r1-a3']);
+  });
 });

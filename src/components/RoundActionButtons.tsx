@@ -17,6 +17,7 @@ interface RoundActionButtonsProps {
   onResetAll: () => void;
   onResetNonScrambling: () => void;
   onConfigureGroupCounts: () => void;
+  isDistributedAttemptRoundLevel: boolean;
 }
 
 export const RoundActionButtons = ({
@@ -33,9 +34,23 @@ export const RoundActionButtons = ({
   onResetAll,
   onResetNonScrambling,
   onConfigureGroupCounts,
+  isDistributedAttemptRoundLevel,
 }: RoundActionButtonsProps) => {
   const { attemptNumber } = parseActivityCode(activityCode);
   const isAttemptActivity = hasDistributedAttempts(activityCode) && attemptNumber !== undefined;
+
+  if (isDistributedAttemptRoundLevel) {
+    return (
+      <>
+        <Button onClick={onConfigureAssignments}>Configure Attempt Assignments</Button>
+        <Button onClick={onAssignToRoundAttempt}>Generate Attempt Assignments (All Attempts)</Button>
+        <div style={{ display: 'flex', flex: 1 }} />
+        <Button color="error" onClick={onResetAttemptAssignments}>
+          Reset Attempt Assignments
+        </Button>
+      </>
+    );
+  }
 
   if (groups.length === 0 && isAttemptActivity) {
     if (personsAssignedToCompete.length > 0) {
