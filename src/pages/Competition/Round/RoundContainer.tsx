@@ -39,7 +39,13 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
     adamRoundConfig,
   } = useRoundData(activityCode, round);
 
-  const { handleGenerateAssignments, handleAssignToRoundAttempt, handleResetAttemptAssignments, handleResetAll, handleResetNonScrambling } = useRoundActions({
+  const {
+    handleGenerateAssignments,
+    handleAssignToRoundAttempt,
+    handleResetAttemptAssignments,
+    handleResetAll,
+    handleResetNonScrambling,
+  } = useRoundActions({
     round,
     activityCode,
     groups,
