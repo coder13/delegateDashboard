@@ -4,7 +4,7 @@ import { personsShouldBeInRound } from '../domain';
 import { type InProgressAssignmment } from '../types';
 import { byName } from '../utils';
 import { createGroupAssignment } from '../wcif';
-import { type Competition, type Event } from '@wca/helpers';
+import { type Competition } from '@wca/helpers';
 
 /**
  * Assigns all persons in a round directly to the attempt-level activity,
@@ -17,13 +17,18 @@ export const generateAssignmentsForRoundAttempt = (
   attemptActivityCode: string
 ) => {
   const { eventId, roundNumber } = parseActivityCode(attemptActivityCode);
-  const roundId = eventId && roundNumber ? `${eventId}-r${roundNumber}` : undefined;
+  if (!eventId || !roundNumber) {
+    console.error('Unable to parse attempt activity code:', attemptActivityCode);
+    return;
+  }
 
-  const event = wcif.events.find((e) => e.id === eventId) as Event;
+  const roundId = `${eventId}-r${roundNumber}`;
+
+  const event = wcif.events.find((e) => e.id === eventId);
   const round = event?.rounds?.find((r) => r.id === roundId);
 
-  if (!event || !round || !roundNumber) {
-    console.error('Error finding round for attempt', attemptActivityCode);
+  if (!event || !round) {
+    console.error('Unable to find event or round for attempt activity code:', attemptActivityCode);
     return;
   }
 
@@ -31,7 +36,10 @@ export const generateAssignmentsForRoundAttempt = (
   const attemptActivityIds = attemptActivities.map((a) => a.id);
 
   if (!attemptActivityIds.length) {
-    console.error('No attempt activities found for', attemptActivityCode);
+    console.error(
+      'No attempt activities found in schedule for attempt activity code:',
+      attemptActivityCode
+    );
     return;
   }
 
@@ -42,7 +50,11 @@ export const generateAssignmentsForRoundAttempt = (
 
   const nextAttemptActivityId = (assignments: InProgressAssignmment[]): number => {
     const counts: Record<number, number> = assignments
-      .filter((a) => isCompetitorAssignment(a.assignment) && attemptActivityIds.includes(+a.assignment.activityId))
+      .filter(
+        (a) =>
+          isCompetitorAssignment(a.assignment) &&
+          attemptActivityIds.includes(a.assignment.activityId)
+      )
       .reduce(
         (sizes, { assignment }) => ({
           ...sizes,
@@ -64,9 +76,6 @@ export const generateAssignmentsForRoundAttempt = (
       .filter(missingCompetitorAssignments({ assignments, groupIds: attemptActivityIds }))
       .sort(byName)
       .sort(byPROrResult(event, roundNumber));
-
-    // eslint-disable-next-line
-    console.log(`Generating attempt assignments for ${persons.length} competitors`, persons);
 
     return persons.reduce(
       (acc, person) => [

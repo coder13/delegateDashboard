@@ -1,10 +1,6 @@
 import Assignments from '../../config/assignments';
 import TableAssignmentCell from '../../components/TableAssignmentCell';
-import {
-  activityCodeToName,
-  hasDistributedAttempts,
-  parseActivityCode,
-} from '../../lib/domain/activities';
+import { activityCodeToName, parseActivityCode } from '../../lib/domain/activities';
 import type { ActivityWithParent } from '../../lib/domain/activities';
 import { useAppDispatch, useAppSelector } from '../../store';
 import {
@@ -112,11 +108,6 @@ const ConfigureAssignmentsDialog = ({
     handleResetAssignments,
   } = useAssignmentHandlers(persons, groups, paintingAssignmentCode, dispatch);
 
-  const isRoundLevelDistributedAttempts =
-    isDistributedAttemptRoundLevel &&
-    hasDistributedAttempts(activityCode) &&
-    parseActivityCode(activityCode).attemptNumber === undefined;
-
   const getCompetitorAssignmentForPersonActivity = useCallback(
     (registrantId: number, activityId: number) =>
       persons
@@ -217,7 +208,7 @@ const ConfigureAssignmentsDialog = ({
         Configuring Assignments For {activityCodeToName(activityCode)}
       </DialogTitle>
       <DialogContent style={{ padding: 0 }}>
-        {isRoundLevelDistributedAttempts ? (
+        {isDistributedAttemptRoundLevel ? (
           <>
             <Stack direction="row" gap={1} sx={{ p: 2, flexWrap: 'wrap' }}>
               {distributedAttemptGroups.map((attemptGroup) => (

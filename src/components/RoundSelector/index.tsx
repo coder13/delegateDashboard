@@ -27,6 +27,8 @@ const RoundSelector = ({ onSelected }: RoundSelectorProps) => {
   const [showAllRounds, setShowAllRounds] = useState(false);
   const [selectedId, setSelectedId] = useState(wcif?.events[0]?.rounds[0]?.id || null);
 
+  const attemptCountForRound = (round: Round) => (round.format === 'm' ? 3 : +round.format);
+
   const shouldShowRound = (round: Round) => {
     if (!wcif) return false;
 
@@ -61,7 +63,7 @@ const RoundSelector = ({ onSelected }: RoundSelectorProps) => {
 
     return [
       r.id,
-      ...new Array(r.format === 'm' ? 3 : +r.format)
+      ...new Array(attemptCountForRound(r))
         .fill(0)
         .map((_, index) => `${r.id}-a${index + 1}`),
     ];
@@ -138,8 +140,7 @@ const RoundSelector = ({ onSelected }: RoundSelectorProps) => {
                       />
                     ))
                   : roundsForEvent.flatMap((round) => {
-                      const attempts = new Array(round.format === 'm' ? 3 : +round.format) // TODO: create helper function to calculate attempts
-                        .fill(0);
+                      const attempts = new Array(attemptCountForRound(round)).fill(0);
 
                       const roundListItem = (
                         <RoundListItem

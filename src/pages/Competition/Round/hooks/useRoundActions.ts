@@ -82,7 +82,7 @@ export const useRoundActions = ({
         );
       })
       .catch((e) => {
-        console.error(e);
+        console.error('Failed to reset attempt assignments:', e);
       });
   }, [activityCode, confirm, dispatch, groups, roundActivities]);
 

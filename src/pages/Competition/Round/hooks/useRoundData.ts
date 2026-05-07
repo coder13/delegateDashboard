@@ -64,9 +64,10 @@ export const useRoundData = (activityCode: string, round: Round | undefined): Ro
     : [];
 
   const groups = roundActivities.flatMap((roundActivity) => allChildActivities(roundActivity));
-  const parsedActivityCode = parseActivityCode(activityCode);
-  const isDistributedAttemptRoundLevel =
-    hasDistributedAttempts(activityCode) && parsedActivityCode.attemptNumber === undefined;
+  const isDistributedAttemptRoundLevel = useMemo(() => {
+    const parsedActivityCode = parseActivityCode(activityCode);
+    return hasDistributedAttempts(activityCode) && parsedActivityCode.attemptNumber === undefined;
+  }, [activityCode]);
 
   const distributedAttemptGroups = useMemo(() => {
     if (!isDistributedAttemptRoundLevel) {

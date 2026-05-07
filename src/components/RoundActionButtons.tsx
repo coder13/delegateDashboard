@@ -1,5 +1,6 @@
 import { hasDistributedAttempts, parseActivityCode } from '../lib/domain/activities';
 import { type ActivityWithParent } from '../lib/domain/types';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { type Person } from '@wca/helpers';
 
@@ -44,7 +45,7 @@ export const RoundActionButtons = ({
       <>
         <Button onClick={onConfigureAssignments}>Configure Attempt Assignments</Button>
         <Button onClick={onAssignToRoundAttempt}>Generate Attempt Assignments (All Attempts)</Button>
-        <div style={{ display: 'flex', flex: 1 }} />
+        <Box sx={{ display: 'flex', flex: 1 }} />
         <Button color="error" onClick={onResetAttemptAssignments}>
           Reset Attempt Assignments
         </Button>
@@ -57,7 +58,7 @@ export const RoundActionButtons = ({
       return (
         <>
           <Button onClick={onAssignToRoundAttempt}>Assign to Round Attempt</Button>
-          <div style={{ display: 'flex', flex: 1 }} />
+          <Box sx={{ display: 'flex', flex: 1 }} />
           <Button color="error" onClick={onResetAttemptAssignments}>
             Reset Attempt Assignments
           </Button>
