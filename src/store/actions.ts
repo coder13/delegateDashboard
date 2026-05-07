@@ -46,6 +46,7 @@ export const ActionType = {
   PARTIAL_UPDATE_WCIF: 'partial_update_wcif',
   RESET_ALL_GROUP_ASSIGNMENTS: 'reset_all_group_assignments',
   GENERATE_ASSIGNMENTS: 'generate_assignments',
+  GENERATE_ROUND_ATTEMPT_ASSIGNMENTS: 'generate_round_attempt_assignments',
   EDIT_ACTIVITY: 'edit_activity',
   UPDATE_GLOBAL_EXTENSION: 'update_global_extension',
   ADD_PERSON: 'add_person',
@@ -381,6 +382,24 @@ export type EditActivityPayload = {
   where: Partial<Activity> & Pick<Activity, 'id'>;
   what: Partial<Activity> & Partial<Pick<Activity, 'id'>>;
 };
+
+export type GenerateRoundAttemptAssignmentsPayload = {
+  attemptActivityCode: string;
+};
+/**
+ * Assigns all persons in a round directly to an attempt-level activity (e.g., 333fm-r1-a1),
+ * without creating sub-groups. Needed for 333fm and 333mbf so Groupifier can print scorecards.
+ * @param {ActivityCode} attemptActivityCode - e.g., '333fm-r1-a1'
+ */
+export const generateRoundAttemptAssignments = (
+  attemptActivityCode: string
+): ReduxAction<
+  typeof ActionType.GENERATE_ROUND_ATTEMPT_ASSIGNMENTS,
+  GenerateRoundAttemptAssignmentsPayload
+> => ({
+  type: ActionType.GENERATE_ROUND_ATTEMPT_ASSIGNMENTS,
+  attemptActivityCode,
+});
 /**
  * Queries activity based on the where and replaces it with the what
  * @param {*} where

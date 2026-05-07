@@ -1,4 +1,5 @@
 import { findAndReplaceActivity } from '../lib/domain/activities';
+import { generateAssignmentsForRoundAttempt } from '../lib/assignmentGenerators';
 import { type ValidationError } from '../lib/wcif';
 import {
   setActivityConfigExtensionData,
@@ -9,6 +10,7 @@ import { ActionType } from './actions';
 import type {
   EditActivityPayload,
   FetchingWcifPayload,
+  GenerateRoundAttemptAssignmentsPayload,
   PartialUpdateWcifPayload,
   SetCompetitionsPayload,
   UpdateGlobalExtensionPayload,
@@ -170,6 +172,16 @@ export const reducers: Record<string, ReducerFunction> = {
     };
   },
   [ActionType.GENERATE_ASSIGNMENTS]: Reducers.generateAssignments,
+  [ActionType.GENERATE_ROUND_ATTEMPT_ASSIGNMENTS]: (
+    state,
+    action: GenerateRoundAttemptAssignmentsPayload
+  ) => {
+    if (!('attemptActivityCode' in action) || !state.wcif) return state;
+    const generator = generateAssignmentsForRoundAttempt(state.wcif, action.attemptActivityCode);
+    if (!generator) return state;
+    const newAssignments = generator([]);
+    return Reducers.bulkAddPersonAssignments(state, { assignments: newAssignments });
+  },
   [ActionType.EDIT_ACTIVITY]: (state, action: EditActivityPayload) => {
     if (!('where' in action && 'what' in action) || !state.wcif) return state;
     const { where, what } = action;

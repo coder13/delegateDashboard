@@ -39,8 +39,9 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
     adamRoundConfig,
   } = useRoundData(activityCode, round);
 
-  const { handleGenerateAssignments, handleResetAll, handleResetNonScrambling } = useRoundActions({
+  const { handleGenerateAssignments, handleAssignToRoundAttempt, handleResetAttemptAssignments, handleResetAll, handleResetNonScrambling } = useRoundActions({
     round,
+    activityCode,
     groups,
     roundActivities,
   });
@@ -98,6 +99,8 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
                 activityCode={activityCode}
                 onConfigureAssignments={() => dialogs.configureAssignments.setOpen(true)}
                 onGenerateAssignments={handleGenerateAssignments}
+                onAssignToRoundAttempt={handleAssignToRoundAttempt}
+                onResetAttemptAssignments={handleResetAttemptAssignments}
                 onConfigureStationNumbers={(code) =>
                   dialogs.configureStationNumbers.setActivityCode(code)
                 }

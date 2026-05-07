@@ -2,6 +2,7 @@ import { type ActivityWithParent, type ActivityWithRoom } from '../../../../lib/
 import {
   bulkRemovePersonAssignments,
   generateAssignments,
+  generateRoundAttemptAssignments,
   updateRoundChildActivities,
 } from '../../../../store/actions';
 import { type Round } from '@wca/helpers';
@@ -11,11 +12,17 @@ import { useDispatch } from 'react-redux';
 
 interface UseRoundActionsParams {
   round: Round | undefined;
+  activityCode: string;
   groups: ActivityWithParent[];
   roundActivities: ActivityWithRoom[];
 }
 
-export const useRoundActions = ({ round, groups, roundActivities }: UseRoundActionsParams) => {
+export const useRoundActions = ({
+  round,
+  activityCode,
+  groups,
+  roundActivities,
+}: UseRoundActionsParams) => {
   const dispatch = useDispatch();
   const confirm = useConfirm();
 
@@ -23,6 +30,31 @@ export const useRoundActions = ({ round, groups, roundActivities }: UseRoundActi
     if (!round) return;
     dispatch(generateAssignments(round.id));
   }, [dispatch, round]);
+
+  const handleAssignToRoundAttempt = useCallback(() => {
+    dispatch(generateRoundAttemptAssignments(activityCode));
+  }, [dispatch, activityCode]);
+
+  const handleResetAttemptAssignments = useCallback(() => {
+    confirm({
+      description: 'Do you really want to reset all competitor assignments for this attempt?',
+      confirmationText: 'Yes',
+      cancellationText: 'No',
+    })
+      .then(() => {
+        dispatch(
+          bulkRemovePersonAssignments(
+            roundActivities.map((roundActivity) => ({
+              activityId: roundActivity.id,
+              assignmentCode: 'competitor',
+            }))
+          )
+        );
+      })
+      .catch((e) => {
+        console.error(e);
+      });
+  }, [confirm, dispatch, roundActivities]);
 
   const handleResetAll = useCallback(() => {
     confirm({
@@ -77,6 +109,8 @@ export const useRoundActions = ({ round, groups, roundActivities }: UseRoundActi
 
   return {
     handleGenerateAssignments,
+    handleAssignToRoundAttempt,
+    handleResetAttemptAssignments,
     handleResetAll,
     handleResetNonScrambling,
   };
