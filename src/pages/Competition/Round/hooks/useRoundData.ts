@@ -1,4 +1,5 @@
 import {
+  activityCodeIsChild,
   hasDistributedAttempts,
   parseActivityCode,
 } from '../../../../lib/domain/activities/activityCode';
@@ -36,7 +37,7 @@ interface RoundDataResult {
   isDistributedAttemptRoundLevel: boolean;
   distributedAttemptGroups: Array<{
     attemptNumber: number;
-    activities: ActivityWithParent[];
+    activities: ActivityWithRoom[];
   }>;
 }
 
@@ -47,35 +48,48 @@ export const useRoundData = (activityCode: string, round: Round | undefined): Ro
     round ? selectPersonsShouldBeInRound(state)(round) : []
   );
 
-  // list of each stage's round activity
-  const roundActivities: ActivityWithRoom[] = wcif
-    ? findAllActivities(wcif)
-        .filter((activity) => activity.activityCode === activityCode)
-        .map((activity) => {
-          const room = roomByActivity(wcif, activity.id);
-          if (!room) {
-            throw new Error(`Could not find room for activity ${activity.id}`);
-          }
-          return {
-            ...activity,
-            room,
-          };
-        })
-    : [];
-
-  const groups = roundActivities.flatMap((roundActivity) => allChildActivities(roundActivity));
   const isDistributedAttemptRoundLevel = useMemo(() => {
     const parsedActivityCode = parseActivityCode(activityCode);
     return hasDistributedAttempts(activityCode) && parsedActivityCode.attemptNumber === undefined;
   }, [activityCode]);
+
+  // list of each stage's round activity
+  // For distributed attempt rounds at round level, find all attempt activities
+  const roundActivities: ActivityWithRoom[] = useMemo(
+    () =>
+      wcif
+        ? findAllActivities(wcif)
+            .filter((activity) =>
+              isDistributedAttemptRoundLevel
+                ? activityCodeIsChild(activityCode, activity.activityCode)
+                : activity.activityCode === activityCode
+            )
+            .map((activity) => {
+              const room = roomByActivity(wcif, activity.id);
+              if (!room) {
+                throw new Error(`Could not find room for activity ${activity.id}`);
+              }
+              return {
+                ...activity,
+                room,
+              };
+            })
+        : [],
+    [activityCode, isDistributedAttemptRoundLevel, wcif]
+  );
+
+  const groups = useMemo(
+    () => roundActivities.flatMap((roundActivity) => allChildActivities(roundActivity)),
+    [roundActivities]
+  );
 
   const distributedAttemptGroups = useMemo(() => {
     if (!isDistributedAttemptRoundLevel) {
       return [];
     }
 
-    const groupedByAttempt = groups.reduce<
-      Record<number, { attemptNumber: number; activities: ActivityWithParent[] }>
+    const groupedByAttempt = roundActivities.reduce<
+      Record<number, { attemptNumber: number; activities: ActivityWithRoom[] }>
     >((acc, activity) => {
       const { attemptNumber } = parseActivityCode(activity.activityCode);
       if (!attemptNumber) {
@@ -94,15 +108,13 @@ export const useRoundData = (activityCode: string, round: Round | undefined): Ro
       .map((group) => ({
         ...group,
         activities: [...group.activities].sort((a, b) => {
-          const roomNameA =
-            typeof a.parent === 'object' && 'room' in a.parent ? a.parent.room.name : '';
-          const roomNameB =
-            typeof b.parent === 'object' && 'room' in b.parent ? b.parent.room.name : '';
+          const roomNameA = a.room.name;
+          const roomNameB = b.room.name;
           return roomNameA.localeCompare(roomNameB) || a.id - b.id;
         }),
       }))
       .sort((a, b) => a.attemptNumber - b.attemptNumber);
-  }, [groups, isDistributedAttemptRoundLevel]);
+  }, [isDistributedAttemptRoundLevel, roundActivities]);
 
   const sortedGroups = useMemo(
     () =>

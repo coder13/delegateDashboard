@@ -44,7 +44,7 @@ export const RoundActionButtons = ({
     return (
       <>
         <Button onClick={onConfigureAssignments}>Configure Round Attempt Assignments</Button>
-        <Button onClick={onAssignToRoundAttempt}>Assign Competitors to Round (All Attempts)</Button>
+        <Button onClick={onAssignToRoundAttempt}>Assign All</Button>
         <Box sx={{ display: 'flex', flex: 1 }} />
         <Button color="error" onClick={onResetAttemptAssignments}>
           Clear Round Attempt Assignments

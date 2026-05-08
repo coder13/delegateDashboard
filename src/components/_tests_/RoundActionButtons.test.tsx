@@ -25,7 +25,7 @@ describe('RoundActionButtons', () => {
     );
 
     expect(getByText('Configure Round Attempt Assignments')).toBeInTheDocument();
-    expect(getByText('Assign Competitors to Round (All Attempts)')).toBeInTheDocument();
+    expect(getByText('Assign All')).toBeInTheDocument();
     expect(getByText('Clear Round Attempt Assignments')).toBeInTheDocument();
     expect(queryByText('Configure Group Counts')).not.toBeInTheDocument();
   });

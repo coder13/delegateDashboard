@@ -42,7 +42,7 @@ export const useRoundActions = ({
 
     const attemptCodes = Array.from(
       new Set(
-        groups
+        [...groups, ...roundActivities]
           .map((activity) => activity.activityCode)
           .filter((code) => parseActivityCode(code).attemptNumber !== undefined)
       )
@@ -51,7 +51,7 @@ export const useRoundActions = ({
     attemptCodes.forEach((code) => {
       dispatch(generateRoundAttemptAssignments(code));
     });
-  }, [dispatch, activityCode, groups]);
+  }, [dispatch, activityCode, groups, roundActivities]);
 
   const handleResetAttemptAssignments = useCallback(() => {
     confirm({
@@ -64,7 +64,7 @@ export const useRoundActions = ({
         const activityIdsToReset =
           attemptNumber !== undefined
             ? roundActivities.map((roundActivity) => roundActivity.id)
-            : groups
+            : [...groups, ...roundActivities]
                 .filter((group) => parseActivityCode(group.activityCode).attemptNumber !== undefined)
                 .map((group) => group.id);
 
