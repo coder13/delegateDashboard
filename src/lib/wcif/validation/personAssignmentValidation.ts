@@ -2,6 +2,7 @@ import {
   activitiesOverlap,
   findActivityById,
   findAllActivities,
+  parseActivityCode,
   roomByActivity,
 } from '../../domain';
 import { acceptedRegistrations } from '../../domain';
@@ -15,6 +16,48 @@ import type { Competition, Person } from '@wca/helpers';
 
 const pluralizeWord = (count: number, singular: string, plural?: string) =>
   count === 1 ? singular : plural || singular + 's';
+
+const roundsShareCumulativeTimeLimit = (
+  wcif: Competition,
+  activityIdA: number,
+  activityIdB: number
+) => {
+  const activityA = findActivityById(wcif, activityIdA);
+  const activityB = findActivityById(wcif, activityIdB);
+
+  if (!activityA || !activityB) {
+    return false;
+  }
+
+  const roundA = parseActivityCode(activityA.activityCode);
+  const roundB = parseActivityCode(activityB.activityCode);
+  if (
+    !roundA.eventId ||
+    !roundA.roundNumber ||
+    !roundB.eventId ||
+    !roundB.roundNumber ||
+    roundA.eventId === roundB.eventId
+  ) {
+    return false;
+  }
+
+  const eventA = wcif.events.find((event) => event.id === roundA.eventId);
+  const eventB = wcif.events.find((event) => event.id === roundB.eventId);
+  if (!eventA || !eventB) {
+    return false;
+  }
+
+  const roundAData = eventA.rounds?.find((round) => round.id === `${roundA.eventId}-r${roundA.roundNumber}`);
+  const roundBData = eventB.rounds?.find((round) => round.id === `${roundB.eventId}-r${roundB.roundNumber}`);
+  if (!roundAData?.timeLimit?.cumulativeRoundIds || !roundBData?.timeLimit?.cumulativeRoundIds) {
+    return false;
+  }
+
+  return (
+    roundAData.timeLimit.cumulativeRoundIds.includes(roundBData.id) &&
+    roundBData.timeLimit.cumulativeRoundIds.includes(roundAData.id)
+  );
+};
 
 /**
  * Validates that all person assignments reference existing activities
@@ -71,6 +114,10 @@ const findConflictingAssignmentsForPerson = (
       }
 
       if (!activitiesOverlap(activity, otherActivity)) {
+        return;
+      }
+
+      if (roundsShareCumulativeTimeLimit(wcif, assignment.activityId, otherAssignment.activityId)) {
         return;
       }
 
