@@ -170,6 +170,7 @@ export const reducers: Record<string, ReducerFunction> = {
     };
   },
   [ActionType.GENERATE_ASSIGNMENTS]: Reducers.generateAssignments,
+  [ActionType.RUN_RECIPE]: Reducers.runRecipe,
   [ActionType.EDIT_ACTIVITY]: (state, action: EditActivityPayload) => {
     if (!('where' in action && 'what' in action) || !state.wcif) return state;
     const { where, what } = action;

@@ -12,10 +12,14 @@ import { RoundStatisticsCard } from '../../../components/RoundStatisticsCard';
 import { useRoundActions } from './hooks/useRoundActions';
 import { useRoundData } from './hooks/useRoundData';
 import { useRoundDialogs } from './hooks/useRoundDialogs';
+import { getRoundConfigExtensionData } from '../../../lib/wcif/extensions/delegateDashboard/delegateDashboard';
+import { updateRoundExtensionData, runRecipe as runRecipeAction } from '../../../store/actions';
+import { useAppDispatch } from '../../../store';
 import { Alert, Typography } from '@mui/material';
 import Grid from '@mui/material/GridLegacy';
 import { type Round } from '@wca/helpers';
 import { ConfirmProvider } from 'material-ui-confirm';
+import { useState } from 'react';
 
 interface RoundContainerProps {
   roundId: string;
@@ -26,6 +30,7 @@ interface RoundContainerProps {
 
 const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContainerProps) => {
   const dialogs = useRoundDialogs();
+  const dispatch = useAppDispatch();
 
   const {
     wcif,
@@ -44,6 +49,19 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
     groups,
     roundActivities,
   });
+
+  const existingRoundConfig = getRoundConfigExtensionData(round);
+  const existingRecipeId = (existingRoundConfig as any)?.recipe?.id as string | undefined;
+  const [recipeId, setRecipeId] = useState<string>(existingRecipeId ?? 'pnw');
+
+  const handleChangeRecipeId = (nextId: string) => {
+    setRecipeId(nextId);
+    dispatch(updateRoundExtensionData(round.id, { ...(existingRoundConfig ?? {}), recipe: { id: nextId } }));
+  };
+
+  const handleRunRecipe = () => {
+    dispatch(runRecipeAction(round.id, recipeId));
+  };
 
   if (roundActivities.length === 0) {
     return (
@@ -98,6 +116,9 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
                 activityCode={activityCode}
                 onConfigureAssignments={() => dialogs.configureAssignments.setOpen(true)}
                 onGenerateAssignments={handleGenerateAssignments}
+                recipeId={recipeId}
+                onChangeRecipeId={handleChangeRecipeId}
+                onRunRecipe={handleRunRecipe}
                 onConfigureStationNumbers={(code) =>
                   dialogs.configureStationNumbers.setActivityCode(code)
                 }
