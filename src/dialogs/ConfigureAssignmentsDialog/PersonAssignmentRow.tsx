@@ -10,6 +10,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import { Checkbox, TableCell, TableRow, Tooltip } from '@mui/material';
 import { grey, red, yellow } from '@mui/material/colors';
 import type { EventId, Person, Round } from '@wca/helpers';
+import type { ReactNode } from 'react';
 
 interface PersonAssignmentRowProps {
   person: PersonWithSeedResult;
@@ -21,6 +22,7 @@ interface PersonAssignmentRowProps {
   getAssignmentCodeForPersonGroup: (registrantId: number, activityId: number) => string | undefined;
   handleUpdateAssignmentForPerson: (registrantId: number, activityId: number) => () => void;
   toggleFeaturedCompetitor: (person: Person) => void;
+  additionalAssignmentCells?: ReactNode;
 }
 
 const PersonAssignmentRow = ({
@@ -33,6 +35,7 @@ const PersonAssignmentRow = ({
   getAssignmentCodeForPersonGroup,
   handleUpdateAssignmentForPerson,
   toggleFeaturedCompetitor,
+  additionalAssignmentCells,
 }: PersonAssignmentRowProps) => {
   const roundFormat = roundFormatById(round.format)?.rankingResult || 'single';
 
@@ -101,6 +104,7 @@ const PersonAssignmentRow = ({
             />
           ))
       )}
+      {additionalAssignmentCells}
       <TableCell>
         <Checkbox checked={isFeatured} onClick={() => toggleFeaturedCompetitor(person)} />
       </TableCell>

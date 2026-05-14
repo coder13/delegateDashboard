@@ -1,4 +1,6 @@
+import { hasDistributedAttempts, parseActivityCode } from '../lib/domain/activities';
 import { type ActivityWithParent } from '../lib/domain/types';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { type Person } from '@wca/helpers';
 
@@ -9,11 +11,14 @@ interface RoundActionButtonsProps {
   activityCode: string;
   onConfigureAssignments: () => void;
   onGenerateAssignments: () => void;
+  onAssignToRoundAttempt: () => void;
+  onResetAttemptAssignments: () => void;
   onConfigureStationNumbers: (activityCode: string) => void;
   onConfigureGroups: () => void;
   onResetAll: () => void;
   onResetNonScrambling: () => void;
   onConfigureGroupCounts: () => void;
+  isDistributedAttemptRoundLevel: boolean;
 }
 
 export const RoundActionButtons = ({
@@ -23,12 +28,52 @@ export const RoundActionButtons = ({
   activityCode,
   onConfigureAssignments,
   onGenerateAssignments,
+  onAssignToRoundAttempt,
+  onResetAttemptAssignments,
   onConfigureStationNumbers,
   onConfigureGroups,
   onResetAll,
   onResetNonScrambling,
   onConfigureGroupCounts,
+  isDistributedAttemptRoundLevel,
 }: RoundActionButtonsProps) => {
+  const { attemptNumber } = parseActivityCode(activityCode);
+  const isAttemptActivity = hasDistributedAttempts(activityCode) && attemptNumber !== undefined;
+
+  if (isDistributedAttemptRoundLevel) {
+    return (
+      <>
+        <Button onClick={onConfigureAssignments}>Configure Round Attempt Assignments</Button>
+        <Button onClick={onAssignToRoundAttempt}>Assign All</Button>
+        <Box sx={{ display: 'flex', flex: 1 }} />
+        <Button color="error" onClick={onResetAttemptAssignments}>
+          Clear Round Attempt Assignments
+        </Button>
+      </>
+    );
+  }
+
+  if (groups.length === 0 && isAttemptActivity) {
+    if (personsAssignedToCompete.length > 0) {
+      return (
+        <>
+          <Button onClick={onAssignToRoundAttempt}>Assign to Round Attempt</Button>
+          <Box sx={{ display: 'flex', flex: 1 }} />
+          <Button color="error" onClick={onResetAttemptAssignments}>
+            Reset Attempt Assignments
+          </Button>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <Button onClick={onAssignToRoundAttempt}>Assign to Round Attempt</Button>
+        <Button onClick={onConfigureGroupCounts}>Configure Group Counts</Button>
+      </>
+    );
+  }
+
   if (groups.length === 0) {
     return (
       <>
