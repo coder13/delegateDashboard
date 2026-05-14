@@ -317,6 +317,76 @@ describe('validatePersonAssignmentScheduleConflicts', () => {
     expect(conflict?.assignmentA.room?.name).toBe('Room 1');
     expect(conflict?.assignmentB.room).toBeDefined();
   });
+
+  it('should not detect conflicts for overlapping assignments that share cumulative time limits', () => {
+    const wcif: Competition = {
+      ...mockWcif,
+      events: [
+        {
+          id: '444bf',
+          rounds: [
+            {
+              id: '444bf-r1',
+              timeLimit: { centiseconds: 360000, cumulativeRoundIds: ['444bf-r1', '555bf-r1'] },
+            },
+          ],
+        },
+        {
+          id: '555bf',
+          rounds: [
+            {
+              id: '555bf-r1',
+              timeLimit: { centiseconds: 360000, cumulativeRoundIds: ['444bf-r1', '555bf-r1'] },
+            },
+          ],
+        },
+      ] as Competition['events'],
+      schedule: {
+        ...mockWcif.schedule,
+        venues: [
+          {
+            ...mockWcif.schedule.venues[0],
+            rooms: [
+              {
+                ...mockWcif.schedule.venues[0].rooms[0],
+                activities: [
+                  {
+                    id: 11,
+                    name: '4BLD Round 1',
+                    activityCode: '444bf-r1',
+                    startTime: '2024-01-01T09:00:00.000Z',
+                    endTime: '2024-01-01T10:00:00.000Z',
+                    childActivities: [],
+                    extensions: [],
+                  },
+                  {
+                    id: 12,
+                    name: '5BLD Round 1',
+                    activityCode: '555bf-r1',
+                    startTime: '2024-01-01T09:00:00.000Z',
+                    endTime: '2024-01-01T10:00:00.000Z',
+                    childActivities: [],
+                    extensions: [],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      persons: [
+        createPerson({
+          assignments: [
+            { activityId: 11, stationNumber: null, assignmentCode: 'competitor' },
+            { activityId: 12, stationNumber: null, assignmentCode: 'staff-judge' },
+          ],
+        }),
+      ],
+    };
+
+    const errors = validatePersonAssignmentScheduleConflicts(wcif);
+    expect(errors).toHaveLength(0);
+  });
 });
 
 describe('validatePersonAssignments', () => {
