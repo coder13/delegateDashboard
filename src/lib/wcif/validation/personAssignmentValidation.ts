@@ -1,23 +1,38 @@
 import {
+  acceptedRegistrations,
   activitiesOverlap,
   findActivityById,
   findAllActivities,
   parseActivityCode,
   roomByActivity,
 } from '../../domain';
-import { acceptedRegistrations } from '../../domain';
 import {
   MISSING_ACTIVITY_FOR_PERSON_ASSIGNMENT,
   PERSON_ASSIGNMENT_SCHEDULE_CONFLICT,
   type ConflictingAssignment,
   type ValidationError,
 } from './types';
-import type { Competition, Person } from '@wca/helpers';
+import type { Competition, Person, Round } from '@wca/helpers';
 
 const pluralizeWord = (count: number, singular: string, plural?: string) =>
   count === 1 ? singular : plural || singular + 's';
 
-const roundsShareCumulativeTimeLimit = (
+const roundIdForActivity = (activityCode: string) => {
+  const { eventId, roundNumber } = parseActivityCode(activityCode);
+
+  if (!eventId || !roundNumber) {
+    return null;
+  }
+
+  return `${eventId}-r${roundNumber}`;
+};
+
+const findRoundById = (wcif: Competition, roundId: string): Round | undefined =>
+  wcif.events.flatMap((event) => event.rounds || []).find((round) => round.id === roundId);
+
+const cumulativeRoundIdsFor = (round?: Round) => round?.timeLimit?.cumulativeRoundIds || [];
+
+const activitiesShareCumulativeTimeLimit = (
   wcif: Competition,
   activityIdA: number,
   activityIdB: number
@@ -29,34 +44,17 @@ const roundsShareCumulativeTimeLimit = (
     return false;
   }
 
-  const roundA = parseActivityCode(activityA.activityCode);
-  const roundB = parseActivityCode(activityB.activityCode);
-  if (
-    !roundA.eventId ||
-    !roundA.roundNumber ||
-    !roundB.eventId ||
-    !roundB.roundNumber ||
-    roundA.eventId === roundB.eventId
-  ) {
+  const roundIdA = roundIdForActivity(activityA.activityCode);
+  const roundIdB = roundIdForActivity(activityB.activityCode);
+
+  if (!roundIdA || !roundIdB || roundIdA === roundIdB) {
     return false;
   }
 
-  const eventA = wcif.events.find((event) => event.id === roundA.eventId);
-  const eventB = wcif.events.find((event) => event.id === roundB.eventId);
-  if (!eventA || !eventB) {
-    return false;
-  }
+  const cumulativeRoundIdsA = cumulativeRoundIdsFor(findRoundById(wcif, roundIdA));
+  const cumulativeRoundIdsB = cumulativeRoundIdsFor(findRoundById(wcif, roundIdB));
 
-  const roundAData = eventA.rounds?.find((round) => round.id === `${roundA.eventId}-r${roundA.roundNumber}`);
-  const roundBData = eventB.rounds?.find((round) => round.id === `${roundB.eventId}-r${roundB.roundNumber}`);
-  if (!roundAData?.timeLimit?.cumulativeRoundIds || !roundBData?.timeLimit?.cumulativeRoundIds) {
-    return false;
-  }
-
-  return (
-    roundAData.timeLimit.cumulativeRoundIds.includes(roundBData.id) &&
-    roundBData.timeLimit.cumulativeRoundIds.includes(roundAData.id)
-  );
+  return cumulativeRoundIdsA.includes(roundIdB) || cumulativeRoundIdsB.includes(roundIdA);
 };
 
 /**
@@ -117,7 +115,9 @@ const findConflictingAssignmentsForPerson = (
         return;
       }
 
-      if (roundsShareCumulativeTimeLimit(wcif, assignment.activityId, otherAssignment.activityId)) {
+      if (
+        activitiesShareCumulativeTimeLimit(wcif, assignment.activityId, otherAssignment.activityId)
+      ) {
         return;
       }
 

@@ -136,7 +136,7 @@ export const fetchWCIF = (competitionId: string) => async (dispatch: Dispatch) =
     };
 
     dispatch(updateWCIF(updatedWcif));
-    dispatch(updateWcifErrors(validateWcif(updatedWcif)));
+    dispatch(updateWcifErrors(validateWcif(updatedWcif), true));
   } catch (e) {
     dispatch(updateWcifErrors([e as ValidationError], true));
   }

@@ -387,6 +387,222 @@ describe('validatePersonAssignmentScheduleConflicts', () => {
     const errors = validatePersonAssignmentScheduleConflicts(wcif);
     expect(errors).toHaveLength(0);
   });
+
+  it('should not detect conflicts for grouped activities in cumulative time-limit rounds', () => {
+    const wcif: Competition = {
+      ...mockWcif,
+      events: [
+        {
+          id: '444bf',
+          rounds: [
+            {
+              id: '444bf-r1',
+              timeLimit: { centiseconds: 540000, cumulativeRoundIds: ['444bf-r1', '555bf-r1'] },
+            },
+          ],
+        },
+        {
+          id: '555bf',
+          rounds: [
+            {
+              id: '555bf-r1',
+              timeLimit: { centiseconds: 540000, cumulativeRoundIds: ['444bf-r1', '555bf-r1'] },
+            },
+          ],
+        },
+      ] as Competition['events'],
+      schedule: {
+        ...mockWcif.schedule,
+        venues: [
+          {
+            ...mockWcif.schedule.venues[0],
+            rooms: [
+              {
+                ...mockWcif.schedule.venues[0].rooms[0],
+                activities: [
+                  {
+                    id: 11,
+                    name: '4BLD Round 1',
+                    activityCode: '444bf-r1',
+                    startTime: '2024-01-01T09:00:00.000Z',
+                    endTime: '2024-01-01T10:00:00.000Z',
+                    childActivities: [
+                      {
+                        id: 142,
+                        name: '4BLD Round 1, Group 1',
+                        activityCode: '444bf-r1-g1',
+                        startTime: '2024-01-01T09:00:00.000Z',
+                        endTime: '2024-01-01T10:00:00.000Z',
+                        childActivities: [],
+                        extensions: [],
+                      },
+                    ],
+                    extensions: [],
+                  },
+                  {
+                    id: 12,
+                    name: '5BLD Round 1',
+                    activityCode: '555bf-r1',
+                    startTime: '2024-01-01T09:00:00.000Z',
+                    endTime: '2024-01-01T10:00:00.000Z',
+                    childActivities: [
+                      {
+                        id: 143,
+                        name: '5BLD Round 1, Group 1',
+                        activityCode: '555bf-r1-g1',
+                        startTime: '2024-01-01T09:00:00.000Z',
+                        endTime: '2024-01-01T10:00:00.000Z',
+                        childActivities: [],
+                        extensions: [],
+                      },
+                    ],
+                    extensions: [],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      persons: [
+        createPerson({
+          assignments: [
+            { activityId: 142, stationNumber: null, assignmentCode: 'competitor' },
+            { activityId: 143, stationNumber: null, assignmentCode: 'competitor' },
+          ],
+        }),
+      ],
+    };
+
+    const errors = validatePersonAssignmentScheduleConflicts(wcif);
+    expect(errors).toHaveLength(0);
+  });
+
+  it('should not detect conflicts for same-event rounds that share cumulative time limits', () => {
+    const wcif: Competition = {
+      ...mockWcif,
+      events: [
+        {
+          id: '333fm',
+          rounds: [
+            {
+              id: '333fm-r1',
+              timeLimit: { centiseconds: 360000, cumulativeRoundIds: ['333fm-r1', '333fm-r2'] },
+            },
+            {
+              id: '333fm-r2',
+              timeLimit: { centiseconds: 360000, cumulativeRoundIds: ['333fm-r1', '333fm-r2'] },
+            },
+          ],
+        },
+      ] as Competition['events'],
+      schedule: {
+        ...mockWcif.schedule,
+        venues: [
+          {
+            ...mockWcif.schedule.venues[0],
+            rooms: [
+              {
+                ...mockWcif.schedule.venues[0].rooms[0],
+                activities: [
+                  {
+                    id: 21,
+                    name: 'FMC Round 1',
+                    activityCode: '333fm-r1-a1',
+                    startTime: '2024-01-01T09:00:00.000Z',
+                    endTime: '2024-01-01T10:00:00.000Z',
+                    childActivities: [],
+                    extensions: [],
+                  },
+                  {
+                    id: 22,
+                    name: 'FMC Round 2',
+                    activityCode: '333fm-r2-a1',
+                    startTime: '2024-01-01T09:00:00.000Z',
+                    endTime: '2024-01-01T10:00:00.000Z',
+                    childActivities: [],
+                    extensions: [],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      persons: [
+        createPerson({
+          assignments: [
+            { activityId: 21, stationNumber: null, assignmentCode: 'competitor' },
+            { activityId: 22, stationNumber: null, assignmentCode: 'competitor' },
+          ],
+        }),
+      ],
+    };
+
+    const errors = validatePersonAssignmentScheduleConflicts(wcif);
+    expect(errors).toHaveLength(0);
+  });
+
+  it('should still detect conflicts within the same cumulative time-limit round', () => {
+    const wcif: Competition = {
+      ...mockWcif,
+      events: [
+        {
+          id: '444bf',
+          rounds: [
+            {
+              id: '444bf-r1',
+              timeLimit: { centiseconds: 540000, cumulativeRoundIds: ['444bf-r1', '555bf-r1'] },
+            },
+          ],
+        },
+      ] as Competition['events'],
+      schedule: {
+        ...mockWcif.schedule,
+        venues: [
+          {
+            ...mockWcif.schedule.venues[0],
+            rooms: [
+              {
+                ...mockWcif.schedule.venues[0].rooms[0],
+                activities: [
+                  {
+                    id: 31,
+                    name: '4BLD Round 1, Group 1',
+                    activityCode: '444bf-r1-g1',
+                    startTime: '2024-01-01T09:00:00.000Z',
+                    endTime: '2024-01-01T10:00:00.000Z',
+                    childActivities: [],
+                    extensions: [],
+                  },
+                  {
+                    id: 32,
+                    name: '4BLD Round 1, Group 2',
+                    activityCode: '444bf-r1-g2',
+                    startTime: '2024-01-01T09:30:00.000Z',
+                    endTime: '2024-01-01T10:30:00.000Z',
+                    childActivities: [],
+                    extensions: [],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      persons: [
+        createPerson({
+          assignments: [
+            { activityId: 31, stationNumber: null, assignmentCode: 'competitor' },
+            { activityId: 32, stationNumber: null, assignmentCode: 'staff-judge' },
+          ],
+        }),
+      ],
+    };
+
+    const errors = validatePersonAssignmentScheduleConflicts(wcif);
+    expect(errors).toHaveLength(1);
+  });
 });
 
 describe('validatePersonAssignments', () => {
