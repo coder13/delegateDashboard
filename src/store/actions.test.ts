@@ -238,7 +238,7 @@ describe('store actions', () => {
     expect(dispatch.mock.calls[2][0]).toEqual({
       type: ActionType.UPDATE_WCIF_ERRORS,
       errors: [],
-      replace: false,
+      replace: true,
     });
     expect(dispatch.mock.calls[3][0]).toEqual({
       type: ActionType.FETCHING_WCIF,
