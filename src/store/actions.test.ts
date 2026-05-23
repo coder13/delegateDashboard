@@ -238,7 +238,7 @@ describe('store actions', () => {
     expect(dispatch.mock.calls[2][0]).toEqual({
       type: ActionType.UPDATE_WCIF_ERRORS,
       errors: [],
-      replace: false,
+      replace: true,
     });
     expect(dispatch.mock.calls[3][0]).toEqual({
       type: ActionType.FETCHING_WCIF,
@@ -320,7 +320,10 @@ describe('store actions', () => {
       type: ActionType.UPLOADING_WCIF,
       uploading: true,
     });
-    expect(patchWcifMock).toHaveBeenCalledWith('Comp1', { events: wcif.events });
+    expect(patchWcifMock).toHaveBeenCalledWith('Comp1', {
+      formatVersion: wcif.formatVersion,
+      events: wcif.events,
+    });
     expect(dispatch.mock.calls[1][0]).toEqual({
       type: ActionType.UPLOADING_WCIF,
       uploading: false,

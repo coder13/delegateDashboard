@@ -27,6 +27,8 @@ const RoundSelector = ({ onSelected }: RoundSelectorProps) => {
   const [showAllRounds, setShowAllRounds] = useState(false);
   const [selectedId, setSelectedId] = useState(wcif?.events[0]?.rounds[0]?.id || null);
 
+  const attemptCountForRound = (round: Round) => (round.format === 'm' ? 3 : +round.format);
+
   const shouldShowRound = (round: Round) => {
     if (!wcif) return false;
 
@@ -54,13 +56,18 @@ const RoundSelector = ({ onSelected }: RoundSelectorProps) => {
         .filter(shouldShowRound)
     : [];
 
-  const roundIds = rounds.flatMap((r) =>
-    hasDistributedAttempts(r.id)
-      ? new Array(r.format === 'm' ? 3 : +r.format)
-          .fill(0)
-          .map((_, index) => `${r.id}-a${index + 1}`)
-      : r.id
-  );
+  const roundIds = rounds.flatMap((r) => {
+    if (!hasDistributedAttempts(r.id)) {
+      return r.id;
+    }
+
+    return [
+      r.id,
+      ...new Array(attemptCountForRound(r))
+        .fill(0)
+        .map((_, index) => `${r.id}-a${index + 1}`),
+    ];
+  });
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (commandPromptOpen) {
@@ -124,19 +131,30 @@ const RoundSelector = ({ onSelected }: RoundSelectorProps) => {
               <TransitionGroup>
                 {!hasDistributedAttempts(event.id)
                   ? roundsForEvent.map((round) => (
-                      <RoundListItem
-                        key={round.id}
-                        activityCode={round.id}
-                        round={round}
-                        selected={round.id === selectedId}
-                        in
-                      />
+                       <RoundListItem
+                         key={round.id}
+                         activityCode={round.id}
+                         round={round}
+                         nestingLevel={0}
+                         selected={round.id === selectedId}
+                         in
+                       />
                     ))
                   : roundsForEvent.flatMap((round) => {
-                      const attempts = new Array(round.format === 'm' ? 3 : +round.format) // TODO: create helper function to calculate attempts
-                        .fill(0);
+                      const attempts = new Array(attemptCountForRound(round)).fill(0);
 
-                      return attempts.map((_, index) => {
+                      const roundListItem = (
+                         <RoundListItem
+                           key={round.id}
+                           activityCode={round.id}
+                           round={round}
+                           nestingLevel={0}
+                           selected={round.id === selectedId}
+                           in
+                         />
+                      );
+
+                      const attemptListItems = attempts.map((_, index) => {
                         const attemptActivityCode = `${round.id}-a${index + 1}`;
 
                         return (
@@ -144,11 +162,14 @@ const RoundSelector = ({ onSelected }: RoundSelectorProps) => {
                             key={attemptActivityCode}
                             activityCode={attemptActivityCode}
                             round={round}
+                            nestingLevel={1}
                             selected={attemptActivityCode === selectedId}
                             in
                           />
                         );
                       });
+
+                      return [roundListItem, ...attemptListItems];
                     })}
               </TransitionGroup>
             </React.Fragment>

@@ -64,7 +64,8 @@ export const saveWcifChanges = (
     (key) => previousWcif[key as keyof Competition] !== newWcif[key as keyof Competition]
   );
   if (keysDiff.length === 0) return Promise.resolve();
-  return patchWcif(newWcif.id, pick(newWcif, keysDiff));
+  const keysForPatch = ['formatVersion', ...keysDiff];
+  return patchWcif(newWcif.id, pick(newWcif, keysForPatch));
 };
 
 export const searchPersons = (query: string): Promise<WcaPersonSearchResult[]> =>

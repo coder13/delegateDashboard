@@ -69,8 +69,15 @@ const groupNumber = ({ activityCode }: Pick<Activity, 'activityCode'>) =>
 const staffingAssignmentToText = ({ assignmentCode, activity }: AssignmentWithActivity) =>
   `${assignmentCode.split('-')[1][0].toUpperCase()}${groupNumber(activity)}`;
 
+const stagePrefixForNametags = (room: Room, activity: ActivityWithParent) => {
+  const stageName = getStageName(room, activity);
+  const stagePrefix = stageName.match(/[A-Za-z]+/)?.[0];
+
+  return stagePrefix || room.name[0];
+};
+
 const competingAssignmentToText = (activity: ActivityWithParent) =>
-  `${activity.parent.room.name[0]}${groupNumber(activity)}`;
+  `${stagePrefixForNametags(activity.parent.room, activity)}${groupNumber(activity)}`;
 
 const getStageName = (room: Room, activity: ActivityWithParent) => {
   const stages = getRoomExtensionData(room)?.stages;

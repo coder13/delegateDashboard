@@ -1,4 +1,4 @@
-import { activityCodeToName, findAllRoundActivities } from '../../domain';
+import { activityCodeToName, findAllRoundActivities, hasDistributedAttempts, activityCodeIsChild } from '../../domain';
 import {
   MISSING_ADVANCEMENT_CONDITION,
   NO_ROUNDS_FOR_ACTIVITY,
@@ -56,7 +56,11 @@ export const validateRoundsHaveScheduleActivities = (
   const allRoundActivities = findAllRoundActivities(wcif);
 
   return flatMap(event.rounds, (round) => {
-    const hasScheduleActivity = allRoundActivities.some((activity) => activity.activityCode === round.id);
+    // For distributed attempt events (333fm, 333mbf), check if there are any child activities
+    // (e.g., 333mbf-r1-a1) instead of looking for exact match (333mbf-r1)
+    const hasScheduleActivity = hasDistributedAttempts(round.id)
+      ? allRoundActivities.some((activity) => activityCodeIsChild(round.id, activity.activityCode))
+      : allRoundActivities.some((activity) => activity.activityCode === round.id);
 
     return hasScheduleActivity
       ? []

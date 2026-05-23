@@ -21,10 +21,17 @@ interface RoundListItemProps {
   activityCode: string;
   round: Round;
   selected: boolean;
+  nestingLevel?: number;
   in?: boolean;
 }
 
-function RoundListItem({ activityCode, round, selected, ...props }: RoundListItemProps) {
+function RoundListItem({
+  activityCode,
+  round,
+  selected,
+  nestingLevel = 0,
+  ...props
+}: RoundListItemProps) {
   const ref = useRef<HTMLAnchorElement>(null);
   const wcif = useAppSelector((state) => state.wcif);
   const realGroups = wcif ? findGroupActivitiesByRound(wcif, activityCode) : [];
@@ -75,6 +82,7 @@ function RoundListItem({ activityCode, round, selected, ...props }: RoundListIte
         component={RouterLink}
         to={`/competitions/${wcif?.id}/events/${activityCode}`}
         selected={selected}
+        sx={{ pl: 2 + nestingLevel * 4 }}
         ref={ref}>
         <ListItemAvatar>
           <span className={`cubing-icon event-${eventId}`} />

@@ -4,20 +4,17 @@ import ConfigureAssignmentsDialog from '../../../dialogs/ConfigureAssignmentsDia
 import ConfigureGroupCountsDialog from '../../../dialogs/ConfigureGroupCountsDialog';
 import { ConfigureGroupsDialog } from '../../../dialogs/ConfigureGroupsDialog';
 import ConfigureStationNumbersDialog from '../../../dialogs/ConfigureStationNumbersDialog';
-import GroupCard from '../../../components/GroupCard';
 import { RawRoundActivitiesDataDialog } from '../../../dialogs/RawRoundActivitiesDataDialog';
 import { RawRoundDataDialog } from '../../../dialogs/RawRoundDataDialog';
 import { RoundActionButtons } from '../../../components/RoundActionButtons';
-import { RoundAssignmentCountsTable } from '../../../components/RoundAssignmentCountsTable';
-import { RoundStatisticsCard } from '../../../components/RoundStatisticsCard';
 import { useRoundActions } from './hooks/useRoundActions';
 import { useRoundData } from './hooks/useRoundData';
 import { useRoundDialogs } from './hooks/useRoundDialogs';
+import DistributedAttemptRoundView from './DistributedAttemptRoundView';
+import NormalRoundView from './NormalRoundView';
 import { getRoundConfigExtensionData } from '../../../lib/wcif/extensions/delegateDashboard/delegateDashboard';
-import { updateRoundExtensionData, runRecipe as runRecipeAction } from '../../../store/actions';
 import { useAppDispatch } from '../../../store';
-import { Alert, Typography } from '@mui/material';
-import Grid from '@mui/material/GridLegacy';
+import { runRecipe as runRecipeAction, updateRoundExtensionData } from '../../../store/actions';
 import { type Round } from '@wca/helpers';
 import { ConfirmProvider } from 'material-ui-confirm';
 import { useState } from 'react';
@@ -43,21 +40,34 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
     personsAssignedToCompete,
     personsAssignedWithCompetitorAssignmentCount,
     adamRoundConfig,
+    isDistributedAttemptRoundLevel,
+    distributedAttemptGroups,
   } = useRoundData(activityCode, round);
 
-  const { handleResetAll, handleResetNonScrambling } = useRoundActions({
+  const {
+    handleAssignToRoundAttempt,
+    handleResetAttemptAssignments,
+    handleResetAll,
+    handleResetNonScrambling,
+  } = useRoundActions({
     round,
+    activityCode,
     groups,
     roundActivities,
   });
 
   const existingRoundConfig = getRoundConfigExtensionData(round);
-  const existingRecipeId = (existingRoundConfig as any)?.recipe?.id as string | undefined;
-  const [recipeId, setRecipeId] = useState<string>(existingRecipeId ?? 'pnw');
+  const existingRecipe = existingRoundConfig?.recipe as { id?: string } | undefined;
+  const [recipeId, setRecipeId] = useState<string>(existingRecipe?.id ?? 'pnw');
 
   const handleChangeRecipeId = (nextId: string) => {
     setRecipeId(nextId);
-    dispatch(updateRoundExtensionData(round.id, { ...(existingRoundConfig ?? {}), recipe: { id: nextId } }));
+    dispatch(
+      updateRoundExtensionData(round.id, {
+        ...(existingRoundConfig ?? {}),
+        recipe: { id: nextId },
+      })
+    );
   };
 
   const handleRunRecipe = () => {
@@ -72,135 +82,130 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
     );
   }
 
-  const pluralizeWord = (count: number, singular: string, plural?: string) =>
-    count === 1 ? singular : plural || singular + 's';
-
   if (!round) {
     return null;
   }
 
+  const actionButtons = (
+    <RoundActionButtons
+      groups={groups}
+      personsAssignedToCompete={personsAssignedToCompete}
+      personsShouldBeInRound={personsShouldBeInRound}
+      activityCode={activityCode}
+      onConfigureAssignments={() => dialogs.configureAssignments.setOpen(true)}
+      recipeId={recipeId}
+      onChangeRecipeId={handleChangeRecipeId}
+      onRunRecipe={handleRunRecipe}
+      onAssignToRoundAttempt={handleAssignToRoundAttempt}
+      onResetAttemptAssignments={handleResetAttemptAssignments}
+      onConfigureStationNumbers={(code) => dialogs.configureStationNumbers.setActivityCode(code)}
+      onConfigureGroups={() => dialogs.configureGroups.setOpen(true)}
+      onResetAll={handleResetAll}
+      onResetNonScrambling={handleResetNonScrambling}
+      onConfigureGroupCounts={() => dialogs.configureGroupCounts.setOpen(true)}
+      isDistributedAttemptRoundLevel={isDistributedAttemptRoundLevel}
+    />
+  );
+
+  const commonDialogs = (
+    <>
+      <ConfigureAssignmentsDialog
+        open={dialogs.configureAssignments.open}
+        onClose={() => dialogs.configureAssignments.setOpen(false)}
+        round={round}
+        activityCode={activityCode}
+        groups={groups}
+        isDistributedAttemptRoundLevel={isDistributedAttemptRoundLevel}
+        distributedAttemptGroups={distributedAttemptGroups}
+      />
+      <ConfigureGroupCountsDialog
+        open={dialogs.configureGroupCounts.open}
+        onClose={() => dialogs.configureGroupCounts.setOpen(false)}
+        activityCode={activityCode}
+        round={round}
+        roundActivities={roundActivities}
+      />
+      {dialogs.configureStationNumbers.activityCode && (
+        <ConfigureStationNumbersDialog
+          open={Boolean(dialogs.configureStationNumbers.activityCode)}
+          onClose={() => dialogs.configureStationNumbers.setActivityCode(false)}
+          activityCode={dialogs.configureStationNumbers.activityCode}
+        />
+      )}
+      <PersonsDialog
+        open={dialogs.personsDialog.state.open}
+        persons={dialogs.personsDialog.state.persons}
+        title={dialogs.personsDialog.state.title || ''}
+        onClose={dialogs.personsDialog.close}
+      />
+      <PersonsAssignmentsDialog
+        open={dialogs.personsAssignments.open}
+        persons={personsShouldBeInRound}
+        roundId={round.id}
+        onClose={() => dialogs.personsAssignments.setOpen(false)}
+      />
+      <ConfigureGroupsDialog
+        open={dialogs.configureGroups.open}
+        onClose={() => dialogs.configureGroups.setOpen(false)}
+        activityCode={activityCode}
+      />
+      <RawRoundDataDialog
+        open={dialogs.rawRoundData.open}
+        onClose={() => dialogs.rawRoundData.setOpen(false)}
+        roundId={roundId}
+      />
+      <RawRoundActivitiesDataDialog
+        open={dialogs.rawRoundActivitiesData.open}
+        onClose={() => dialogs.rawRoundActivitiesData.setOpen(false)}
+        activityCode={activityCode}
+      />
+    </>
+  );
+
   return (
     <ConfirmProvider>
-      <Grid container direction="column" spacing={2}>
-        <Grid item>
-          {adamRoundConfig && (
-            <Alert severity="info">
-              The delegate team strongly recommends <b>{adamRoundConfig.groupCount}</b>{' '}
-              {pluralizeWord(adamRoundConfig.groupCount || 0, 'group', 'groups')} for this round.
-              This was based on an estimated number of competitors for this round of{' '}
-              <b>{adamRoundConfig.expectedRegistrations}</b>. Discuss with the delegates before
-              deviating from this number.
-            </Alert>
-          )}
-        </Grid>
-        <Grid item>
-          <RoundStatisticsCard
-            activityCode={activityCode}
-            roundActivities={roundActivities}
-            round={round}
-            eventId={eventId}
-            personsShouldBeInRound={personsShouldBeInRound}
-            personsAssigned={personsAssigned}
-            personsAssignedWithCompetitorAssignmentCount={
-              personsAssignedWithCompetitorAssignmentCount
-            }
-            wcif={wcif}
-            onOpenRawRoundData={() => dialogs.rawRoundData.setOpen(true)}
-            onOpenRawActivitiesData={() => dialogs.rawRoundActivitiesData.setOpen(true)}
-            onOpenPersonsDialog={dialogs.personsDialog.open}
-            onOpenPersonsAssignmentsDialog={() => dialogs.personsAssignments.setOpen(true)}
-            actionButtons={
-              <RoundActionButtons
-                groups={groups}
-                personsAssignedToCompete={personsAssignedToCompete}
-                personsShouldBeInRound={personsShouldBeInRound}
-                activityCode={activityCode}
-                onConfigureAssignments={() => dialogs.configureAssignments.setOpen(true)}
-                recipeId={recipeId}
-                onChangeRecipeId={handleChangeRecipeId}
-                onRunRecipe={handleRunRecipe}
-                onConfigureStationNumbers={(code) =>
-                  dialogs.configureStationNumbers.setActivityCode(code)
-                }
-                onConfigureGroups={() => dialogs.configureGroups.setOpen(true)}
-                onResetAll={handleResetAll}
-                onResetNonScrambling={handleResetNonScrambling}
-                onConfigureGroupCounts={() => dialogs.configureGroupCounts.setOpen(true)}
-              />
-            }
-          />
-        </Grid>
-
-        {personsShouldBeInRound.length === 0 && (
-          <Grid item>
-            <Alert severity="warning">
-              <Typography>
-                No one in round to automatically assign. Make sure the next round is opened on
-                WCA-Live to generate assignments
-              </Typography>
-            </Alert>
-          </Grid>
-        )}
-
-        <Grid item>
-          {sortedGroups.map((group) => (
-            <GroupCard key={group.id} groupActivity={group} />
-          ))}
-        </Grid>
-
-        <Grid item>
-          <RoundAssignmentCountsTable groups={groups} persons={wcif?.persons ?? []} />
-        </Grid>
-
-        <ConfigureAssignmentsDialog
-          open={dialogs.configureAssignments.open}
-          onClose={() => dialogs.configureAssignments.setOpen(false)}
-          round={round}
+      {isDistributedAttemptRoundLevel ? (
+        <DistributedAttemptRoundView
           activityCode={activityCode}
-          groups={groups}
+          round={round}
+          eventId={eventId}
+          personsShouldBeInRound={personsShouldBeInRound}
+          personsAssigned={personsAssigned}
+          personsAssignedWithCompetitorAssignmentCount={
+            personsAssignedWithCompetitorAssignmentCount
+          }
+          wcif={wcif}
+          onOpenRawRoundData={() => dialogs.rawRoundData.setOpen(true)}
+          onOpenRawActivitiesData={() => dialogs.rawRoundActivitiesData.setOpen(true)}
+          onOpenPersonsDialog={dialogs.personsDialog.open}
+          onOpenPersonsAssignmentsDialog={() => dialogs.personsAssignments.setOpen(true)}
+          actionButtons={actionButtons}
+          adamRoundConfig={adamRoundConfig}
+          distributedAttemptGroups={distributedAttemptGroups}
         />
-        <ConfigureGroupCountsDialog
-          open={dialogs.configureGroupCounts.open}
-          onClose={() => dialogs.configureGroupCounts.setOpen(false)}
+      ) : (
+        <NormalRoundView
           activityCode={activityCode}
-          round={round}
           roundActivities={roundActivities}
+          round={round}
+          eventId={eventId}
+          personsShouldBeInRound={personsShouldBeInRound}
+          personsAssigned={personsAssigned}
+          personsAssignedWithCompetitorAssignmentCount={
+            personsAssignedWithCompetitorAssignmentCount
+          }
+          wcif={wcif}
+          onOpenRawRoundData={() => dialogs.rawRoundData.setOpen(true)}
+          onOpenRawActivitiesData={() => dialogs.rawRoundActivitiesData.setOpen(true)}
+          onOpenPersonsDialog={dialogs.personsDialog.open}
+          onOpenPersonsAssignmentsDialog={() => dialogs.personsAssignments.setOpen(true)}
+          actionButtons={actionButtons}
+          adamRoundConfig={adamRoundConfig}
+          groups={groups}
+          sortedGroups={sortedGroups}
         />
-        {dialogs.configureStationNumbers.activityCode && (
-          <ConfigureStationNumbersDialog
-            open={Boolean(dialogs.configureStationNumbers.activityCode)}
-            onClose={() => dialogs.configureStationNumbers.setActivityCode(false)}
-            activityCode={dialogs.configureStationNumbers.activityCode}
-          />
-        )}
-        <PersonsDialog
-          open={dialogs.personsDialog.state.open}
-          persons={dialogs.personsDialog.state.persons}
-          title={dialogs.personsDialog.state.title || ''}
-          onClose={dialogs.personsDialog.close}
-        />
-        <PersonsAssignmentsDialog
-          open={dialogs.personsAssignments.open}
-          persons={personsShouldBeInRound}
-          roundId={round.id}
-          onClose={() => dialogs.personsAssignments.setOpen(false)}
-        />
-        <ConfigureGroupsDialog
-          open={dialogs.configureGroups.open}
-          onClose={() => dialogs.configureGroups.setOpen(false)}
-          activityCode={activityCode}
-        />
-        <RawRoundDataDialog
-          open={dialogs.rawRoundData.open}
-          onClose={() => dialogs.rawRoundData.setOpen(false)}
-          roundId={roundId}
-        />
-        <RawRoundActivitiesDataDialog
-          open={dialogs.rawRoundActivitiesData.open}
-          onClose={() => dialogs.rawRoundActivitiesData.setOpen(false)}
-          activityCode={activityCode}
-        />
-      </Grid>
+      )}
+      {commonDialogs}
     </ConfirmProvider>
   );
 };

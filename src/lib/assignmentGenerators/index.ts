@@ -1,3 +1,4 @@
+export * from './generateAssignmentsForRoundAttempt';
 export * from './generateCompetingAssignmentsForStaff';
 export * from './generateCompetingGroupActitivitesForEveryone';
 export * from './generateGroupAssignmentsForDelegatesAndOrganizers';

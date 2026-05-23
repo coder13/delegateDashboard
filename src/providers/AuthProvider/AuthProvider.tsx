@@ -64,10 +64,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const hash = window.location.hash.replace(/^#/, '');
-    if (!hash) {
-      return;
-    }
-
 
     if (!hash) {
       return;
@@ -90,7 +86,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     /* Clear the hash if there is a token. */
     if (hashParams.has('access_token')) {
       // history.replace({ ...history.location, hash: null });
-      console.log(93);
       navigate({
         pathname: '/',
         hash: '',

@@ -1,20 +1,61 @@
 import {
+  acceptedRegistrations,
   activitiesOverlap,
   findActivityById,
   findAllActivities,
+  parseActivityCode,
   roomByActivity,
 } from '../../domain';
-import { acceptedRegistrations } from '../../domain';
 import {
   MISSING_ACTIVITY_FOR_PERSON_ASSIGNMENT,
   PERSON_ASSIGNMENT_SCHEDULE_CONFLICT,
   type ConflictingAssignment,
   type ValidationError,
 } from './types';
-import type { Competition, Person } from '@wca/helpers';
+import type { Competition, Person, Round } from '@wca/helpers';
 
 const pluralizeWord = (count: number, singular: string, plural?: string) =>
   count === 1 ? singular : plural || singular + 's';
+
+const roundIdForActivity = (activityCode: string) => {
+  const { eventId, roundNumber } = parseActivityCode(activityCode);
+
+  if (!eventId || !roundNumber) {
+    return null;
+  }
+
+  return `${eventId}-r${roundNumber}`;
+};
+
+const findRoundById = (wcif: Competition, roundId: string): Round | undefined =>
+  wcif.events.flatMap((event) => event.rounds || []).find((round) => round.id === roundId);
+
+const cumulativeRoundIdsFor = (round?: Round) => round?.timeLimit?.cumulativeRoundIds || [];
+
+const activitiesShareCumulativeTimeLimit = (
+  wcif: Competition,
+  activityIdA: number,
+  activityIdB: number
+) => {
+  const activityA = findActivityById(wcif, activityIdA);
+  const activityB = findActivityById(wcif, activityIdB);
+
+  if (!activityA || !activityB) {
+    return false;
+  }
+
+  const roundIdA = roundIdForActivity(activityA.activityCode);
+  const roundIdB = roundIdForActivity(activityB.activityCode);
+
+  if (!roundIdA || !roundIdB || roundIdA === roundIdB) {
+    return false;
+  }
+
+  const cumulativeRoundIdsA = cumulativeRoundIdsFor(findRoundById(wcif, roundIdA));
+  const cumulativeRoundIdsB = cumulativeRoundIdsFor(findRoundById(wcif, roundIdB));
+
+  return cumulativeRoundIdsA.includes(roundIdB) || cumulativeRoundIdsB.includes(roundIdA);
+};
 
 /**
  * Validates that all person assignments reference existing activities
@@ -71,6 +112,12 @@ const findConflictingAssignmentsForPerson = (
       }
 
       if (!activitiesOverlap(activity, otherActivity)) {
+        return;
+      }
+
+      if (
+        activitiesShareCumulativeTimeLimit(wcif, assignment.activityId, otherAssignment.activityId)
+      ) {
         return;
       }
 
