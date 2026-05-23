@@ -96,4 +96,21 @@ describe('recipe constraints', () => {
 
     expect(avoidSimilarFirstNames.score(props)).toBeLessThan(0);
   });
+
+  it('rejects same-sounding first names when another activity is available', () => {
+    const activities = [buildGroup(11, 1), buildGroup(12, 2)];
+    const props = {
+      ...scoreProps(activities[0], activities),
+      wcif: buildWcif([], [
+        buildPerson({
+          name: 'Ethan Smith',
+          assignments: [{ activityId: 11, assignmentCode: 'competitor', stationNumber: null }],
+        }),
+      ]),
+      person: buildPerson({ name: 'Ethan Jones' }),
+    };
+
+    expect(avoidSimilarFirstNames.score(props)).toBeNull();
+    expect(avoidSimilarFirstNames.score({ ...props, activity: activities[1] })).toBe(0);
+  });
 });

@@ -114,28 +114,40 @@ export const onlyMultipleGroupRounds: Constraint = {
 
 export const avoidSimilarFirstNames: Constraint = {
   name: 'Avoid Similar First Names',
-  score: ({ wcif, activity, assignmentCode, person }) => {
+  score: ({ wcif, activities, activity, assignmentCode, person }) => {
     const firstName = firstNameFor(person.name);
     const phoneticFirstName = phoneticFirstNameFor(person.name);
 
-    const peopleInActivity = wcif.persons.filter((candidate) =>
-      candidate.assignments?.some(
-        (assignment) =>
-          assignment.assignmentCode === assignmentCode && assignment.activityId === activity.id
-      )
+    const conflictCountForActivity = (candidateActivity: Activity) => {
+      const peopleInActivity = wcif.persons.filter((candidate) =>
+        candidate.assignments?.some(
+          (assignment) =>
+            assignment.assignmentCode === assignmentCode &&
+            assignment.activityId === candidateActivity.id
+        )
+      );
+
+      return peopleInActivity.filter((candidate) => {
+        const candidateFirstName = firstNameFor(candidate.name);
+        return (
+          candidateFirstName === firstName ||
+          candidateFirstName.startsWith(firstName) ||
+          firstName.startsWith(candidateFirstName) ||
+          phoneticFirstNameFor(candidate.name) === phoneticFirstName
+        );
+      }).length;
+    };
+
+    const conflicts = conflictCountForActivity(activity);
+    if (conflicts === 0) {
+      return 0;
+    }
+
+    const hasConflictFreeActivity = activities.some(
+      (candidateActivity) => conflictCountForActivity(candidateActivity) === 0
     );
 
-    const conflicts = peopleInActivity.filter((candidate) => {
-      const candidateFirstName = firstNameFor(candidate.name);
-      return (
-        candidateFirstName === firstName ||
-        candidateFirstName.startsWith(firstName) ||
-        firstName.startsWith(candidateFirstName) ||
-        phoneticFirstNameFor(candidate.name) === phoneticFirstName
-      );
-    });
-
-    return -conflicts.length;
+    return hasConflictFreeActivity ? null : -conflicts;
   },
 };
 

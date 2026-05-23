@@ -409,4 +409,23 @@ describe('runRecipe', () => {
     expect(new Set(lukeCombos).size).toBe(lukeCombos.length);
     expect(new Set(michaelCombos).size).toBe(michaelCombos.length);
   });
+
+  it('keeps duplicate first names apart even when one duplicate is in a smaller group', () => {
+    const groupOneEthan = competitor(1, {
+      name: 'Ethan Smith',
+      assignments: [assignment(101, 'competitor')],
+    });
+    const fullOtherGroups = [102, 103].flatMap((activityId, activityIndex) =>
+      Array.from({ length: 4 }, (_, offset) =>
+        competitor(2 + activityIndex * 4 + offset, {
+          assignments: [assignment(activityId, 'competitor')],
+        })
+      )
+    );
+    const unassignedEthan = competitor(20, { name: 'Ethan Jones' });
+
+    const wcif = runPnwRecipe([groupOneEthan, ...fullOtherGroups, unassignedEthan]);
+
+    expect(competitorGroupNumber(wcif, personById(wcif, 20))).not.toBe(1);
+  });
 });
