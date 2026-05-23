@@ -1,6 +1,9 @@
 import { StepDefinition } from '../types';
 
 const PNW_BALANCED_GROUP_SIZE_WEIGHT = 20;
+const PNW_GLOBAL_SCORE = {
+  maxPasses: 3,
+};
 
 export const GenerateCompetitorAssignmentsForStaff: StepDefinition = {
   id: 'GenerateCompetitorAssignmentsForStaff',
@@ -29,6 +32,7 @@ export const GenerateCompetitorAssignmentsForStaff: StepDefinition = {
       options: {
         mode: 'symmetric',
       },
+      globalScore: PNW_GLOBAL_SCORE,
       constraints: [
         {
           constraint: 'uniqueAssignment',
@@ -102,6 +106,7 @@ export const GenerateCompetitorAssignmentsForDelegatesAndOrganizers: StepDefinit
       options: {
         mode: 'symmetric',
       },
+      globalScore: PNW_GLOBAL_SCORE,
       constraints: [
         {
           constraint: 'uniqueAssignment',
@@ -165,6 +170,7 @@ export const GenerateCompetitorAssignmentsForFirstTimers: StepDefinition = {
       options: {
         mode: 'symmetric',
       },
+      globalScore: PNW_GLOBAL_SCORE,
       constraints: [
         {
           constraint: 'uniqueAssignment',
@@ -217,6 +223,7 @@ export const GenerateCompetitorAssignments: StepDefinition = {
       options: {
         mode: 'symmetric',
       },
+      globalScore: PNW_GLOBAL_SCORE,
       constraints: [
         {
           constraint: 'uniqueAssignment',
@@ -278,6 +285,7 @@ export const GenerateJudgeAssignmentsForCompetitors: StepDefinition = {
       options: {
         mode: 'symmetric',
       },
+      globalScore: PNW_GLOBAL_SCORE,
       constraints: [
         {
           constraint: 'uniqueAssignment',

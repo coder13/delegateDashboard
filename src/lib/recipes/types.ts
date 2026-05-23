@@ -39,6 +39,9 @@ export interface AssignmentStep {
     activities: ActivitiesDefinition;
     constraints: ConstraintProps[];
     options?: any;
+    globalScore?: {
+      maxPasses?: number;
+    };
   };
 }
 

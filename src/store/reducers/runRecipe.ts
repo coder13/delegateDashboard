@@ -2,7 +2,13 @@ import { type Competition } from '@wca/helpers';
 import { Constraints, Generators } from 'wca-group-generators';
 import { findRoundActivitiesById } from '../../lib/wcif/activities';
 import { createGroupsAcrossStages } from '../../lib/wcif/groups';
-import { RecipeConstraints, Recipes, fromRecipeDefinition, hydrateStep } from '../../lib/recipes';
+import {
+  RecipeConstraints,
+  Recipes,
+  fromRecipeDefinition,
+  hydrateStep,
+  optimizeAssignmentsGlobally,
+} from '../../lib/recipes';
 import { shouldRunGroupStep } from '../../lib/recipes/conditions';
 import { mapIn } from '../../lib/utils/utils';
 import { type AppState } from '../initialState';
@@ -47,12 +53,27 @@ export function runRecipe(state: AppState, action: RunRecipePayload): AppState {
           };
         }) ?? [];
 
-      return generator.execute({
+      const generatedWcif = generator.execute({
         wcif: accWcif,
         roundId: action.roundId,
         ...hydratedStep.props,
         constraints,
       }) as Competition;
+
+      if (!hydratedStep.props.globalScore) {
+        return generatedWcif;
+      }
+
+      return optimizeAssignmentsGlobally({
+        beforeWcif: accWcif,
+        wcif: generatedWcif,
+        cluster: hydratedStep.props.cluster,
+        activities: hydratedStep.props.activities,
+        assignmentCode: hydratedStep.props.assignmentCode,
+        constraints,
+        options: hydratedStep.props.options,
+        maxPasses: hydratedStep.props.globalScore.maxPasses,
+      });
     }
 
     if (step.type === 'groups') {
