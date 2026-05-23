@@ -42,6 +42,7 @@ export interface AssignmentStep {
     globalScore?: {
       maxPasses?: number;
       maxEvaluations?: number;
+      maxClusterSize?: number;
     };
   };
 }

@@ -64,6 +64,13 @@ export function runRecipe(state: AppState, action: RunRecipePayload): AppState {
         return generatedWcif;
       }
 
+      if (
+        hydratedStep.props.globalScore.maxClusterSize &&
+        hydratedStep.props.cluster.length > hydratedStep.props.globalScore.maxClusterSize
+      ) {
+        return generatedWcif;
+      }
+
       return optimizeAssignmentsGlobally({
         beforeWcif: accWcif,
         wcif: generatedWcif,
