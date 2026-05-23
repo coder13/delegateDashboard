@@ -41,6 +41,7 @@ export interface AssignmentStep {
     options?: any;
     globalScore?: {
       maxPasses?: number;
+      maxEvaluations?: number;
     };
   };
 }

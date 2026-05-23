@@ -10,9 +10,15 @@ interface OptimizeAssignmentsGloballyProps {
   constraints: ConstraintAndWeight[];
   options?: Record<string, unknown>;
   maxPasses?: number;
+  maxEvaluations?: number;
 }
 
 const EPSILON = 0.0001;
+const DEFAULT_MAX_EVALUATIONS = 1200;
+
+interface EvaluationBudget {
+  remaining: number;
+}
 
 const activityIdsFor = (activities: Activity[]) => new Set(activities.map((activity) => activity.id));
 
@@ -25,6 +31,16 @@ const matchingAssignment = (
     (assignment) =>
       assignment.assignmentCode === assignmentCode && activityIds.has(assignment.activityId)
   );
+
+const matchingActivityFor = (
+  activities: Activity[],
+  person: Person,
+  activityIds: Set<number>,
+  assignmentCode: AssignmentCode
+) => {
+  const assignment = matchingAssignment(person, activityIds, assignmentCode);
+  return activities.find((activity) => activity.id === assignment?.activityId);
+};
 
 const withoutMatchingAssignment = (
   person: Person,
@@ -154,6 +170,147 @@ const scoreWcif = (
   }, 0);
 };
 
+const activityCodesFor = (activities: Activity[], activityIds: number[]) => {
+  const codes = new Set<string>();
+
+  for (const activityId of activityIds) {
+    const activity = activities.find((candidate) => candidate.id === activityId);
+    if (activity) {
+      codes.add(activity.activityCode);
+    }
+  }
+
+  return codes;
+};
+
+const affectedRegistrantIds = (
+  wcif: Competition,
+  clusterRegistrantIds: Set<number>,
+  activities: Activity[],
+  activityIds: Set<number>,
+  assignmentCode: AssignmentCode,
+  changedActivityIds: number[],
+  changedRegistrantIds: number[]
+) => {
+  const changedActivityCodes = activityCodesFor(activities, changedActivityIds);
+  const ids = new Set(changedRegistrantIds);
+
+  for (const person of wcif.persons) {
+    if (!clusterRegistrantIds.has(person.registrantId)) {
+      continue;
+    }
+
+    const activity = matchingActivityFor(activities, person, activityIds, assignmentCode);
+    if (activity && changedActivityCodes.has(activity.activityCode)) {
+      ids.add(person.registrantId);
+    }
+  }
+
+  return ids;
+};
+
+const scorePeople = (
+  wcif: Competition,
+  clusterRegistrantIds: Set<number>,
+  registrantIds: Set<number>,
+  activities: Activity[],
+  assignmentCode: AssignmentCode,
+  constraints: ConstraintAndWeight[],
+  options?: Record<string, unknown>
+) => {
+  const activityIds = activityIdsFor(activities);
+
+  return [...registrantIds].reduce((total, registrantId) => {
+    if (total === Number.NEGATIVE_INFINITY) {
+      return total;
+    }
+
+    const person = wcif.persons.find((candidate) => candidate.registrantId === registrantId);
+    const activity = person
+      ? matchingActivityFor(activities, person, activityIds, assignmentCode)
+      : undefined;
+
+    if (!person || !activity) {
+      return Number.NEGATIVE_INFINITY;
+    }
+
+    const score = scoreAssignment(
+      wcif,
+      clusterRegistrantIds,
+      activities,
+      assignmentCode,
+      constraints,
+      options,
+      person,
+      activity
+    );
+
+    return score === null ? Number.NEGATIVE_INFINITY : total + score;
+  }, 0);
+};
+
+const candidateScoreFor = (
+  currentWcif: Competition,
+  candidateWcif: Competition,
+  clusterRegistrantIds: Set<number>,
+  scoredRegistrantIds: Set<number>,
+  affectedIds: Set<number>,
+  activities: Activity[],
+  assignmentCode: AssignmentCode,
+  constraints: ConstraintAndWeight[],
+  options: Record<string, unknown> | undefined,
+  currentScore: number
+) => {
+  if (currentScore === Number.NEGATIVE_INFINITY) {
+    return scoreWcif(
+      candidateWcif,
+      clusterRegistrantIds,
+      scoredRegistrantIds,
+      activities,
+      assignmentCode,
+      constraints,
+      options
+    );
+  }
+
+  const currentAffectedScore = scorePeople(
+    currentWcif,
+    clusterRegistrantIds,
+    affectedIds,
+    activities,
+    assignmentCode,
+    constraints,
+    options
+  );
+  const candidateAffectedScore = scorePeople(
+    candidateWcif,
+    clusterRegistrantIds,
+    affectedIds,
+    activities,
+    assignmentCode,
+    constraints,
+    options
+  );
+
+  if (
+    currentAffectedScore === Number.NEGATIVE_INFINITY ||
+    candidateAffectedScore === Number.NEGATIVE_INFINITY
+  ) {
+    return Number.NEGATIVE_INFINITY;
+  }
+
+  return currentScore - currentAffectedScore + candidateAffectedScore;
+};
+
+const consumeEvaluation = (budget: EvaluationBudget) => {
+  if (budget.remaining <= 0) {
+    return false;
+  }
+
+  budget.remaining -= 1;
+  return true;
+};
+
 const findBestMove = (
   wcif: Competition,
   clusterRegistrantIds: Set<number>,
@@ -163,7 +320,8 @@ const findBestMove = (
   assignmentCode: AssignmentCode,
   constraints: ConstraintAndWeight[],
   options: Record<string, unknown> | undefined,
-  currentScore: number
+  currentScore: number,
+  budget: EvaluationBudget
 ) => {
   const activityIds = activityIdsFor(activities);
   let bestWcif = wcif;
@@ -184,6 +342,10 @@ const findBestMove = (
         continue;
       }
 
+      if (!consumeEvaluation(budget)) {
+        return { wcif: bestWcif, score: bestScore };
+      }
+
       const candidateWcif = updateAssignmentActivity(
         wcif,
         registrantId,
@@ -191,14 +353,25 @@ const findBestMove = (
         assignmentCode,
         activity.id
       );
-      const candidateScore = scoreWcif(
+      const candidateScore = candidateScoreFor(
+        wcif,
         candidateWcif,
         clusterRegistrantIds,
         scoredRegistrantIds,
+        affectedRegistrantIds(
+          wcif,
+          clusterRegistrantIds,
+          activities,
+          activityIds,
+          assignmentCode,
+          [currentAssignment.activityId, activity.id],
+          [registrantId]
+        ),
         activities,
         assignmentCode,
         constraints,
-        options
+        options,
+        currentScore
       );
 
       if (candidateScore > bestScore + EPSILON) {
@@ -220,7 +393,8 @@ const findBestSwap = (
   assignmentCode: AssignmentCode,
   constraints: ConstraintAndWeight[],
   options: Record<string, unknown> | undefined,
-  currentScore: number
+  currentScore: number,
+  budget: EvaluationBudget
 ) => {
   const activityIds = activityIdsFor(activities);
   let bestWcif = wcif;
@@ -255,6 +429,10 @@ const findBestSwap = (
         continue;
       }
 
+      if (!consumeEvaluation(budget)) {
+        return { wcif: bestWcif, score: bestScore };
+      }
+
       const candidateWcif = updateAssignmentActivity(
         updateAssignmentActivity(
           wcif,
@@ -268,14 +446,25 @@ const findBestSwap = (
         assignmentCode,
         firstAssignment.activityId
       );
-      const candidateScore = scoreWcif(
+      const candidateScore = candidateScoreFor(
+        wcif,
         candidateWcif,
         clusterRegistrantIds,
         scoredRegistrantIds,
+        affectedRegistrantIds(
+          wcif,
+          clusterRegistrantIds,
+          activities,
+          activityIds,
+          assignmentCode,
+          [firstAssignment.activityId, secondAssignment.activityId],
+          [firstRegistrantId, secondRegistrantId]
+        ),
         activities,
         assignmentCode,
         constraints,
-        options
+        options,
+        currentScore
       );
 
       if (candidateScore > bestScore + EPSILON) {
@@ -297,6 +486,7 @@ export const optimizeAssignmentsGlobally = ({
   constraints,
   options,
   maxPasses = 3,
+  maxEvaluations = DEFAULT_MAX_EVALUATIONS,
 }: OptimizeAssignmentsGloballyProps) => {
   if (!constraints.length || !activities.length || !cluster.length) {
     return wcif;
@@ -332,8 +522,13 @@ export const optimizeAssignmentsGlobally = ({
     constraints,
     options
   );
+  const budget = { remaining: maxEvaluations };
 
   for (let pass = 0; pass < maxPasses; pass += 1) {
+    if (budget.remaining <= 0) {
+      break;
+    }
+
     const bestMove = findBestMove(
       bestWcif,
       clusterRegistrantIds,
@@ -343,7 +538,8 @@ export const optimizeAssignmentsGlobally = ({
       assignmentCode,
       constraints,
       options,
-      bestScore
+      bestScore,
+      budget
     );
     const bestSwap = findBestSwap(
       bestMove.wcif,
@@ -354,7 +550,8 @@ export const optimizeAssignmentsGlobally = ({
       assignmentCode,
       constraints,
       options,
-      bestMove.score
+      bestMove.score,
+      budget
     );
 
     if (bestSwap.score <= bestScore + EPSILON) {

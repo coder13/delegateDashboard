@@ -2,7 +2,8 @@ import { StepDefinition } from '../types';
 
 const PNW_BALANCED_GROUP_SIZE_WEIGHT = 20;
 const PNW_GLOBAL_SCORE = {
-  maxPasses: 3,
+  maxPasses: 1,
+  maxEvaluations: 1200,
 };
 
 export const GenerateCompetitorAssignmentsForStaff: StepDefinition = {
