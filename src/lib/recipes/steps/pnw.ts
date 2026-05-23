@@ -20,8 +20,8 @@ export const GenerateCompetitorAssignmentsForStaff: StepDefinition = {
           },
         ],
         sort: {
-          by: 'speed',
-          direction: 'asc',
+          by: 'mostConstrained',
+          direction: 'desc',
         },
       },
       assignmentCode: 'competitor',
@@ -93,8 +93,8 @@ export const GenerateCompetitorAssignmentsForDelegatesAndOrganizers: StepDefinit
           },
         ],
         sort: {
-          by: 'speed',
-          direction: 'asc',
+          by: 'mostConstrained',
+          direction: 'desc',
         },
       },
       assignmentCode: 'competitor',
@@ -156,8 +156,8 @@ export const GenerateCompetitorAssignmentsForFirstTimers: StepDefinition = {
           },
         ],
         sort: {
-          by: 'speed',
-          direction: 'asc',
+          by: 'mostConstrained',
+          direction: 'desc',
         },
       },
       assignmentCode: 'competitor',
@@ -208,8 +208,8 @@ export const GenerateCompetitorAssignments: StepDefinition = {
           },
         ],
         sort: {
-          by: 'speed',
-          direction: 'asc',
+          by: 'mostConstrained',
+          direction: 'desc',
         },
       },
       assignmentCode: 'competitor',

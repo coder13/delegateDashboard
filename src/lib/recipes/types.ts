@@ -9,7 +9,7 @@ export interface ClusterDefinition {
   base: string;
   filters: ClusterFilter[];
   sort?: {
-    by: 'speed';
+    by: 'speed' | 'mostConstrained';
     direction: 'asc' | 'desc';
   }
 }
