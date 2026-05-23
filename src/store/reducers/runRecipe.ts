@@ -2,7 +2,8 @@ import { type Competition } from '@wca/helpers';
 import { Constraints, Generators } from 'wca-group-generators';
 import { findRoundActivitiesById } from '../../lib/wcif/activities';
 import { createGroupsAcrossStages } from '../../lib/wcif/groups';
-import { Recipes, fromRecipeDefinition, hydrateStep } from '../../lib/recipes';
+import { RecipeConstraints, Recipes, fromRecipeDefinition, hydrateStep } from '../../lib/recipes';
+import { shouldRunGroupStep } from '../../lib/recipes/conditions';
 import { mapIn } from '../../lib/utils/utils';
 import { type AppState } from '../initialState';
 import type { RunRecipePayload } from '../actions';
@@ -33,13 +34,16 @@ export function runRecipe(state: AppState, action: RunRecipePayload): AppState {
 
       const constraints =
         hydratedStep.props.constraints?.map((c) => {
-          const constraintFn = (Constraints as Record<string, any>)[c.constraint];
+          const constraintFn =
+            (RecipeConstraints as Record<string, any>)[c.constraint] ??
+            (Constraints as Record<string, any>)[c.constraint];
           if (!constraintFn) {
             throw new Error(`Constraint ${c.constraint} not found`);
           }
           return {
             constraint: constraintFn,
             weight: c.weight,
+            options: c.options,
           };
         }) ?? [];
 
@@ -53,6 +57,10 @@ export function runRecipe(state: AppState, action: RunRecipePayload): AppState {
 
     if (step.type === 'groups') {
       const roundActivities = findRoundActivitiesById(accWcif, action.roundId);
+      if (!shouldRunGroupStep(accWcif, action.roundId, roundActivities, step)) {
+        return accWcif;
+      }
+
       const roundActivitiesWithGroups = createGroupsAcrossStages(accWcif, roundActivities, {
         spreadGroupsAcrossAllStages: true,
         groups: step.props.count,

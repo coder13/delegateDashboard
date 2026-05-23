@@ -1,6 +1,6 @@
-import { ActivityCode, Competition, Event, EventId, Round, parseActivityCode } from '@wca/helpers';
+import type { ActivityCode, Competition, Round } from '@wca/helpers';
 import { StepLibrary, fromDefaults } from './steps';
-import { RecipeConfig, RecipeDefinition, Step } from './types';
+import type { RecipeConfig, RecipeDefinition, Step } from './types';
 
 export const Recipes: RecipeDefinition[] = [
   {
@@ -19,17 +19,13 @@ export const Recipes: RecipeDefinition[] = [
     name: 'PNW',
     description: 'PNW',
     defaultSteps: [
+      StepLibrary.GenerateSingleGroupForFinal,
       StepLibrary.GenerateCompetitorAssignmentsForStaff,
+      StepLibrary.GenerateCompetitorAssignmentsForDelegatesAndOrganizers,
       StepLibrary.GenerateCompetitorAssignmentsForFirstTimers,
       StepLibrary.GenerateCompetitorAssignments,
       StepLibrary.GenerateJudgeAssignmentsForCompetitors,
     ],
-  },
-  {
-    id: '1-group-finals',
-    name: '1 group final',
-    description: 'Makes a single group of competitors for finals',
-    defaultSteps: [StepLibrary.GenerateSingleGroup, StepLibrary.GenerateCompetitorAssignments],
   },
   {
     id: 'mca',
@@ -55,17 +51,6 @@ export const fromRecipeDefinition = (
   steps: recipe.defaultSteps.map((step) => fromDefaults(step, { wcif, activityCode })) as Step[],
 });
 
-export const getPreferredDefaultRecipe = (wcif: Competition, round: Round) => {
-  const { eventId } = parseActivityCode(round.id) as { eventId: EventId; roundNumber: number };
-
-  const event = wcif.events.find((event) => event.id === eventId) as Event;
-
-  const rounds = event.rounds.map((round) => round.id).sort();
-
-  // Is last round?
-  if (rounds[rounds.length - 1] === round.id) {
-    return 'pnw-1-group-finals';
-  }
-
+export const getPreferredDefaultRecipe = (_wcif: Competition, _round: Round) => {
   return 'pnw';
 };

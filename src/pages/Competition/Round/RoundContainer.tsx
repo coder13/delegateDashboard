@@ -8,6 +8,7 @@ import GroupCard from '../../../components/GroupCard';
 import { RawRoundActivitiesDataDialog } from '../../../dialogs/RawRoundActivitiesDataDialog';
 import { RawRoundDataDialog } from '../../../dialogs/RawRoundDataDialog';
 import { RoundActionButtons } from '../../../components/RoundActionButtons';
+import { RoundAssignmentCountsTable } from '../../../components/RoundAssignmentCountsTable';
 import { RoundStatisticsCard } from '../../../components/RoundStatisticsCard';
 import { useRoundActions } from './hooks/useRoundActions';
 import { useRoundData } from './hooks/useRoundData';
@@ -44,7 +45,7 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
     adamRoundConfig,
   } = useRoundData(activityCode, round);
 
-  const { handleGenerateAssignments, handleResetAll, handleResetNonScrambling } = useRoundActions({
+  const { handleResetAll, handleResetNonScrambling } = useRoundActions({
     round,
     groups,
     roundActivities,
@@ -115,7 +116,6 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
                 personsShouldBeInRound={personsShouldBeInRound}
                 activityCode={activityCode}
                 onConfigureAssignments={() => dialogs.configureAssignments.setOpen(true)}
-                onGenerateAssignments={handleGenerateAssignments}
                 recipeId={recipeId}
                 onChangeRecipeId={handleChangeRecipeId}
                 onRunRecipe={handleRunRecipe}
@@ -146,6 +146,10 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
           {sortedGroups.map((group) => (
             <GroupCard key={group.id} groupActivity={group} />
           ))}
+        </Grid>
+
+        <Grid item>
+          <RoundAssignmentCountsTable groups={groups} persons={wcif?.persons ?? []} />
         </Grid>
 
         <ConfigureAssignmentsDialog

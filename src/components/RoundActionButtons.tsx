@@ -13,7 +13,6 @@ interface RoundActionButtonsProps {
   personsShouldBeInRound: Person[];
   activityCode: string;
   onConfigureAssignments: () => void;
-  onGenerateAssignments: () => void;
   recipeId: string;
   onChangeRecipeId: (recipeId: string) => void;
   onRunRecipe: () => void;
@@ -30,7 +29,6 @@ export const RoundActionButtons = ({
   personsShouldBeInRound,
   activityCode,
   onConfigureAssignments,
-  onGenerateAssignments,
   recipeId,
   onChangeRecipeId,
   onRunRecipe,
@@ -52,7 +50,6 @@ export const RoundActionButtons = ({
     return (
       <>
         <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
-        <Button onClick={onGenerateAssignments}>Assign Competitor and Judging Assignments</Button>
         <FormControl size="small" sx={{ minWidth: 220, marginLeft: 2 }}>
           <InputLabel id="recipe-select-label">Recipe</InputLabel>
           <Select
@@ -68,7 +65,7 @@ export const RoundActionButtons = ({
             ))}
           </Select>
         </FormControl>
-        <Button onClick={onRunRecipe}>Run Recipe</Button>
+        <Button onClick={onRunRecipe}>Generate</Button>
         <div style={{ display: 'flex', flex: 1 }} />
         <Button onClick={onConfigureGroups}>Configure Groups</Button>
         <Button color="error" onClick={onResetAll}>

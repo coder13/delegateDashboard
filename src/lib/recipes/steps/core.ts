@@ -12,6 +12,19 @@ export const GenerateSingleGroup: StepDefinition = {
   }),
 };
 
+export const GenerateSingleGroupForFinal: StepDefinition = {
+  id: 'GenerateSingleGroupForFinal',
+  name: 'Generate Single Group For Final',
+  description: 'Generates one group for a final round when groups do not already exist',
+  defaults: () => ({
+    type: 'groups',
+    props: {
+      count: 1,
+      condition: 'missingGroupsInFinalRound',
+    },
+  }),
+};
+
 export const SpreadDelegates: StepDefinition = {
   id: 'SpreadDelegateCompetitorAssignments',
   name: 'Spread Delegate Competitor Assignments',

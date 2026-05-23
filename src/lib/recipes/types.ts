@@ -47,6 +47,7 @@ export interface GroupStep {
   type: 'groups';
   props: {
     count: number;
+    condition?: 'missingGroupsInFinalRound';
   };
 }
 

@@ -1,5 +1,7 @@
 import { StepDefinition } from '../types';
 
+const PNW_BALANCED_GROUP_SIZE_WEIGHT = 20;
+
 export const GenerateCompetitorAssignmentsForStaff: StepDefinition = {
   id: 'GenerateCompetitorAssignmentsForStaff',
   name: 'Generate Competitor Assignments For Staff',
@@ -37,6 +39,10 @@ export const GenerateCompetitorAssignmentsForStaff: StepDefinition = {
           weight: 1,
         },
         {
+          constraint: 'shouldHelpAfterCompeting',
+          weight: 20,
+        },
+        {
           constraint: 'sameStageAsOtherAssignments',
           weight: 5,
         },
@@ -51,6 +57,82 @@ export const GenerateCompetitorAssignmentsForStaff: StepDefinition = {
         {
           constraint: 'avoidConflictingNames',
           weight: 10,
+        },
+        {
+          constraint: 'avoidSimilarFirstNames',
+          weight: 10,
+        },
+        {
+          constraint: 'balancedGroupSize',
+          weight: PNW_BALANCED_GROUP_SIZE_WEIGHT,
+        },
+      ],
+    },
+  }),
+};
+
+export const GenerateCompetitorAssignmentsForDelegatesAndOrganizers: StepDefinition = {
+  id: 'GenerateCompetitorAssignmentsForDelegatesAndOrganizers',
+  name: 'Generate Competitor Assignments For Delegates And Organizers',
+  description:
+    'Generates competitor assignments for delegates and organizers, preferring later groups first',
+  defaults: () => ({
+    type: 'assignments',
+    props: {
+      generator: 'assignEveryone',
+      cluster: {
+        base: 'personsInRound',
+        filters: [
+          {
+            key: 'hasRole',
+            value: ['delegate', 'trainee-delegate', 'organizer'],
+          },
+          {
+            key: 'doesNotHaveAssignmentInRound',
+            value: 'competitor',
+          },
+        ],
+        sort: {
+          by: 'speed',
+          direction: 'asc',
+        },
+      },
+      assignmentCode: 'competitor',
+      activities: { base: 'all' },
+      options: {
+        mode: 'symmetric',
+      },
+      constraints: [
+        {
+          constraint: 'uniqueAssignment',
+          weight: 1,
+        },
+        {
+          constraint: 'mustNotHaveOtherAssignments',
+          weight: 1,
+        },
+        {
+          constraint: 'preferLaterGroups',
+          weight: 20,
+        },
+        {
+          constraint: 'balancedGroupNumberSize',
+          weight: 15,
+          options: {
+            persons: 'cluster',
+          },
+        },
+        {
+          constraint: 'balancedGroupSize',
+          weight: PNW_BALANCED_GROUP_SIZE_WEIGHT,
+        },
+        {
+          constraint: 'avoidConflictingNames',
+          weight: 1,
+        },
+        {
+          constraint: 'avoidSimilarFirstNames',
+          weight: 1,
         },
       ],
     },
@@ -97,8 +179,12 @@ export const GenerateCompetitorAssignmentsForFirstTimers: StepDefinition = {
           weight: 1,
         },
         {
-          constraint: 'balancedGroupSize',
+          constraint: 'avoidSimilarFirstNames',
           weight: 1,
+        },
+        {
+          constraint: 'balancedGroupSize',
+          weight: PNW_BALANCED_GROUP_SIZE_WEIGHT,
         },
       ],
     },
@@ -145,8 +231,12 @@ export const GenerateCompetitorAssignments: StepDefinition = {
           weight: 10,
         },
         {
+          constraint: 'avoidSimilarFirstNames',
+          weight: 40,
+        },
+        {
           constraint: 'balancedGroupSize',
-          weight: 5,
+          weight: PNW_BALANCED_GROUP_SIZE_WEIGHT,
         },
         {
           constraint: 'balancedSpeed',
@@ -196,6 +286,17 @@ export const GenerateJudgeAssignmentsForCompetitors: StepDefinition = {
         {
           constraint: 'mustNotHaveOtherAssignments',
           weight: 1,
+        },
+        {
+          constraint: 'onlyMultipleGroupRounds',
+          weight: 1,
+        },
+        {
+          constraint: 'mustNotHaveRoles',
+          weight: 1,
+          options: {
+            roles: ['delegate', 'trainee-delegate', 'organizer'],
+          },
         },
         {
           constraint: 'sameStageAsOtherAssignments',
