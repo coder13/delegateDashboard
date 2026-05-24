@@ -12,6 +12,7 @@ import {
   partialUpdateWCIF,
   removePersonAssignments,
   resetAllGroupAssignments,
+  runRecipes,
   togglePersonRole,
   updateGlobalExtension,
   updateGroupCount,
@@ -143,6 +144,11 @@ describe('store actions', () => {
       type: ActionType.GENERATE_ASSIGNMENTS,
       roundId: '333-r1',
       options: { sortOrganizationStaffInLastGroups: true },
+    });
+    expect(runRecipes(['333-r1', '222-r1'], 'pnw')).toEqual({
+      type: ActionType.RUN_RECIPES,
+      roundIds: ['333-r1', '222-r1'],
+      recipeId: 'pnw',
     });
     expect(editActivity({ id: 10 }, { name: 'Updated' })).toEqual({
       type: ActionType.EDIT_ACTIVITY,

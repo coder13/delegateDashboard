@@ -11,8 +11,33 @@ import {
 } from '../../lib/recipes';
 import { shouldRunGroupStep } from '../../lib/recipes/conditions';
 import { mapIn } from '../../lib/utils/utils';
+import {
+  getRoundConfigExtensionData,
+  setRoundConfigExtensionData,
+} from '../../lib/wcif/extensions/delegateDashboard/delegateDashboard';
 import { type AppState } from '../initialState';
-import type { RunRecipePayload } from '../actions';
+import type { RunRecipePayload, RunRecipesPayload } from '../actions';
+
+const setRoundRecipeConfig = (
+  wcif: Competition,
+  roundId: string,
+  recipeId: string
+): Competition => ({
+  ...wcif,
+  events: wcif.events.map((event) => ({
+    ...event,
+    rounds: event.rounds.map((round) => {
+      if (round.id !== roundId) {
+        return round;
+      }
+
+      return setRoundConfigExtensionData(round, {
+        ...(getRoundConfigExtensionData(round) ?? {}),
+        recipe: { id: recipeId },
+      });
+    }),
+  })),
+});
 
 /**
  * Run a built-in recipe to generate groups and/or assignments for a round.
@@ -29,7 +54,7 @@ export function runRecipe(state: AppState, action: RunRecipePayload): AppState {
 
   const recipe = fromRecipeDefinition(recipeDef, { wcif, activityCode: action.roundId });
 
-  const updatedWcif = recipe.steps.reduce<Competition>((accWcif, step) => {
+  const generatedWcif = recipe.steps.reduce<Competition>((accWcif, step) => {
     if (step.type === 'assignments') {
       const generator = (Generators as Record<string, any>)[step.props.generator];
       if (!generator) {
@@ -112,10 +137,19 @@ export function runRecipe(state: AppState, action: RunRecipePayload): AppState {
     return accWcif;
   }, wcif);
 
+  const updatedWcif = setRoundRecipeConfig(generatedWcif, action.roundId, action.recipeId);
+
   return {
     ...state,
     needToSave: true,
     changedKeys: new Set([...state.changedKeys, 'schedule', 'persons', 'events']),
     wcif: updatedWcif,
   };
+}
+
+export function runRecipes(state: AppState, action: RunRecipesPayload): AppState {
+  return action.roundIds.reduce<AppState>(
+    (accState, roundId) => runRecipe(accState, { roundId, recipeId: action.recipeId }),
+    state
+  );
 }

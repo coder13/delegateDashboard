@@ -1,5 +1,6 @@
 import { useAppSelector } from '../../store';
 import { Tune } from '@mui/icons-material';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import HomeIcon from '@mui/icons-material/Home';
@@ -102,6 +103,11 @@ export const DrawerLinks = () => {
           url: `/competitions/${competitionId}/scrambler-schedule`,
           icon: <ScheduleIcon />,
           text: 'Scrambler Schedule',
+        },
+        {
+          url: `/competitions/${competitionId}/bulk-generation`,
+          icon: <AutoFixHighIcon />,
+          text: 'Bulk Generate',
         },
         {
           type: 'divider' as const,
