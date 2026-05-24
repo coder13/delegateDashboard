@@ -1,5 +1,26 @@
 import { StepDefinition } from '../types';
 
+const PNW_BALANCED_GROUP_SIZE_WEIGHT = 20;
+const PNW_ASSIGNMENT_GAP_WEIGHT = 10;
+const PNW_ASSIGNMENT_GAP_OPTIONS = {
+  gapCapMinutes: 120,
+  noGapPenalty: 100,
+};
+const PNW_GLOBAL_SCORE = {
+  maxPasses: 1,
+  maxEvaluations: 250,
+  maxClusterSize: 80,
+};
+const PNW_STAFF_GLOBAL_SCORE = {
+  maxPasses: 1,
+  maxEvaluations: 300,
+  maxClusterSize: 90,
+};
+const avoidImmediateHelpingThenCompetingConstraint = () => ({
+  constraint: 'avoidImmediateHelpingThenCompeting',
+  weight: 1,
+});
+
 export const GenerateCompetitorAssignmentsForStaff: StepDefinition = {
   id: 'GenerateCompetitorAssignmentsForStaff',
   name: 'Generate Competitor Assignments For Staff',
@@ -18,8 +39,8 @@ export const GenerateCompetitorAssignmentsForStaff: StepDefinition = {
           },
         ],
         sort: {
-          by: 'speed',
-          direction: 'asc',
+          by: 'mostConstrained',
+          direction: 'desc',
         },
       },
       assignmentCode: 'competitor',
@@ -27,6 +48,7 @@ export const GenerateCompetitorAssignmentsForStaff: StepDefinition = {
       options: {
         mode: 'symmetric',
       },
+      globalScore: PNW_GLOBAL_SCORE,
       constraints: [
         {
           constraint: 'uniqueAssignment',
@@ -35,6 +57,11 @@ export const GenerateCompetitorAssignmentsForStaff: StepDefinition = {
         {
           constraint: 'mustNotHaveOtherAssignments',
           weight: 1,
+        },
+        avoidImmediateHelpingThenCompetingConstraint(),
+        {
+          constraint: 'shouldHelpAfterCompeting',
+          weight: 20,
         },
         {
           constraint: 'sameStageAsOtherAssignments',
@@ -45,12 +72,100 @@ export const GenerateCompetitorAssignmentsForStaff: StepDefinition = {
           weight: 10,
         },
         {
+          constraint: 'maximizeAssignmentGaps',
+          weight: PNW_ASSIGNMENT_GAP_WEIGHT,
+          options: PNW_ASSIGNMENT_GAP_OPTIONS,
+        },
+        {
           constraint: 'assignmentsNextToEachother',
           weight: 2,
         },
         {
           constraint: 'avoidConflictingNames',
           weight: 10,
+        },
+        {
+          constraint: 'avoidSimilarFirstNames',
+          weight: 10,
+        },
+        {
+          constraint: 'balancedGroupSize',
+          weight: PNW_BALANCED_GROUP_SIZE_WEIGHT,
+        },
+      ],
+    },
+  }),
+};
+
+export const GenerateCompetitorAssignmentsForDelegatesAndOrganizers: StepDefinition = {
+  id: 'GenerateCompetitorAssignmentsForDelegatesAndOrganizers',
+  name: 'Generate Competitor Assignments For Delegates And Organizers',
+  description:
+    'Generates competitor assignments for delegates and organizers, preferring later groups first',
+  defaults: () => ({
+    type: 'assignments',
+    props: {
+      generator: 'assignEveryone',
+      cluster: {
+        base: 'personsInRound',
+        filters: [
+          {
+            key: 'hasRole',
+            value: ['delegate', 'trainee-delegate', 'organizer'],
+          },
+          {
+            key: 'doesNotHaveAssignmentInRound',
+            value: 'competitor',
+          },
+        ],
+        sort: {
+          by: 'mostConstrained',
+          direction: 'desc',
+        },
+      },
+      assignmentCode: 'competitor',
+      activities: { base: 'all' },
+      options: {
+        mode: 'symmetric',
+      },
+      globalScore: PNW_GLOBAL_SCORE,
+      constraints: [
+        {
+          constraint: 'uniqueAssignment',
+          weight: 1,
+        },
+        {
+          constraint: 'mustNotHaveOtherAssignments',
+          weight: 1,
+        },
+        avoidImmediateHelpingThenCompetingConstraint(),
+        {
+          constraint: 'preferLaterGroups',
+          weight: 20,
+        },
+        {
+          constraint: 'maximizeAssignmentGaps',
+          weight: PNW_ASSIGNMENT_GAP_WEIGHT,
+          options: PNW_ASSIGNMENT_GAP_OPTIONS,
+        },
+        {
+          constraint: 'balancedGroupNumberSize',
+          weight: 15,
+          options: {
+            persons: 'cluster',
+          },
+        },
+        {
+          constraint: 'balancedGroupSize',
+          weight: PNW_BALANCED_GROUP_SIZE_WEIGHT,
+        },
+        {
+          constraint: 'avoidConflictingNames',
+          weight: 1,
+        },
+        {
+          constraint: 'avoidSimilarFirstNames',
+          weight: 1,
         },
       ],
     },
@@ -74,8 +189,8 @@ export const GenerateCompetitorAssignmentsForFirstTimers: StepDefinition = {
           },
         ],
         sort: {
-          by: 'speed',
-          direction: 'asc',
+          by: 'mostConstrained',
+          direction: 'desc',
         },
       },
       assignmentCode: 'competitor',
@@ -83,6 +198,7 @@ export const GenerateCompetitorAssignmentsForFirstTimers: StepDefinition = {
       options: {
         mode: 'symmetric',
       },
+      globalScore: PNW_GLOBAL_SCORE,
       constraints: [
         {
           constraint: 'uniqueAssignment',
@@ -92,13 +208,23 @@ export const GenerateCompetitorAssignmentsForFirstTimers: StepDefinition = {
           constraint: 'mustNotHaveOtherAssignments',
           weight: 1,
         },
+        avoidImmediateHelpingThenCompetingConstraint(),
+        {
+          constraint: 'maximizeAssignmentGaps',
+          weight: PNW_ASSIGNMENT_GAP_WEIGHT,
+          options: PNW_ASSIGNMENT_GAP_OPTIONS,
+        },
         {
           constraint: 'avoidConflictingNames',
           weight: 1,
         },
         {
-          constraint: 'balancedGroupSize',
+          constraint: 'avoidSimilarFirstNames',
           weight: 1,
+        },
+        {
+          constraint: 'balancedGroupSize',
+          weight: PNW_BALANCED_GROUP_SIZE_WEIGHT,
         },
       ],
     },
@@ -122,8 +248,8 @@ export const GenerateCompetitorAssignments: StepDefinition = {
           },
         ],
         sort: {
-          by: 'speed',
-          direction: 'asc',
+          by: 'mostConstrained',
+          direction: 'desc',
         },
       },
       assignmentCode: 'competitor',
@@ -131,6 +257,7 @@ export const GenerateCompetitorAssignments: StepDefinition = {
       options: {
         mode: 'symmetric',
       },
+      globalScore: PNW_GLOBAL_SCORE,
       constraints: [
         {
           constraint: 'uniqueAssignment',
@@ -140,13 +267,23 @@ export const GenerateCompetitorAssignments: StepDefinition = {
           constraint: 'mustNotHaveOtherAssignments',
           weight: 1,
         },
+        avoidImmediateHelpingThenCompetingConstraint(),
+        {
+          constraint: 'maximizeAssignmentGaps',
+          weight: PNW_ASSIGNMENT_GAP_WEIGHT,
+          options: PNW_ASSIGNMENT_GAP_OPTIONS,
+        },
         {
           constraint: 'avoidConflictingNames',
           weight: 10,
         },
         {
+          constraint: 'avoidSimilarFirstNames',
+          weight: 40,
+        },
+        {
           constraint: 'balancedGroupSize',
-          weight: 5,
+          weight: PNW_BALANCED_GROUP_SIZE_WEIGHT,
         },
         {
           constraint: 'balancedSpeed',
@@ -188,6 +325,7 @@ export const GenerateJudgeAssignmentsForCompetitors: StepDefinition = {
       options: {
         mode: 'symmetric',
       },
+      globalScore: PNW_STAFF_GLOBAL_SCORE,
       constraints: [
         {
           constraint: 'uniqueAssignment',
@@ -197,9 +335,26 @@ export const GenerateJudgeAssignmentsForCompetitors: StepDefinition = {
           constraint: 'mustNotHaveOtherAssignments',
           weight: 1,
         },
+        avoidImmediateHelpingThenCompetingConstraint(),
+        {
+          constraint: 'onlyMultipleGroupRounds',
+          weight: 1,
+        },
+        {
+          constraint: 'mustNotHaveRoles',
+          weight: 1,
+          options: {
+            roles: ['delegate', 'trainee-delegate', 'organizer'],
+          },
+        },
         {
           constraint: 'sameStageAsOtherAssignments',
           weight: 5,
+        },
+        {
+          constraint: 'maximizeAssignmentGaps',
+          weight: PNW_ASSIGNMENT_GAP_WEIGHT,
+          options: PNW_ASSIGNMENT_GAP_OPTIONS,
         },
         {
           constraint: 'shouldFollowCompetitorAssignment',

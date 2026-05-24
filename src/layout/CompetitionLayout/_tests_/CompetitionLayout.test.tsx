@@ -73,6 +73,13 @@ describe('CompetitionLayout', () => {
     expect(getByText('Child Content')).toBeInTheDocument();
   });
 
+  it('renders the bulk generation navigation link', () => {
+    getLocalStorageMock.mockReturnValue('true');
+    const { getByText } = renderLayout();
+
+    expect(getByText('Bulk Generate')).toBeInTheDocument();
+  });
+
   it('dispatches fetchWCIF on mount', () => {
     renderLayout();
 

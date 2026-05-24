@@ -8,10 +8,13 @@ import { AssignmentStep, StepDefinition } from './types';
 
 export const StepLibrary: Record<string, StepDefinition> = {
   GenerateSingleGroup: core.GenerateSingleGroup,
+  GenerateSingleGroupForFinal: core.GenerateSingleGroupForFinal,
   SpreadDelegates: core.SpreadDelegates,
   BalancedCompetitorAssignmentsForEveryone: core.BalancedCompetitorAssignmentsForEveryone,
   NoCompetitorAssignmentLeftBehind: core.NoCompetitorAssignmentLeftBehind,
   GenerateCompetitorAssignmentsForStaff: pnw.GenerateCompetitorAssignmentsForStaff,
+  GenerateCompetitorAssignmentsForDelegatesAndOrganizers:
+    pnw.GenerateCompetitorAssignmentsForDelegatesAndOrganizers,
   GenerateCompetitorAssignmentsForFirstTimers: pnw.GenerateCompetitorAssignmentsForFirstTimers,
   GenerateCompetitorAssignments: pnw.GenerateCompetitorAssignments,
   GenerateJudgeAssignmentsForCompetitors: pnw.GenerateJudgeAssignmentsForCompetitors,

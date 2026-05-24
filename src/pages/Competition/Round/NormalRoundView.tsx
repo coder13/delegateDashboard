@@ -3,7 +3,8 @@ import Grid from '@mui/material/GridLegacy';
 import { type Round, type Activity } from '@wca/helpers';
 import { RoundStatisticsCard } from '../../../components/RoundStatisticsCard';
 import GroupCard from '../../../components/GroupCard';
-import { type ActivityWithRoom } from '../../../lib/domain/types';
+import { RoundAssignmentCountsTable } from '../../../components/RoundAssignmentCountsTable';
+import { type ActivityWithParent, type ActivityWithRoom } from '../../../lib/domain/types';
 import { type AppState } from '../../../store/initialState';
 import { type Person } from '@wca/helpers';
 
@@ -25,6 +26,7 @@ interface NormalRoundViewProps {
     groupCount?: number;
     expectedRegistrations?: number;
   } | null;
+  groups: ActivityWithParent[];
   sortedGroups: Activity[];
 }
 
@@ -47,6 +49,7 @@ const NormalRoundView = ({
   onOpenPersonsAssignmentsDialog,
   actionButtons,
   adamRoundConfig,
+  groups,
   sortedGroups,
 }: NormalRoundViewProps) => {
   const pluralizeWord = (count: number, singular: string, plural?: string) =>
@@ -99,6 +102,10 @@ const NormalRoundView = ({
         {sortedGroups.map((group) => (
           <GroupCard key={group.id} groupActivity={group} />
         ))}
+      </Grid>
+
+      <Grid item>
+        <RoundAssignmentCountsTable groups={groups} persons={wcif?.persons ?? []} />
       </Grid>
     </Grid>
   );

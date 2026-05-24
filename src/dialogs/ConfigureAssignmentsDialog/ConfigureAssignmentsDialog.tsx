@@ -39,6 +39,7 @@ const ConfigureAssignmentsDialog = ({
   groups,
   isDistributedAttemptRoundLevel,
   distributedAttemptGroups,
+  defaultShowAllCompetitors,
 }: {
   open: boolean;
   onClose: () => void;
@@ -50,6 +51,7 @@ const ConfigureAssignmentsDialog = ({
     attemptNumber: number;
     activities: ActivityWithRoom[];
   }>;
+  defaultShowAllCompetitors?: boolean;
 }) => {
   const wcif = useAppSelector((state) => state.wcif);
   const { eventId, roundNumber } = parseActivityCode(activityCode) as {
@@ -63,7 +65,9 @@ const ConfigureAssignmentsDialog = ({
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
-  const [showAllCompetitors, setShowAllCompetitors] = useState(isDistributedAttemptRoundLevel);
+  const [showAllCompetitors, setShowAllCompetitors] = useState(
+    defaultShowAllCompetitors ?? isDistributedAttemptRoundLevel
+  );
   const [paintingAssignmentCode, setPaintingAssignmentCode] = useState('staff-scrambler');
   const [competitorSort, setCompetitorSort] = useState<CompetitorSort>('speed');
   const [showCompetitorsNotInRound, setShowCompetitorsNotInRound] = useState(false);

@@ -46,6 +46,8 @@ export const ActionType = {
   PARTIAL_UPDATE_WCIF: 'partial_update_wcif',
   RESET_ALL_GROUP_ASSIGNMENTS: 'reset_all_group_assignments',
   GENERATE_ASSIGNMENTS: 'generate_assignments',
+  RUN_RECIPE: 'run_recipe',
+  RUN_RECIPES: 'run_recipes',
   GENERATE_ROUND_ATTEMPT_ASSIGNMENTS: 'generate_round_attempt_assignments',
   EDIT_ACTIVITY: 'edit_activity',
   UPDATE_GLOBAL_EXTENSION: 'update_global_extension',
@@ -366,6 +368,32 @@ export type GenerateAssignmentsPayload = {
  * @param {ActivityCode} roundId
  * @returns
  */
+export type RunRecipePayload = {
+  roundId: string;
+  recipeId: string;
+};
+export const runRecipe = (
+  roundId: string,
+  recipeId: string
+): ReduxAction<typeof ActionType.RUN_RECIPE, RunRecipePayload> => ({
+  type: ActionType.RUN_RECIPE,
+  roundId,
+  recipeId,
+});
+
+export type RunRecipesPayload = {
+  roundIds: string[];
+  recipeId: string;
+};
+export const runRecipes = (
+  roundIds: string[],
+  recipeId: string
+): ReduxAction<typeof ActionType.RUN_RECIPES, RunRecipesPayload> => ({
+  type: ActionType.RUN_RECIPES,
+  roundIds,
+  recipeId,
+});
+
 export const generateAssignments = (
   roundId: string,
   options?: Partial<GenerateAssignmentsPayload['options']>

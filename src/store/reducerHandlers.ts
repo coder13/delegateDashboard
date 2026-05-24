@@ -172,6 +172,8 @@ export const reducers: Record<string, ReducerFunction> = {
     };
   },
   [ActionType.GENERATE_ASSIGNMENTS]: Reducers.generateAssignments,
+  [ActionType.RUN_RECIPE]: Reducers.runRecipe,
+  [ActionType.RUN_RECIPES]: Reducers.runRecipes,
   [ActionType.GENERATE_ROUND_ATTEMPT_ASSIGNMENTS]: (
     state,
     action: GenerateRoundAttemptAssignmentsPayload

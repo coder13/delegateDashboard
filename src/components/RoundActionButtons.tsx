@@ -1,7 +1,12 @@
+import { Recipes } from '../lib/recipes';
 import { hasDistributedAttempts, parseActivityCode } from '../lib/domain/activities';
 import { type ActivityWithParent } from '../lib/domain/types';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import { type Person } from '@wca/helpers';
 
 interface RoundActionButtonsProps {
@@ -10,7 +15,9 @@ interface RoundActionButtonsProps {
   personsShouldBeInRound: Person[];
   activityCode: string;
   onConfigureAssignments: () => void;
-  onGenerateAssignments: () => void;
+  recipeId: string;
+  onChangeRecipeId: (recipeId: string) => void;
+  onRunRecipe: () => void;
   onAssignToRoundAttempt: () => void;
   onResetAttemptAssignments: () => void;
   onConfigureStationNumbers: (activityCode: string) => void;
@@ -27,7 +34,9 @@ export const RoundActionButtons = ({
   personsShouldBeInRound,
   activityCode,
   onConfigureAssignments,
-  onGenerateAssignments,
+  recipeId,
+  onChangeRecipeId,
+  onRunRecipe,
   onAssignToRoundAttempt,
   onResetAttemptAssignments,
   onConfigureStationNumbers,
@@ -86,7 +95,21 @@ export const RoundActionButtons = ({
     return (
       <>
         <Button onClick={onConfigureAssignments}>Configure Assignments</Button>
-        <Button onClick={onGenerateAssignments}>Assign Competitor and Judging Assignments</Button>
+        <FormControl size="small" sx={{ minWidth: 220, marginLeft: 2 }}>
+          <InputLabel id="recipe-select-label">Recipe</InputLabel>
+          <Select
+            labelId="recipe-select-label"
+            label="Recipe"
+            value={recipeId}
+            onChange={(e) => onChangeRecipeId(String(e.target.value))}>
+            {Recipes.map((r) => (
+              <MenuItem key={r.id} value={r.id}>
+                {r.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <Button onClick={onRunRecipe}>Generate</Button>
         <div style={{ display: 'flex', flex: 1 }} />
         <Button onClick={onConfigureGroups}>Configure Groups</Button>
         <Button color="error" onClick={onResetAll}>

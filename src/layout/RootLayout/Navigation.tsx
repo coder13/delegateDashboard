@@ -10,6 +10,7 @@ import {
   Export as ExportPage,
   Import as ImportPage,
   ScramblerSchedule as ScramblerSchedulePage,
+  BulkGeneration as BulkGenerationPage,
 } from '../../pages/Competition';
 import FirstTimers from '../../pages/Competition/Checks/FirstTimers';
 import DangerEditPage from '../../pages/Competition/DangerEdit/DangerEdit';
@@ -63,6 +64,7 @@ const Navigation = () => {
             <Route path="export" element={<ExportPage />} />
             <Route path="import" element={<ImportPage />} />
             <Route path="scrambler-schedule" element={<ScramblerSchedulePage />} />
+            <Route path="bulk-generation" element={<BulkGenerationPage />} />
             <Route path="query" element={<QueryPage />} />
             <Route path="checks/first-timers" element={<FirstTimers />} />
             <Route path="external/groupifier-printing" element={<GroupifierPrintingConfig />} />

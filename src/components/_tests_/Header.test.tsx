@@ -3,6 +3,7 @@ import { DrawerLinks, CompetitionHeader } from '../../layout/CompetitionLayout/C
 import { renderWithProviders } from '../../test-utils';
 import userEvent from '@testing-library/user-event';
 import type { AppState } from '../../store/initialState';
+import { buildEvent, buildRound } from '../../store/reducers/_tests_/helpers';
 
 const useAppSelector = vi.fn();
 
@@ -27,8 +28,23 @@ describe('Header', () => {
 });
 
 describe('DrawerLinks', () => {
+  const state = {
+    wcif: {
+      id: 'TestComp',
+      events: [
+        buildEvent({
+          id: '333',
+          rounds: [buildRound({ id: '333-r1' }), buildRound({ id: '333-r2' })],
+        }),
+        buildEvent({
+          id: '222',
+          rounds: [buildRound({ id: '222-r1' })],
+        }),
+      ],
+    },
+  } as unknown as AppState;
+
   it('renders menu links for the current competition', () => {
-    const state = { wcif: { id: 'TestComp' } } as unknown as AppState;
     useAppSelector.mockImplementation((selector: (state: AppState) => unknown) => selector(state));
 
     const { getByText, getByRole } = renderWithProviders(<DrawerLinks />);
@@ -40,5 +56,32 @@ describe('DrawerLinks', () => {
       'href',
       '/competitions/TestComp/assignments'
     );
+  });
+
+  it('renders event accordions with round links', async () => {
+    useAppSelector.mockImplementation((selector: (state: AppState) => unknown) => selector(state));
+
+    const { getByRole, getAllByRole } = renderWithProviders(<DrawerLinks />);
+
+    expect(getByRole('button', { name: /3x3x3 Cube/ })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
+    expect(getByRole('button', { name: /2x2x2 Cube/ })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+
+    await userEvent.click(getByRole('button', { name: /2x2x2 Cube/ }));
+
+    expect(getByRole('button', { name: /2x2x2 Cube/ })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
+    expect(
+      getAllByRole('link', { name: 'Round 1' }).some(
+        (link) => link.getAttribute('href') === '/competitions/TestComp/events/222-r1'
+      )
+    ).toBe(true);
   });
 });

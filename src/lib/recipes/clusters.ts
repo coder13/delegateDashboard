@@ -1,8 +1,9 @@
-import { Competition, Event, Person, Round, parseActivityCode } from '@wca/helpers';
+import { parseActivityCode } from '@wca/helpers';
+import type { Activity, Competition, Event, Person, Round } from '@wca/helpers';
 import Assignments from '../../config/assignments';
 import { findGroupActivitiesByRound } from '../wcif/activities';
 import { acceptedRegistrations, personsShouldBeInRound } from '../domain/persons';
-import { ClusterDefinition } from './types';
+import type { ClusterDefinition } from './types';
 import { byPROrResult } from 'wca-group-generators';
 
 export const Filters = [
@@ -103,7 +104,66 @@ export const getBaseCluster = (
   }
 };
 
-export const sortCluster = (wcif: Competition, cluster: ClusterDefinition, persons: Person[], roundId: string) => {
+const KEY_STAFF_ROLES = ['delegate', 'trainee-delegate', 'organizer'];
+
+const firstNameFor = (name: string) => name.trim().split(/\s+/)[0]?.toLowerCase() ?? '';
+
+const phoneticFirstNameFor = (name: string) =>
+  firstNameFor(name)
+    .replace(/[^a-z]/g, '')
+    .replace(/ph/g, 'f')
+    .replace(/^c/, 'k')
+    .replace(/^q/, 'k')
+    .replace(/[sz]/g, 's')
+    .replace(/h/g, '')
+    .replace(/(.)\1+/g, '$1');
+
+const staffAssignmentCount = (person: Person, activityIds: number[]) =>
+  person.assignments?.filter(
+    (assignment) =>
+      activityIds.includes(assignment.activityId) && assignment.assignmentCode.startsWith('staff-')
+  ).length ?? 0;
+
+const assignmentCount = (person: Person, activityIds: number[]) =>
+  person.assignments?.filter((assignment) => activityIds.includes(assignment.activityId)).length ??
+  0;
+
+const keyRoleCount = (person: Person) =>
+  KEY_STAFF_ROLES.filter((role) => person.roles?.includes(role)).length;
+
+const similarFirstNameCount = (person: Person, persons: Person[]) => {
+  const firstName = firstNameFor(person.name);
+  const phoneticFirstName = phoneticFirstNameFor(person.name);
+
+  return persons.filter((candidate) => {
+    if (candidate.registrantId === person.registrantId) {
+      return false;
+    }
+
+    const candidateFirstName = firstNameFor(candidate.name);
+    return (
+      candidateFirstName === firstName ||
+      candidateFirstName.startsWith(firstName) ||
+      firstName.startsWith(candidateFirstName) ||
+      phoneticFirstNameFor(candidate.name) === phoneticFirstName
+    );
+  }).length;
+};
+
+const constrainedScore = (person: Person, persons: Person[], activityIds: number[]) =>
+  staffAssignmentCount(person, activityIds) * 1000 +
+  keyRoleCount(person) * 800 +
+  (!person.wcaId ? 400 : 0) +
+  similarFirstNameCount(person, persons) * 100 +
+  assignmentCount(person, activityIds) * 25;
+
+export const sortCluster = (
+  wcif: Competition,
+  cluster: ClusterDefinition,
+  persons: Person[],
+  roundId: string,
+  activities: Activity[]
+) => {
   if (!cluster.sort) {
     return persons;
   }
@@ -118,12 +178,34 @@ export const sortCluster = (wcif: Competition, cluster: ClusterDefinition, perso
     return cluster.sort.direction === 'asc' ? sortedPersons : sortedPersons.reverse();
   }
 
+  if (cluster.sort.by === 'mostConstrained') {
+    const activityIds = activities.map((activity) => activity.id);
+    const { eventId, roundNumber } = parseActivityCode(roundId) as {
+      eventId: string;
+      roundNumber: number;
+    };
+    const event = wcif.events.find((e) => e.id === eventId) as Event;
+    const speedComparator = byPROrResult(event, roundNumber);
+    const sortedPersons = [...persons].sort((personA, personB) => {
+      const scoreDiff =
+        constrainedScore(personB, persons, activityIds) -
+        constrainedScore(personA, persons, activityIds);
+
+      return (
+        scoreDiff || speedComparator(personA, personB) || personA.name.localeCompare(personB.name)
+      );
+    });
+
+    return cluster.sort.direction === 'desc' ? sortedPersons : sortedPersons.reverse();
+  }
+
   return persons;
-}
+};
 
 
 export const getCluster = (wcif: Competition, cluster: ClusterDefinition, roundId: string) => {
-  const activityIds = findGroupActivitiesByRound(wcif, roundId).map((a) => a.id);
+  const activities = findGroupActivitiesByRound(wcif, roundId);
+  const activityIds = activities.map((a) => a.id);
 
   const baseCluster = getBaseCluster(wcif, cluster.base, roundId);
 
@@ -141,5 +223,5 @@ export const getCluster = (wcif: Competition, cluster: ClusterDefinition, roundI
     return acc.filter(filter(value, activityIds));
   }, baseCluster);
 
-  return sortCluster(wcif, cluster, filteredCluster, roundId);
+  return sortCluster(wcif, cluster, filteredCluster, roundId, activities);
 };

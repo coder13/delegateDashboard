@@ -1,5 +1,7 @@
 import { useAppSelector } from '../../store';
+import { EventRoundTree } from './EventRoundTree';
 import { Tune } from '@mui/icons-material';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import HomeIcon from '@mui/icons-material/Home';
@@ -11,6 +13,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import {
   AppBar as MuiAppBar,
+  Box,
   Divider,
   IconButton,
   List,
@@ -104,8 +107,12 @@ export const DrawerLinks = () => {
           text: 'Scrambler Schedule',
         },
         {
-          type: 'divider' as const,
+          url: `/competitions/${competitionId}/bulk-generation`,
+          icon: <AutoFixHighIcon />,
+          text: 'Bulk Generate',
         },
+      ] as MenuItemOrDivider[],
+      data: [
         {
           url: `/competitions/${competitionId}/import`,
           icon: <FileUploadIcon />,
@@ -115,9 +122,6 @@ export const DrawerLinks = () => {
           url: `/competitions/${competitionId}/export`,
           icon: <FileDownloadIcon />,
           text: 'Export Data',
-        },
-        {
-          type: 'divider' as const,
         },
         {
           url: `/competitions/${competitionId}/checks/first-timers`,
@@ -154,14 +158,26 @@ export const DrawerLinks = () => {
     );
 
   return (
-    <List style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {menuLinks.top.map(renderLinkOrDivider)}
+    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <List disablePadding sx={{ flexShrink: 0 }}>
+        {menuLinks.top.map(renderLinkOrDivider)}
+      </List>
+
       <Divider />
-      <div style={{ display: 'flex', flex: 1 }} />
+
+      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+        <EventRoundTree />
+      </Box>
+
       <Divider />
-      <ListSubheader>Debug</ListSubheader>
-      {menuLinks.debug.map(renderLinkOrDivider)}
-    </List>
+
+      <List disablePadding sx={{ flexShrink: 0 }}>
+        {menuLinks.data.map(renderLinkOrDivider)}
+        <Divider />
+        <ListSubheader>Debug</ListSubheader>
+        {menuLinks.debug.map(renderLinkOrDivider)}
+      </List>
+    </Box>
   );
 };
 

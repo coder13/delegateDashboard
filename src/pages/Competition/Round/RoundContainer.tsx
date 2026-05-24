@@ -12,8 +12,12 @@ import { useRoundData } from './hooks/useRoundData';
 import { useRoundDialogs } from './hooks/useRoundDialogs';
 import DistributedAttemptRoundView from './DistributedAttemptRoundView';
 import NormalRoundView from './NormalRoundView';
+import { getRoundConfigExtensionData } from '../../../lib/wcif/extensions/delegateDashboard/delegateDashboard';
+import { useAppDispatch } from '../../../store';
+import { runRecipe as runRecipeAction, updateRoundExtensionData } from '../../../store/actions';
 import { type Round } from '@wca/helpers';
 import { ConfirmProvider } from 'material-ui-confirm';
+import { useState } from 'react';
 
 interface RoundContainerProps {
   roundId: string;
@@ -24,6 +28,7 @@ interface RoundContainerProps {
 
 const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContainerProps) => {
   const dialogs = useRoundDialogs();
+  const dispatch = useAppDispatch();
 
   const {
     wcif,
@@ -40,7 +45,6 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
   } = useRoundData(activityCode, round);
 
   const {
-    handleGenerateAssignments,
     handleAssignToRoundAttempt,
     handleResetAttemptAssignments,
     handleResetAll,
@@ -51,6 +55,24 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
     groups,
     roundActivities,
   });
+
+  const existingRoundConfig = getRoundConfigExtensionData(round);
+  const existingRecipe = existingRoundConfig?.recipe as { id?: string } | undefined;
+  const [recipeId, setRecipeId] = useState<string>(existingRecipe?.id ?? 'pnw');
+
+  const handleChangeRecipeId = (nextId: string) => {
+    setRecipeId(nextId);
+    dispatch(
+      updateRoundExtensionData(round.id, {
+        ...(existingRoundConfig ?? {}),
+        recipe: { id: nextId },
+      })
+    );
+  };
+
+  const handleRunRecipe = () => {
+    dispatch(runRecipeAction(round.id, recipeId));
+  };
 
   if (roundActivities.length === 0) {
     return (
@@ -71,7 +93,9 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
       personsShouldBeInRound={personsShouldBeInRound}
       activityCode={activityCode}
       onConfigureAssignments={() => dialogs.configureAssignments.setOpen(true)}
-      onGenerateAssignments={handleGenerateAssignments}
+      recipeId={recipeId}
+      onChangeRecipeId={handleChangeRecipeId}
+      onRunRecipe={handleRunRecipe}
       onAssignToRoundAttempt={handleAssignToRoundAttempt}
       onResetAttemptAssignments={handleResetAttemptAssignments}
       onConfigureStationNumbers={(code) => dialogs.configureStationNumbers.setActivityCode(code)}
@@ -177,6 +201,7 @@ const RoundContainer = ({ roundId, activityCode, eventId, round }: RoundContaine
           onOpenPersonsAssignmentsDialog={() => dialogs.personsAssignments.setOpen(true)}
           actionButtons={actionButtons}
           adamRoundConfig={adamRoundConfig}
+          groups={groups}
           sortedGroups={sortedGroups}
         />
       )}

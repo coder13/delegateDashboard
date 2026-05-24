@@ -9,7 +9,7 @@ export interface ClusterDefinition {
   base: string;
   filters: ClusterFilter[];
   sort?: {
-    by: 'speed';
+    by: 'speed' | 'mostConstrained';
     direction: 'asc' | 'desc';
   }
 }
@@ -39,6 +39,11 @@ export interface AssignmentStep {
     activities: ActivitiesDefinition;
     constraints: ConstraintProps[];
     options?: any;
+    globalScore?: {
+      maxPasses?: number;
+      maxEvaluations?: number;
+      maxClusterSize?: number;
+    };
   };
 }
 
@@ -47,6 +52,7 @@ export interface GroupStep {
   type: 'groups';
   props: {
     count: number;
+    condition?: 'missingGroupsInFinalRound';
   };
 }
 
