@@ -1,6 +1,11 @@
 import { StepDefinition } from '../types';
 
 const PNW_BALANCED_GROUP_SIZE_WEIGHT = 20;
+const PNW_ASSIGNMENT_GAP_WEIGHT = 10;
+const PNW_ASSIGNMENT_GAP_OPTIONS = {
+  gapCapMinutes: 120,
+  noGapPenalty: 100,
+};
 const PNW_GLOBAL_SCORE = {
   maxPasses: 1,
   maxEvaluations: 250,
@@ -55,6 +60,11 @@ export const GenerateCompetitorAssignmentsForStaff: StepDefinition = {
         {
           constraint: 'maximizeBreaks',
           weight: 10,
+        },
+        {
+          constraint: 'maximizeAssignmentGaps',
+          weight: PNW_ASSIGNMENT_GAP_WEIGHT,
+          options: PNW_ASSIGNMENT_GAP_OPTIONS,
         },
         {
           constraint: 'assignmentsNextToEachother',
@@ -123,6 +133,11 @@ export const GenerateCompetitorAssignmentsForDelegatesAndOrganizers: StepDefinit
           weight: 20,
         },
         {
+          constraint: 'maximizeAssignmentGaps',
+          weight: PNW_ASSIGNMENT_GAP_WEIGHT,
+          options: PNW_ASSIGNMENT_GAP_OPTIONS,
+        },
+        {
           constraint: 'balancedGroupNumberSize',
           weight: 15,
           options: {
@@ -183,6 +198,11 @@ export const GenerateCompetitorAssignmentsForFirstTimers: StepDefinition = {
           weight: 1,
         },
         {
+          constraint: 'maximizeAssignmentGaps',
+          weight: PNW_ASSIGNMENT_GAP_WEIGHT,
+          options: PNW_ASSIGNMENT_GAP_OPTIONS,
+        },
+        {
           constraint: 'avoidConflictingNames',
           weight: 1,
         },
@@ -234,6 +254,11 @@ export const GenerateCompetitorAssignments: StepDefinition = {
         {
           constraint: 'mustNotHaveOtherAssignments',
           weight: 1,
+        },
+        {
+          constraint: 'maximizeAssignmentGaps',
+          weight: PNW_ASSIGNMENT_GAP_WEIGHT,
+          options: PNW_ASSIGNMENT_GAP_OPTIONS,
         },
         {
           constraint: 'avoidConflictingNames',
@@ -310,6 +335,11 @@ export const GenerateJudgeAssignmentsForCompetitors: StepDefinition = {
         {
           constraint: 'sameStageAsOtherAssignments',
           weight: 5,
+        },
+        {
+          constraint: 'maximizeAssignmentGaps',
+          weight: PNW_ASSIGNMENT_GAP_WEIGHT,
+          options: PNW_ASSIGNMENT_GAP_OPTIONS,
         },
         {
           constraint: 'shouldFollowCompetitorAssignment',

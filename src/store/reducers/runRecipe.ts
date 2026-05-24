@@ -80,6 +80,7 @@ export function runRecipe(state: AppState, action: RunRecipePayload): AppState {
         constraints,
         options: hydratedStep.props.options,
         maxPasses: hydratedStep.props.globalScore.maxPasses,
+        maxEvaluations: hydratedStep.props.globalScore.maxEvaluations,
       });
     }
 

@@ -1,5 +1,6 @@
 import {
   avoidSimilarFirstNames,
+  maximizeAssignmentGaps,
   mustNotHaveRoles,
   onlyMultipleGroupRounds,
   preferLaterGroups,
@@ -14,8 +15,22 @@ const buildGroup = (id: number, groupNumber: number): Activity =>
     id,
     name: `Group ${groupNumber}`,
     activityCode: `333-r1-g${groupNumber}`,
-    startTime: `2024-01-01T10:0${groupNumber}:00Z`,
-    endTime: `2024-01-01T10:1${groupNumber}:00Z`,
+    startTime: new Date(Date.UTC(2024, 0, 1, 10, (groupNumber - 1) * 10)).toISOString(),
+    endTime: new Date(Date.UTC(2024, 0, 1, 10, groupNumber * 10)).toISOString(),
+  });
+
+const buildTimedActivity = (
+  id: number,
+  activityCode: string,
+  startTime: string,
+  endTime: string
+): Activity =>
+  buildActivity({
+    id,
+    name: activityCode,
+    activityCode,
+    startTime,
+    endTime,
   });
 
 const scoreProps = (activity: Activity, activities: Activity[]) => ({
@@ -112,5 +127,122 @@ describe('recipe constraints', () => {
 
     expect(avoidSimilarFirstNames.score(props)).toBeNull();
     expect(avoidSimilarFirstNames.score({ ...props, activity: activities[1] })).toBe(0);
+  });
+
+  it('penalizes but does not reject competitor assignments immediately after helping', () => {
+    const staffActivity = buildTimedActivity(
+      21,
+      '333-r1-g1',
+      '2024-01-01T10:00:00.000Z',
+      '2024-01-01T10:10:00.000Z'
+    );
+    const immediateCompetitorActivity = buildTimedActivity(
+      22,
+      '333-r1-g2',
+      '2024-01-01T10:10:00.000Z',
+      '2024-01-01T10:20:00.000Z'
+    );
+    const props = {
+      ...scoreProps(immediateCompetitorActivity, [immediateCompetitorActivity]),
+      wcif: buildWcif([staffActivity, immediateCompetitorActivity]),
+      person: buildPerson({
+        assignments: [{ activityId: 21, assignmentCode: 'staff-judge', stationNumber: null }],
+      }),
+      options: { noGapPenalty: 100, gapCapMinutes: 120 },
+    };
+
+    expect(maximizeAssignmentGaps.score(props)).toBe(-100);
+  });
+
+  it('scores larger positive staff-to-competitor gaps higher', () => {
+    const staffActivity = buildTimedActivity(
+      21,
+      '333-r1-g1',
+      '2024-01-01T10:00:00.000Z',
+      '2024-01-01T10:10:00.000Z'
+    );
+    const shortGapActivity = buildTimedActivity(
+      22,
+      '333-r1-g2',
+      '2024-01-01T10:15:00.000Z',
+      '2024-01-01T10:25:00.000Z'
+    );
+    const longGapActivity = buildTimedActivity(
+      23,
+      '333-r1-g3',
+      '2024-01-01T10:50:00.000Z',
+      '2024-01-01T11:00:00.000Z'
+    );
+    const props = {
+      ...scoreProps(shortGapActivity, [shortGapActivity, longGapActivity]),
+      wcif: buildWcif([staffActivity, shortGapActivity, longGapActivity]),
+      person: buildPerson({
+        assignments: [{ activityId: 21, assignmentCode: 'staff-runner', stationNumber: null }],
+      }),
+      options: { noGapPenalty: 100, gapCapMinutes: 120 },
+    };
+
+    expect(maximizeAssignmentGaps.score({ ...props, activity: longGapActivity })).toBeGreaterThan(
+      maximizeAssignmentGaps.score(props) ?? 0
+    );
+  });
+
+  it('scores competitor assignments farther from other rounds higher', () => {
+    const otherRoundActivity = buildTimedActivity(
+      31,
+      '222-r1-g1',
+      '2024-01-01T10:00:00.000Z',
+      '2024-01-01T10:10:00.000Z'
+    );
+    const nearActivity = buildTimedActivity(
+      41,
+      '333-r1-g1',
+      '2024-01-01T10:15:00.000Z',
+      '2024-01-01T10:25:00.000Z'
+    );
+    const farActivity = buildTimedActivity(
+      42,
+      '333-r1-g2',
+      '2024-01-01T11:00:00.000Z',
+      '2024-01-01T11:10:00.000Z'
+    );
+    const props = {
+      ...scoreProps(nearActivity, [nearActivity, farActivity]),
+      wcif: buildWcif([otherRoundActivity, nearActivity, farActivity]),
+      person: buildPerson({
+        assignments: [{ activityId: 31, assignmentCode: 'competitor', stationNumber: null }],
+      }),
+      options: { noGapPenalty: 100, gapCapMinutes: 120 },
+    };
+
+    expect(maximizeAssignmentGaps.score({ ...props, activity: farActivity })).toBeGreaterThan(
+      maximizeAssignmentGaps.score(props) ?? 0
+    );
+  });
+
+  it('penalizes staff assignments immediately before future competitor assignments', () => {
+    const immediateStaffActivity = buildTimedActivity(
+      51,
+      '333-r1-g1',
+      '2024-01-01T10:00:00.000Z',
+      '2024-01-01T10:10:00.000Z'
+    );
+    const futureCompetitorActivity = buildTimedActivity(
+      61,
+      '222-r1-g1',
+      '2024-01-01T10:10:00.000Z',
+      '2024-01-01T10:20:00.000Z'
+    );
+    const props = {
+      ...scoreProps(immediateStaffActivity, [immediateStaffActivity]),
+      assignmentCode: 'staff-judge',
+      wcif: buildWcif([immediateStaffActivity, futureCompetitorActivity]),
+      person: buildPerson({
+        assignments: [{ activityId: 61, assignmentCode: 'competitor', stationNumber: null }],
+      }),
+      options: { noGapPenalty: 100, gapCapMinutes: 120 },
+    };
+
+    expect(maximizeAssignmentGaps.score(props)).toBe(-100);
   });
 });

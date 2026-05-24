@@ -1,9 +1,14 @@
-import { parseActivityCode, type Activity } from '@wca/helpers';
+import { parseActivityCode } from '@wca/helpers';
 import { roomByActivity, type Constraint } from 'wca-group-generators';
 
+type Activity = Parameters<Constraint['score']>[0]['activity'];
+
 const DEFAULT_KEY_STAFF_ROLES = ['delegate', 'trainee-delegate', 'organizer'];
+const DEFAULT_GAP_CAP_MINUTES = 120;
+const DEFAULT_NO_GAP_PENALTY = 100;
 
 const isStaffAssignmentCode = (assignmentCode: string) => assignmentCode.startsWith('staff-');
+const isCompetitorAssignmentCode = (assignmentCode: string) => assignmentCode === 'competitor';
 
 const firstNameFor = (name: string) => name.trim().split(/\s+/)[0]?.toLowerCase() ?? '';
 
@@ -51,6 +56,103 @@ const earliestStaffActivityForPerson = (
       .filter(Boolean) ?? [];
 
   return (staffActivities as Activity[]).sort((a, b) => a.startTime.localeCompare(b.startTime))[0];
+};
+
+const minutesBetween = (before: Activity, after: Activity) =>
+  (new Date(after.startTime).getTime() - new Date(before.endTime).getTime()) / 60000;
+
+const gapScore = (minutes: number, gapCapMinutes: number, noGapPenalty: number) =>
+  minutes > 0 ? Math.min(minutes, gapCapMinutes) / gapCapMinutes : -noGapPenalty;
+
+const activitiesOverlap = (first: Activity, second: Activity) =>
+  new Date(first.startTime) < new Date(second.endTime) &&
+  new Date(second.startTime) < new Date(first.endTime);
+
+const assignmentActivitiesForPerson = (
+  wcif: Parameters<Constraint['score']>[0]['wcif'],
+  person: Parameters<Constraint['score']>[0]['person'],
+  assignmentTest: (assignmentCode: string) => boolean
+) => {
+  const allActivities = wcif.schedule.venues.flatMap((venue) =>
+    venue.rooms.flatMap((room) =>
+      room.activities.flatMap((activity) => [activity, ...(activity.childActivities ?? [])])
+    )
+  );
+
+  return (
+    person.assignments
+      ?.filter((assignment) => assignmentTest(assignment.assignmentCode))
+      .map((assignment) => allActivities.find((activity) => activity.id === assignment.activityId))
+      .filter(Boolean) as Activity[]
+  ).sort((a, b) => a.startTime.localeCompare(b.startTime));
+};
+
+const nearestAssignmentGapScore = (
+  activity: Activity,
+  activities: Activity[],
+  gapCapMinutes: number,
+  noGapPenalty: number
+) => {
+  if (!activities.length) {
+    return 0;
+  }
+
+  return Math.min(
+    ...activities.map((otherActivity) => {
+      if (new Date(otherActivity.endTime) <= new Date(activity.startTime)) {
+        return gapScore(minutesBetween(otherActivity, activity), gapCapMinutes, noGapPenalty);
+      }
+
+      if (new Date(activity.endTime) <= new Date(otherActivity.startTime)) {
+        return gapScore(minutesBetween(activity, otherActivity), gapCapMinutes, noGapPenalty);
+      }
+
+      return -noGapPenalty;
+    })
+  );
+};
+
+const staffBeforeCompetitorGapScore = (
+  competitorActivity: Activity,
+  staffActivities: Activity[],
+  gapCapMinutes: number,
+  noGapPenalty: number
+) => {
+  const priorStaffActivities = staffActivities.filter(
+    (staffActivity) =>
+      new Date(staffActivity.startTime) < new Date(competitorActivity.startTime) ||
+      activitiesOverlap(staffActivity, competitorActivity)
+  );
+
+  return nearestAssignmentGapScore(
+    competitorActivity,
+    priorStaffActivities,
+    gapCapMinutes,
+    noGapPenalty
+  );
+};
+
+const staffBeforeFutureCompetitorGapScore = (
+  staffActivity: Activity,
+  competitorActivities: Activity[],
+  gapCapMinutes: number,
+  noGapPenalty: number
+) => {
+  const futureCompetitorActivities = competitorActivities.filter(
+    (competitorActivity) =>
+      new Date(staffActivity.startTime) < new Date(competitorActivity.startTime) ||
+      activitiesOverlap(staffActivity, competitorActivity)
+  );
+
+  if (!futureCompetitorActivities.length) {
+    return 0;
+  }
+
+  return Math.min(
+    ...futureCompetitorActivities.map((competitorActivity) =>
+      gapScore(minutesBetween(staffActivity, competitorActivity), gapCapMinutes, noGapPenalty)
+    )
+  );
 };
 
 export const shouldHelpAfterCompeting: Constraint = {
@@ -151,10 +253,50 @@ export const avoidSimilarFirstNames: Constraint = {
   },
 };
 
+export const maximizeAssignmentGaps: Constraint = {
+  name: 'Maximize Assignment Gaps',
+  score: ({ wcif, activity, assignmentCode, person, options }) => {
+    const scoredPerson = wcif.persons.find(
+      (candidate) => candidate.registrantId === person.registrantId
+    ) ?? person;
+    const gapCapMinutes = (options?.gapCapMinutes as number | undefined) ?? DEFAULT_GAP_CAP_MINUTES;
+    const noGapPenalty = (options?.noGapPenalty as number | undefined) ?? DEFAULT_NO_GAP_PENALTY;
+    const staffActivities = assignmentActivitiesForPerson(
+      wcif,
+      scoredPerson,
+      isStaffAssignmentCode
+    );
+    const competitorActivities = assignmentActivitiesForPerson(
+      wcif,
+      scoredPerson,
+      isCompetitorAssignmentCode
+    );
+
+    if (isCompetitorAssignmentCode(assignmentCode)) {
+      return (
+        staffBeforeCompetitorGapScore(activity, staffActivities, gapCapMinutes, noGapPenalty) +
+        nearestAssignmentGapScore(activity, competitorActivities, gapCapMinutes, noGapPenalty)
+      );
+    }
+
+    if (isStaffAssignmentCode(assignmentCode)) {
+      return staffBeforeFutureCompetitorGapScore(
+        activity,
+        competitorActivities,
+        gapCapMinutes,
+        noGapPenalty
+      );
+    }
+
+    return 0;
+  },
+};
+
 export const RecipeConstraints: Record<string, Constraint> = {
   shouldHelpAfterCompeting,
   preferLaterGroups,
   mustNotHaveRoles,
   onlyMultipleGroupRounds,
   avoidSimilarFirstNames,
+  maximizeAssignmentGaps,
 };

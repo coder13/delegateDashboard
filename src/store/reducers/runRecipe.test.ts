@@ -62,8 +62,22 @@ const buildGroup = (id: number, groupNumber: number, stageNumber: number): Activ
     id,
     name: `Stage ${stageNumber} Group ${groupNumber}`,
     activityCode: `333-r1-g${groupNumber}`,
-    startTime: `2024-01-01T10:0${groupNumber}:00Z`,
-    endTime: `2024-01-01T10:1${groupNumber}:00Z`,
+    startTime: new Date(Date.UTC(2024, 0, 1, 10, (groupNumber - 1) * 10)).toISOString(),
+    endTime: new Date(Date.UTC(2024, 0, 1, 10, groupNumber * 10)).toISOString(),
+  });
+
+const buildTimedGroup = (
+  id: number,
+  activityCode: string,
+  startTime: string,
+  endTime: string
+): Activity =>
+  buildActivity({
+    id,
+    name: activityCode,
+    activityCode,
+    startTime,
+    endTime,
   });
 
 const buildRoundActivity = (
@@ -162,6 +176,26 @@ const competitorGroupNumber = (wcif: Competition, person: Person | undefined) =>
   if (!activity) return undefined;
 
   return parseActivityCode(activity.activityCode).groupNumber;
+};
+
+const competitorGroupNumberInRound = (
+  wcif: Competition,
+  person: Person | undefined,
+  roundId: string
+) => {
+  const activityIds = new Set(
+    allActivities(wcif)
+      .filter((activity) => activity.activityCode.startsWith(`${roundId}-g`))
+      .map((activity) => activity.id)
+  );
+  const assignment = person?.assignments?.find(
+    (personAssignment) =>
+      personAssignment.assignmentCode === 'competitor' &&
+      activityIds.has(personAssignment.activityId)
+  );
+  const activity = allActivities(wcif).find((candidate) => candidate.id === assignment?.activityId);
+
+  return activity ? parseActivityCode(activity.activityCode).groupNumber : undefined;
 };
 
 const competitorStageNumber = (wcif: Competition, person: Person | undefined) => {
@@ -427,5 +461,125 @@ describe('runRecipe', () => {
     const wcif = runPnwRecipe([groupOneEthan, ...fullOtherGroups, unassignedEthan]);
 
     expect(competitorGroupNumber(wcif, personById(wcif, 20))).not.toBe(1);
+  });
+
+  it('still gives everyone a competitor assignment when timing options are poor', () => {
+    const wcif = runPnwRecipe([
+      competitor(1, {
+        name: 'Alpha Staff',
+        assignments: [assignment(102, 'staff-judge')],
+      }),
+      competitor(2, {
+        name: 'Bravo Staff',
+        assignments: [assignment(102, 'staff-runner')],
+      }),
+      competitor(3, { name: 'Charlie Competitor' }),
+    ], { groupCount: 2 });
+
+    expect(wcif.persons.map((person) => assignmentCount(person, 'competitor'))).toEqual([
+      1, 1, 1,
+    ]);
+  });
+
+  it('uses cross-round competitor assignments as read-only spacing context', () => {
+    const nearActivity = buildTimedGroup(
+      101,
+      '333-r1-g1',
+      '2024-01-01T10:10:00.000Z',
+      '2024-01-01T10:20:00.000Z'
+    );
+    const farActivity = buildTimedGroup(
+      102,
+      '333-r1-g2',
+      '2024-01-01T11:00:00.000Z',
+      '2024-01-01T11:10:00.000Z'
+    );
+    const otherRoundActivity = buildTimedGroup(
+      201,
+      '222-r1-g1',
+      '2024-01-01T10:00:00.000Z',
+      '2024-01-01T10:10:00.000Z'
+    );
+    const roundActivity = buildActivity({
+      id: 1,
+      activityCode: '333-r1',
+      childActivities: [nearActivity, farActivity],
+    });
+    const otherRound = buildActivity({
+      id: 2,
+      activityCode: '222-r1',
+      childActivities: [otherRoundActivity],
+    });
+    const person = competitor(1, {
+      assignments: [assignment(201, 'competitor')],
+    });
+    const wcif = buildWcifWithEvents(
+      [roundActivity, otherRound],
+      [
+        buildEvent({ id: '333', rounds: [buildRound({ id: '333-r1' })] }),
+        buildEvent({ id: '222', rounds: [buildRound({ id: '222-r1' })] }),
+      ],
+      [person]
+    );
+
+    const updatedWcif = runRecipe(buildState(wcif), {
+      roundId: '333-r1',
+      recipeId: 'pnw',
+    }).wcif as Competition;
+
+    expect(competitorGroupNumberInRound(updatedWcif, personById(updatedWcif, 1), '333-r1')).toBe(
+      2
+    );
+    expect(personById(updatedWcif, 1)?.assignments).toContainEqual(assignment(201, 'competitor'));
+  });
+
+  it('does not change assignments from other rounds when generating a single round', () => {
+    const otherRoundAssignment = assignment(201, 'staff-judge');
+    const roundActivity = buildActivity({
+      id: 1,
+      activityCode: '333-r1',
+      childActivities: [buildGroup(101, 1, 1), buildGroup(102, 2, 1)],
+    });
+    const otherRound = buildActivity({
+      id: 2,
+      activityCode: '222-r1',
+      childActivities: [
+        buildTimedGroup(
+          201,
+          '222-r1-g1',
+          '2024-01-01T12:00:00.000Z',
+          '2024-01-01T12:10:00.000Z'
+        ),
+      ],
+    });
+    const wcif = buildWcifWithEvents(
+      [roundActivity, otherRound],
+      [
+        buildEvent({ id: '333', rounds: [buildRound({ id: '333-r1' })] }),
+        buildEvent({ id: '222', rounds: [buildRound({ id: '222-r1' })] }),
+      ],
+      [
+        competitor(1, {
+          assignments: [otherRoundAssignment],
+        }),
+        competitor(2),
+      ]
+    );
+
+    const updatedWcif = runRecipe(buildState(wcif), {
+      roundId: '333-r1',
+      recipeId: 'pnw',
+    }).wcif as Competition;
+
+    expect(personById(updatedWcif, 1)?.assignments).toContainEqual(otherRoundAssignment);
+    expect(
+      personById(updatedWcif, 1)?.assignments?.filter(
+        (personAssignment) => personAssignment.activityId === 201
+      )
+    ).toEqual([otherRoundAssignment]);
+    expect(
+      allActivities(updatedWcif).find((activity) => activity.activityCode === '222-r1')
+        ?.childActivities
+    ).toEqual(otherRound.childActivities);
   });
 });
