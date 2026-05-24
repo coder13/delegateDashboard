@@ -1,4 +1,6 @@
 import { BulkRoundTable } from './BulkRoundTable';
+import { BulkRoundGroupCountsDialog } from './BulkRoundGroupCountsDialog';
+import { BulkRoundPreviewDialog } from './BulkRoundPreviewDialog';
 import {
   buildBulkRoundRows,
   defaultSelectedRoundIds,
@@ -10,7 +12,6 @@ import { Recipes } from '../../../lib/recipes';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import { useAppDispatch, useAppSelector } from '../../../store';
 import { partialUpdateWCIF } from '../../../store/actions';
-import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import {
   Alert,
@@ -89,6 +90,8 @@ const BulkGenerationPage = () => {
   const [selectedRoundIds, setSelectedRoundIds] = useState<Set<string>>(new Set());
   const [generationStatus, setGenerationStatus] = useState<string | null>(null);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [previewRoundId, setPreviewRoundId] = useState<string | null>(null);
+  const [configureGroupsRoundId, setConfigureGroupsRoundId] = useState<string | null>(null);
 
   useEffect(() => {
     setBreadcrumbs([{ text: 'Bulk Generate' }]);
@@ -235,6 +238,17 @@ const BulkGenerationPage = () => {
 
   return (
     <Stack spacing={2}>
+      <BulkRoundPreviewDialog
+        wcif={wcif}
+        roundId={previewRoundId}
+        onClose={() => setPreviewRoundId(null)}
+      />
+      <BulkRoundGroupCountsDialog
+        wcif={wcif}
+        roundId={configureGroupsRoundId}
+        onClose={() => setConfigureGroupsRoundId(null)}
+      />
+
       <Stack
         direction={{ xs: 'column', md: 'row' }}
         spacing={2}
@@ -259,17 +273,11 @@ const BulkGenerationPage = () => {
         </FormControl>
         <Button
           variant="contained"
-          startIcon={<AutoFixHighIcon />}
           disabled={generating || selectedOrderedRoundIds.length === 0}
           onClick={handleGenerate}>
           Generate
         </Button>
       </Stack>
-
-      <Alert severity="info">
-        Only rounds with competitors can be selected. Selected rounds run in the displayed order.
-        Existing groups and assignments are preserved.
-      </Alert>
 
       {generationStatus && <Alert severity="info">{generationStatus}</Alert>}
       {generationError && <Alert severity="error">{generationError}</Alert>}
@@ -283,6 +291,8 @@ const BulkGenerationPage = () => {
           disabled={generating}
           onToggleRound={handleToggleRound}
           onMoveRound={handleMoveRound}
+          onPreviewRound={setPreviewRoundId}
+          onConfigureGroups={setConfigureGroupsRoundId}
         />
       )}
 

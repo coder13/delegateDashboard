@@ -15,7 +15,7 @@ import type {
   BulkGenerationWorkerResponse,
 } from './bulkGenerationWorkerTypes';
 import type { EventId } from '@wca/helpers';
-import { act, screen } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -55,6 +55,33 @@ vi.mock('../../../lib/api', () => ({
   setLocalStorage: (key: string, value: string) => setLocalStorageMock(key, value),
 }));
 
+vi.mock('../../../dialogs/ConfigureAssignmentsDialog/ConfigureAssignmentsDialog', () => ({
+  default: ({
+    activityCode,
+    defaultShowAllCompetitors,
+    onClose,
+  }: {
+    activityCode: string;
+    defaultShowAllCompetitors?: boolean;
+    onClose: () => void;
+  }) => (
+    <div role="dialog" aria-label={`Preview ${activityCode}`}>
+      <span>Previewing {activityCode}</span>
+      <span>Show all: {defaultShowAllCompetitors ? 'yes' : 'no'}</span>
+      <button onClick={onClose}>Close Preview</button>
+    </div>
+  ),
+}));
+
+vi.mock('../../../dialogs/ConfigureGroupCountsDialog', () => ({
+  default: ({ activityCode, onClose }: { activityCode: string; onClose: () => void }) => (
+    <div role="dialog" aria-label={`Configure groups ${activityCode}`}>
+      <span>Configuring groups for {activityCode}</span>
+      <button onClick={onClose}>Close Configure Groups</button>
+    </div>
+  ),
+}));
+
 const registration = (registrantId: number, eventIds: EventId[]) => ({
   status: 'accepted' as const,
   eventIds,
@@ -92,7 +119,7 @@ const buildCompetition = () =>
         activityCode: '222-r2',
         startTime: '2024-01-01T12:00:00Z',
         endTime: '2024-01-01T12:30:00Z',
-        childActivities: [buildActivity({ id: 401, activityCode: '222-r2-g1' })],
+        childActivities: [],
       }),
       buildActivity({
         id: 5,
@@ -160,25 +187,26 @@ describe('BulkGenerationPage', () => {
     expect(screen.getByRole('heading', { name: 'Bulk Generate' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Size' })).toBeInTheDocument();
     expect(screen.queryByRole('columnheader', { name: 'Assigned' })).not.toBeInTheDocument();
-    expect(screen.getByText('333 Round 1')).toBeInTheDocument();
-    expect(screen.getByText('333 Round 2')).toBeInTheDocument();
-    expect(screen.getByText('222 Round 1')).toBeInTheDocument();
-    expect(screen.getByText('222 Round 2')).toBeInTheDocument();
+    expect(screen.getByText('3x3 Round 1')).toBeInTheDocument();
+    expect(screen.getByText('3x3 Round 2')).toBeInTheDocument();
+    expect(screen.getByText('2x2 Round 1')).toBeInTheDocument();
+    expect(screen.getByText('2x2 Round 2')).toBeInTheDocument();
     expect(screen.queryByText('333FM Round 1')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Select 333-r1')).toBeChecked();
     expect(screen.getByLabelText('Select 222-r1')).toBeChecked();
     expect(screen.getByLabelText('Select 333-r2')).not.toBeChecked();
     expect(screen.getByLabelText('Select 333-r2')).not.toBeDisabled();
     expect(screen.getByLabelText('Select 222-r2')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Configure' })).toBeInTheDocument();
 
     const rowTexts = screen.getAllByRole('row').map((row) => row.textContent ?? '');
-    expect(rowTexts[1]).toContain('222 Round 1');
+    expect(rowTexts[1]).toContain('2x2 Round 1');
     expect(rowTexts[1]).toContain('0 / 2');
-    expect(rowTexts[2]).toContain('333 Round 2');
+    expect(rowTexts[2]).toContain('3x3 Round 2');
     expect(rowTexts[2]).toContain('0 / 1');
-    expect(rowTexts[3]).toContain('333 Round 1');
+    expect(rowTexts[3]).toContain('3x3 Round 1');
     expect(rowTexts[3]).toContain('0 / 2');
-    expect(rowTexts[4]).toContain('222 Round 2');
+    expect(rowTexts[4]).toContain('2x2 Round 2');
     expect(rowTexts[4]).toContain('0 / 0');
     expect(setLocalStorageMock).toHaveBeenCalledWith(
       'bulk-generation.round-order.test-comp',
@@ -280,11 +308,12 @@ describe('BulkGenerationPage', () => {
     expect(screen.getByText('Starting bulk generation')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Generate' })).toBeDisabled();
     expect(screen.getByLabelText('Select 333-r1')).toBeDisabled();
+    expect(screen.getAllByRole('button', { name: /Preview/ })[0]).toBeDisabled();
 
     act(() => {
       worker.emit({ type: 'progress', phase: 'generating', roundId: '222-r1' });
     });
-    expect(screen.getByText('Generating for 222 Round 1')).toBeInTheDocument();
+    expect(screen.getByText('Generating for 2x2 Round 1')).toBeInTheDocument();
 
     act(() => {
       worker.emit({ type: 'progress', phase: 'fixing' });
@@ -294,7 +323,7 @@ describe('BulkGenerationPage', () => {
     act(() => {
       worker.emit({ type: 'progress', phase: 'staff', roundId: '333-r1' });
     });
-    expect(screen.getByText('Generating staff assignments for 333 Round 1')).toBeInTheDocument();
+    expect(screen.getByText('Generating staff assignments for 3x3 Round 1')).toBeInTheDocument();
   });
 
   it('shows worker errors and leaves WCIF unchanged', async () => {
@@ -308,5 +337,46 @@ describe('BulkGenerationPage', () => {
 
     expect(screen.getByText('Recipe failed')).toBeInTheDocument();
     expect(dispatchMock).not.toHaveBeenCalled();
+  });
+
+  it('opens assignment preview for a round', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    const roundRow = screen
+      .getAllByRole('row')
+      .find((row) => row.textContent?.includes('3x3 Round 2'));
+    expect(roundRow).toBeDefined();
+
+    await user.click(within(roundRow as HTMLElement).getByRole('button', { name: /Preview/ }));
+
+    expect(screen.getByRole('dialog', { name: 'Preview 333-r2' })).toBeInTheDocument();
+    expect(screen.getByText('Show all: yes')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Close Preview' }));
+
+    expect(screen.queryByRole('dialog', { name: 'Preview 333-r2' })).not.toBeInTheDocument();
+  });
+
+  it('opens group count configuration for rounds without groups', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    const roundRow = screen
+      .getAllByRole('row')
+      .find((row) => row.textContent?.includes('2x2 Round 2'));
+    expect(roundRow).toBeDefined();
+
+    await user.click(within(roundRow as HTMLElement).getByRole('button', { name: 'Configure' }));
+
+    expect(
+      screen.getByRole('dialog', { name: 'Configure groups 222-r2' })
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Close Configure Groups' }));
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Configure groups 222-r2' })
+    ).not.toBeInTheDocument();
   });
 });

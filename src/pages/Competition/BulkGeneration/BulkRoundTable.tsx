@@ -2,6 +2,7 @@ import type { BulkRoundRow } from './bulkRoundRows';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import {
+  Button,
   Checkbox,
   IconButton,
   Stack,
@@ -20,6 +21,8 @@ interface BulkRoundTableProps {
   disabled?: boolean;
   onToggleRound: (roundId: string) => void;
   onMoveRound: (roundId: string, direction: -1 | 1) => void;
+  onPreviewRound: (roundId: string) => void;
+  onConfigureGroups: (roundId: string) => void;
 }
 
 export const BulkRoundTable = ({
@@ -28,6 +31,8 @@ export const BulkRoundTable = ({
   disabled = false,
   onToggleRound,
   onMoveRound,
+  onPreviewRound,
+  onConfigureGroups,
 }: BulkRoundTableProps) => (
   <TableContainer>
     <Table size="small" aria-label="bulk generation rounds">
@@ -41,6 +46,7 @@ export const BulkRoundTable = ({
           <TableCell align="right">Groups</TableCell>
           <TableCell align="right">Competitors</TableCell>
           <TableCell align="right">Staff</TableCell>
+          <TableCell align="right">Actions</TableCell>
         </TableRow>
       </TableHead>
       <TableBody>
@@ -88,6 +94,19 @@ export const BulkRoundTable = ({
               {row.competitorAssignmentCount} / {row.roundSize}
             </TableCell>
             <TableCell align="right">{row.staffAssignmentCount}</TableCell>
+            <TableCell align="right">
+              <Button
+                size="small"
+                variant="outlined"
+                disabled={disabled}
+                onClick={() =>
+                  row.existingGroupCount > 0
+                    ? onPreviewRound(row.roundId)
+                    : onConfigureGroups(row.roundId)
+                }>
+                {row.existingGroupCount > 0 ? 'Preview' : 'Configure'}
+              </Button>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

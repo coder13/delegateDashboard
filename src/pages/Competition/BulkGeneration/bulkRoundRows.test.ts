@@ -91,7 +91,7 @@ describe('bulkRoundRows', () => {
 
     expect(rows.map((row) => row.roundId)).toEqual(['333-r1', '333-r2']);
     expect(rows[0]).toMatchObject({
-      label: '333 Round 1',
+      label: '3x3 Round 1',
       roundSize: 2,
       existingGroupCount: 2,
       competitorAssignmentCount: 1,
@@ -104,6 +104,27 @@ describe('bulkRoundRows', () => {
       selectable: true,
     });
     expect(defaultSelectedRoundIds(rows)).toEqual(new Set(['333-r1']));
+  });
+
+  it('requires groups before a round is selectable', () => {
+    const competition = buildCompetition();
+    const roundActivity = competition.schedule.venues[0].rooms[0].activities.find(
+      (activity) => activity.activityCode === '333-r1'
+    );
+    if (!roundActivity) {
+      throw new Error('Expected 333-r1 activity');
+    }
+    roundActivity.childActivities = [];
+
+    const rows = buildBulkRoundRows(competition);
+
+    expect(rows[0]).toMatchObject({
+      roundId: '333-r1',
+      roundSize: 2,
+      existingGroupCount: 0,
+      selectable: false,
+    });
+    expect(defaultSelectedRoundIds(rows)).toEqual(new Set());
   });
 
   it('orders rows by schedule and merges persisted order with current rounds', () => {

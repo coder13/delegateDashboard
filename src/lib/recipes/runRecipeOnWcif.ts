@@ -13,6 +13,7 @@ import {
   setRoundConfigExtensionData,
 } from '../wcif/extensions/delegateDashboard/delegateDashboard';
 import { mapIn } from '../utils/utils';
+import { countPeopleWithImmediateHelpingThenCompetingAssignments } from './bulkGenerationDiagnostics';
 import { shouldRunGroupStep } from './conditions';
 import { RecipeConstraints } from './constraints';
 import { optimizeAssignmentsGlobally } from './globalScoring';
@@ -305,5 +306,13 @@ export const runBulkRecipesOnWcif = (
     });
   }
 
-  return setRoundRecipeConfigs(generatedWcif, roundIds, recipeId);
+  const completedWcif = setRoundRecipeConfigs(generatedWcif, roundIds, recipeId);
+
+  // eslint-disable-next-line no-console
+  console.debug(
+    '[BulkGeneration] competitors with immediate helping -> competing assignments:',
+    countPeopleWithImmediateHelpingThenCompetingAssignments(completedWcif)
+  );
+
+  return completedWcif;
 };

@@ -3,6 +3,7 @@ import {
   hasDistributedAttempts,
   parseActivityCode,
 } from '../../../lib/domain/activities';
+import { shortEventNameById } from '../../../lib/domain/events';
 import { personsShouldBeInRound } from '../../../lib/domain/persons';
 import { findAllActivities } from '../../../lib/wcif/activities';
 import { formatDateTimeRange } from '../../../lib/utils/time';
@@ -26,7 +27,7 @@ export interface BulkRoundRow {
 
 const eventRoundLabel = (event: Event, round: Round) => {
   const { roundNumber } = parseActivityCode(round.id);
-  return `${event.id.toUpperCase()} Round ${roundNumber ?? '?'}`;
+  return `${shortEventNameById(event.id)} Round ${roundNumber ?? '?'}`;
 };
 
 const scheduledTimeForActivities = (activities: Activity[]) => {
@@ -121,7 +122,7 @@ export const buildBulkRoundRows = (wcif: Competition): BulkRoundRow[] => {
           competitorAssignmentCount,
           staffAssignmentCount,
           warnings,
-          selectable: roundSize > 0,
+          selectable: roundSize > 0 && existingGroupCount > 0,
         };
       })
   );

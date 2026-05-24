@@ -23,7 +23,7 @@ import {
   Typography,
 } from '@mui/material';
 import { type Activity, type Round, type Room } from '@wca/helpers';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 export interface ConfigureGroupCountsDialogProps {
@@ -48,6 +48,7 @@ const ConfigureGroupCountsDialog = ({
       .filter((room) => room.activities.find((a) => a.activityCode === activityCode))
   );
   const dispatch = useDispatch();
+  const groupCountInputRef = useRef<HTMLInputElement>(null);
   const groupsExtData = getGroupsExtensionData(round);
   const [groupsData, setGroupsData] = useState<{
     groups: number | Record<number, number>;
@@ -178,6 +179,8 @@ const ConfigureGroupCountsDialog = ({
                 <Input
                   id="groups"
                   type="number"
+                  autoFocus
+                  inputRef={groupCountInputRef}
                   value={groupCount || 1}
                   onChange={handleGroupsChange}
                 />

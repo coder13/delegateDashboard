@@ -142,6 +142,8 @@ export const CompetitionLayout = () => {
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column',
           },
         }}>
         <DrawerHeader>
