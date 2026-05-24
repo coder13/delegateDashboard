@@ -275,7 +275,8 @@ export const runBulkRecipesOnWcif = (
     onProgress?: (progress: BulkGenerationProgress) => void;
   }
 ): Competition => {
-  const optimizationContexts: OptimizationContext[] = [];
+  const competitorOptimizationContexts: OptimizationContext[] = [];
+  const staffOptimizationContexts: OptimizationContext[] = [];
   let generatedWcif = wcif;
 
   for (const roundId of roundIds) {
@@ -286,15 +287,19 @@ export const runBulkRecipesOnWcif = (
       stepFilter: (step) => step.type === 'groups' || isCompetitorAssignmentStep(step),
       onOptimizationContext: (context) => {
         if (context.assignmentCode === 'competitor') {
-          optimizationContexts.push(context);
+          competitorOptimizationContexts.push(context);
         }
       },
     });
   }
 
-  if (optimizationContexts.length) {
+  if (competitorOptimizationContexts.length) {
     onProgress?.({ phase: 'fixing' });
-    generatedWcif = optimizeCapturedContexts(generatedWcif, wcif, optimizationContexts);
+    generatedWcif = optimizeCapturedContexts(
+      generatedWcif,
+      wcif,
+      competitorOptimizationContexts
+    );
   }
 
   for (const roundId of roundIds) {
@@ -303,7 +308,17 @@ export const runBulkRecipesOnWcif = (
       roundId,
       recipeId,
       stepFilter: isStaffAssignmentStep,
+      onOptimizationContext: (context) => {
+        if (context.assignmentCode !== 'competitor') {
+          staffOptimizationContexts.push(context);
+        }
+      },
     });
+  }
+
+  if (staffOptimizationContexts.length) {
+    onProgress?.({ phase: 'fixing' });
+    generatedWcif = optimizeCapturedContexts(generatedWcif, wcif, staffOptimizationContexts);
   }
 
   const completedWcif = setRoundRecipeConfigs(generatedWcif, roundIds, recipeId);

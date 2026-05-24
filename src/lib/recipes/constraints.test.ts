@@ -1,4 +1,5 @@
 import {
+  avoidImmediateHelpingThenCompeting,
   avoidSimilarFirstNames,
   maximizeAssignmentGaps,
   mustNotHaveRoles,
@@ -244,5 +245,55 @@ describe('recipe constraints', () => {
     };
 
     expect(maximizeAssignmentGaps.score(props)).toBe(-100);
+  });
+
+  it('rejects staff assignments immediately before a future competitor assignment', () => {
+    const immediateStaffActivity = buildTimedActivity(
+      51,
+      '333-r1-g1',
+      '2024-01-01T10:00:00.000Z',
+      '2024-01-01T10:10:00.000Z'
+    );
+    const futureCompetitorActivity = buildTimedActivity(
+      61,
+      '222-r1-g1',
+      '2024-01-01T10:10:00.000Z',
+      '2024-01-01T10:20:00.000Z'
+    );
+    const props = {
+      ...scoreProps(immediateStaffActivity, [immediateStaffActivity]),
+      assignmentCode: 'staff-judge',
+      wcif: buildWcif([immediateStaffActivity, futureCompetitorActivity]),
+      person: buildPerson({
+        assignments: [{ activityId: 61, assignmentCode: 'competitor', stationNumber: null }],
+      }),
+    };
+
+    expect(avoidImmediateHelpingThenCompeting.score(props)).toBeNull();
+  });
+
+  it('allows immediate help then compete assignments within two-group rounds', () => {
+    const firstGroup = buildTimedActivity(
+      51,
+      '333-r1-g1',
+      '2024-01-01T10:00:00.000Z',
+      '2024-01-01T10:10:00.000Z'
+    );
+    const secondGroup = buildTimedActivity(
+      52,
+      '333-r1-g2',
+      '2024-01-01T10:10:00.000Z',
+      '2024-01-01T10:20:00.000Z'
+    );
+    const props = {
+      ...scoreProps(firstGroup, [firstGroup, secondGroup]),
+      assignmentCode: 'staff-judge',
+      wcif: buildWcif([firstGroup, secondGroup]),
+      person: buildPerson({
+        assignments: [{ activityId: 52, assignmentCode: 'competitor', stationNumber: null }],
+      }),
+    };
+
+    expect(avoidImmediateHelpingThenCompeting.score(props)).toBe(0);
   });
 });

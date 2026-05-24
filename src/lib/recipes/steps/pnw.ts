@@ -11,6 +11,15 @@ const PNW_GLOBAL_SCORE = {
   maxEvaluations: 250,
   maxClusterSize: 80,
 };
+const PNW_STAFF_GLOBAL_SCORE = {
+  maxPasses: 1,
+  maxEvaluations: 300,
+  maxClusterSize: 90,
+};
+const avoidImmediateHelpingThenCompetingConstraint = () => ({
+  constraint: 'avoidImmediateHelpingThenCompeting',
+  weight: 1,
+});
 
 export const GenerateCompetitorAssignmentsForStaff: StepDefinition = {
   id: 'GenerateCompetitorAssignmentsForStaff',
@@ -49,6 +58,7 @@ export const GenerateCompetitorAssignmentsForStaff: StepDefinition = {
           constraint: 'mustNotHaveOtherAssignments',
           weight: 1,
         },
+        avoidImmediateHelpingThenCompetingConstraint(),
         {
           constraint: 'shouldHelpAfterCompeting',
           weight: 20,
@@ -128,6 +138,7 @@ export const GenerateCompetitorAssignmentsForDelegatesAndOrganizers: StepDefinit
           constraint: 'mustNotHaveOtherAssignments',
           weight: 1,
         },
+        avoidImmediateHelpingThenCompetingConstraint(),
         {
           constraint: 'preferLaterGroups',
           weight: 20,
@@ -197,6 +208,7 @@ export const GenerateCompetitorAssignmentsForFirstTimers: StepDefinition = {
           constraint: 'mustNotHaveOtherAssignments',
           weight: 1,
         },
+        avoidImmediateHelpingThenCompetingConstraint(),
         {
           constraint: 'maximizeAssignmentGaps',
           weight: PNW_ASSIGNMENT_GAP_WEIGHT,
@@ -255,6 +267,7 @@ export const GenerateCompetitorAssignments: StepDefinition = {
           constraint: 'mustNotHaveOtherAssignments',
           weight: 1,
         },
+        avoidImmediateHelpingThenCompetingConstraint(),
         {
           constraint: 'maximizeAssignmentGaps',
           weight: PNW_ASSIGNMENT_GAP_WEIGHT,
@@ -312,6 +325,7 @@ export const GenerateJudgeAssignmentsForCompetitors: StepDefinition = {
       options: {
         mode: 'symmetric',
       },
+      globalScore: PNW_STAFF_GLOBAL_SCORE,
       constraints: [
         {
           constraint: 'uniqueAssignment',
@@ -321,6 +335,7 @@ export const GenerateJudgeAssignmentsForCompetitors: StepDefinition = {
           constraint: 'mustNotHaveOtherAssignments',
           weight: 1,
         },
+        avoidImmediateHelpingThenCompetingConstraint(),
         {
           constraint: 'onlyMultipleGroupRounds',
           weight: 1,

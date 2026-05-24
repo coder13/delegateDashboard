@@ -1,7 +1,8 @@
-import { parseActivityCode } from '@wca/helpers';
+import { parseActivityCode } from '../domain/activities';
 import { roomByActivity, type Constraint } from 'wca-group-generators';
 
 type Activity = Parameters<Constraint['score']>[0]['activity'];
+type Wcif = Parameters<Constraint['score']>[0]['wcif'];
 
 const DEFAULT_KEY_STAFF_ROLES = ['delegate', 'trainee-delegate', 'organizer'];
 const DEFAULT_GAP_CAP_MINUTES = 120;
@@ -68,21 +69,65 @@ const activitiesOverlap = (first: Activity, second: Activity) =>
   new Date(first.startTime) < new Date(second.endTime) &&
   new Date(second.startTime) < new Date(first.endTime);
 
-const assignmentActivitiesForPerson = (
-  wcif: Parameters<Constraint['score']>[0]['wcif'],
-  person: Parameters<Constraint['score']>[0]['person'],
-  assignmentTest: (assignmentCode: string) => boolean
-) => {
-  const allActivities = wcif.schedule.venues.flatMap((venue) =>
+const groupNumberCountsByRound = (activities: Activity[]) => {
+  const groupNumbersByRound = activities.reduce((groups, activity) => {
+    const groupNumber = groupNumberFor(activity);
+    const roundKey = roundKeyFor(activity);
+
+    if (groupNumber) {
+      groups.set(roundKey, (groups.get(roundKey) ?? new Set<number>()).add(groupNumber));
+    }
+
+    return groups;
+  }, new Map<string, Set<number>>());
+
+  return new Map(
+    [...groupNumbersByRound.entries()].map(([roundKey, groupNumbers]) => [
+      roundKey,
+      groupNumbers.size,
+    ])
+  );
+};
+
+const scheduleContextCache = new WeakMap<
+  Wcif['schedule'],
+  {
+    activityById: Map<number, Activity>;
+    groupNumberCountsByRound: Map<string, number>;
+  }
+>();
+
+const scheduleContextFor = (wcif: Wcif) => {
+  const cached = scheduleContextCache.get(wcif.schedule);
+  if (cached) {
+    return cached;
+  }
+
+  const activities = wcif.schedule.venues.flatMap((venue) =>
     venue.rooms.flatMap((room) =>
       room.activities.flatMap((activity) => [activity, ...(activity.childActivities ?? [])])
     )
   );
+  const context = {
+    activityById: new Map(activities.map((activity) => [activity.id, activity])),
+    groupNumberCountsByRound: groupNumberCountsByRound(activities),
+  };
+
+  scheduleContextCache.set(wcif.schedule, context);
+  return context;
+};
+
+const assignmentActivitiesForPerson = (
+  wcif: Wcif,
+  person: Parameters<Constraint['score']>[0]['person'],
+  assignmentTest: (assignmentCode: string) => boolean
+) => {
+  const { activityById } = scheduleContextFor(wcif);
 
   return (
     person.assignments
       ?.filter((assignment) => assignmentTest(assignment.assignmentCode))
-      .map((assignment) => allActivities.find((activity) => activity.id === assignment.activityId))
+      .map((assignment) => activityById.get(assignment.activityId))
       .filter(Boolean) as Activity[]
   ).sort((a, b) => a.startTime.localeCompare(b.startTime));
 };
@@ -154,6 +199,19 @@ const staffBeforeFutureCompetitorGapScore = (
     )
   );
 };
+
+const isTwoGroupSameRoundTransition = (
+  firstActivity: Activity,
+  secondActivity: Activity,
+  roundGroupCounts: Map<string, number>
+) =>
+  roundKeyFor(firstActivity) === roundKeyFor(secondActivity) &&
+  roundGroupCounts.get(roundKeyFor(firstActivity)) === 2;
+
+const isImmediateTransition = (firstActivity: Activity, secondActivity: Activity) =>
+  firstActivity.endTime &&
+  secondActivity.startTime &&
+  new Date(firstActivity.endTime).getTime() === new Date(secondActivity.startTime).getTime();
 
 export const shouldHelpAfterCompeting: Constraint = {
   name: 'Should Help After Competing',
@@ -292,6 +350,48 @@ export const maximizeAssignmentGaps: Constraint = {
   },
 };
 
+export const avoidImmediateHelpingThenCompeting: Constraint = {
+  name: 'Avoid Immediate Helping Then Competing',
+  score: ({ wcif, activity, assignmentCode, person }) => {
+    const scoredPerson = wcif.persons.find(
+      (candidate) => candidate.registrantId === person.registrantId
+    ) ?? person;
+    const { groupNumberCountsByRound: roundGroupCounts } = scheduleContextFor(wcif);
+    const staffActivities = assignmentActivitiesForPerson(
+      wcif,
+      scoredPerson,
+      isStaffAssignmentCode
+    );
+    const competitorActivities = assignmentActivitiesForPerson(
+      wcif,
+      scoredPerson,
+      isCompetitorAssignmentCode
+    );
+
+    if (isCompetitorAssignmentCode(assignmentCode)) {
+      const hasImmediatePriorStaffActivity = staffActivities.some(
+        (staffActivity) =>
+          isImmediateTransition(staffActivity, activity) &&
+          !isTwoGroupSameRoundTransition(staffActivity, activity, roundGroupCounts)
+      );
+
+      return hasImmediatePriorStaffActivity ? null : 0;
+    }
+
+    if (isStaffAssignmentCode(assignmentCode)) {
+      const hasImmediateFutureCompetitorActivity = competitorActivities.some(
+        (competitorActivity) =>
+          isImmediateTransition(activity, competitorActivity) &&
+          !isTwoGroupSameRoundTransition(activity, competitorActivity, roundGroupCounts)
+      );
+
+      return hasImmediateFutureCompetitorActivity ? null : 0;
+    }
+
+    return 0;
+  },
+};
+
 export const RecipeConstraints: Record<string, Constraint> = {
   shouldHelpAfterCompeting,
   preferLaterGroups,
@@ -299,4 +399,5 @@ export const RecipeConstraints: Record<string, Constraint> = {
   onlyMultipleGroupRounds,
   avoidSimilarFirstNames,
   maximizeAssignmentGaps,
+  avoidImmediateHelpingThenCompeting,
 };
