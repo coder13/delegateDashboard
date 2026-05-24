@@ -10,8 +10,12 @@ import {
 } from '../../../store/reducers/_tests_/helpers';
 import type { AppState } from '../../../store/initialState';
 import { ActionType } from '../../../store/actions';
+import type {
+  BulkGenerationWorkerRequest,
+  BulkGenerationWorkerResponse,
+} from './bulkGenerationWorkerTypes';
 import type { EventId } from '@wca/helpers';
-import { screen } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -20,6 +24,26 @@ const dispatchMock = vi.fn();
 const useAppSelectorMock = vi.fn();
 const getLocalStorageMock = vi.fn();
 const setLocalStorageMock = vi.fn();
+const workerInstances: MockWorker[] = [];
+
+class MockWorker {
+  onmessage: ((event: MessageEvent<BulkGenerationWorkerResponse>) => void) | null = null;
+  onerror: (() => void) | null = null;
+  postMessage = vi.fn();
+  terminate = vi.fn();
+
+  constructor() {
+    workerInstances.push(this);
+  }
+
+  get request() {
+    return this.postMessage.mock.calls[0]?.[0] as BulkGenerationWorkerRequest | undefined;
+  }
+
+  emit(message: BulkGenerationWorkerResponse) {
+    this.onmessage?.({ data: message } as MessageEvent<BulkGenerationWorkerResponse>);
+  }
+}
 
 vi.mock('../../../store', () => ({
   useAppDispatch: () => dispatchMock,
@@ -121,6 +145,8 @@ const renderPage = () =>
 describe('BulkGenerationPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    workerInstances.length = 0;
+    vi.stubGlobal('Worker', MockWorker);
     getLocalStorageMock.mockReturnValue(null);
     const state = { wcif: buildCompetition() } as AppState;
     useAppSelectorMock.mockImplementation((selector: (state: AppState) => unknown) =>
@@ -167,11 +193,23 @@ describe('BulkGenerationPage', () => {
     await user.click(screen.getByLabelText('Select 333-r2'));
     await user.click(screen.getByLabelText('Move 333-r2 up'));
     await user.click(screen.getByRole('button', { name: 'Generate' }));
+    const worker = workerInstances[0];
 
-    expect(dispatchMock).toHaveBeenCalledWith({
-      type: ActionType.RUN_RECIPES,
+    expect(worker.request).toMatchObject({
+      type: 'runBulkGeneration',
       recipeId: 'pnw',
       roundIds: ['333-r2', '222-r1', '333-r1'],
+    });
+    act(() => {
+      worker.emit({ type: 'complete', wcif: buildCompetition() });
+    });
+    expect(dispatchMock).toHaveBeenCalledWith({
+      type: ActionType.PARTIAL_UPDATE_WCIF,
+      wcif: expect.objectContaining({
+        events: expect.any(Array),
+        persons: expect.any(Array),
+        schedule: expect.any(Object),
+      }),
     });
     expect(setLocalStorageMock).toHaveBeenLastCalledWith(
       'bulk-generation.round-order.test-comp',
@@ -184,9 +222,10 @@ describe('BulkGenerationPage', () => {
     renderPage();
 
     await user.click(screen.getByRole('button', { name: 'Generate' }));
+    const worker = workerInstances[0];
 
-    expect(dispatchMock).toHaveBeenCalledWith({
-      type: ActionType.RUN_RECIPES,
+    expect(worker.request).toMatchObject({
+      type: 'runBulkGeneration',
       recipeId: 'pnw',
       roundIds: ['222-r1', '333-r1'],
     });
@@ -198,9 +237,10 @@ describe('BulkGenerationPage', () => {
     renderPage();
 
     await user.click(screen.getByRole('button', { name: 'Generate' }));
+    const worker = workerInstances[0];
 
-    expect(dispatchMock).toHaveBeenCalledWith({
-      type: ActionType.RUN_RECIPES,
+    expect(worker.request).toMatchObject({
+      type: 'runBulkGeneration',
       recipeId: 'pnw',
       roundIds: ['333-r1', '222-r1'],
     });
@@ -217,15 +257,56 @@ describe('BulkGenerationPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Reset to Schedule Order' }));
     await user.click(screen.getByRole('button', { name: 'Generate' }));
+    const worker = workerInstances[0];
 
     expect(setLocalStorageMock).toHaveBeenLastCalledWith(
       'bulk-generation.round-order.test-comp',
       JSON.stringify(['222-r1', '333-r2', '333-r1', '222-r2'])
     );
-    expect(dispatchMock).toHaveBeenCalledWith({
-      type: ActionType.RUN_RECIPES,
+    expect(worker.request).toMatchObject({
+      type: 'runBulkGeneration',
       recipeId: 'pnw',
       roundIds: ['222-r1', '333-r1'],
     });
+  });
+
+  it('shows worker progress and disables controls while generation is running', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: 'Generate' }));
+    const worker = workerInstances[0];
+
+    expect(screen.getByText('Starting bulk generation')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Generate' })).toBeDisabled();
+    expect(screen.getByLabelText('Select 333-r1')).toBeDisabled();
+
+    act(() => {
+      worker.emit({ type: 'progress', phase: 'generating', roundId: '222-r1' });
+    });
+    expect(screen.getByText('Generating for 222 Round 1')).toBeInTheDocument();
+
+    act(() => {
+      worker.emit({ type: 'progress', phase: 'fixing' });
+    });
+    expect(screen.getByText('Fixing group assignments')).toBeInTheDocument();
+
+    act(() => {
+      worker.emit({ type: 'progress', phase: 'staff', roundId: '333-r1' });
+    });
+    expect(screen.getByText('Generating staff assignments for 333 Round 1')).toBeInTheDocument();
+  });
+
+  it('shows worker errors and leaves WCIF unchanged', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: 'Generate' }));
+    act(() => {
+      workerInstances[0].emit({ type: 'error', message: 'Recipe failed' });
+    });
+
+    expect(screen.getByText('Recipe failed')).toBeInTheDocument();
+    expect(dispatchMock).not.toHaveBeenCalled();
   });
 });

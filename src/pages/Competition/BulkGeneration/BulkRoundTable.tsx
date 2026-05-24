@@ -17,6 +17,7 @@ import {
 interface BulkRoundTableProps {
   rows: BulkRoundRow[];
   selectedRoundIds: Set<string>;
+  disabled?: boolean;
   onToggleRound: (roundId: string) => void;
   onMoveRound: (roundId: string, direction: -1 | 1) => void;
 }
@@ -24,6 +25,7 @@ interface BulkRoundTableProps {
 export const BulkRoundTable = ({
   rows,
   selectedRoundIds,
+  disabled = false,
   onToggleRound,
   onMoveRound,
 }: BulkRoundTableProps) => (
@@ -47,7 +49,7 @@ export const BulkRoundTable = ({
             <TableCell padding="checkbox">
               <Checkbox
                 checked={selectedRoundIds.has(row.roundId)}
-                disabled={!row.selectable}
+                disabled={disabled || !row.selectable}
                 onChange={() => onToggleRound(row.roundId)}
                 slotProps={{ input: { 'aria-label': `Select ${row.roundId}` } }}
               />
@@ -59,7 +61,7 @@ export const BulkRoundTable = ({
                     <IconButton
                       size="small"
                       aria-label={`Move ${row.roundId} up`}
-                      disabled={index === 0}
+                      disabled={disabled || index === 0}
                       onClick={() => onMoveRound(row.roundId, -1)}>
                       <ArrowUpwardIcon fontSize="inherit" />
                     </IconButton>
@@ -70,7 +72,7 @@ export const BulkRoundTable = ({
                     <IconButton
                       size="small"
                       aria-label={`Move ${row.roundId} down`}
-                      disabled={index === rows.length - 1}
+                      disabled={disabled || index === rows.length - 1}
                       onClick={() => onMoveRound(row.roundId, 1)}>
                       <ArrowDownwardIcon fontSize="inherit" />
                     </IconButton>

@@ -9,7 +9,7 @@ import { getLocalStorage, setLocalStorage } from '../../../lib/api';
 import { Recipes } from '../../../lib/recipes';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import { useAppDispatch, useAppSelector } from '../../../store';
-import { runRecipes } from '../../../store/actions';
+import { partialUpdateWCIF } from '../../../store/actions';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import {
@@ -22,7 +22,11 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type {
+  BulkGenerationWorkerRequest,
+  BulkGenerationWorkerResponse,
+} from './bulkGenerationWorkerTypes';
 
 const moveRoundId = (roundIds: string[], roundId: string, direction: -1 | 1) => {
   const fromIndex = roundIds.indexOf(roundId);
@@ -55,18 +59,47 @@ const parsePersistedRoundOrder = (value: string | null) => {
   }
 };
 
+const progressText = (
+  progress: Extract<BulkGenerationWorkerResponse, { type: 'progress' }>,
+  labelForRound: (roundId: string) => string
+) => {
+  if (progress.phase === 'fixing') {
+    return 'Fixing group assignments';
+  }
+
+  if (progress.roundId && progress.phase === 'staff') {
+    return `Generating staff assignments for ${labelForRound(progress.roundId)}`;
+  }
+
+  if (progress.roundId) {
+    return `Generating for ${labelForRound(progress.roundId)}`;
+  }
+
+  return 'Generating';
+};
+
 const BulkGenerationPage = () => {
   const dispatch = useAppDispatch();
   const wcif = useAppSelector((state) => state.wcif);
+  const workerRef = useRef<Worker | null>(null);
   const { setBreadcrumbs } = useBreadcrumbs();
   const rows = useMemo(() => (wcif ? buildBulkRoundRows(wcif) : []), [wcif]);
   const [recipeId, setRecipeId] = useState('pnw');
   const [orderedRoundIds, setOrderedRoundIds] = useState<string[]>([]);
   const [selectedRoundIds, setSelectedRoundIds] = useState<Set<string>>(new Set());
+  const [generationStatus, setGenerationStatus] = useState<string | null>(null);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   useEffect(() => {
     setBreadcrumbs([{ text: 'Bulk Generate' }]);
   }, [setBreadcrumbs]);
+
+  useEffect(
+    () => () => {
+      workerRef.current?.terminate();
+    },
+    []
+  );
 
   useEffect(() => {
     if (!wcif?.id) {
@@ -93,8 +126,15 @@ const BulkGenerationPage = () => {
   const selectedOrderedRoundIds = orderedRows
     .filter((row) => row.selectable && selectedRoundIds.has(row.roundId))
     .map((row) => row.roundId);
+  const generating = Boolean(generationStatus);
+  const labelForRound = (roundId: string) =>
+    rows.find((row) => row.roundId === roundId)?.label ?? roundId;
 
   const handleToggleRound = (roundId: string) => {
+    if (generating) {
+      return;
+    }
+
     if (!rows.find((row) => row.roundId === roundId)?.selectable) {
       return;
     }
@@ -111,6 +151,10 @@ const BulkGenerationPage = () => {
   };
 
   const handleMoveRound = (roundId: string, direction: -1 | 1) => {
+    if (generating) {
+      return;
+    }
+
     setOrderedRoundIds((currentRoundIds) => {
       const nextRoundIds = moveRoundId(currentRoundIds, roundId, direction);
       if (wcif?.id) {
@@ -121,6 +165,10 @@ const BulkGenerationPage = () => {
   };
 
   const handleResetOrder = () => {
+    if (generating) {
+      return;
+    }
+
     const scheduleOrder = scheduleOrderedRoundIds(rows);
     if (wcif?.id) {
       setLocalStorage(roundOrderStorageKey(wcif.id), JSON.stringify(scheduleOrder));
@@ -129,7 +177,60 @@ const BulkGenerationPage = () => {
   };
 
   const handleGenerate = () => {
-    dispatch(runRecipes(selectedOrderedRoundIds, recipeId));
+    if (!wcif || selectedOrderedRoundIds.length === 0 || generating) {
+      return;
+    }
+
+    workerRef.current?.terminate();
+    const worker = new Worker(new URL('./bulkGeneration.worker.ts', import.meta.url), {
+      type: 'module',
+    });
+    workerRef.current = worker;
+    setGenerationError(null);
+    setGenerationStatus('Starting bulk generation');
+
+    worker.onmessage = (event: MessageEvent<BulkGenerationWorkerResponse>) => {
+      const message = event.data;
+
+      if (message.type === 'progress') {
+        setGenerationStatus(progressText(message, labelForRound));
+        return;
+      }
+
+      if (message.type === 'complete') {
+        dispatch(
+          partialUpdateWCIF({
+            events: message.wcif.events,
+            persons: message.wcif.persons,
+            schedule: message.wcif.schedule,
+          })
+        );
+        setGenerationStatus(null);
+        worker.terminate();
+        workerRef.current = null;
+        return;
+      }
+
+      setGenerationError(message.message);
+      setGenerationStatus(null);
+      worker.terminate();
+      workerRef.current = null;
+    };
+
+    worker.onerror = () => {
+      setGenerationError('Bulk generation failed');
+      setGenerationStatus(null);
+      worker.terminate();
+      workerRef.current = null;
+    };
+
+    const message: BulkGenerationWorkerRequest = {
+      type: 'runBulkGeneration',
+      wcif,
+      recipeId,
+      roundIds: selectedOrderedRoundIds,
+    };
+    worker.postMessage(message);
   };
 
   return (
@@ -147,6 +248,7 @@ const BulkGenerationPage = () => {
             labelId="bulk-recipe-select-label"
             label="Recipe"
             value={recipeId}
+            disabled={generating}
             onChange={(event) => setRecipeId(String(event.target.value))}>
             {Recipes.map((recipe) => (
               <MenuItem key={recipe.id} value={recipe.id}>
@@ -158,7 +260,7 @@ const BulkGenerationPage = () => {
         <Button
           variant="contained"
           startIcon={<AutoFixHighIcon />}
-          disabled={selectedOrderedRoundIds.length === 0}
+          disabled={generating || selectedOrderedRoundIds.length === 0}
           onClick={handleGenerate}>
           Generate
         </Button>
@@ -169,12 +271,16 @@ const BulkGenerationPage = () => {
         Existing groups and assignments are preserved.
       </Alert>
 
+      {generationStatus && <Alert severity="info">{generationStatus}</Alert>}
+      {generationError && <Alert severity="error">{generationError}</Alert>}
+
       {orderedRows.length === 0 ? (
         <Alert severity="warning">No normal non-distributed rounds found.</Alert>
       ) : (
         <BulkRoundTable
           rows={orderedRows}
           selectedRoundIds={selectedRoundIds}
+          disabled={generating}
           onToggleRound={handleToggleRound}
           onMoveRound={handleMoveRound}
         />
@@ -183,7 +289,7 @@ const BulkGenerationPage = () => {
       <Stack direction="row" justifyContent="flex-end">
         <Button
           startIcon={<RestartAltIcon />}
-          disabled={orderedRows.length === 0}
+          disabled={generating || orderedRows.length === 0}
           onClick={handleResetOrder}>
           Reset to Schedule Order
         </Button>
