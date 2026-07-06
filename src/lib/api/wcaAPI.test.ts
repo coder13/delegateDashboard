@@ -85,7 +85,7 @@ describe('wcaAPI', () => {
     await saveWcifChanges(previousWcif, newWcif);
 
     expect(globalThis.fetch).toHaveBeenCalledWith(
-      'https://wca.test/api/v0/competitions/Comp/wcif/version/2',
+      'https://wca.test/api/v0/competitions/Comp/wcif',
       expect.objectContaining({
         method: 'PATCH',
         body: JSON.stringify({ name: 'New' }),
@@ -107,7 +107,7 @@ describe('wcaAPI', () => {
     await saveWcifChanges(wcif, wcif);
 
     expect(globalThis.fetch).not.toHaveBeenCalledWith(
-      'https://wca.test/api/v0/competitions/Comp/wcif/version/2',
+      'https://wca.test/api/v0/competitions/Comp/wcif',
       expect.objectContaining({ method: 'PATCH' })
     );
   });
@@ -125,13 +125,13 @@ describe('wcaAPI', () => {
     );
   });
 
-  it('patches WCIF to the version 2 endpoint', async () => {
+  it('patches WCIF to the update endpoint', async () => {
     mockFetch({ json: vi.fn().mockResolvedValue({ id: 'Comp' }) });
 
     await patchWcif('Comp', { name: 'Updated' } as any);
 
     expect(globalThis.fetch).toHaveBeenCalledWith(
-      'https://wca.test/api/v0/competitions/Comp/wcif/version/2',
+      'https://wca.test/api/v0/competitions/Comp/wcif',
       expect.objectContaining({
         method: 'PATCH',
         body: JSON.stringify({ name: 'Updated' }),
