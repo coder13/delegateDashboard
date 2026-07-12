@@ -155,6 +155,8 @@ describe('CompetitionLayout', () => {
     const errorCallback = uploadCurrentWCIFChangesMock.mock.calls[1][0];
     errorCallback(new Error('save failed'));
 
-    expect(enqueueSnackbarMock).toHaveBeenCalledWith('Error saving changes', { variant: 'error' });
+    expect(enqueueSnackbarMock).toHaveBeenCalledWith('Error saving changes: save failed', {
+      variant: 'error',
+    });
   });
 });

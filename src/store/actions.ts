@@ -1,4 +1,4 @@
-import { getUpcomingManageableCompetitions, getWcif, patchWcif } from '../lib/api';
+import { checkWcif, getUpcomingManageableCompetitions, getWcif, patchWcif } from '../lib/api';
 import { sortWcifEvents } from '../lib/domain/events';
 import { type BulkInProgressAssignments } from '../lib/types';
 import { validateWcif, type ValidationError } from '../lib/wcif/validation';
@@ -163,7 +163,8 @@ export const uploadCurrentWCIFChanges =
     const changes = pick(wcif, keysForPatch);
 
     dispatch(updateUploading(true));
-    patchWcif(competitionId, changes)
+    checkWcif(wcif)
+      .then(() => patchWcif(competitionId, changes))
       .then(() => {
         dispatch(updateUploading(false));
         cb();

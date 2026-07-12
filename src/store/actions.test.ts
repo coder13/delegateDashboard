@@ -26,7 +26,7 @@ import {
 import type { Assignment, Competition } from '@wca/helpers';
 import type { Extension } from '@wca/helpers/lib/models/extension';
 import { describe, expect, it, vi } from 'vitest';
-import { getUpcomingManageableCompetitions, getWcif, patchWcif } from '../lib/api';
+import { checkWcif, getUpcomingManageableCompetitions, getWcif, patchWcif } from '../lib/api';
 import { sortWcifEvents } from '../lib/domain/events';
 import { validateWcif } from '../lib/wcif/validation';
 import type { AppState } from './initialState';
@@ -41,6 +41,7 @@ import {
 vi.mock('../lib/api', () => ({
   getUpcomingManageableCompetitions: vi.fn(),
   getWcif: vi.fn(),
+  checkWcif: vi.fn(),
   patchWcif: vi.fn(),
 }));
 
@@ -54,6 +55,7 @@ vi.mock('../lib/wcif/validation', () => ({
 
 const getUpcomingManageableCompetitionsMock = vi.mocked(getUpcomingManageableCompetitions);
 const getWcifMock = vi.mocked(getWcif);
+const checkWcifMock = vi.mocked(checkWcif);
 const patchWcifMock = vi.mocked(patchWcif);
 const sortWcifEventsMock = vi.mocked(sortWcifEvents);
 const validateWcifMock = vi.mocked(validateWcif);
@@ -311,6 +313,7 @@ describe('store actions', () => {
         wcif,
         changedKeys: new Set(['events']),
       }) as unknown as AppState;
+    checkWcifMock.mockResolvedValueOnce(undefined);
     patchWcifMock.mockResolvedValueOnce(wcif);
 
     uploadCurrentWCIFChanges(cb)(dispatch, getState);
@@ -320,6 +323,7 @@ describe('store actions', () => {
       type: ActionType.UPLOADING_WCIF,
       uploading: true,
     });
+    expect(checkWcifMock).toHaveBeenCalledWith(wcif);
     expect(patchWcifMock).toHaveBeenCalledWith('Comp1', {
       formatVersion: wcif.formatVersion,
       events: wcif.events,
@@ -343,6 +347,7 @@ describe('store actions', () => {
         changedKeys: new Set(['events']),
       }) as unknown as AppState;
     const error = new Error('Upload failed');
+    checkWcifMock.mockResolvedValueOnce(undefined);
     patchWcifMock.mockRejectedValueOnce(error);
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -357,6 +362,25 @@ describe('store actions', () => {
       type: ActionType.UPLOADING_WCIF,
       uploading: false,
     });
+    expect(cb).toHaveBeenCalledWith(error);
+    consoleError.mockRestore();
+  });
+
+  it('does not patch when the WCIF schema check fails', async () => {
+    vi.clearAllMocks();
+    const dispatch = vi.fn();
+    const cb = vi.fn();
+    const wcif = { ...buildWcif([], []), id: 'Comp1' };
+    const error = new Error('WCIF formatVersion is required');
+    const getState = () =>
+      ({ wcif, changedKeys: new Set(['events']) }) as unknown as AppState;
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    checkWcifMock.mockRejectedValueOnce(error);
+
+    uploadCurrentWCIFChanges(cb)(dispatch, getState);
+    await flushPromises();
+
+    expect(patchWcifMock).not.toHaveBeenCalled();
     expect(cb).toHaveBeenCalledWith(error);
     consoleError.mockRestore();
   });
