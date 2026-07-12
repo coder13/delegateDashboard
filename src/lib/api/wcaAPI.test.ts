@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
 import {
+  checkWcif,
   getMe,
   getPastManageableCompetitions,
   getUpcomingManageableCompetitions,
@@ -50,6 +51,34 @@ describe('wcaAPI', () => {
 
     mockFetch({ ok: false, status: 418, statusText: '' });
     await expect(wcaApiFetch('/me')).rejects.toThrow('Something went wrong: Status code 418');
+  });
+
+  it('uses an API error response when one is available', async () => {
+    mockFetch({
+      ok: false,
+      status: 400,
+      statusText: 'Bad Request',
+      json: vi.fn().mockResolvedValue({ error: 'WCIF formatVersion is required' }),
+    });
+
+    await expect(wcaApiFetch('/me')).rejects.toThrow('WCIF formatVersion is required');
+  });
+
+  it('checks a complete WCIF without parsing the empty success response', async () => {
+    const json = vi.fn();
+    const wcif = { id: 'Comp', formatVersion: '1.1' } as any;
+    mockFetch({ json });
+
+    await checkWcif(wcif);
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://wca.test/api/v0/competitions/wcif/check',
+      expect.objectContaining({
+        method: 'PUT',
+        body: JSON.stringify(wcif),
+      })
+    );
+    expect(json).not.toHaveBeenCalled();
   });
 
   it('builds upcoming and past competition queries', async () => {
