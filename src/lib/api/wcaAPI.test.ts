@@ -103,6 +103,7 @@ describe('wcaAPI', () => {
     mockFetch({ json: vi.fn().mockResolvedValue({ id: 'Comp', name: 'New' }) });
     const previousWcif = {
       id: 'Comp',
+      formatVersion: '2.0',
       name: 'Old',
       schedule: { startDate: '2024-01-01', numberOfDays: 1, venues: [] },
       events: [],
@@ -117,7 +118,7 @@ describe('wcaAPI', () => {
       'https://wca.test/api/v0/competitions/Comp/wcif',
       expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ name: 'New' }),
+        body: JSON.stringify({ formatVersion: '2.0', name: 'New' }),
       })
     );
   });
@@ -154,16 +155,16 @@ describe('wcaAPI', () => {
     );
   });
 
-  it('patches WCIF to the update endpoint', async () => {
+  it('patches WCIF to the unchanged update endpoint', async () => {
     mockFetch({ json: vi.fn().mockResolvedValue({ id: 'Comp' }) });
 
-    await patchWcif('Comp', { name: 'Updated' } as any);
+    await patchWcif('Comp', { formatVersion: '2.0', name: 'Updated' } as any);
 
     expect(globalThis.fetch).toHaveBeenCalledWith(
       'https://wca.test/api/v0/competitions/Comp/wcif',
       expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ name: 'Updated' }),
+        body: JSON.stringify({ formatVersion: '2.0', name: 'Updated' }),
       })
     );
   });

@@ -122,6 +122,11 @@ export const registerWcaApiRoutes = async (
       return;
     }
 
+    if (apiPath === '/competitions/wcif/check' && method === 'PUT') {
+      await route.fulfill({ status: 204, headers: corsHeaders, body: '' });
+      return;
+    }
+
     if (apiPath === '/persons' && method === 'GET') {
       await route.fulfill(jsonResponse(fixtures.personsSearch));
       return;
