@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getLocalStorage, localStorageKey, setLocalStorage } from './localStorage';
 
 afterEach(() => {
   localStorage.clear();
@@ -14,6 +13,7 @@ describe('localStorage helpers', () => {
       writable: true,
     });
     await import('./wca-env');
+    const { localStorageKey } = await import('./localStorage');
 
     expect(localStorageKey('token')).toContain('delegate-dashboard.example-application-id.token');
   });
@@ -24,6 +24,7 @@ describe('localStorage helpers', () => {
       writable: true,
     });
     await import('./wca-env');
+    const { getLocalStorage, setLocalStorage } = await import('./localStorage');
 
     setLocalStorage('token', 'abc123');
     expect(getLocalStorage('token')).toBe('abc123');

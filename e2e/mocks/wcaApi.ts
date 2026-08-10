@@ -100,7 +100,7 @@ export const registerWcaApiRoutes = async (
       return;
     }
 
-    const wcifMatch = apiPath.match(/^\/competitions\/([^/]+)\/wcif$/);
+    const wcifMatch = apiPath.match(/^\/competitions\/([^/]+)\/wcif(?:\/version\/2)?$/);
     if (wcifMatch && method === 'GET') {
       const competitionId = wcifMatch[1];
       const wcif = state.wcifById[competitionId] ?? state.wcif;

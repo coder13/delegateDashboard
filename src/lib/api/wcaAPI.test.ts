@@ -3,6 +3,8 @@ import {
   getMe,
   getPastManageableCompetitions,
   getUpcomingManageableCompetitions,
+  getWcif,
+  patchWcif,
   saveWcifChanges,
   wcaApiFetch,
 } from './wcaAPI';
@@ -107,6 +109,33 @@ describe('wcaAPI', () => {
     expect(globalThis.fetch).not.toHaveBeenCalledWith(
       'https://wca.test/api/v0/competitions/Comp/wcif',
       expect.objectContaining({ method: 'PATCH' })
+    );
+  });
+
+  it('fetches WCIF from the version 2 endpoint', async () => {
+    mockFetch({ json: vi.fn().mockResolvedValue({ id: 'Comp' }) });
+
+    await getWcif('Comp');
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://wca.test/api/v0/competitions/Comp/wcif/version/2',
+      expect.objectContaining({
+        headers: expect.any(Headers),
+      })
+    );
+  });
+
+  it('patches WCIF to the update endpoint', async () => {
+    mockFetch({ json: vi.fn().mockResolvedValue({ id: 'Comp' }) });
+
+    await patchWcif('Comp', { name: 'Updated' } as any);
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://wca.test/api/v0/competitions/Comp/wcif',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ name: 'Updated' }),
+      })
     );
   });
 });
