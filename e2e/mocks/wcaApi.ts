@@ -100,7 +100,7 @@ export const registerWcaApiRoutes = async (
       return;
     }
 
-    const wcifMatch = apiPath.match(/^\/competitions\/([^/]+)\/wcif$/);
+    const wcifMatch = apiPath.match(/^\/competitions\/([^/]+)\/wcif(?:\/version\/2)?$/);
     if (wcifMatch && method === 'GET') {
       const competitionId = wcifMatch[1];
       const wcif = state.wcifById[competitionId] ?? state.wcif;
@@ -119,6 +119,11 @@ export const registerWcaApiRoutes = async (
         state.wcif = next;
       }
       await route.fulfill(jsonResponse(next));
+      return;
+    }
+
+    if (apiPath === '/competitions/wcif/check' && method === 'PUT') {
+      await route.fulfill({ status: 204, headers: corsHeaders, body: '' });
       return;
     }
 

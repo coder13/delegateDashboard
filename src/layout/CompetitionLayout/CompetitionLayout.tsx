@@ -83,7 +83,7 @@ export const CompetitionLayout = () => {
     dispatch(
       uploadCurrentWCIFChanges((e) => {
         if (e) {
-          enqueueSnackbar('Error saving changes', { variant: 'error' });
+          enqueueSnackbar(`Error saving changes: ${e.message}`, { variant: 'error' });
         } else {
           enqueueSnackbar('Saved!', { variant: 'success' });
         }

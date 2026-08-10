@@ -10,6 +10,10 @@ import { type Competition } from '@wca/helpers';
 import { pick } from 'lodash';
 
 const wcaAccessToken = (): string | null => getLocalStorage('accessToken');
+const WCIF_VERSION = '2';
+const wcifPath = (competitionId: string) => `/competitions/${competitionId}/wcif`;
+const versionedWcifPath = (competitionId: string) =>
+  `${wcifPath(competitionId)}/version/${WCIF_VERSION}`;
 
 export const getMe = (): Promise<{ me: WcaUser }> => {
   return wcaApiFetch(`/me`);
@@ -45,16 +49,26 @@ export const getPastManageableCompetitions = (): Promise<CompetitionSearchResult
 };
 
 export const getWcif = (competitionId: string): Promise<Competition> =>
-  wcaApiFetch(`/competitions/${competitionId}/wcif`);
+  wcaApiFetch(versionedWcifPath(competitionId));
 
 export const patchWcif = (
   competitionId: string,
   wcif: Partial<Competition>
 ): Promise<Competition> =>
-  wcaApiFetch(`/competitions/${competitionId}/wcif`, {
+  wcaApiFetch(wcifPath(competitionId), {
     method: 'PATCH',
     body: JSON.stringify(wcif),
   });
+
+export const checkWcif = (wcif: Competition): Promise<void> =>
+  wcaApiFetch(
+    '/competitions/wcif/check',
+    {
+      method: 'PUT',
+      body: JSON.stringify(wcif),
+    },
+    false
+  );
 
 export const saveWcifChanges = (
   previousWcif: Competition,
@@ -82,7 +96,8 @@ export const getUser = (userId: number): Promise<{ user: WcaUser }> =>
 
 export const wcaApiFetch = async <T = unknown>(
   path: string,
-  fetchOptions: RequestInit = {}
+  fetchOptions: RequestInit = {},
+  parseJsonResponse = true
 ): Promise<T> => {
   const baseApiUrl = `${WCA_ORIGIN}/api/v0`;
 
@@ -97,6 +112,9 @@ export const wcaApiFetch = async <T = unknown>(
   );
 
   if (!res.ok) {
+    const error = await errorFromResponse(res);
+    if (error) throw new Error(error);
+
     if (res.statusText) {
       throw new Error(`${res.status}: ${res.statusText}`);
     } else {
@@ -104,5 +122,22 @@ export const wcaApiFetch = async <T = unknown>(
     }
   }
 
+  if (!parseJsonResponse) return undefined as T;
+
   return await res.json();
+};
+
+const errorFromResponse = async (res: Response): Promise<string | undefined> => {
+  try {
+    const body: unknown = await res.json();
+    if (Array.isArray(body)) return body.map(String).join('\n');
+
+    if (body && typeof body === 'object' && 'error' in body) {
+      const error = body.error;
+      if (Array.isArray(error)) return error.map(String).join('\n');
+      if (typeof error === 'string') return error;
+    }
+  } catch {
+    // Fall back to the HTTP status when the API does not return JSON.
+  }
 };

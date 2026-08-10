@@ -1,8 +1,11 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
 import {
+  checkWcif,
   getMe,
   getPastManageableCompetitions,
   getUpcomingManageableCompetitions,
+  getWcif,
+  patchWcif,
   saveWcifChanges,
   wcaApiFetch,
 } from './wcaAPI';
@@ -52,6 +55,34 @@ describe('wcaAPI', () => {
     await expect(wcaApiFetch('/me')).rejects.toThrow('Something went wrong: Status code 418');
   });
 
+  it('uses an API error response when one is available', async () => {
+    mockFetch({
+      ok: false,
+      status: 400,
+      statusText: 'Bad Request',
+      json: vi.fn().mockResolvedValue({ error: 'WCIF formatVersion is required' }),
+    });
+
+    await expect(wcaApiFetch('/me')).rejects.toThrow('WCIF formatVersion is required');
+  });
+
+  it('checks a complete WCIF without parsing the empty success response', async () => {
+    const json = vi.fn();
+    const wcif = { id: 'Comp', formatVersion: '1.1' } as any;
+    mockFetch({ json });
+
+    await checkWcif(wcif);
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://wca.test/api/v0/competitions/wcif/check',
+      expect.objectContaining({
+        method: 'PUT',
+        body: JSON.stringify(wcif),
+      })
+    );
+    expect(json).not.toHaveBeenCalled();
+  });
+
   it('builds upcoming and past competition queries', async () => {
     vi.spyOn(Date, 'now').mockReturnValue(0);
     mockFetch({ json: vi.fn().mockResolvedValue([]) });
@@ -72,6 +103,7 @@ describe('wcaAPI', () => {
     mockFetch({ json: vi.fn().mockResolvedValue({ id: 'Comp', name: 'New' }) });
     const previousWcif = {
       id: 'Comp',
+      formatVersion: '2.0',
       name: 'Old',
       schedule: { startDate: '2024-01-01', numberOfDays: 1, venues: [] },
       events: [],
@@ -86,7 +118,7 @@ describe('wcaAPI', () => {
       'https://wca.test/api/v0/competitions/Comp/wcif',
       expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ name: 'New' }),
+        body: JSON.stringify({ formatVersion: '2.0', name: 'New' }),
       })
     );
   });
@@ -107,6 +139,33 @@ describe('wcaAPI', () => {
     expect(globalThis.fetch).not.toHaveBeenCalledWith(
       'https://wca.test/api/v0/competitions/Comp/wcif',
       expect.objectContaining({ method: 'PATCH' })
+    );
+  });
+
+  it('fetches WCIF from the version 2 endpoint', async () => {
+    mockFetch({ json: vi.fn().mockResolvedValue({ id: 'Comp' }) });
+
+    await getWcif('Comp');
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://wca.test/api/v0/competitions/Comp/wcif/version/2',
+      expect.objectContaining({
+        headers: expect.any(Headers),
+      })
+    );
+  });
+
+  it('patches WCIF to the unchanged update endpoint', async () => {
+    mockFetch({ json: vi.fn().mockResolvedValue({ id: 'Comp' }) });
+
+    await patchWcif('Comp', { formatVersion: '2.0', name: 'Updated' } as any);
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://wca.test/api/v0/competitions/Comp/wcif',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ formatVersion: '2.0', name: 'Updated' }),
+      })
     );
   });
 });
