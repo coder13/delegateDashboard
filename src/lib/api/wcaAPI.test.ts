@@ -4,6 +4,8 @@ import {
   getMe,
   getPastManageableCompetitions,
   getUpcomingManageableCompetitions,
+  getWcif,
+  patchWcif,
   saveWcifChanges,
   wcaApiFetch,
 } from './wcaAPI';
@@ -101,6 +103,7 @@ describe('wcaAPI', () => {
     mockFetch({ json: vi.fn().mockResolvedValue({ id: 'Comp', name: 'New' }) });
     const previousWcif = {
       id: 'Comp',
+      formatVersion: '2.0',
       name: 'Old',
       schedule: { startDate: '2024-01-01', numberOfDays: 1, venues: [] },
       events: [],
@@ -115,7 +118,7 @@ describe('wcaAPI', () => {
       'https://wca.test/api/v0/competitions/Comp/wcif',
       expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ name: 'New' }),
+        body: JSON.stringify({ formatVersion: '2.0', name: 'New' }),
       })
     );
   });
@@ -136,6 +139,33 @@ describe('wcaAPI', () => {
     expect(globalThis.fetch).not.toHaveBeenCalledWith(
       'https://wca.test/api/v0/competitions/Comp/wcif',
       expect.objectContaining({ method: 'PATCH' })
+    );
+  });
+
+  it('fetches WCIF from the version 2 endpoint', async () => {
+    mockFetch({ json: vi.fn().mockResolvedValue({ id: 'Comp' }) });
+
+    await getWcif('Comp');
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://wca.test/api/v0/competitions/Comp/wcif/version/2',
+      expect.objectContaining({
+        headers: expect.any(Headers),
+      })
+    );
+  });
+
+  it('patches WCIF to the unchanged update endpoint', async () => {
+    mockFetch({ json: vi.fn().mockResolvedValue({ id: 'Comp' }) });
+
+    await patchWcif('Comp', { formatVersion: '2.0', name: 'Updated' } as any);
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://wca.test/api/v0/competitions/Comp/wcif',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ formatVersion: '2.0', name: 'Updated' }),
+      })
     );
   });
 });
