@@ -203,6 +203,7 @@ const DistributedAttemptRoundView = ({
             </TableBody>
           </Table>
           <RoundLimitInfo
+            event={wcif?.events.find((candidate) => candidate.id === eventId) ?? null}
             round={round}
             eventId={eventId}
             personsShouldBeInRound={personsShouldBeInRound}
