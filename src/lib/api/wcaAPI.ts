@@ -15,6 +15,21 @@ const wcifPath = (competitionId: string) => `/competitions/${competitionId}/wcif
 const versionedWcifPath = (competitionId: string) =>
   `${wcifPath(competitionId)}/version/${WCIF_VERSION}`;
 
+/**
+ * Personal bests are read-only data. The v2 endpoint returns them, but the
+ * current WCIF checker does not accept them in a submitted v2 payload.
+ */
+const withoutV2PersonalBests = <T extends Partial<Competition>>(wcif: T): T => {
+  if (!wcif.formatVersion?.startsWith('2.') || !wcif.persons) {
+    return wcif;
+  }
+
+  return {
+    ...wcif,
+    persons: wcif.persons.map(({ personalBests: _personalBests, ...person }) => person),
+  } as T;
+};
+
 export const getMe = (): Promise<{ me: WcaUser }> => {
   return wcaApiFetch(`/me`);
 };
@@ -57,7 +72,7 @@ export const patchWcif = (
 ): Promise<Competition> =>
   wcaApiFetch(wcifPath(competitionId), {
     method: 'PATCH',
-    body: JSON.stringify(wcif),
+    body: JSON.stringify(withoutV2PersonalBests(wcif)),
   });
 
 export const checkWcif = (wcif: Competition): Promise<void> =>
@@ -65,7 +80,7 @@ export const checkWcif = (wcif: Competition): Promise<void> =>
     '/competitions/wcif/check',
     {
       method: 'PUT',
-      body: JSON.stringify(wcif),
+      body: JSON.stringify(withoutV2PersonalBests(wcif)),
     },
     false
   );

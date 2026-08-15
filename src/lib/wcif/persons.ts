@@ -1,6 +1,6 @@
 import { parseActivityCode } from '../domain/activities/activityCode';
 import { roundFormatById } from '../domain/events';
-import { findPR } from '../domain/persons';
+import { findPR, getPersonalBestValue } from '../domain/persons';
 import { type Competition, type Person, type AttemptResult } from '@wca/helpers';
 
 /** WCIF Person Lookup Functions */
@@ -79,8 +79,8 @@ export const getSeedResult = (
     const single = findPR(person.personalBests || [], eventId, 'single');
 
     return {
-      average: average?.best,
-      single: single?.best,
+      average: average ? getPersonalBestValue(average) : undefined,
+      single: single ? getPersonalBestValue(single) : undefined,
     };
   }
 

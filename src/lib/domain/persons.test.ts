@@ -7,6 +7,7 @@ import {
   shouldBeInRound,
   personsShouldBeInRound,
   findPR,
+  getPersonalBestValue,
   byPsychsheet,
   byResult,
   addAssignmentsToPerson,
@@ -305,6 +306,34 @@ describe('findPR', () => {
 
     expect(findPR(personalBests, '444', 'single')).toBeUndefined();
     expect(findPR(personalBests, '333', 'average')).toBeUndefined();
+  });
+});
+
+describe('getPersonalBestValue', () => {
+  it('reads the v1 best field', () => {
+    expect(
+      getPersonalBestValue({
+        eventId: '333',
+        type: 'single',
+        best: 1000,
+        worldRanking: 1,
+        continentalRanking: 1,
+        nationalRanking: 1,
+      })
+    ).toBe(1000);
+  });
+
+  it('reads the v2 value field', () => {
+    expect(
+      getPersonalBestValue({
+        eventId: '333',
+        type: 'single',
+        value: 1000,
+        worldRanking: 1,
+        continentalRanking: 1,
+        nationalRanking: 1,
+      } as never)
+    ).toBe(1000);
   });
 });
 
