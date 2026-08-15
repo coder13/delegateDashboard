@@ -83,6 +83,46 @@ describe('wcaAPI', () => {
     expect(json).not.toHaveBeenCalled();
   });
 
+  it('omits read-only v2 personal bests from the WCIF check payload', async () => {
+    const wcif = {
+      formatVersion: '2.1.1',
+      persons: [{ registrantId: 1, personalBests: [{ eventId: '333', value: 1000 }] }],
+    } as any;
+    mockFetch({});
+
+    await checkWcif(wcif);
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://wca.test/api/v0/competitions/wcif/check',
+      expect.objectContaining({
+        body: JSON.stringify({
+          formatVersion: '2.1.1',
+          persons: [{ registrantId: 1 }],
+        }),
+      })
+    );
+  });
+
+  it('omits read-only v2 personal bests from patch payloads', async () => {
+    const wcif = {
+      formatVersion: '2.1.1',
+      persons: [{ registrantId: 1, personalBests: [{ eventId: '333', value: 1000 }] }],
+    } as any;
+    mockFetch({ json: vi.fn().mockResolvedValue({}) });
+
+    await patchWcif('Comp', wcif);
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://wca.test/api/v0/competitions/Comp/wcif',
+      expect.objectContaining({
+        body: JSON.stringify({
+          formatVersion: '2.1.1',
+          persons: [{ registrantId: 1 }],
+        }),
+      })
+    );
+  });
+
   it('builds upcoming and past competition queries', async () => {
     vi.spyOn(Date, 'now').mockReturnValue(0);
     mockFetch({ json: vi.fn().mockResolvedValue([]) });

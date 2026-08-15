@@ -2,6 +2,7 @@ import { parseActivityCode } from './activities';
 import {
   type Activity,
   type Assignment,
+  type AttemptResult,
   type Event,
   type EventId,
   type Person,
@@ -76,6 +77,14 @@ export const assignedInGroupsForRoles =
 
 export const findPR = (personalBests: PersonalBest[], eventId: EventId, type: RankingType) =>
   personalBests.find((pr) => pr.eventId === eventId && pr.type === type);
+
+type V2PersonalBest = Omit<PersonalBest, 'best'> & { value: AttemptResult };
+
+/**
+ * WCIF v1 calls this field `best`. WCIF v2 calls it `value`.
+ */
+export const getPersonalBestValue = (personalBest: PersonalBest | V2PersonalBest) =>
+  'value' in personalBest ? personalBest.value : personalBest.best;
 
 /**
  * Comparator for array.sort
@@ -215,7 +224,7 @@ export const mayMakeTimeLimit = (eventId: EventId, round?: Round, persons?: Pers
         return false;
       }
 
-      return PR.best <= timeLimit.centiseconds;
+      return getPersonalBestValue(PR) <= timeLimit.centiseconds;
     }) || []
   );
 };
@@ -233,7 +242,7 @@ export const mayMakeCutoff = (eventId: EventId, round?: Round, persons?: Person[
         return false;
       }
 
-      return PR.best <= cutoff.attemptResult;
+      return getPersonalBestValue(PR) <= cutoff.attemptResult;
     }) || []
   );
 };

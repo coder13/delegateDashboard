@@ -11,7 +11,7 @@ import {
   activityDurationString,
   type ActivityWithParent,
 } from '../lib/domain/activities';
-import { mayMakeCutoff, mayMakeTimeLimit } from '../lib/domain/persons';
+import { getPersonalBestValue, mayMakeCutoff, mayMakeTimeLimit } from '../lib/domain/persons';
 import { useAppSelector } from '../store';
 import { selectPersonsAssignedToActivitiyId } from '../store/selectors';
 import ConfigureGroupDialog from '../dialogs/ConfigureGroupDialog';
@@ -124,7 +124,7 @@ const GroupCard = ({ groupActivity }: GroupCardProps) => {
           const pr = person.personalBests?.find(
             (pb) => pb.eventId === eventId && pb.type === 'average'
           );
-          return pr?.best;
+          return pr ? getPersonalBestValue(pr) : undefined;
         })
         .filter((pr) => !!pr) as number[],
     [competitors, eventId]
