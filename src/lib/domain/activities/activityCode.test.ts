@@ -111,6 +111,12 @@ describe('activityCodeToName', () => {
   it('handles different event types', () => {
     expect(activityCodeToName('444bf-r1')).toBe('4x4x4 Blindfolded, Round 1');
   });
+
+  it('handles FTO', () => {
+    expect(activityCodeToName('fto-r1-g2')).toBe(
+      'Face-Turning Octahedron, Round 1, Group 2'
+    );
+  });
 });
 
 describe('activityCodeIsChild', () => {

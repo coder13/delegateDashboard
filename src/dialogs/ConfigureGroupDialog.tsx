@@ -1,4 +1,8 @@
-import { generateNextChildActivityId, parseActivityCode } from '../lib/domain/activities';
+import {
+  activityCodeToName,
+  generateNextChildActivityId,
+  parseActivityCode,
+} from '../lib/domain/activities';
 import { useAppSelector } from '../store';
 import { editActivity } from '../store/actions';
 import {
@@ -12,7 +16,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { type Activity, activityCodeToName } from '@wca/helpers';
+import { type Activity } from '@wca/helpers';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 

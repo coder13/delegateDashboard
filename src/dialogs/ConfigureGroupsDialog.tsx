@@ -1,4 +1,8 @@
-import { createGroupActivity, findAllActivities } from '../lib/domain/activities';
+import {
+  activityCodeToName,
+  createGroupActivity,
+  findAllActivities,
+} from '../lib/domain/activities';
 import { formatTimeRange } from '../lib/utils/time';
 import { useAppSelector, useAppDispatch } from '../store';
 import { updateRoundChildActivities } from '../store/actions';
@@ -33,7 +37,7 @@ import {
   type GridRowModesModel,
   GridToolbarContainer,
 } from '@mui/x-data-grid';
-import { type Activity, activityCodeToName, parseActivityCode } from '@wca/helpers';
+import { type Activity, parseActivityCode } from '@wca/helpers';
 import { formatDuration } from 'date-fns';
 import { omit } from 'lodash';
 import React, { Fragment, useCallback } from 'react';
