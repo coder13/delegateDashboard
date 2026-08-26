@@ -26,6 +26,7 @@ describe('eventNameById', () => {
     expect(eventNameById('333fm')).toBe('3x3x3 Fewest Moves');
     expect(eventNameById('minx')).toBe('Megaminx');
     expect(eventNameById('pyram')).toBe('Pyraminx');
+    expect(eventNameById('fto')).toBe('Face-Turning Octahedron');
   });
 
   it('throws for unknown event ID', () => {
@@ -45,6 +46,7 @@ describe('shortEventNameById', () => {
     expect(shortEventNameById('333fm')).toBe('FMC');
     expect(shortEventNameById('333oh')).toBe('3OH');
     expect(shortEventNameById('333mbf')).toBe('MBLD');
+    expect(shortEventNameById('fto')).toBe('FTO');
   });
 
   it('throws for unknown event ID', () => {
@@ -123,10 +125,11 @@ describe('sortWcifEvents', () => {
       { id: '333', rounds: [], extensions: [] },
       { id: '222', rounds: [], extensions: [] },
       { id: '444', rounds: [], extensions: [] },
+      { id: 'fto' as Event['id'], rounds: [], extensions: [] },
     ];
 
     const sorted = sortWcifEvents(wcifEvents);
-    expect(sorted.map((e) => e.id)).toEqual(['333', '222', '444', 'minx']);
+    expect(sorted.map((e) => e.id)).toEqual(['333', '222', '444', 'minx', 'fto']);
   });
 
   it('maintains order for events not in the standard list', () => {

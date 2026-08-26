@@ -1,5 +1,7 @@
-import { type Event, type EventId } from '@wca/helpers';
+import { type Event, type EventId as WcaEventId } from '@wca/helpers';
 import { sortBy } from 'lodash';
+
+type EventId = WcaEventId | 'fto';
 
 interface EventInfo {
   id: EventId;
@@ -22,6 +24,7 @@ export const events: EventInfo[] = [
   { id: 'clock', name: 'Clock', shortName: 'Clock' },
   { id: 'skewb', name: 'Skewb', shortName: 'Skewb' },
   { id: 'sq1', name: 'Square-1', shortName: 'Sq1' },
+  { id: 'fto', name: 'Face-Turning Octahedron', shortName: 'FTO' },
   { id: '444bf', name: '4x4x4 Blindfolded', shortName: '4BLD' },
   { id: '555bf', name: '5x5x5 Blindfolded', shortName: '5BLD' },
   { id: '333mbf', name: '3x3x3 Multi-Blind', shortName: 'MBLD' },
