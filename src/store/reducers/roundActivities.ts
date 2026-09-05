@@ -27,11 +27,23 @@ export const updateRoundChildActivities = (
       ] as const)
       .filter((entry): entry is readonly [number, number] => entry[1] !== undefined)
   );
+  const assignmentsChanged = state.wcif.persons.some((person) =>
+    person.assignments?.some((assignment) => {
+      const nextChildActivityId = replacementChildActivityIdsByPreviousId.get(
+        assignment.activityId
+      );
+      return nextChildActivityId !== undefined && nextChildActivityId !== assignment.activityId;
+    })
+  );
 
   return {
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'schedule']),
+    changedKeys: new Set([
+      ...state.changedKeys,
+      'schedule',
+      ...(assignmentsChanged ? ['persons' as const] : []),
+    ]),
     wcif: state.wcif && {
       ...state.wcif,
       schedule: mapIn(state.wcif.schedule, 'venues', (venue) =>
