@@ -44,6 +44,7 @@ const fixFeaturedCompetitors = (wcif: Competition, registrantId: number): Compet
   }
 
   const wcaUserId = person.wcaUserId;
+  let scheduleChanged = false;
 
   // Get all activity IDs where this person has a competitor assignment
   const competitorActivityIds = new Set(
@@ -64,6 +65,7 @@ const fixFeaturedCompetitors = (wcif: Competition, registrantId: number): Compet
     // Remove from featured if they're listed but don't have a competitor assignment
     if (isFeatured && !hasCompetitorAssignment) {
       const updatedIds = config.featuredCompetitorWcaUserIds.filter((id) => id !== wcaUserId);
+      scheduleChanged = true;
 
       return setGroupifierActivityConfig(activity, {
         ...config,
@@ -92,6 +94,10 @@ const fixFeaturedCompetitors = (wcif: Competition, registrantId: number): Compet
       )
     )
   );
+
+  if (!scheduleChanged) {
+    return wcif;
+  }
 
   return {
     ...wcif,
@@ -131,7 +137,11 @@ export const removePersonAssignments = (
   return determineErrors({
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'persons']),
+    changedKeys: new Set([
+      ...state.changedKeys,
+      'persons',
+      ...(updatedWcif.schedule !== state.wcif.schedule ? (['schedule'] as const) : []),
+    ]),
     wcif: updatedWcif,
   });
 };
@@ -153,7 +163,11 @@ export const upsertPersonAssignments = (
   return determineErrors({
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'persons']),
+    changedKeys: new Set([
+      ...state.changedKeys,
+      'persons',
+      ...(updatedWcif.schedule !== state.wcif.schedule ? (['schedule'] as const) : []),
+    ]),
     wcif: updatedWcif,
   });
 };
@@ -249,7 +263,11 @@ export const bulkRemovePersonAssignments = (
   return determineErrors({
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'persons']),
+    changedKeys: new Set([
+      ...state.changedKeys,
+      'persons',
+      ...(updatedWcif.schedule !== state.wcif.schedule ? (['schedule'] as const) : []),
+    ]),
     wcif: updatedWcif,
   });
 };
@@ -287,7 +305,11 @@ export const bulkUpsertPersonAssignments = (
   return determineErrors({
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'persons']),
+    changedKeys: new Set([
+      ...state.changedKeys,
+      'persons',
+      ...(updatedWcif.schedule !== state.wcif.schedule ? (['schedule'] as const) : []),
+    ]),
     wcif: updatedWcif,
   });
 };
