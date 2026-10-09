@@ -68,11 +68,11 @@ export const getWcif = (competitionId: string): Promise<Competition> =>
 
 export const patchWcif = (
   competitionId: string,
-  wcif: Partial<Competition>
+  wcif: Partial<Competition> & Pick<Competition, 'formatVersion'>
 ): Promise<Competition> =>
   wcaApiFetch(wcifPath(competitionId), {
     method: 'PATCH',
-    body: JSON.stringify(withoutV2PersonalBests(wcif)),
+    body: JSON.stringify(withoutV2PersonalBests({ ...wcif, id: competitionId })),
   });
 
 export const checkWcif = (wcif: Competition): Promise<void> =>
@@ -93,8 +93,12 @@ export const saveWcifChanges = (
     (key) => previousWcif[key as keyof Competition] !== newWcif[key as keyof Competition]
   );
   if (keysDiff.length === 0) return Promise.resolve();
-  const keysForPatch = ['formatVersion', ...keysDiff];
-  return patchWcif(newWcif.id, pick(newWcif, keysForPatch));
+  const changedWcifKeys = keysDiff.filter((key) => key !== 'formatVersion');
+  const changes = {
+    formatVersion: newWcif.formatVersion,
+    ...pick(newWcif, changedWcifKeys),
+  };
+  return patchWcif(newWcif.id, changes);
 };
 
 export const searchPersons = (query: string): Promise<WcaPersonSearchResult[]> =>

@@ -118,6 +118,7 @@ describe('wcaAPI', () => {
         body: JSON.stringify({
           formatVersion: '2.1.1',
           persons: [{ registrantId: 1 }],
+          id: 'Comp',
         }),
       })
     );
@@ -158,7 +159,7 @@ describe('wcaAPI', () => {
       'https://wca.test/api/v0/competitions/Comp/wcif',
       expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ formatVersion: '2.0', name: 'New' }),
+        body: JSON.stringify({ formatVersion: '2.0', name: 'New', id: 'Comp' }),
       })
     );
   });
@@ -195,16 +196,16 @@ describe('wcaAPI', () => {
     );
   });
 
-  it('patches WCIF to the unchanged update endpoint', async () => {
+  it('patches WCIF with the required id and fetched format version', async () => {
     mockFetch({ json: vi.fn().mockResolvedValue({ id: 'Comp' }) });
 
-    await patchWcif('Comp', { formatVersion: '2.0', name: 'Updated' } as any);
+    await patchWcif('Comp', { formatVersion: '2.2', name: 'Updated' });
 
     expect(globalThis.fetch).toHaveBeenCalledWith(
       'https://wca.test/api/v0/competitions/Comp/wcif',
       expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ formatVersion: '2.0', name: 'Updated' }),
+        body: JSON.stringify({ formatVersion: '2.2', name: 'Updated', id: 'Comp' }),
       })
     );
   });

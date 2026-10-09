@@ -159,8 +159,11 @@ export const uploadCurrentWCIFChanges =
       return;
     }
 
-    const keysForPatch = ['formatVersion', ...Array.from(changedKeys)];
-    const changes = pick(wcif, keysForPatch);
+    const changedWcifKeys = Array.from(changedKeys).filter((key) => key !== 'formatVersion');
+    const changes = {
+      formatVersion: wcif.formatVersion,
+      ...pick(wcif, changedWcifKeys),
+    };
 
     dispatch(updateUploading(true));
     checkWcif(wcif)
