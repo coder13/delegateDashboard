@@ -119,21 +119,24 @@ export const reducers: Record<string, ReducerFunction> = {
       changedKeys: new Set([...state.changedKeys, 'schedule']),
       wcif: state.wcif && {
         ...state.wcif,
-        venues: state.wcif.schedule.venues.map((venue: Venue) => ({
-          ...venue,
-          rooms: venue.rooms.map((room: Room) => ({
-            ...room,
-            activities: room.activities.map((activity: Activity) => {
-              if (activity.id === action.activityId) {
-                return setActivityConfigExtensionData(activity, {
-                  groupCount: action.groupCount,
-                });
-              }
+        schedule: {
+          ...state.wcif.schedule,
+          venues: state.wcif.schedule.venues.map((venue: Venue) => ({
+            ...venue,
+            rooms: venue.rooms.map((room: Room) => ({
+              ...room,
+              activities: room.activities.map((activity: Activity) => {
+                if (activity.id === action.activityId) {
+                  return setActivityConfigExtensionData(activity, {
+                    groupCount: action.groupCount,
+                  });
+                }
 
-              return activity;
-            }),
+                return activity;
+              }),
+            })),
           })),
-        })),
+        },
       },
     };
   },

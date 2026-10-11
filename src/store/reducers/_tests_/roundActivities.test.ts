@@ -72,6 +72,7 @@ describe('roundActivities reducers', () => {
     const nextAssignments = nextState.wcif?.persons[0].assignments ?? [];
     expect(nextState.needToSave).toBe(true);
     expect(nextState.changedKeys.has('schedule')).toBe(true);
+    expect(nextState.changedKeys.has('persons')).toBe(false);
     expect(nextActivities[0].childActivities).toEqual([childActivity]);
     expect(nextAssignments[0]).toBe(unrelatedAssignment);
   });
@@ -109,5 +110,6 @@ describe('roundActivities reducers', () => {
       ...matchingAssignment,
       activityId: matchingChild.id,
     });
+    expect(nextState.changedKeys.has('persons')).toBe(true);
   });
 });

@@ -65,8 +65,9 @@ describe('reducer handlers', () => {
       groupCount: 4,
     });
 
-    const updatedActivity = (next.wcif as any)?.venues?.[0]?.rooms?.[0]?.activities?.[0];
-    expect(getActivityConfigExtensionData(updatedActivity)).toEqual({ groupCount: 4 });
+    const updatedActivity = next.wcif?.schedule.venues[0].rooms[0].activities[0];
+    expect(getActivityConfigExtensionData(updatedActivity!)).toEqual({ groupCount: 4 });
+    expect(next.wcif).not.toHaveProperty('venues');
     expect(next.changedKeys.has('schedule')).toBe(true);
   });
 

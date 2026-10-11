@@ -41,5 +41,25 @@ describe('competitorAssignments reducers', () => {
     expect(getGroupifierActivityConfig(updatedActivityTwo)?.featuredCompetitorWcaUserIds).toEqual([
       10,
     ]);
+    expect(nextState.changedKeys.has('persons')).toBe(true);
+    expect(nextState.changedKeys.has('schedule')).toBe(true);
+  });
+
+  it('does not mark schedule when featured competitors do not change', () => {
+    const activity = buildActivity({ id: 1, activityCode: '333-r1' });
+    const person = buildPerson({
+      registrantId: 1,
+      assignments: [
+        { activityId: 1, assignmentCode: 'competitor', stationNumber: null },
+      ] as Assignment[],
+    });
+    const state = buildState(buildWcif([activity], [person]));
+
+    const nextState = bulkRemovePersonAssignments(state, {
+      assignments: [{ activityId: 1 }],
+    });
+
+    expect(nextState.changedKeys.has('persons')).toBe(true);
+    expect(nextState.changedKeys.has('schedule')).toBe(false);
   });
 });
