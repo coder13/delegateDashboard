@@ -10,5 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Netlify deploy
+        env:
+          NETLIFY_BUILD_HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
         run: |
-          curl -X POST -d '{}' "$NETLIFY_BUILD_HOOK"
+          if [[ -z "${NETLIFY_BUILD_HOOK:-}" ]]; then
+            echo "::error::NETLIFY_BUILD_HOOK is not configured"
+            exit 1
+          fi
+
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --data '{}' \
+            "$NETLIFY_BUILD_HOOK"
