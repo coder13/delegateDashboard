@@ -1,4 +1,5 @@
 import {
+  activityCodeToName,
   cumulativeGroupCount,
   findGroupActivitiesByRound,
   parseActivityCode,
@@ -12,7 +13,7 @@ import {
 } from '../../store/selectors';
 import '@cubing/icons';
 import { Collapse, ListItemAvatar, ListItemButton, ListItemText } from '@mui/material';
-import { activityCodeToName, type Round } from '@wca/helpers';
+import { type Round } from '@wca/helpers';
 import { useEffect, useRef } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import type { AppState } from '../../store/initialState';

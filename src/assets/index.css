@@ -21,3 +21,8 @@
   display: flex;
   flex-shrink: 1;
 }
+
+/* @cubing/icons 3.0.5 provides the FTO glyph under its former unofficial name. */
+.cubing-icon.event-fto:before {
+  content: '\f135';
+}
