@@ -20,10 +20,15 @@ export const ValidationErrorRenderer = ({ error }: ValidationErrorRendererProps)
     assignmentCode: string;
     activity: Activity;
   }) => {
+    const registrantId = error.data.person?.registrantId;
+    if (registrantId === null || registrantId === undefined) {
+      return;
+    }
+
     dispatch(
       bulkRemovePersonAssignments([
         {
-          registrantId: error.data.person?.registrantId,
+          registrantId,
           activityId: activity.id,
           assignmentCode,
         },

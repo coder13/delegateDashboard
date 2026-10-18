@@ -1,13 +1,14 @@
 import type { ActivityWithParent } from '../../lib/domain/activities';
-import type { AttemptResult, Person } from '@wca/helpers';
+import type { PersonWithRegistrantId } from '../../lib/domain/persons';
+import type { ResultValue } from '@wca/helpers';
 
 export type CompetitorSort = 'speed' | 'name';
 
-export interface PersonWithSeedResult extends Person {
+export interface PersonWithSeedResult extends PersonWithRegistrantId {
   seedResult: {
     ranking: number;
-    average?: AttemptResult;
-    single?: AttemptResult;
+    average?: ResultValue;
+    single?: ResultValue;
   };
 }
 

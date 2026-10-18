@@ -69,16 +69,20 @@ export default function ScramblerSchedule() {
 
   const assignments = useMemo(
     () =>
-      flatMap(wcif?.persons, (person) =>
-        (person.assignments || [])
+      flatMap(wcif?.persons, (person) => {
+        if (person.registrantId === null) {
+          return [];
+        }
+        const registrantId = person.registrantId;
+        return (person.assignments || [])
           .filter((assignment) => assignment.assignmentCode === 'staff-scrambler')
           .map((assignment) => ({
             ...assignment,
             name: person.name,
-            registrantId: person.registrantId,
+            registrantId,
             activity: getActivity(assignment),
-          }))
-      ),
+          }));
+      }),
     [getActivity, wcif?.persons]
   );
 

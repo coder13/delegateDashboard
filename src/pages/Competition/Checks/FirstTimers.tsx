@@ -1,6 +1,6 @@
 import { getLocalStorage, setLocalStorage, searchPersons } from '../../../lib/api';
 import { type WcaPersonSearchResult } from '../../../lib/api/types';
-import { acceptedRegistrations } from '../../../lib/domain/persons';
+import { acceptedRegistrations, hasRegistrantId } from '../../../lib/domain/persons';
 import { useAppSelector } from '../../../store';
 import FirstTimerCard from './FirstTimerCard';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -44,7 +44,9 @@ export default function FirstTimers() {
   });
   const [loading, setLoading] = useState(false);
 
-  const firstTimers = acceptedRegistrations(wcif?.persons ?? []).filter((p) => !p.wcaId);
+  const firstTimers = acceptedRegistrations(wcif?.persons ?? [])
+    .filter(hasRegistrantId)
+    .filter((p) => !p.wcaId);
 
   const incrementIndex = (i = 0) => {
     if (i >= firstTimers.length) {

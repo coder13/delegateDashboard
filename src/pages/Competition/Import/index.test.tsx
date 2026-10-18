@@ -44,10 +44,10 @@ describe('ImportPage', () => {
         id: 'comp-123',
         name: 'Test Competition',
         shortName: 'Test Competition',
-        formatVersion: '1.0',
+        formatVersion: '2.0',
         competitorLimit: null,
         extensions: [],
-        series: [],
+        series: null,
         persons: [],
         events: [
           {
@@ -73,7 +73,7 @@ describe('ImportPage', () => {
         },
         ...overrides,
       },
-    } as unknown as AppState);
+    }) as unknown as AppState;
 
   const uploadCsv = (
     container: HTMLElement,
@@ -81,7 +81,9 @@ describe('ImportPage', () => {
   ) => {
     const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
     fireEvent.change(fileInput, { target: { files: [new File(['csv'], 'assignments.csv')] } });
-    fireEvent.submit(getByRole('button', { name: 'IMPORT CSV' }).closest('form') as HTMLFormElement);
+    fireEvent.submit(
+      getByRole('button', { name: 'IMPORT CSV' }).closest('form') as HTMLFormElement
+    );
   };
 
   it('tells users the CSV importer is limited to Round 1 assignments', () => {
@@ -93,9 +95,7 @@ describe('ImportPage', () => {
 
     const { getByText } = renderWithProviders(<ImportPage />);
 
-    expect(
-      getByText(/This import flow only supports Round 1 assignments\./)
-    ).toBeInTheDocument();
+    expect(getByText(/This import flow only supports Round 1 assignments\./)).toBeInTheDocument();
     expect(setBreadcrumbsMock).toHaveBeenCalledWith([{ text: 'Import' }]);
   });
 
@@ -109,7 +109,10 @@ describe('ImportPage', () => {
       (
         _csv: string,
         options: {
-          complete: (result: { meta: { fields: string[] }; data: Array<Record<string, string>> }) => void;
+          complete: (result: {
+            meta: { fields: string[] };
+            data: Array<Record<string, string>>;
+          }) => void;
         }
       ) => {
         options.complete({
@@ -122,9 +125,7 @@ describe('ImportPage', () => {
     const { container, getByRole, getByText } = renderWithProviders(<ImportPage />);
     uploadCsv(container, getByRole);
 
-    expect(
-      getByText(/This only generates and imports Round 1 assignments\./)
-    ).toBeInTheDocument();
+    expect(getByText(/This only generates and imports Round 1 assignments\./)).toBeInTheDocument();
     expect(getByText('1 people found')).toBeInTheDocument();
   });
 
@@ -215,7 +216,10 @@ describe('ImportPage', () => {
       (
         _csv: string,
         options: {
-          complete: (result: { meta: { fields: string[] }; data: Array<Record<string, string>> }) => void;
+          complete: (result: {
+            meta: { fields: string[] };
+            data: Array<Record<string, string>>;
+          }) => void;
         }
       ) => {
         options.complete({
@@ -312,7 +316,10 @@ describe('ImportPage', () => {
       (
         _csv: string,
         options: {
-          complete: (result: { meta: { fields: string[] }; data: Array<Record<string, string>> }) => void;
+          complete: (result: {
+            meta: { fields: string[] };
+            data: Array<Record<string, string>>;
+          }) => void;
         }
       ) => {
         options.complete({

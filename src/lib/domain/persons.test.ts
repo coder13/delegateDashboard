@@ -149,10 +149,11 @@ describe('shouldBeInRound', () => {
   it('uses results when available', () => {
     const round: Round = {
       id: '333-r2',
+      linkedRounds: null,
       format: 'a',
       timeLimit: null,
       cutoff: null,
-      advancementCondition: null,
+      participationRuleset: null,
       scrambleSetCount: 1,
       results: [
         { personId: 1, ranking: 1, attempts: [], best: 0, average: 0 },
@@ -169,10 +170,11 @@ describe('shouldBeInRound', () => {
   it('uses registration for round 1', () => {
     const round: Round = {
       id: '333-r1',
+      linkedRounds: null,
       format: 'a',
       timeLimit: null,
       cutoff: null,
-      advancementCondition: null,
+      participationRuleset: null,
       scrambleSetCount: 1,
       results: [],
       extensions: [],
@@ -193,10 +195,11 @@ describe('shouldBeInRound', () => {
   it('returns false for non-first rounds without results', () => {
     const round: Round = {
       id: '333-r2',
+      linkedRounds: null,
       format: 'a',
       timeLimit: null,
       cutoff: null,
-      advancementCondition: null,
+      participationRuleset: null,
       scrambleSetCount: 1,
       results: [],
       extensions: [],
@@ -209,10 +212,10 @@ describe('shouldBeInRound', () => {
   it('uses registration for linked registration rounds beyond round 1', () => {
     const round: Round = {
       id: 'clock-r2',
+      linkedRounds: null,
       format: 'a',
       timeLimit: null,
       cutoff: null,
-      advancementCondition: null,
       scrambleSetCount: 1,
       results: [],
       participationRuleset: {
@@ -241,10 +244,11 @@ describe('personsShouldBeInRound', () => {
   it('filters persons for the round', () => {
     const round: Round = {
       id: '333-r1',
+      linkedRounds: null,
       format: 'a',
       timeLimit: null,
       cutoff: null,
-      advancementCondition: null,
+      participationRuleset: null,
       scrambleSetCount: 1,
       results: [],
       extensions: [],
@@ -273,7 +277,7 @@ describe('findPR', () => {
       {
         eventId: '333' as const,
         type: 'single' as const,
-        best: 1000,
+        value: 1000,
         worldRanking: 100,
         continentalRanking: 50,
         nationalRanking: 10,
@@ -281,7 +285,7 @@ describe('findPR', () => {
       {
         eventId: '333' as const,
         type: 'average' as const,
-        best: 1200,
+        value: 1200,
         worldRanking: 150,
         continentalRanking: 60,
         nationalRanking: 15,
@@ -297,7 +301,7 @@ describe('findPR', () => {
       {
         eventId: '333' as const,
         type: 'single' as const,
-        best: 1000,
+        value: 1000,
         worldRanking: 100,
         continentalRanking: 50,
         nationalRanking: 10,
@@ -310,19 +314,6 @@ describe('findPR', () => {
 });
 
 describe('getPersonalBestValue', () => {
-  it('reads the v1 best field', () => {
-    expect(
-      getPersonalBestValue({
-        eventId: '333',
-        type: 'single',
-        best: 1000,
-        worldRanking: 1,
-        continentalRanking: 1,
-        nationalRanking: 1,
-      })
-    ).toBe(1000);
-  });
-
   it('reads the v2 value field', () => {
     expect(
       getPersonalBestValue({
@@ -332,7 +323,7 @@ describe('getPersonalBestValue', () => {
         worldRanking: 1,
         continentalRanking: 1,
         nationalRanking: 1,
-      } as never)
+      })
     ).toBe(1000);
   });
 });
@@ -359,7 +350,7 @@ describe('byPsychsheet', () => {
         {
           eventId: '333',
           type: 'average',
-          best: 1200,
+          value: 1200,
           worldRanking: 100,
           continentalRanking: 50,
           nationalRanking: 10,
@@ -371,7 +362,7 @@ describe('byPsychsheet', () => {
         {
           eventId: '333',
           type: 'average',
-          best: 1400,
+          value: 1400,
           worldRanking: 200,
           continentalRanking: 60,
           nationalRanking: 20,
@@ -389,7 +380,7 @@ describe('byPsychsheet', () => {
         {
           eventId: '333',
           type: 'single',
-          best: 1000,
+          value: 1000,
           worldRanking: 150,
           continentalRanking: 50,
           nationalRanking: 10,
@@ -401,7 +392,7 @@ describe('byPsychsheet', () => {
         {
           eventId: '333',
           type: 'single',
-          best: 1100,
+          value: 1100,
           worldRanking: 250,
           continentalRanking: 60,
           nationalRanking: 20,
@@ -418,7 +409,7 @@ describe('byPsychsheet', () => {
         {
           eventId: '333',
           type: 'average',
-          best: 1200,
+          value: 1200,
           worldRanking: 200,
           continentalRanking: 50,
           nationalRanking: 10,
@@ -430,7 +421,7 @@ describe('byPsychsheet', () => {
         {
           eventId: '333',
           type: 'single',
-          best: 1000,
+          value: 1000,
           worldRanking: 100,
           continentalRanking: 50,
           nationalRanking: 10,
@@ -551,10 +542,11 @@ describe('mayMakeTimeLimit', () => {
   it('returns persons who may make time limit', () => {
     const round: Round = {
       id: '333-r1',
+      linkedRounds: null,
       format: 'a',
       timeLimit: { centiseconds: 1500, cumulativeRoundIds: [] },
       cutoff: null,
-      advancementCondition: null,
+      participationRuleset: null,
       scrambleSetCount: 1,
       results: [],
       extensions: [],
@@ -567,7 +559,7 @@ describe('mayMakeTimeLimit', () => {
           {
             eventId: '333',
             type: 'single',
-            best: 1000,
+            value: 1000,
             worldRanking: 100,
             continentalRanking: 50,
             nationalRanking: 10,
@@ -580,7 +572,7 @@ describe('mayMakeTimeLimit', () => {
           {
             eventId: '333',
             type: 'single',
-            best: 2000,
+            value: 2000,
             worldRanking: 200,
             continentalRanking: 60,
             nationalRanking: 20,
@@ -597,10 +589,11 @@ describe('mayMakeTimeLimit', () => {
   it('returns empty array when no time limit', () => {
     const round: Round = {
       id: '333-r1',
+      linkedRounds: null,
       format: 'a',
       timeLimit: null,
       cutoff: null,
-      advancementCondition: null,
+      participationRuleset: null,
       scrambleSetCount: 1,
       results: [],
       extensions: [],
@@ -614,10 +607,11 @@ describe('mayMakeCutoff', () => {
   it('returns persons who may make cutoff', () => {
     const round: Round = {
       id: '333-r1',
+      linkedRounds: null,
       format: 'a',
       timeLimit: null,
-      cutoff: { numberOfAttempts: 2, attemptResult: 1500 },
-      advancementCondition: null,
+      cutoff: { numberOfAttempts: 2, resultValue: 1500 },
+      participationRuleset: null,
       scrambleSetCount: 1,
       results: [],
       extensions: [],
@@ -630,7 +624,7 @@ describe('mayMakeCutoff', () => {
           {
             eventId: '333',
             type: 'average',
-            best: 1200,
+            value: 1200,
             worldRanking: 100,
             continentalRanking: 50,
             nationalRanking: 10,
@@ -643,7 +637,7 @@ describe('mayMakeCutoff', () => {
           {
             eventId: '333',
             type: 'average',
-            best: 1800,
+            value: 1800,
             worldRanking: 200,
             continentalRanking: 60,
             nationalRanking: 20,
@@ -660,10 +654,11 @@ describe('mayMakeCutoff', () => {
   it('returns empty array when no cutoff', () => {
     const round: Round = {
       id: '333-r1',
+      linkedRounds: null,
       format: 'a',
       timeLimit: null,
       cutoff: null,
-      advancementCondition: null,
+      participationRuleset: null,
       scrambleSetCount: 1,
       results: [],
       extensions: [],

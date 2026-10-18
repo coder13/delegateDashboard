@@ -1,6 +1,7 @@
 import {
   byPROrResult,
   findRoundActivitiesById,
+  hasRegistrantId,
   isOrganizerOrDelegate,
   missingCompetitorAssignments,
   parseActivityCode,
@@ -38,6 +39,7 @@ export const generateGroupAssignmentsForDelegatesAndOrganizers = (
 
   return (assignments: InProgressAssignmment[]): InProgressAssignmment[] => {
     const persons = personsShouldBeInRound(round)(wcif.persons)
+      .filter(hasRegistrantId)
       .filter(missingCompetitorAssignments({ assignments, groupIds }))
       .filter(isOrganizerOrDelegate)
       .sort(byName)

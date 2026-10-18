@@ -23,7 +23,7 @@ const PersonPage = () => {
   const person =
     registrantId &&
     wcif &&
-    wcif.persons.find((i) => i.registrantId.toString() === registrantId.toString());
+    wcif.persons.find((i) => i.registrantId?.toString() === registrantId.toString());
 
   const [assignments, setAssignments] = useState<
     (Assignment & {

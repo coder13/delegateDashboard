@@ -4,7 +4,7 @@ import {
   parseActivityCode,
   roomByActivity,
 } from '../lib/domain/activities';
-import { byPROrResult, getSeedResult } from '../lib/domain/persons';
+import { byPROrResult, getSeedResult, type PersonWithRegistrantId } from '../lib/domain/persons';
 import { useAppSelector } from '../store';
 import { bulkUpsertPersonAssignments, upsertPersonAssignments } from '../store/actions';
 import { selectPersonsAssignedForRound } from '../store/selectors';
@@ -26,7 +26,7 @@ import {
   GridToolbarContainer,
 } from '@mui/x-data-grid';
 import { formatCentiseconds } from '@wca/helpers';
-import type { Activity, Assignment, Person, Room } from '@wca/helpers';
+import type { Activity, Assignment, Room } from '@wca/helpers';
 import { useCallback, useMemo, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 
@@ -38,7 +38,7 @@ type ExtendedAssignment = Assignment & {
 
 type SeedResult = ReturnType<typeof getSeedResult>;
 
-type PersonWithAssignment = Person & {
+type PersonWithAssignment = PersonWithRegistrantId & {
   assignment: ExtendedAssignment;
   seedResult?: SeedResult;
 };
@@ -129,7 +129,6 @@ const ConfigureStationNumbersDialog = ({
           a.push({
             ...p,
             assignment: competitorAssignment,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             seedResult: getSeedResult(currentWcif, activityCode, p),
           });
         }

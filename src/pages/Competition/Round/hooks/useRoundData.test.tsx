@@ -1,4 +1,9 @@
-import { buildActivity, buildEvent, buildPerson, buildRound } from '../../../../store/reducers/_tests_/helpers';
+import {
+  buildActivity,
+  buildEvent,
+  buildPerson,
+  buildRound,
+} from '../../../../store/reducers/_tests_/helpers';
 import INITIAL_STATE, { type AppState } from '../../../../store/initialState';
 import reducer from '../../../../store/reducer';
 import { useRoundData } from './useRoundData';
@@ -36,7 +41,7 @@ const buildWcif = (): Competition => ({
   id: 'test-competition',
   name: 'Test Competition',
   shortName: 'Test',
-  formatVersion: '1.0',
+  formatVersion: '2.0',
   persons: [
     buildPerson({
       registrantId: 1,
@@ -102,11 +107,7 @@ const renderUseRoundData = () => {
     wcif: buildWcif(),
     changedKeys: new Set(),
   };
-  const store = createStore(
-    reducer as Reducer<AppState, AnyAction>,
-    state,
-    applyMiddleware(thunk)
-  );
+  const store = createStore(reducer as Reducer<AppState, AnyAction>, state, applyMiddleware(thunk));
 
   return renderHook(() => useRoundData('333fm-r1', round), {
     wrapper: ({ children }: { children: ReactNode }) => (
@@ -124,11 +125,15 @@ describe('useRoundData', () => {
     expect(result.current.distributedAttemptGroups).toEqual([
       {
         attemptNumber: 1,
-        activities: [expect.objectContaining({ id: 101, room: expect.objectContaining({ name: 'Room A' }) })],
+        activities: [
+          expect.objectContaining({ id: 101, room: expect.objectContaining({ name: 'Room A' }) }),
+        ],
       },
       {
         attemptNumber: 2,
-        activities: [expect.objectContaining({ id: 102, room: expect.objectContaining({ name: 'Room B' }) })],
+        activities: [
+          expect.objectContaining({ id: 102, room: expect.objectContaining({ name: 'Room B' }) }),
+        ],
       },
     ]);
   });

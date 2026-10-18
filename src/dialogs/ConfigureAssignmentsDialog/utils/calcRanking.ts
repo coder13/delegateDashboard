@@ -1,17 +1,17 @@
-import type { AttemptResult, Person } from '@wca/helpers';
+import type { Person, ResultValue } from '@wca/helpers';
 
 export function calcRanking(
   person: Person & {
     seedResult?: {
-      average?: AttemptResult;
-      single?: AttemptResult;
+      average?: ResultValue;
+      single?: ResultValue;
     };
   },
   lastPerson?: Person & {
     seedResult?: {
       ranking?: number;
-      average?: AttemptResult;
-      single?: AttemptResult;
+      average?: ResultValue;
+      single?: ResultValue;
     };
   }
 ) {

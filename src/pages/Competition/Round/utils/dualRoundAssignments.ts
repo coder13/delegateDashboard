@@ -35,6 +35,11 @@ export const buildCopyRoundAssignments = (
   let skippedCount = 0;
 
   wcif.persons.forEach((person) => {
+    if (person.registrantId === null) {
+      return;
+    }
+    const registrantId = person.registrantId;
+
     person.assignments?.forEach((assignment) => {
       const sourceActivity = sourceGroupsById.get(+assignment.activityId);
 
@@ -52,7 +57,7 @@ export const buildCopyRoundAssignments = (
       }
 
       assignments.push({
-        registrantId: person.registrantId,
+        registrantId,
         assignment: {
           ...assignment,
           activityId: targetActivity.id,

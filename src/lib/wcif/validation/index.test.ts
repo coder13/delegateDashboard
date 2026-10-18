@@ -10,7 +10,7 @@ import type { Competition } from '@wca/helpers';
 import { describe, it, expect } from 'vitest';
 
 const mockWcif: Competition = {
-  formatVersion: '1.0',
+  formatVersion: '2.0',
   id: 'TestComp2024',
   name: 'Test Competition 2024',
   shortName: 'Test 2024',
@@ -21,7 +21,7 @@ const mockWcif: Competition = {
     numberOfDays: 1,
     venues: [],
   },
-  series: [],
+  series: null,
   competitorLimit: 100,
   extensions: [],
   registrationInfo: {
@@ -44,10 +44,11 @@ describe('validateWcif', () => {
           rounds: [
             {
               id: '333-r1',
+              linkedRounds: null,
               format: 'a',
               timeLimit: null,
               cutoff: null,
-              advancementCondition: null,
+              participationRuleset: null,
               results: [],
               scrambleSetCount: 1,
               extensions: [],
@@ -148,20 +149,22 @@ describe('validateWcif', () => {
           rounds: [
             {
               id: '222-r1',
+              linkedRounds: null,
               format: 'a',
               timeLimit: null,
               cutoff: null,
-              advancementCondition: null, // Missing!
+              participationRuleset: null, // Missing!
               results: [],
               scrambleSetCount: 1,
               extensions: [],
             },
             {
               id: '222-r2',
+              linkedRounds: null,
               format: 'a',
               timeLimit: null,
               cutoff: null,
-              advancementCondition: null,
+              participationRuleset: null,
               results: [],
               scrambleSetCount: 1,
               extensions: [],
@@ -267,10 +270,11 @@ describe('validateWcif', () => {
           rounds: [
             {
               id: '333-r1',
+              linkedRounds: null,
               format: 'a',
               timeLimit: null,
               cutoff: null,
-              advancementCondition: null,
+              participationRuleset: null,
               results: [],
               scrambleSetCount: 1,
               extensions: [],
@@ -377,10 +381,11 @@ describe('validateWcif', () => {
           rounds: [
             {
               id: '333-r1',
+              linkedRounds: null,
               format: 'a',
               timeLimit: null,
               cutoff: null,
-              advancementCondition: null,
+              participationRuleset: null,
               results: [],
               scrambleSetCount: 1,
               extensions: [],

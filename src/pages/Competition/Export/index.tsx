@@ -1,6 +1,6 @@
 import { findGroupActivitiesByRound, parseActivityCode } from '../../../lib/domain/activities';
 import { eventNameById, roundFormatShortById } from '../../../lib/domain/events';
-import { acceptedRegistrations } from '../../../lib/domain/persons';
+import { acceptedRegistrations, hasRegistrantId } from '../../../lib/domain/persons';
 import { type ActivityWithParent } from '../../../lib/domain/types';
 import {
   getGroupifierActivityConfig,
@@ -22,7 +22,10 @@ import { download, generateCsv, mkConfig } from 'export-to-csv';
 import { flatten } from 'lodash';
 import { useCallback } from 'react';
 import Grid from '@mui/material/GridLegacy';
-import { formatAdvancementCondition, getDisplayAdvancementConditionForRound } from '../../../lib/wcif/rounds';
+import {
+  formatAdvancementCondition,
+  getDisplayAdvancementConditionForRound,
+} from '../../../lib/wcif/rounds';
 
 type AssignmentWithActivity = Assignment & { activity: ActivityWithParent };
 
@@ -136,6 +139,7 @@ const ExportPage = () => {
     const headers = ['registrantId', 'name', 'wcaId', 'role', 'country_iso', ...assignmentHeaders];
 
     const data = acceptedRegistrations(wcif.persons)
+      .filter(hasRegistrantId)
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((person) => {
         const assignments = assignmentsToObj(person);
@@ -237,7 +241,7 @@ const ExportPage = () => {
             ? `DNF if > ${formatCentiseconds(round.timeLimit.centiseconds)}`
             : '',
           cutoff_time: round.cutoff
-            ? `1 or 2 < ${formatCentiseconds(round.cutoff.attemptResult)}`
+            ? `1 or 2 < ${formatCentiseconds(round.cutoff.resultValue)}`
             : '',
           round_format: roundFormatShortById(round.format),
           advancement_condition: (() => {
@@ -253,11 +257,13 @@ const ExportPage = () => {
 
         // Add scorecards group by group
         groupAssignmentsByEventAndRound.forEach((groupActivity) => {
-          const people = acceptedRegistrations(wcif.persons).filter((person) =>
-            (person.assignments ?? []).some(
-              (a) => a.activityId === groupActivity.id && a.assignmentCode === 'competitor'
-            )
-          );
+          const people = acceptedRegistrations(wcif.persons)
+            .filter(hasRegistrantId)
+            .filter((person) =>
+              (person.assignments ?? []).some(
+                (a) => a.activityId === groupActivity.id && a.assignmentCode === 'competitor'
+              )
+            );
 
           const featuredCompetitors =
             getGroupifierActivityConfig(groupActivity)?.featuredCompetitorWcaUserIds || [];

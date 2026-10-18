@@ -1,6 +1,6 @@
 import { byPROrResult, findRoundActivitiesById, parseActivityCode } from '../domain';
 import { isCompetitorAssignment, missingCompetitorAssignments } from '../domain';
-import { personsShouldBeInRound } from '../domain';
+import { hasRegistrantId, personsShouldBeInRound } from '../domain';
 import { type InProgressAssignmment } from '../types';
 import { byName } from '../utils';
 import { createGroupAssignment } from '../wcif';
@@ -73,6 +73,7 @@ export const generateAssignmentsForRoundAttempt = (
 
   return (assignments: InProgressAssignmment[]): InProgressAssignmment[] => {
     const persons = personsShouldBeInRound(round)(wcif.persons)
+      .filter(hasRegistrantId)
       .filter(missingCompetitorAssignments({ assignments, groupIds: attemptActivityIds }))
       .sort(byName)
       .sort(byPROrResult(event, roundNumber));

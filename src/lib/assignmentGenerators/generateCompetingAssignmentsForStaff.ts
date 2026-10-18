@@ -1,6 +1,6 @@
 import { type ActivityWithParent, findGroupActivitiesByRound, parseActivityCode } from '../domain';
 import { hasStaffAssignment, isStaffAssignment, missingCompetitorAssignments } from '../domain';
-import { personsShouldBeInRound } from '../domain';
+import { hasRegistrantId, personsShouldBeInRound } from '../domain';
 import { type InProgressAssignmment } from '../types';
 import { createGroupAssignment, previousGroupForActivity } from '../wcif';
 import { type Competition, type Event, type Person } from '@wca/helpers';
@@ -64,6 +64,7 @@ export const generateCompetingAssignmentsForStaff = (
   const groupIds = groups.map((g) => g.id);
 
   const persons = personsShouldBeInRound(round)(wcif.persons)
+    .filter(hasRegistrantId)
     .filter(hasStaffAssignment({ groupIds }))
     .filter(missingCompetitorAssignments({ groupIds }));
 

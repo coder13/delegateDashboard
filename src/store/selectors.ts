@@ -4,9 +4,14 @@ import {
   parseActivityCode,
   findRooms,
 } from '../lib/domain/activities';
-import { acceptedRegistrations, personsShouldBeInRound } from '../lib/domain/persons';
+import {
+  acceptedRegistrations,
+  hasRegistrantId,
+  personsShouldBeInRound,
+  type PersonWithRegistrantId,
+} from '../lib/domain/persons';
 import { type AppState } from './initialState';
-import { type Activity, type Event, type Person, type Round, type Room } from '@wca/helpers';
+import { type Activity, type Event, type Round, type Room } from '@wca/helpers';
 import { createSelector } from 'reselect';
 
 const selectWcif = (state: AppState) => state.wcif;
@@ -18,8 +23,8 @@ export const selectWcifRooms = createSelector(selectWcif, (wcif): Room[] =>
 /**
  * Return a filtered array of all persons who's registration is defined and status is `accepted`
  */
-export const selectAcceptedPersons = createSelector(selectWcif, (wcif): Person[] =>
-  acceptedRegistrations(wcif?.persons || [])
+export const selectAcceptedPersons = createSelector(selectWcif, (wcif): PersonWithRegistrantId[] =>
+  acceptedRegistrations(wcif?.persons || []).filter(hasRegistrantId)
 );
 
 /**
@@ -68,7 +73,7 @@ export const selectActivityById = createSelector(
 
 export const selectPersonsAssignedForRound = createSelector(
   [selectWcif, selectAcceptedPersons, (_: AppState, roundId: string) => roundId],
-  (wcif, acceptedPersons, roundId: string): Person[] => {
+  (wcif, acceptedPersons, roundId: string): PersonWithRegistrantId[] => {
     return acceptedPersons.filter((p) =>
       p.assignments?.find((a) => {
         const activity = wcif ? findActivityById(wcif, a.activityId) : null;
@@ -86,7 +91,7 @@ export const selectPersonsAssignedForRound = createSelector(
 
 export const selectPersonsHavingCompetitorAssignmentsForRound = createSelector(
   [selectWcif, selectAcceptedPersons, (_: AppState, roundId: string) => roundId],
-  (wcif, acceptedPersons, roundId: string): Person[] => {
+  (wcif, acceptedPersons, roundId: string): PersonWithRegistrantId[] => {
     return acceptedPersons.filter((p) =>
       p.assignments?.find((a) => {
         const activity = wcif ? findActivityById(wcif, a.activityId) : null;
@@ -107,8 +112,8 @@ export const selectPersonsHavingCompetitorAssignmentsForRound = createSelector(
 export const selectPersonsShouldBeInRound = createSelector(
   [selectAcceptedPersons],
   (acceptedPersons) =>
-    (round: Round): Person[] =>
-      personsShouldBeInRound(round)(acceptedPersons)
+    (round: Round): PersonWithRegistrantId[] =>
+      personsShouldBeInRound(round)(acceptedPersons).filter(hasRegistrantId)
 );
 
 /**
@@ -116,7 +121,7 @@ export const selectPersonsShouldBeInRound = createSelector(
  */
 export const selectPersonsAssignedToActivitiyId = createSelector(
   [selectAcceptedPersons, (_: AppState, activityId: number) => activityId],
-  (persons, activityId): Person[] =>
+  (persons, activityId): PersonWithRegistrantId[] =>
     persons.filter(({ assignments }) => assignments?.some((a) => a.activityId === activityId))
 );
 
@@ -125,7 +130,7 @@ export const selectPersonsAssignedToActivitiyId = createSelector(
  */
 export const selectFirstTimers = createSelector(
   selectAcceptedPersons,
-  (acceptedPersons): Person[] => acceptedPersons.filter((p) => !p.wcaId)
+  (acceptedPersons): PersonWithRegistrantId[] => acceptedPersons.filter((p) => !p.wcaId)
 );
 
 /**

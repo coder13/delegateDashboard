@@ -36,7 +36,7 @@ const buildCompetition = (rooms: any[], persons: Person[]): Competition => ({
   id: 'comp',
   shortName: 'comp',
   name: 'Comp',
-  formatVersion: 'v1.0',
+  formatVersion: '2.0',
   competitorLimit: null,
   extensions: [],
   schedule: {
@@ -55,7 +55,7 @@ const buildCompetition = (rooms: any[], persons: Person[]): Competition => ({
       },
     ],
   },
-  series: [],
+  series: null,
   persons,
   events: [
     {
@@ -63,10 +63,11 @@ const buildCompetition = (rooms: any[], persons: Person[]): Competition => ({
       rounds: [
         {
           id: '333-r1',
+          linkedRounds: null,
           format: 'a',
           cutoff: null,
           timeLimit: null,
-          advancementCondition: null,
+          participationRuleset: null,
           results: [],
           scrambleSetCount: 1,
           extensions: [],
@@ -354,12 +355,14 @@ describe('import helpers', () => {
     };
     const wcif = buildCompetition([room], [competitor({})]);
 
-    const withGroups = generateMissingGroupActivities(wcif, [{ activityCode: '333-r1-g1', roomId: 10 }]);
+    const withGroups = generateMissingGroupActivities(wcif, [
+      { activityCode: '333-r1-g1', roomId: 10 },
+    ]);
 
     expect(withGroups.schedule.venues[0].rooms[0].activities[0].childActivities).toHaveLength(1);
-    expect(withGroups.schedule.venues[0].rooms[0].activities[0].childActivities[0].activityCode).toBe(
-      '333-r1-g1'
-    );
+    expect(
+      withGroups.schedule.venues[0].rooms[0].activities[0].childActivities[0].activityCode
+    ).toBe('333-r1-g1');
     expect(withGroups.schedule.venues[0].rooms[0].activities[1].childActivities).toHaveLength(0);
   });
 

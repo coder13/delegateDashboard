@@ -14,10 +14,11 @@ const roundActivity: Activity = {
 
 const round: Round = {
   id: '333-r1',
+  linkedRounds: null,
   format: 'a',
   timeLimit: null,
   cutoff: null,
-  advancementCondition: null,
+  participationRuleset: null,
   scrambleSetCount: 1,
   results: [],
   extensions: [],
@@ -53,7 +54,7 @@ const buildCompetition = (groupCount: number, persons: Person[]): Competition =>
   const groups = createGroupActivities(groupCount);
 
   return {
-    formatVersion: 'v1.0',
+    formatVersion: '2.0',
     id: 'test-comp',
     name: 'Test Competition',
     shortName: 'Test',
@@ -91,7 +92,7 @@ const buildCompetition = (groupCount: number, persons: Person[]): Competition =>
         },
       ],
     },
-    series: [],
+    series: null,
     competitorLimit: null,
     extensions: [],
     registrationInfo: {

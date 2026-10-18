@@ -163,6 +163,10 @@ export const findCompetingAssignment = (
   person: Person,
   eventId: EventId
 ): ParsedAssignment => {
+  if (person.registrantId === null) {
+    throw new Error(`Cannot import assignments for ${person.name} without a registrant ID`);
+  }
+
   const data = row[eventId]?.trim();
 
   if (!data || data === '-') {
@@ -224,6 +228,10 @@ export const findStaffingAssignments = (
   person: Person,
   eventId: EventId
 ): ParsedAssignment[] | undefined => {
+  if (person.registrantId === null) {
+    throw new Error(`Cannot import assignments for ${person.name} without a registrant ID`);
+  }
+
   const field = data.meta.fields.find((fieldName) => {
     const split = fieldName.split('-');
     return split[0] === eventId && split[1] === 'staff';
@@ -475,7 +483,9 @@ export const generateMissingGroupActivities = (
       const venue = schedule.venues.find((v) => v.rooms.some((room) => room.id === roomId));
       const room = venue?.rooms.find((room) => room.id === roomId);
 
-      const roundActivity = room?.activities.find((activity) => activity.activityCode === eventRound);
+      const roundActivity = room?.activities.find(
+        (activity) => activity.activityCode === eventRound
+      );
 
       if (!roundActivity) {
         throw new Error(`Could not find round activity ${eventRound} in room ${roomId}`);
@@ -565,7 +575,7 @@ export const upsertCompetitorAssignments = (
 
   assignments.forEach((assignment) => {
     const person = persons.find((p) => p.registrantId === assignment.registrantId);
-    if (!person) {
+    if (!person || person.registrantId === null) {
       return;
     }
     person.assignments = person.assignments ?? [];

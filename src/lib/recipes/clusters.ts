@@ -1,9 +1,14 @@
-import { Competition, Event, Person, Round, parseActivityCode } from '@wca/helpers';
+import {
+  parseActivityCode,
+  type Competition,
+  type Event,
+  type Person,
+  type Round,
+} from '@wca/helpers';
 import Assignments from '../../config/assignments';
 import { findGroupActivitiesByRound } from '../wcif/activities';
-import { acceptedRegistrations, personsShouldBeInRound } from '../domain/persons';
-import { ClusterDefinition } from './types';
-import { byPROrResult } from 'wca-group-generators';
+import { acceptedRegistrations, byPROrResult, personsShouldBeInRound } from '../domain/persons';
+import type { ClusterDefinition } from './types';
 
 export const Filters = [
   {
@@ -103,7 +108,12 @@ export const getBaseCluster = (
   }
 };
 
-export const sortCluster = (wcif: Competition, cluster: ClusterDefinition, persons: Person[], roundId: string) => {
+export const sortCluster = (
+  wcif: Competition,
+  cluster: ClusterDefinition,
+  persons: Person[],
+  roundId: string
+) => {
   if (!cluster.sort) {
     return persons;
   }
@@ -119,8 +129,7 @@ export const sortCluster = (wcif: Competition, cluster: ClusterDefinition, perso
   }
 
   return persons;
-}
-
+};
 
 export const getCluster = (wcif: Competition, cluster: ClusterDefinition, roundId: string) => {
   const activityIds = findGroupActivitiesByRound(wcif, roundId).map((a) => a.id);

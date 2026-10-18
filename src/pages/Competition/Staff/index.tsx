@@ -213,7 +213,11 @@ const Staff = () => {
                         disabled={!acceptedRegistration(person)}
                         color="primary"
                         checked={(person.roles ?? []).includes(role.id)}
-                        onChange={(e) => handleChange(e, person.registrantId, role.id)}
+                        onChange={(e) => {
+                          if (person.registrantId !== null) {
+                            handleChange(e, person.registrantId, role.id);
+                          }
+                        }}
                       />
                     </TableCell>
                   ))}

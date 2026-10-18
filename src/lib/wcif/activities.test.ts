@@ -34,8 +34,8 @@ const buildWcif = (
     id: 'TestComp',
     name: 'Test Competition',
     shortName: 'Test',
-    formatVersion: '1.0',
-    series: [],
+    formatVersion: '2.0',
+    series: null,
     competitorLimit: null,
     registrationInfo: null,
     schedule: {
@@ -59,10 +59,11 @@ const buildWcif = (
         rounds: [
           {
             id: '333-r1',
+            linkedRounds: null,
             format: 'a',
             timeLimit: null,
             cutoff: null,
-            advancementCondition: null,
+            participationRuleset: null,
             results: [{ personId: 1, best: 1000, average: 1200, ranking: 1, attempts: [] }],
             scrambleSetCount: 1,
             extensions: [],
