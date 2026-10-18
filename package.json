@@ -36,7 +36,7 @@
     "@types/react-dom": "19.2.3",
     "@uiw/react-codemirror": "^4.25.4",
     "@vitejs/plugin-react": "^5.1.2",
-    "@wca/helpers": "^1.1.6",
+    "@wca/helpers": "2.0.0",
     "clsx": "^2.1.1",
     "country-flag-icons": "^1.6.8",
     "date-fns": "^4.1.0",
@@ -68,7 +68,6 @@
     "vite-plugin-pwa": "^1.2.0",
     "vite-plugin-svgr": "^4.3.0",
     "vite-tsconfig-paths": "^6.0.5",
-    "wca-group-generators": "^0.1.8",
     "web-vitals": "^5.1.0"
   },
   "devDependencies": {

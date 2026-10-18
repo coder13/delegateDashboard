@@ -13,7 +13,7 @@ import type { Competition, Event } from '@wca/helpers';
 import { describe, it, expect } from 'vitest';
 
 const mockWcif: Competition = {
-  formatVersion: '1.0',
+  formatVersion: '2.0',
   id: 'TestComp2024',
   name: 'Test Competition 2024',
   shortName: 'Test 2024',
@@ -24,7 +24,7 @@ const mockWcif: Competition = {
     numberOfDays: 1,
     venues: [],
   },
-  series: [],
+  series: null,
   competitorLimit: 100,
   extensions: [],
   registrationInfo: {
@@ -61,10 +61,11 @@ describe('validateEventHasRounds', () => {
       rounds: [
         {
           id: '333-r1',
+          linkedRounds: null,
           format: 'a',
           timeLimit: null,
           cutoff: null,
-          advancementCondition: null,
+          participationRuleset: null,
           results: [],
           scrambleSetCount: 1,
           extensions: [],
@@ -88,20 +89,22 @@ describe('validateAdvancementConditions', () => {
       rounds: [
         {
           id: '333-r1',
+          linkedRounds: null,
           format: 'a',
           timeLimit: null,
           cutoff: null,
-          advancementCondition: null, // Missing!
+          participationRuleset: null, // Missing!
           results: [],
           scrambleSetCount: 1,
           extensions: [],
         },
         {
           id: '333-r2',
+          linkedRounds: null,
           format: 'a',
           timeLimit: null,
           cutoff: null,
-          advancementCondition: null, // This is final, so OK
+          participationRuleset: null, // This is final, so OK
           results: [],
           scrambleSetCount: 1,
           extensions: [],
@@ -126,20 +129,32 @@ describe('validateAdvancementConditions', () => {
       rounds: [
         {
           id: '333-r1',
+          linkedRounds: null,
           format: 'a',
           timeLimit: null,
           cutoff: null,
-          advancementCondition: { type: 'ranking', level: 12 },
+          participationRuleset: {
+            participationSource: { type: 'registrations' },
+            reservedPlaces: null,
+          },
           results: [],
           scrambleSetCount: 1,
           extensions: [],
         },
         {
           id: '333-r2',
+          linkedRounds: null,
           format: 'a',
           timeLimit: null,
           cutoff: null,
-          advancementCondition: null,
+          participationRuleset: {
+            participationSource: {
+              type: 'round',
+              roundId: '333-r1',
+              resultCondition: { type: 'ranking', scope: 'average', value: 12 },
+            },
+            reservedPlaces: null,
+          },
           results: [],
           scrambleSetCount: 1,
           extensions: [],
@@ -164,7 +179,6 @@ describe('validateAdvancementConditions', () => {
           format: 'a',
           timeLimit: null,
           cutoff: null,
-          advancementCondition: null,
           results: [],
           scrambleSetCount: 2,
           linkedRounds: ['clock-r1', 'clock-r2'],
@@ -181,7 +195,6 @@ describe('validateAdvancementConditions', () => {
           format: 'a',
           timeLimit: null,
           cutoff: null,
-          advancementCondition: null,
           results: [],
           scrambleSetCount: 2,
           linkedRounds: ['clock-r1', 'clock-r2'],
@@ -195,13 +208,12 @@ describe('validateAdvancementConditions', () => {
         },
         {
           id: 'clock-r3',
+          linkedRounds: null,
           format: 'a',
           timeLimit: null,
           cutoff: null,
-          advancementCondition: null,
           results: [],
           scrambleSetCount: 2,
-          linkedRounds: null,
           participationRuleset: {
             participationSource: {
               type: 'linkedRounds',
@@ -227,12 +239,13 @@ describe('validateAdvancementConditions', () => {
     expect(errors).toHaveLength(0);
   });
 
-  it('should accept registration participation rulesets for non-final rounds', () => {
+  it('should accept v2 sequential-round advancement', () => {
     const event: Event = {
       id: 'sq1',
       rounds: [
         {
           id: 'sq1-r1',
+          linkedRounds: null,
           format: 'a',
           timeLimit: {
             centiseconds: 12000,
@@ -240,12 +253,10 @@ describe('validateAdvancementConditions', () => {
           },
           cutoff: {
             numberOfAttempts: 2,
-            attemptResult: 6000,
+            resultValue: 6000,
           },
-          advancementCondition: null,
           results: [],
           scrambleSetCount: 2,
-          linkedRounds: null,
           participationRuleset: {
             participationSource: {
               type: 'registrations',
@@ -256,10 +267,18 @@ describe('validateAdvancementConditions', () => {
         },
         {
           id: 'sq1-r2',
+          linkedRounds: null,
           format: 'a',
           timeLimit: null,
           cutoff: null,
-          advancementCondition: null,
+          participationRuleset: {
+            participationSource: {
+              type: 'round',
+              roundId: 'sq1-r1',
+              resultCondition: { type: 'ranking', scope: 'average', value: 12 },
+            },
+            reservedPlaces: null,
+          },
           results: [],
           scrambleSetCount: 1,
           extensions: [],
@@ -281,10 +300,11 @@ describe('validateAdvancementConditions', () => {
       rounds: [
         {
           id: '333-r1',
+          linkedRounds: null,
           format: 'a',
           timeLimit: null,
           cutoff: null,
-          advancementCondition: null,
+          participationRuleset: null,
           results: [],
           scrambleSetCount: 1,
           extensions: [],
@@ -308,10 +328,11 @@ describe('validateRoundsHaveScheduleActivities', () => {
       rounds: [
         {
           id: '333-r1',
+          linkedRounds: null,
           format: 'a',
           timeLimit: null,
           cutoff: null,
-          advancementCondition: null,
+          participationRuleset: null,
           results: [],
           scrambleSetCount: 1,
           extensions: [],
@@ -364,10 +385,11 @@ describe('validateRoundsHaveScheduleActivities', () => {
       rounds: [
         {
           id: '333-r1',
+          linkedRounds: null,
           format: 'a',
           timeLimit: null,
           cutoff: null,
-          advancementCondition: null,
+          participationRuleset: null,
           results: [],
           scrambleSetCount: 1,
           extensions: [],
@@ -440,20 +462,22 @@ describe('validateEventRounds', () => {
           rounds: [
             {
               id: '222-r1',
+              linkedRounds: null,
               format: 'a',
               timeLimit: null,
               cutoff: null,
-              advancementCondition: null,
+              participationRuleset: null,
               results: [],
               scrambleSetCount: 1,
               extensions: [],
             },
             {
               id: '222-r2',
+              linkedRounds: null,
               format: 'a',
               timeLimit: null,
               cutoff: null,
-              advancementCondition: null,
+              participationRuleset: null,
               results: [],
               scrambleSetCount: 1,
               extensions: [],

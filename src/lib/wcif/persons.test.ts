@@ -4,10 +4,11 @@ import type { Competition, Person, Result, Round } from '@wca/helpers';
 
 const buildRound = (overrides: Partial<Round>): Round => ({
   id: '333-r1',
+  linkedRounds: null,
   format: 'a',
   timeLimit: null,
   cutoff: null,
-  advancementCondition: null,
+  participationRuleset: null,
   results: [],
   scrambleSetCount: 1,
   extensions: [],
@@ -19,8 +20,8 @@ const buildWcif = (rounds: Round[]): Competition =>
     id: 'TestComp',
     name: 'Test Competition',
     shortName: 'Test',
-    formatVersion: '1.0',
-    series: [],
+    formatVersion: '2.0',
+    series: null,
     competitorLimit: null,
     registrationInfo: null,
     schedule: {
@@ -102,7 +103,7 @@ describe('wcif persons helpers', () => {
         {
           eventId: '333',
           type: 'average',
-          best: 1500,
+          value: 1500,
           worldRanking: 10,
           continentalRanking: 5,
           nationalRanking: 1,
@@ -110,7 +111,7 @@ describe('wcif persons helpers', () => {
         {
           eventId: '333',
           type: 'single',
-          best: 900,
+          value: 900,
           worldRanking: 8,
           continentalRanking: 3,
           nationalRanking: 1,

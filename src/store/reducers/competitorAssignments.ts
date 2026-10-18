@@ -232,7 +232,9 @@ export const bulkRemovePersonAssignments = (
         const isBeingRemoved = filtersApplicable.length > 0;
 
         if (isBeingRemoved) {
-          affectedRegistrantIds.add(person.registrantId);
+          if (person.registrantId !== null) {
+            affectedRegistrantIds.add(person.registrantId);
+          }
         }
 
         // At least 1 filter is filtering them out
@@ -272,7 +274,9 @@ export const bulkUpsertPersonAssignments = (
       }));
 
     if (personAssignments.length > 0) {
-      affectedRegistrantIds.add(person.registrantId);
+      if (person.registrantId !== null) {
+        affectedRegistrantIds.add(person.registrantId);
+      }
       return upsertAssignmentsOnPerson(person, personAssignments);
     }
 

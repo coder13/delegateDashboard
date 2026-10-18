@@ -1,7 +1,6 @@
-import { Competition, parseActivityCode } from '@wca/helpers';
-import { findAllActivities } from 'wca-group-generators';
-import { activityCodeIsChild } from '../domain/activities/activityCode';
-import { AssignmentStep } from './types';
+import { parseActivityCode, type Competition } from '@wca/helpers';
+import { activityCodeIsChild, findAllActivities } from '../domain/activities';
+import type { AssignmentStep } from './types';
 
 const getBaseActivities = (
   wcif: Competition,

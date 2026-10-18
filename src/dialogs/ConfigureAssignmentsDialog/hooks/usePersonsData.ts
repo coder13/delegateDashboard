@@ -2,6 +2,7 @@ import {
   acceptedRegistration,
   byPROrResult,
   getSeedResult,
+  hasRegistrantId,
   isOrganizerOrDelegate,
   registeredForEvent,
   shouldBeInRound,
@@ -30,6 +31,7 @@ export function usePersonsData(
     }
 
     const personsWithSeedResult = wcif.persons
+      .filter(hasRegistrantId)
       .filter((p) => {
         // if competitor does not have an accepted registration, do not show them
         if (!acceptedRegistration(p)) {

@@ -1,5 +1,10 @@
 import ConfigureAssignmentsDialog from './ConfigureAssignmentsDialog';
-import { buildActivity, buildEvent, buildPerson, buildRound } from '../../store/reducers/_tests_/helpers';
+import {
+  buildActivity,
+  buildEvent,
+  buildPerson,
+  buildRound,
+} from '../../store/reducers/_tests_/helpers';
 import INITIAL_STATE, { type AppState } from '../../store/initialState';
 import reducer from '../../store/reducer';
 import { renderWithProviders } from '../../test-utils';
@@ -72,7 +77,7 @@ const buildWcif = (persons: Person[]): Competition => ({
   id: 'test-competition',
   name: 'Test Competition',
   shortName: 'Test',
-  formatVersion: '1.0',
+  formatVersion: '2.0',
   persons,
   events: [
     buildEvent({
@@ -115,11 +120,7 @@ const buildState = (persons: Person[] = [person]): AppState => ({
 });
 
 const renderWithStore = (ui: ReactElement, state = buildState()) => {
-  const store = createStore(
-    reducer as Reducer<AppState, AnyAction>,
-    state,
-    applyMiddleware(thunk)
-  );
+  const store = createStore(reducer as Reducer<AppState, AnyAction>, state, applyMiddleware(thunk));
 
   return {
     store,

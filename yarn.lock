@@ -2914,15 +2914,10 @@
     "@vitest/pretty-format" "4.0.18"
     tinyrainbow "^3.0.3"
 
-"@wca/helpers@^1.1.5":
-  version "1.1.5"
-  resolved "https://registry.npmjs.org/@wca/helpers/-/helpers-1.1.5.tgz"
-  integrity sha512-Sr/XxkEXctrRKFJuqyAy9KH7q//YevEo+zSCESpVQqieB4Y3KjHYOl54kPaocwAHkWniGMOwZWD6O1Q9MR1d3w==
-
-"@wca/helpers@^1.1.6":
-  version "1.1.6"
-  resolved "https://registry.yarnpkg.com/@wca/helpers/-/helpers-1.1.6.tgz#9157225955df954cd4cd0ab1e7fdad24cd39d0fb"
-  integrity sha512-Y5zsRpQ6Bt/aOuqm1dbkb1awYmR3D5hrHHLXYmWLiJzfb8wo4fxyKLIEnK4LrfjWpO+rmictG99cWORhaby5Lg==
+"@wca/helpers@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@wca/helpers/-/helpers-2.0.0.tgz#ace1af3446b552ef54f3a83cc35cc05a74c04ea9"
+  integrity sha512-VYcby20Y9Uf7FWSxvzHbJRp6eOW7Gb4z7Nvy+8ggjxIKqfndAewxysiYop2LZ6VXnJavtV4SPy2AFhAH+OT4Bg==
 
 acorn-jsx@^5.3.2:
   version "5.3.2"
@@ -6802,11 +6797,6 @@ ts-api-utils@^2.4.0:
   resolved "https://registry.yarnpkg.com/ts-api-utils/-/ts-api-utils-2.4.0.tgz#2690579f96d2790253bdcf1ca35d569ad78f9ad8"
   integrity sha512-3TaVTaAv2gTiMB35i3FiGJaRfwb3Pyn/j3m/bfAvGe8FB7CF6u+LMYqYlDh7reQf7UNvoTvdfAqHGmPGOSsPmA==
 
-tsc@^2.0.4:
-  version "2.0.4"
-  resolved "https://registry.npmjs.org/tsc/-/tsc-2.0.4.tgz"
-  integrity sha512-fzoSieZI5KKJVBYGvwbVZs/J5za84f2lSTLPYf6AGiIf43tZ3GNrI1QzTLcjtyDDP4aLxd46RTZq1nQxe7+k5Q==
-
 tsconfck@^3.0.3:
   version "3.1.6"
   resolved "https://registry.yarnpkg.com/tsconfck/-/tsconfck-3.1.6.tgz#da1f0b10d82237ac23422374b3fce1edb23c3ead"
@@ -6929,11 +6919,6 @@ typescript-eslint@^8.53.1:
     "@typescript-eslint/parser" "8.53.1"
     "@typescript-eslint/typescript-estree" "8.53.1"
     "@typescript-eslint/utils" "8.53.1"
-
-typescript@^5.0.4:
-  version "5.2.2"
-  resolved "https://registry.npmjs.org/typescript/-/typescript-5.2.2.tgz"
-  integrity sha512-mI4WrpHsbCIcwT9cF4FZvr80QUeKvsUsUvKDoR+X/7XHQH98xYD8YHZg7ANtz2GtZt/CBq2QJ0thkGJMHfqc1w==
 
 typescript@^5.9.3:
   version "5.9.3"
@@ -7132,15 +7117,6 @@ w3c-xmlserializer@^5.0.0:
   integrity sha512-o8qghlI8NZHU1lLPrpi2+Uq7abh4GGPpYANlalzWxyWteJOCsr/P+oPBA49TOLu5FTZO4d3F9MnWJfiMo4BkmA==
   dependencies:
     xml-name-validator "^5.0.0"
-
-wca-group-generators@^0.1.8:
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/wca-group-generators/-/wca-group-generators-0.1.8.tgz#a23ab29a5b5d62a6d5d0f538e301d65d56be79ee"
-  integrity sha512-ZRIepwTKg6Egsoqq9EK1FTqpJ6x2NlCigsK7YUL1kbQbG1ry0AmmxxQ0fPJYYE4pWqjj23vstBHRuf3W6z7h8A==
-  dependencies:
-    "@wca/helpers" "^1.1.5"
-    tsc "^2.0.4"
-    typescript "^5.0.4"
 
 web-vitals@^5.1.0:
   version "5.1.0"

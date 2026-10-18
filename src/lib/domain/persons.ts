@@ -2,7 +2,6 @@ import { parseActivityCode } from './activities';
 import {
   type Activity,
   type Assignment,
-  type AttemptResult,
   type Event,
   type EventId,
   type Person,
@@ -12,6 +11,11 @@ import {
   type Round,
 } from '@wca/helpers';
 import { usesRegistrationParticipation } from '../wcif/rounds';
+
+export type PersonWithRegistrantId = Person & { registrantId: number };
+
+export const hasRegistrantId = (person: Person): person is PersonWithRegistrantId =>
+  person.registrantId !== null;
 
 /**
  * @param {Person} person
@@ -78,13 +82,7 @@ export const assignedInGroupsForRoles =
 export const findPR = (personalBests: PersonalBest[], eventId: EventId, type: RankingType) =>
   personalBests.find((pr) => pr.eventId === eventId && pr.type === type);
 
-type V2PersonalBest = Omit<PersonalBest, 'best'> & { value: AttemptResult };
-
-/**
- * WCIF v1 calls this field `best`. WCIF v2 calls it `value`.
- */
-export const getPersonalBestValue = (personalBest: PersonalBest | V2PersonalBest) =>
-  'value' in personalBest ? personalBest.value : personalBest.best;
+export const getPersonalBestValue = (personalBest: PersonalBest) => personalBest.value;
 
 /**
  * Comparator for array.sort
@@ -242,7 +240,7 @@ export const mayMakeCutoff = (eventId: EventId, round?: Round, persons?: Person[
         return false;
       }
 
-      return getPersonalBestValue(PR) <= cutoff.attemptResult;
+      return getPersonalBestValue(PR) <= cutoff.resultValue;
     }) || []
   );
 };

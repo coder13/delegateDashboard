@@ -52,7 +52,7 @@ const INITIAL_STATE: AppState = {
       startDate: '',
       numberOfDays: 0,
     },
-    series: [],
+    series: null,
     extensions: [],
     competitorLimit: 0,
     registrationInfo: {

@@ -11,7 +11,7 @@ import type { Competition, Person } from '@wca/helpers';
 import { describe, it, expect } from 'vitest';
 
 const mockWcif: Competition = {
-  formatVersion: '1.0',
+  formatVersion: '2.0',
   id: 'TestComp2024',
   name: 'Test Competition 2024',
   shortName: 'Test 2024',
@@ -69,7 +69,7 @@ const mockWcif: Competition = {
       },
     ],
   },
-  series: [],
+  series: null,
   competitorLimit: 100,
   extensions: [],
   registrationInfo: {

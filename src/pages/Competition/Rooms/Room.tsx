@@ -164,17 +164,20 @@ const Room = ({ room }: RoomProps) => {
                   }
 
                   const participationSource = getParticipationRuleset(round)?.participationSource;
+                  const resultCondition =
+                    participationSource?.type === 'linkedRounds'
+                      ? participationSource.resultCondition
+                      : null;
 
                   const estimatedCompetitors =
                     participationSource?.type === 'registrations' || roundNumber === 1
                       ? (eventRegistrationCounts[eventId] ?? 0)
-                      : participationSource?.type === 'linkedRounds' &&
-                          (participationSource.resultCondition.type === 'percent' ||
-                            participationSource.resultCondition.type === 'ranking')
+                      : resultCondition?.value != null &&
+                          (resultCondition.type === 'percent' || resultCondition.type === 'ranking')
                         ? advancingCompetitors(
                             {
-                              type: participationSource.resultCondition.type,
-                              level: participationSource.resultCondition.value,
+                              type: resultCondition.type,
+                              level: resultCondition.value,
                             },
                             eventRegistrationCounts[eventId] ?? 0
                           )

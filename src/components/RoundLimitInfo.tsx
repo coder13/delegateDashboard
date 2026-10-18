@@ -56,7 +56,7 @@ export const RoundLimitInfo = ({
           <Typography>Cutoff:</Typography>
           <Typography>
             {round.cutoff.numberOfAttempts} attempts to get {'< '}
-            {renderResultByEventId(eventId as EventId, 'average', round.cutoff.attemptResult)}
+            {renderResultByEventId(eventId as EventId, 'average', round.cutoff.resultValue)}
           </Typography>
           {personsShouldBeInRound.length > 0 && (
             <Typography>

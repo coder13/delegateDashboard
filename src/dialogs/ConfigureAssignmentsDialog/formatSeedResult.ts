@@ -1,5 +1,5 @@
 import {
-  type AttemptResult,
+  type ResultValue,
   decodeMultiResult,
   type EventId,
   formatCentiseconds,
@@ -7,15 +7,15 @@ import {
   type RankingType,
 } from '@wca/helpers';
 
-const isValidResult = (result: AttemptResult | null | undefined) =>
+const isValidResult = (result: ResultValue | null | undefined) =>
   result !== null && result !== undefined && !Number.isNaN(result as number);
 
-const formatFewestMovesAverage = (result: AttemptResult) => ((result as number) / 100).toFixed(2);
+const formatFewestMovesAverage = (result: ResultValue) => (result / 100).toFixed(2);
 
 export const formatSeedResult = (
   eventId: EventId,
   rankingType: RankingType,
-  result?: AttemptResult
+  result?: ResultValue
 ) => {
   if (!result) {
     return '-';

@@ -4,7 +4,7 @@ import {
   hasCompetitorAssignment,
   missingStaffAssignments,
 } from '../domain';
-import { isOrganizerOrDelegate, personsShouldBeInRound } from '../domain';
+import { hasRegistrantId, isOrganizerOrDelegate, personsShouldBeInRound } from '../domain';
 import { type InProgressAssignmment } from '../types';
 import { createGroupAssignment, nextGroupForActivity } from '../wcif';
 import { type Competition, type Event } from '@wca/helpers';
@@ -34,6 +34,7 @@ export const generateJudgeAssignmentsFromCompetingAssignments = (
     const personFilterContext = { assignments, groupIds };
 
     const persons = personsShouldBeInRound(round)(wcif.persons)
+      .filter(hasRegistrantId)
       .filter(hasCompetitorAssignment(personFilterContext))
       .filter(missingStaffAssignments(personFilterContext))
       .filter((p) => !isOrganizerOrDelegate(p));

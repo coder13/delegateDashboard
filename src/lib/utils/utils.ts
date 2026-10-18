@@ -1,9 +1,4 @@
-import {
-  type AttemptResult,
-  type EventId,
-  type RankingType,
-  formatCentiseconds,
-} from '@wca/helpers';
+import { type ResultValue, type EventId, type RankingType, formatCentiseconds } from '@wca/helpers';
 
 /**
  * Returns a copy of the object with the value at the specified path transformed by the update function.
@@ -35,7 +30,6 @@ export const setIn = <T extends object, S extends keyof T>(
   properyChain: S,
   value: T[S]
 ): T => updateIn(object, properyChain, () => value);
-
 
 /**
  * Returns a copy of the object with the array at the specified path mapped with the given function.
@@ -87,15 +81,15 @@ export const byName = (a: { name: string }, b: { name: string }) => a.name.local
 export const renderResultByEventId = (
   eventId: EventId,
   rankingType: RankingType,
-  result: AttemptResult
+  result: ResultValue
 ) => {
   if (eventId === '333fm') {
-    return rankingType === 'average' ? ((result as number) / 100).toFixed(2).toString() : result;
+    return rankingType === 'average' ? (result / 100).toFixed(2) : result;
   }
 
   // if (eventId === '333mbf') {
   //   return formatMultiResult(decodeMultiResult('0' + (result as number).toString()));
   // }
 
-  return formatCentiseconds(result as number);
+  return formatCentiseconds(result);
 };

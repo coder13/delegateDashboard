@@ -1,6 +1,6 @@
 import { findGroupActivitiesByRound, parseActivityCode } from '../domain';
 import { isCompetitorAssignment, missingCompetitorAssignments } from '../domain';
-import { byPROrResult, personsShouldBeInRound } from '../domain';
+import { byPROrResult, hasRegistrantId, personsShouldBeInRound } from '../domain';
 import { type InProgressAssignmment } from '../types';
 import { byName } from '../utils';
 import { createGroupAssignment } from '../wcif';
@@ -29,18 +29,21 @@ export const generateCompetingGroupActitivitesForEveryone = (
     allExistingCompetiorAssignments[group.id] = 0;
   }
 
-  personsInRound.reduce((sizes, person) => {
-    const competingAssignment = person.assignments?.find(
-      (a) => groupIds.includes(+a.activityId) && isCompetitorAssignment(a)
-    );
+  personsInRound.reduce(
+    (sizes, person) => {
+      const competingAssignment = person.assignments?.find(
+        (a) => groupIds.includes(+a.activityId) && isCompetitorAssignment(a)
+      );
 
-    return {
-      ...sizes,
-      ...(competingAssignment
-        ? { [competingAssignment.activityId]: sizes[+competingAssignment.activityId] + 1 }
-        : {}),
-    };
-  }, {} as Record<number, number>);
+      return {
+        ...sizes,
+        ...(competingAssignment
+          ? { [competingAssignment.activityId]: sizes[+competingAssignment.activityId] + 1 }
+          : {}),
+      };
+    },
+    {} as Record<number, number>
+  );
 
   const nextGroupActivityIdToAssign = (assignments: InProgressAssignmment[]) => {
     const groupSizes: Record<number, number> = assignments
@@ -69,6 +72,7 @@ export const generateCompetingGroupActitivitesForEveryone = (
 
   return (assignments: InProgressAssignmment[]): InProgressAssignmment[] => {
     const persons = personsShouldBeInRound(round)(wcif.persons)
+      .filter(hasRegistrantId)
       .filter(missingCompetitorAssignments({ assignments, groupIds }))
       .sort(byName)
       .sort(byPROrResult(event, roundNumber));

@@ -62,9 +62,9 @@ const buildWcifWithRooms = (
   id: 'test-competition',
   shortName: 'test',
   name: 'Test',
-  formatVersion: 'v1.0',
+  formatVersion: '2.0',
   competitorLimit: null,
-  series: [],
+  series: null,
   extensions: [],
   registrationInfo: {
     openTime: '2024-01-01T00:00:00Z',

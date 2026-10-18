@@ -36,10 +36,11 @@ describe('RoundListItem', () => {
   it('renders group and assignment summaries', () => {
     const round: Round = {
       id: '333-r1',
+      linkedRounds: null,
       format: 'a',
       timeLimit: null,
       cutoff: null,
-      advancementCondition: null,
+      participationRuleset: null,
       results: [],
       scrambleSetCount: 1,
       extensions: [],
