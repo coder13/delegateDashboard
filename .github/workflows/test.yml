@@ -10,7 +10,8 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # Keep the test OS compatible with the locked Playwright/browser dependencies.
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout code
@@ -41,7 +42,8 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   e2e:
-    runs-on: ubuntu-latest
+    # Keep the test OS compatible with the locked Playwright/browser dependencies.
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout code
