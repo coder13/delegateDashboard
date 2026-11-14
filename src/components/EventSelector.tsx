@@ -1,3 +1,4 @@
+import { eventNameById } from '../lib/domain/events';
 import { IconButton } from '@mui/material';
 import { type EventId } from '@wca/helpers';
 
@@ -25,6 +26,8 @@ const EventSelector = ({ eventIds, value, onChange, styleOverrides }: EventSelec
       {eventIds.map((eventId) => (
         <IconButton
           key={eventId}
+          aria-label={eventNameById(eventId)}
+          aria-pressed={value.includes(eventId)}
           className={`cubing-icon event-${eventId}`}
           style={{ fontSize: '1.5em' }}
           sx={(theme) => ({
