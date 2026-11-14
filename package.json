@@ -15,7 +15,8 @@
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "prepare": "husky install",
-    "prettier": "prettier \"src/**/*.js\" --write"
+    "prettier": "prettier \"src/**/*.js\" --write",
+    "postinstall": "patch-package --error-on-fail"
   },
   "dependencies": {
     "@codemirror/lang-json": "6.0.2",
@@ -36,7 +37,7 @@
     "@types/react-dom": "19.2.3",
     "@uiw/react-codemirror": "^4.25.4",
     "@vitejs/plugin-react": "^5.1.2",
-    "@wca/helpers": "^1.1.6",
+    "@wca/helpers": "1.1.6",
     "clsx": "^2.1.1",
     "country-flag-icons": "^1.6.8",
     "date-fns": "^4.1.0",
@@ -50,6 +51,7 @@
     "lodash.debounce": "^4.0.8",
     "material-ui-confirm": "^4.0.0",
     "notistack": "^3.0.1",
+    "patch-package": "^8.0.1",
     "prop-types": "^15.8.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -109,5 +111,8 @@
     "singleQuote": true,
     "bracketSpacing": true,
     "bracketSameLine": true
+  },
+  "resolutions": {
+    "@wca/helpers": "1.1.6"
   }
 }

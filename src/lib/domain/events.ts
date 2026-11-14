@@ -25,6 +25,7 @@ export const events: EventInfo[] = [
   { id: '444bf', name: '4x4x4 Blindfolded', shortName: '4BLD' },
   { id: '555bf', name: '5x5x5 Blindfolded', shortName: '5BLD' },
   { id: '333mbf', name: '3x3x3 Multi-Blind', shortName: 'MBLD' },
+  { id: 'fto', name: 'Face-Turning Octahedron', shortName: 'FTO' },
 ];
 
 export const eventNameById = (eventId: EventId): string => propertyById('name', eventId);
